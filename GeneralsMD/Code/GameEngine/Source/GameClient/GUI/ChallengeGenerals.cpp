@@ -110,6 +110,7 @@ const FieldParse ChallengeGenerals::s_fieldParseTable[] =
 	{ "GeneralPersona9", ChallengeGenerals::parseGeneralPersona, NULL, offsetof( ChallengeGenerals, m_position[9] ) },
 	{ "GeneralPersona10", ChallengeGenerals::parseGeneralPersona, NULL, offsetof( ChallengeGenerals, m_position[10] ) },
 	{ "GeneralPersona11", ChallengeGenerals::parseGeneralPersona, NULL, offsetof( ChallengeGenerals, m_position[11] ) },
+	{ "GeneralPersona12", ChallengeGenerals::parseGeneralPersona, NULL, offsetof( ChallengeGenerals, m_position[12] ) }, // Reborn
 	{ 0, 0, 0, 0 }
 };
 
