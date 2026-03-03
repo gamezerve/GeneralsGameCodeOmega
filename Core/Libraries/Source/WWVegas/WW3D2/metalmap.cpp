@@ -51,9 +51,8 @@
 #include "ww3dformat.h"
 #include "ww3d.h"
 #include <vp.h>
-#include <INI.H>
+#include <INI.h>
 #include <Point.h>
-#include <stdio.h>
 #include <hashtemplate.h>
 #include <wwstring.h>
 #include <wwmath.h>
@@ -61,7 +60,7 @@
 /*
 ** Class static members:
 */
-Vector3 * MetalMapManagerClass::_NormalTable = 0;
+Vector3 * MetalMapManagerClass::_NormalTable = nullptr;
 
 /***********************************************************************************************
  * MMMC::MetalMapManagerClass -- Create metal map manager from INI                             *
@@ -78,8 +77,8 @@ Vector3 * MetalMapManagerClass::_NormalTable = 0;
  *=============================================================================================*/
 MetalMapManagerClass::MetalMapManagerClass(INIClass &ini) :
 	MapCount(0),
-	Textures(0),
-	MetalParameters(0),
+	Textures(nullptr),
+	MetalParameters(nullptr),
 	CurrentAmbient(0.0f, 0.0f, 0.0f),
 	CurrentMainLightColor(0.0f, 0.0f, 0.0f),
 	CurrentMainLightDir(1.0f, 0.0f, 0.0f),
@@ -168,19 +167,18 @@ MetalMapManagerClass::MetalMapManagerClass(INIClass &ini) :
  * HISTORY:                                                                                    *
  *   11/19/1999 NH : Created.                                                                  *
  *=============================================================================================*/
-MetalMapManagerClass::~MetalMapManagerClass(void)
+MetalMapManagerClass::~MetalMapManagerClass()
 {
 	if (Textures) {
 		for (int i = 0; i < MapCount; i++) {
 			REF_PTR_RELEASE(Textures[i]);
 		}
 		delete [] Textures;
-		Textures = 0;
+		Textures = nullptr;
 	}
-	if (MetalParameters) {
-		delete [] MetalParameters;
-		MetalParameters = 0;
-	}
+
+	delete [] MetalParameters;
+	MetalParameters = nullptr;
 }
 
 
@@ -199,7 +197,7 @@ MetalMapManagerClass::~MetalMapManagerClass(void)
  *=============================================================================================*/
 TextureClass * MetalMapManagerClass::Get_Metal_Map(int id)
 {
-	if (id < 0 || id >= MapCount) return 0;
+	if (id < 0 || id >= MapCount) return nullptr;
 	Textures[id]->Add_Ref();
 	return Textures[id];
 }
@@ -218,7 +216,7 @@ TextureClass * MetalMapManagerClass::Get_Metal_Map(int id)
  * HISTORY:                                                                                    *
  *   11/19/1999 NH : Created.                                                                  *
  *=============================================================================================*/
-int MetalMapManagerClass::Metal_Map_Count(void)
+int MetalMapManagerClass::Metal_Map_Count()
 {
 	return MapCount;
 }
@@ -259,7 +257,7 @@ void MetalMapManagerClass::Update_Lighting(const Vector3& ambient, const Vector3
  * HISTORY:                                                                                    *
  *   11/19/1999 NH : Created.                                                                  *
  *=============================================================================================*/
-void MetalMapManagerClass::Update_Textures(void)
+void MetalMapManagerClass::Update_Textures()
 {
 	// Currently the lighting is done using a simple Phong (actually Blinn) model.
 	Vector3 &l = CurrentMainLightDir;
@@ -286,7 +284,7 @@ void MetalMapManagerClass::Update_Textures(void)
 		MetalParams &cur_params = MetalParameters[i];
 
 		// If shinyness > 1, apply it to specular value array
-		float *specular = 0;
+		float *specular = nullptr;
 		float temp_specular[METALMAP_SIZE_2];
 		float shinyness = cur_params.Shininess;
 		if (shinyness > 1.0f) {
@@ -342,7 +340,7 @@ void MetalMapManagerClass::Update_Textures(void)
 		}
 		metal_map_surface->Unlock();
 		REF_PTR_RELEASE(metal_map_surface);
-	} // for i
+	}
 }
 
 /***********************************************************************************************
@@ -358,7 +356,7 @@ void MetalMapManagerClass::Update_Textures(void)
  * HISTORY:                                                                                    *
  *   11/19/1999 NH : Created.                                                                  *
  *=============================================================================================*/
-void MetalMapManagerClass::initialize_normal_table(void)
+void MetalMapManagerClass::initialize_normal_table()
 {
 	// NOTE: changing the actual static _NormalTable member must be the last thing this function
 	// does to avoid synchronization errors.

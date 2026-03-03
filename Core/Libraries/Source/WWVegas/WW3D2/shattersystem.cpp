@@ -78,7 +78,7 @@ class MeshMtlParamsClass
 {
 public:
 	MeshMtlParamsClass(MeshModelClass * model);
-	~MeshMtlParamsClass(void);
+	~MeshMtlParamsClass();
 
 	int							PassCount;
 
@@ -102,7 +102,7 @@ class VertexClass
 {
 public:
 
-	VertexClass(void);
+	VertexClass();
 	VertexClass(const VertexClass & that);
 	VertexClass &		operator = (const VertexClass & that);
 
@@ -130,7 +130,7 @@ public:
 
 	enum { BPT_POLY_MAX_VERTS = 24 };
 
-	PolygonClass(void);
+	PolygonClass();
 	PolygonClass(const PolygonClass & that);
 	PolygonClass(const VertexClass * points, int num);
 	PolygonClass &				operator = (const PolygonClass & that);
@@ -139,20 +139,20 @@ public:
 	const VertexClass &		operator[] (int i) const { return Verts[i]; }
 	VertexClass &				operator[] (int i) { return Verts[i]; }
 
-	int							Get_Vertex_Count(void) const			{ return NumVerts; }
-	int							Get_Material_ID(void) const			{ return MaterialId; }
-	const PlaneClass &		Get_Plane(void) const					{ return Plane; }
+	int							Get_Vertex_Count() const			{ return NumVerts; }
+	int							Get_Material_ID() const			{ return MaterialId; }
+	const PlaneClass &		Get_Plane() const					{ return Plane; }
 
 	void							Set_Vertex_Count(int count)			{ NumVerts = count; }
 	void							Set_Material_Id(int id)					{ MaterialId = id; }
 	void							Set_Plane(const PlaneClass & plane)	{ Plane = plane; }
 
 	// Operations
-	void							Compute_Plane(void);
+	void							Compute_Plane();
 	int							Which_Side(const PlaneClass & plane) const;
 	void							Split(const PlaneClass & plane,PolygonClass & front,PolygonClass & back) const;
-	bool							Is_Degenerate(void);
-	bool							Salvage_Degenerate(void);
+	bool							Is_Degenerate();
+	bool							Salvage_Degenerate();
 
 public:
 
@@ -174,18 +174,18 @@ public:
 ** plane.  The plane is defined by the x-y plane of the coordinate system
 ** (i.e. z-axis is the normal of the plane, origin is a point on the plane).
 ** Leaf nodes of this tree will have two indices.  These are indices into
-** the MeshFragments array where they put the polygons in thier front and
+** the MeshFragments array where they put the polygons in their front and
 ** back half-spaces.
 */
 class BSPClass
 {
 public:
 	BSPClass(HTreeClass * tree,int bone_index,int & leaf_index);
-	~BSPClass(void);
+	~BSPClass();
 
-	const PlaneClass &	Get_Plane(void)			{ return Plane; }
-	BSPClass *				Get_Front_Child(void)	{ return Front; }
-	BSPClass *				Get_Back_Child(void)		{ return Back; }
+	const PlaneClass &	Get_Plane()			{ return Plane; }
+	BSPClass *				Get_Front_Child()	{ return Front; }
+	BSPClass *				Get_Back_Child()		{ return Back; }
 
 	void						Clip_Polygon(const PolygonClass & poly);
 
@@ -261,7 +261,7 @@ MeshMtlParamsClass::MeshMtlParamsClass(MeshModelClass * model)
 	}
 }
 
-MeshMtlParamsClass::~MeshMtlParamsClass(void)
+MeshMtlParamsClass::~MeshMtlParamsClass()
 {
 }
 
@@ -271,7 +271,7 @@ MeshMtlParamsClass::~MeshMtlParamsClass(void)
 ** VertexClass Implementation
 **
 ***********************************************************************************************/
-VertexClass::VertexClass(void) :
+VertexClass::VertexClass() :
 	Position(0,0,0),
 	Normal(0,0,1),
 	PassCount(0)
@@ -389,7 +389,7 @@ void VertexClass::Intersect_Plane
 ** PolygonClass Implementation
 **
 ***********************************************************************************************/
-PolygonClass::PolygonClass(void) :
+PolygonClass::PolygonClass() :
 	NumVerts(0)
 {
 }
@@ -423,7 +423,7 @@ PolygonClass & PolygonClass::operator = (const PolygonClass & that)
 	return * this;
 }
 
-void PolygonClass::Compute_Plane(void)
+void PolygonClass::Compute_Plane()
 {
 	double nx = 0;
 	double ny = 0;
@@ -615,7 +615,7 @@ void PolygonClass::Split(const PlaneClass & plane,PolygonClass & front,PolygonCl
 }
 
 
-bool PolygonClass::Is_Degenerate(void)
+bool PolygonClass::Is_Degenerate()
 {
 	int i,j;
 
@@ -652,7 +652,7 @@ bool PolygonClass::Is_Degenerate(void)
 	return false;
 }
 
-bool PolygonClass::Salvage_Degenerate(void)
+bool PolygonClass::Salvage_Degenerate()
 {
 	/*
 	** About all we can do is combine sequential vertices which are co-incident
@@ -687,8 +687,8 @@ bool PolygonClass::Salvage_Degenerate(void)
 
 BSPClass::BSPClass(HTreeClass * tree,int bone_index,int & leaf_index) :
 	Plane(0,0,1,0),
-	Front(NULL),
-	Back(NULL),
+	Front(nullptr),
+	Back(nullptr),
 	FrontLeafIndex(-1),
 	BackLeafIndex(-1)
 {
@@ -726,15 +726,11 @@ BSPClass::BSPClass(HTreeClass * tree,int bone_index,int & leaf_index) :
 	}
 }
 
-BSPClass::~BSPClass(void)
+BSPClass::~BSPClass()
 {
-	if (Front != NULL) {
-		delete Front;
-	}
-	if (Back != NULL) {
-		delete Back;
-	}
-	Front = Back = NULL;
+	delete Front;
+	delete Back;
+	Front = Back = nullptr;
 }
 
 void BSPClass::Set_Plane_From_Transform(const Matrix3D & tm)
@@ -763,7 +759,7 @@ void BSPClass::Clip_Polygon(const PolygonClass & polygon)
 
 	// Process the front halfspace: Recurse if we have a child clipping plane,
 	// otherwise add our polygons to our assigned clipping pool
-	if (Front == NULL) {
+	if (Front == nullptr) {
 		// We're a leaf node so put the polygons into the mesh fragment arrays
 		if (front_poly.Get_Vertex_Count() >= 3) {
 			ClipPools[FrontLeafIndex].Add(front_poly);
@@ -776,7 +772,7 @@ void BSPClass::Clip_Polygon(const PolygonClass & polygon)
 	}
 
 	// Process the back halfspace:
-	if (Back==NULL) {
+	if (Back==nullptr) {
 		if (back_poly.Get_Vertex_Count() >= 3) {
 			ClipPools[BackLeafIndex].Add(back_poly);
 		}
@@ -798,7 +794,7 @@ void BSPClass::Clip_Polygon(const PolygonClass & polygon)
 ** Vshatter = Mscale-to-unit * Mworld-shatterview * Mobj-world * Vobj
 **
 ***********************************************************************************************/
-void ShatterSystem::Init(void)
+void ShatterSystem::Init()
 {
 	/*
 	** Resize the Mesh Fragment pointer array to handle the maximum number
@@ -813,17 +809,17 @@ void ShatterSystem::Init(void)
 	StringClass htree_name;
 	htree_name.Format(SHATTER_PATTERN_FORMAT,0);
 
- 	if (WW3DAssetManager::Get_Instance()==NULL)
+ 	if (WW3DAssetManager::Get_Instance()==nullptr)
 		return;  // WorldBuilderTool doesn't initialize the asset manager.  jba.
 #if 1
-	HTreeClass *htree = NULL;
+	HTreeClass *htree = nullptr;
 #else
 	HTreeClass * htree = WW3DAssetManager::Get_Instance()->Get_HTree(htree_name);
 #endif
-	while (htree != NULL) {
+	while (htree != nullptr) {
 		if ((htree->Num_Pivots() > 1) && (htree->Num_Pivots() < MAX_MESH_FRAGMENTS)) {
 			int leaf_counter = 0;
-			htree->Base_Update(Matrix3D(1));
+			htree->Base_Update(Matrix3D(true));
 			ShatterPatterns.Add(W3DNEW BSPClass(htree,1,leaf_counter));
 		}
 
@@ -835,7 +831,7 @@ void ShatterSystem::Init(void)
 	}
 }
 
-void ShatterSystem::Shutdown(void)
+void ShatterSystem::Shutdown()
 {
 	/*
 	** Release all mesh fragments
@@ -847,7 +843,6 @@ void ShatterSystem::Shutdown(void)
 	*/
 	for (int i=0; i<ShatterPatterns.Count(); i++) {
 		delete ShatterPatterns[i];
-		ShatterPatterns[i] = NULL;
 	}
 	ShatterPatterns.Delete_All();
 }
@@ -1000,24 +995,24 @@ void ShatterSystem::Shatter_Mesh(MeshClass * mesh,const Vector3 & point,const Ve
 			SHATTER_DEBUG_SAY(("normal: %f %f %f",src_vnorms[vert_index].X,src_vnorms[vert_index].Y,src_vnorms[vert_index].Z));
 
 			for (ipass=0; ipass<MeshMatDescClass::MAX_PASSES; ipass++) {
-				if (mtl_params.DCG[ipass] != NULL) {
+				if (mtl_params.DCG[ipass] != nullptr) {
 					polygon.Verts[ivert].DCG[ipass] = mtl_params.DCG[ipass][vert_index];
 					SHATTER_DEBUG_SAY(("DCG: pass: %d : %f %f %f",ipass,mtl_params.DCG[ipass][vert_index].X,mtl_params.DCG[ipass][vert_index].Y,mtl_params.DCG[ipass][vert_index].Z));
 				}
 
-				if (mtl_params.DIG[ipass] != NULL) {
+				if (mtl_params.DIG[ipass] != nullptr) {
 					polygon.Verts[ivert].DIG[ipass] = mtl_params.DIG[ipass][vert_index];
 					SHATTER_DEBUG_SAY(("DIG: pass: %d : %f %f %f",ipass,mtl_params.DIG[ipass][vert_index].X,mtl_params.DIG[ipass][vert_index].Y,mtl_params.DIG[ipass][vert_index].Z));
 				}
 
 				for (istage=0; istage<MeshMatDescClass::MAX_TEX_STAGES; istage++) {
-					if (mtl_params.UV[ipass][istage] != NULL) {
+					if (mtl_params.UV[ipass][istage] != nullptr) {
 						polygon.Verts[ivert].TexCoord[ipass][istage] = mtl_params.UV[ipass][istage][vert_index];
 						SHATTER_DEBUG_SAY(("UV pass: %d stage: %d: %f %f",ipass,istage,mtl_params.UV[ipass][istage][vert_index].X,mtl_params.UV[ipass][istage][vert_index].Y));
 					}
 				}
 
-/*				if (mtl_params.UVIndexArray[ipass] != NULL) {
+/*				if (mtl_params.UVIndexArray[ipass] != nullptr) {
 					int uv_index = mtl_params.UVIndexArray[ipass][ipoly][ivert];
 					polygon.Verts[ivert].TexCoord[ipass][0] = mtl_params.UV[ipass][0][uv_index];
 					SHATTER_DEBUG_SAY(("Per-Face UV pass: %d: %f %f",ipass,polygon.Verts[ivert].TexCoord[ipass][0].X,polygon.Verts[ivert].TexCoord[ipass][0].Y));
@@ -1044,14 +1039,14 @@ void ShatterSystem::Shatter_Mesh(MeshClass * mesh,const Vector3 & point,const Ve
 	REF_PTR_RELEASE(model);
 }
 
-int ShatterSystem::Get_Fragment_Count(void)
+int ShatterSystem::Get_Fragment_Count()
 {
 	return MeshFragments.Count();
 }
 
 RenderObjClass * ShatterSystem::Get_Fragment(int fragment_index)
 {
-	if (MeshFragments[fragment_index] != NULL) {
+	if (MeshFragments[fragment_index] != nullptr) {
 		MeshFragments[fragment_index]->Add_Ref();
 	}
 	return MeshFragments[fragment_index];
@@ -1062,7 +1057,7 @@ RenderObjClass * ShatterSystem::Peek_Fragment(int fragment_index)
 	return MeshFragments[fragment_index];
 }
 
-void ShatterSystem::Release_Fragments(void)
+void ShatterSystem::Release_Fragments()
 {
 	// release any ref's to render objects
 	for (int i=0; i<MeshFragments.Count(); i++) {
@@ -1073,7 +1068,7 @@ void ShatterSystem::Release_Fragments(void)
 	MeshFragments.Delete_All(false);
 }
 
-void ShatterSystem::Reset_Clip_Pools(void)
+void ShatterSystem::Reset_Clip_Pools()
 {
 	for (int i=0; i<MAX_MESH_FRAGMENTS; i++) {
 		// reset array but don't resize
@@ -1097,7 +1092,7 @@ void ShatterSystem::Process_Clip_Pools
 	** Grab the model
 	*/
 	MeshModelClass * model = mesh->Get_Model();
-	WWASSERT(model != NULL);
+	WWASSERT(model != nullptr);
 
 	/*
 	** Loop over all ClipPools and build a mesh for any that contain polygons
@@ -1137,11 +1132,11 @@ void ShatterSystem::Process_Clip_Pools
 
 			bool has_textures = false;
 			for (ipass=0; ipass<model->Get_Pass_Count(); ipass++) {
-				if (model->Peek_Single_Material(ipass) != NULL) {
+				if (model->Peek_Single_Material(ipass) != nullptr) {
 					matinfo->Add_Vertex_Material(model->Peek_Single_Material(ipass));
 				}
 				for (int istage=0; istage<MeshMatDescClass::MAX_TEX_STAGES; istage++) {
-					if (model->Peek_Single_Texture(ipass,istage) != NULL) {
+					if (model->Peek_Single_Texture(ipass,istage) != nullptr) {
 						matinfo->Add_Texture(model->Peek_Single_Texture(ipass,istage));
 						has_textures = true;
 					}
@@ -1155,7 +1150,7 @@ void ShatterSystem::Process_Clip_Pools
 
 				for (istage=0; istage<MeshMatDescClass::MAX_TEX_STAGES; istage++) {
 					TextureClass * tex = model->Peek_Single_Texture(ipass,istage);
-					if (tex != NULL) {
+					if (tex != nullptr) {
 						new_mesh->Peek_Model()->Set_Single_Texture(tex,ipass,istage);
 					}
 				}
@@ -1185,7 +1180,7 @@ void ShatterSystem::Process_Clip_Pools
 
 					SHATTER_DEBUG_SAY(("Begin Vertex:"));
 					new_mesh->Begin_Vertex();
-					SHATTER_DEBUG_SAY(("postion: %f %f %f",pos.X,pos.Y,pos.Z));
+					SHATTER_DEBUG_SAY(("position: %f %f %f",pos.X,pos.Y,pos.Z));
 					new_mesh->Location_Inline(pos);
 					new_mesh->Normal(norm);
 
@@ -1197,7 +1192,7 @@ void ShatterSystem::Process_Clip_Pools
 						** If there were vertex colors for this pass in the original mesh, then
 						** copy the color out of the vertex into the new mesh.
 						*/
-						if (mtl_params.DCG[ipass] != NULL) {
+						if (mtl_params.DCG[ipass] != nullptr) {
 							SHATTER_DEBUG_SAY(("DCG: pass:%d: %f %f %f",ipass,vert.DCG[ipass].X,vert.DCG[ipass].Y,vert.DCG[ipass].Z));
 							/* OLD CODE
 							new_mesh->DCG(Vector3(vert.DCG[ipass].X,vert.DCG[ipass].Y,vert.DCG[ipass].Z),ipass);
@@ -1207,7 +1202,7 @@ void ShatterSystem::Process_Clip_Pools
 						}
 
 						// HY- Multiplying DIG with DCG as in meshmdlio
-						if (mtl_params.DIG[ipass] != NULL) {
+						if (mtl_params.DIG[ipass] != nullptr) {
 							SHATTER_DEBUG_SAY(("DIG: pass:%d: %f %f %f",ipass,vert.DIG[ipass].X,vert.DIG[ipass].Y,vert.DIG[ipass].Z));
 							Vector4 mc=DX8Wrapper::Convert_Color(mycolor);
 							Vector4 dc=DX8Wrapper::Convert_Color(vert.DIG[ipass]);
@@ -1223,7 +1218,7 @@ void ShatterSystem::Process_Clip_Pools
 						*/
 //						#pragma MESSAGE("HY- Naty, will dynamesh support multiple stages of UV?")
 						for (istage=0; istage<MeshMatDescClass::MAX_TEX_STAGES; istage++) {
-							if (mtl_params.UV[ipass][istage] != NULL) {
+							if (mtl_params.UV[ipass][istage] != nullptr) {
 								SHATTER_DEBUG_SAY(("UV: pass:%d stage: %d: %f %f",ipass,istage,vert.TexCoord[ipass][istage].X,vert.TexCoord[ipass][istage].Y));
 								new_mesh->UV(vert.TexCoord[ipass][istage],istage);
 							}

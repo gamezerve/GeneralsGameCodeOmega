@@ -51,7 +51,7 @@
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameLogic/Module/WeaponBonusUpdate.h"
 
@@ -79,13 +79,13 @@ void WeaponBonusUpdateModuleData::buildFieldParse(MultiIniFieldParse& p)
   UpdateModuleData::buildFieldParse(p);
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "RequiredAffectKindOf",		KindOfMaskType::parseFromINI,		NULL, offsetof( WeaponBonusUpdateModuleData, m_requiredAffectKindOf ) },
-		{ "ForbiddenAffectKindOf",	KindOfMaskType::parseFromINI,		NULL, offsetof( WeaponBonusUpdateModuleData, m_forbiddenAffectKindOf ) },
-		{ "BonusDuration",					INI::parseDurationUnsignedInt,	NULL, offsetof( WeaponBonusUpdateModuleData, m_bonusDuration ) },
-		{ "BonusDelay",							INI::parseDurationUnsignedInt,	NULL, offsetof( WeaponBonusUpdateModuleData, m_bonusDelay ) },
-		{ "BonusRange",							INI::parseReal,									NULL, offsetof( WeaponBonusUpdateModuleData, m_bonusRange ) },
+		{ "RequiredAffectKindOf",		KindOfMaskType::parseFromINI,		nullptr, offsetof( WeaponBonusUpdateModuleData, m_requiredAffectKindOf ) },
+		{ "ForbiddenAffectKindOf",	KindOfMaskType::parseFromINI,		nullptr, offsetof( WeaponBonusUpdateModuleData, m_forbiddenAffectKindOf ) },
+		{ "BonusDuration",					INI::parseDurationUnsignedInt,	nullptr, offsetof( WeaponBonusUpdateModuleData, m_bonusDuration ) },
+		{ "BonusDelay",							INI::parseDurationUnsignedInt,	nullptr, offsetof( WeaponBonusUpdateModuleData, m_bonusDelay ) },
+		{ "BonusRange",							INI::parseReal,									nullptr, offsetof( WeaponBonusUpdateModuleData, m_bonusRange ) },
 		{ "BonusConditionType",			INI::parseIndexList,	TheWeaponBonusNames, offsetof( WeaponBonusUpdateModuleData, m_bonusConditionType ) },
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -99,7 +99,7 @@ WeaponBonusUpdate::WeaponBonusUpdate( Thing *thing, const ModuleData* moduleData
 }
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-WeaponBonusUpdate::~WeaponBonusUpdate( void )
+WeaponBonusUpdate::~WeaponBonusUpdate()
 {
 
 }
@@ -123,7 +123,7 @@ void containIteratingDoTempWeaponBonus( Object *passenger, void *voidData)
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime WeaponBonusUpdate::update( void )
+UpdateSleepTime WeaponBonusUpdate::update()
 {
 	const WeaponBonusUpdateModuleData * data = getWeaponBonusUpdateModuleData();
 	Object *me = getObject();
@@ -135,7 +135,7 @@ UpdateSleepTime WeaponBonusUpdate::update( void )
 	// Leaving this here commented out to show that I need to reach valid contents of invalid transports.
 	// So these checks are on an individual basis, not in the Partition query
 //	PartitionFilterAcceptByKindOf filterKindof(data->m_requiredAffectKindOf,data->m_forbiddenAffectKindOf);
-	PartitionFilter *filters[] = { &relationship, &filterAlive, &filterMapStatus, NULL };
+	PartitionFilter *filters[] = { &relationship, &filterAlive, &filterMapStatus, nullptr };
 
 	// scan objects in our region
 	ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( me->getPosition(),
@@ -149,7 +149,7 @@ UpdateSleepTime WeaponBonusUpdate::update( void )
 	weaponBonusData.m_requiredMask = data->m_requiredAffectKindOf;
 	weaponBonusData.m_forbiddenMask = data->m_forbiddenAffectKindOf;
 
-	for( Object *currentObj = iter->first(); currentObj != NULL; currentObj = iter->next() )
+	for( Object *currentObj = iter->first(); currentObj != nullptr; currentObj = iter->next() )
 	{
 		if( currentObj->isKindOfMulti(data->m_requiredAffectKindOf, data->m_forbiddenAffectKindOf) )
 		{
@@ -174,7 +174,7 @@ void WeaponBonusUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -192,15 +192,15 @@ void WeaponBonusUpdate::xfer( Xfer *xfer )
 	// extend base class
 	UpdateModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void WeaponBonusUpdate::loadPostProcess( void )
+void WeaponBonusUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

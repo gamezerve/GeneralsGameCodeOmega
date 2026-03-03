@@ -56,7 +56,6 @@
 #include "chunkio.h"
 #include "w3d_file.h"
 #include "wwdebug.h"
-#include <string.h>
 #include <nstrdup.h>
 
 
@@ -109,12 +108,12 @@ struct NodeCompressedMotionStruct
  * HISTORY:                                                                                    *
  *=============================================================================================*/
 NodeCompressedMotionStruct::NodeCompressedMotionStruct() :
-	Vis(NULL)
+	Vis(nullptr)
 {
-		vd.X = NULL;
-		vd.Y = NULL;
-		vd.Z = NULL;
-		vd.Q = NULL;
+		vd.X = nullptr;
+		vd.Y = nullptr;
+		vd.Z = nullptr;
+		vd.Q = nullptr;
 }
 
 
@@ -137,25 +136,25 @@ NodeCompressedMotionStruct::~NodeCompressedMotionStruct()
 
 	switch (Flavor) {
 		case ANIM_FLAVOR_TIMECODED:
-			if (tc.X) delete tc.X;
-			if (tc.Y) delete tc.Y;
-			if (tc.Z) delete tc.Z;
-			if (tc.Q) delete tc.Q;
+			delete tc.X;
+			delete tc.Y;
+			delete tc.Z;
+			delete tc.Q;
 			break;
 		case ANIM_FLAVOR_ADAPTIVE_DELTA:
-			if (ad.X) delete ad.X;
-			if (ad.Y) delete ad.Y;
-			if (ad.Z) delete ad.Z;
-			if (ad.Q) delete ad.Q;
+			delete ad.X;
+			delete ad.Y;
+			delete ad.Z;
+			delete ad.Q;
 			break;
 		default:
 			WWASSERT(0);	// unknown flavor
 			break;
 	}
 
-	if (Vis) delete Vis;
+	delete Vis;
 
-}  // ~NodeCompressedMotionStruct
+}
 
 
 /***********************************************************************************************
@@ -170,12 +169,12 @@ NodeCompressedMotionStruct::~NodeCompressedMotionStruct()
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-HCompressedAnimClass::HCompressedAnimClass(void) :
+HCompressedAnimClass::HCompressedAnimClass() :
 	NumFrames(0),
 	NumNodes(0),
 	Flavor(0),
 	FrameRate(0),
-	NodeMotion(NULL)
+	NodeMotion(nullptr)
 {
 	memset(Name,0,W3D_NAME_LEN);
 	memset(HierarchyName,0,W3D_NAME_LEN);
@@ -194,7 +193,7 @@ HCompressedAnimClass::HCompressedAnimClass(void) :
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-HCompressedAnimClass::~HCompressedAnimClass(void)
+HCompressedAnimClass::~HCompressedAnimClass()
 {
 	Free();
 }
@@ -212,11 +211,10 @@ HCompressedAnimClass::~HCompressedAnimClass(void)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void HCompressedAnimClass::Free(void)
+void HCompressedAnimClass::Free()
 {
-	if (NodeMotion != NULL) {
-		delete[] NodeMotion;
-	}
+	delete[] NodeMotion;
+	NodeMotion = nullptr;
 }
 
 
@@ -257,18 +255,20 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 
 	cload.Close_Chunk();
 
-	strcpy(Name,aheader.HierarchyName);
-	strcat(Name,".");
-	strcat(Name,aheader.Name);
+	static_assert(ARRAY_SIZE(Name) >= ARRAY_SIZE(aheader.HierarchyName), "Incorrect array size");
+	strcpy(Name, aheader.HierarchyName);
+	strlcat(Name, ".", ARRAY_SIZE(Name));
+	strlcat(Name, aheader.Name, ARRAY_SIZE(Name));
 
 	// TSS chasing crash bug 05/26/99
-   WWASSERT(HierarchyName != NULL);
-   WWASSERT(aheader.HierarchyName != NULL);
+   WWASSERT(HierarchyName != nullptr);
+   WWASSERT(aheader.HierarchyName != nullptr);
    WWASSERT(sizeof(HierarchyName) >= W3D_NAME_LEN);
-   strncpy(HierarchyName,aheader.HierarchyName,W3D_NAME_LEN);
+	 static_assert(ARRAY_SIZE(HierarchyName) >= ARRAY_SIZE(aheader.HierarchyName), "Incorrect array size");
+	 strcpy(HierarchyName, aheader.HierarchyName);
 
 	HTreeClass * base_pose = WW3DAssetManager::Get_Instance()->Get_HTree(HierarchyName);
-	if (base_pose == NULL) {
+	if (base_pose == nullptr) {
 		goto Error;
 	}
 	NumNodes = base_pose->Num_Pivots();
@@ -281,7 +281,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 	WWASSERT((Flavor == ANIM_FLAVOR_TIMECODED)||(Flavor == ANIM_FLAVOR_ADAPTIVE_DELTA));
 
 	NodeMotion = W3DNEWARRAY NodeCompressedMotionStruct[ NumNodes ];
-	if (NodeMotion == NULL) {
+	if (NodeMotion == nullptr) {
 		goto Error;
 	}
 
@@ -314,7 +314,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 							add_channel(tc_chan);
 						} else {
 							// PWG 12-14-98: we have only allocated space for NumNode pivots.
-							// If we have an index thats equal or higher than NumNode we are
+							// If we have an index that's equal or higher than NumNode we are
 							// gonna trash memory.  Boy will we trash memory.
 							// GTH 09-25-2000: print a warning and survive this error
 							delete tc_chan;
@@ -331,7 +331,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 							add_channel(ad_chan);
 						} else {
 							// PWG 12-14-98: we have only allocated space for NumNode pivots.
-							// If we have an index thats equal or higher than NumNode we are
+							// If we have an index that's equal or higher than NumNode we are
 							// gonna trash memory.  Boy will we trash memory.
 							// GTH 09-25-2000: print a warning and survive this error
 							delete ad_chan;
@@ -349,7 +349,7 @@ int HCompressedAnimClass::Load_W3D(ChunkLoadClass & cload)
 					add_bit_channel(newbitchan);
 				} else {
 					// PWG 12-14-98: we have only allocated space for NumNode pivots.
-					// If we have an index thats equal or higher than NumNode we are
+					// If we have an index that's equal or higher than NumNode we are
 					// gonna trash memory.  Boy will we trash memory.
 					// GTH 09-25-2000: print a warning and survive this error
 					delete newbitchan;
@@ -371,7 +371,7 @@ Error:
 	Free();
 	return LOAD_ERROR;
 
-}	 // Load_W3D
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::read_channel -- Reads in a single channel of motion                   *
@@ -392,7 +392,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,TimeCodedMotionCh
 
 	return result;
 
-}	// read_channel
+}
 
 bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMotionChannelClass * * newchan)
 {
@@ -401,7 +401,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMoti
 
 	return result;
 
-}	// read_channel
+}
 
 
 /***********************************************************************************************
@@ -439,7 +439,7 @@ void HCompressedAnimClass::add_channel(TimeCodedMotionChannelClass * newchan)
 			break;
 	}
 
-}	// add_channel
+}
 
 void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan)
 {
@@ -464,7 +464,7 @@ void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan
 			break;
 	}
 
-}	// add_channel
+}
 
 
 
@@ -488,7 +488,7 @@ bool HCompressedAnimClass::read_bit_channel(ChunkLoadClass & cload,TimeCodedBitC
 
 	return result;
 
-}	// read_bit_channel
+}
 
 
 /***********************************************************************************************
@@ -577,7 +577,7 @@ void HCompressedAnimClass::Get_Orientation(Quaternion& q, int pividx,float frame
 			WWASSERT(0); // unknown flavor
 			break;
 	}
-} // Get_Orientation
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::Get_Transform -- returns the transform matrix for the given frame	  *
@@ -640,7 +640,7 @@ void HCompressedAnimClass::Get_Transform( Matrix3D& mtx, int pividx, float frame
 bool HCompressedAnimClass::Get_Visibility(int pividx,float frame)
 {
 
-	if (NodeMotion[pividx].Vis != NULL) {
+	if (NodeMotion[pividx].Vis != nullptr) {
 		return (NodeMotion[pividx].Vis->Get_Bit((int)frame) == 1);
 	}
 
@@ -667,11 +667,11 @@ bool HCompressedAnimClass::Is_Node_Motion_Present(int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
 
-	if (NodeMotion[pividx].vd.X != NULL)	return true;
-	if (NodeMotion[pividx].vd.Y != NULL)	return true;
-	if (NodeMotion[pividx].vd.Z != NULL)	return true;
-	if (NodeMotion[pividx].vd.Q  != NULL)	return true;
-	if (NodeMotion[pividx].Vis != NULL)		return true;
+	if (NodeMotion[pividx].vd.X != nullptr)	return true;
+	if (NodeMotion[pividx].vd.Y != nullptr)	return true;
+	if (NodeMotion[pividx].vd.Z != nullptr)	return true;
+	if (NodeMotion[pividx].vd.Q  != nullptr)	return true;
+	if (NodeMotion[pividx].Vis != nullptr)		return true;
 
 	return false;
 }
@@ -679,31 +679,31 @@ bool HCompressedAnimClass::Is_Node_Motion_Present(int pividx)
 bool HCompressedAnimClass::Has_X_Translation (int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
-	return NodeMotion[pividx].vd.X != NULL;
+	return NodeMotion[pividx].vd.X != nullptr;
 }
 
 bool HCompressedAnimClass::Has_Y_Translation (int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
-	return NodeMotion[pividx].vd.Y != NULL;
+	return NodeMotion[pividx].vd.Y != nullptr;
 }
 
 bool HCompressedAnimClass::Has_Z_Translation (int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
-	return NodeMotion[pividx].vd.Z != NULL;
+	return NodeMotion[pividx].vd.Z != nullptr;
 }
 
 bool HCompressedAnimClass::Has_Rotation (int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
-	return NodeMotion[pividx].vd.Q != NULL;
+	return NodeMotion[pividx].vd.Q != nullptr;
 }
 
 bool HCompressedAnimClass::Has_Visibility (int pividx)
 {
 	WWASSERT((pividx >= 0) && (pividx < NumNodes));
-	return NodeMotion[pividx].Vis != NULL;
+	return NodeMotion[pividx].Vis != nullptr;
 }
 
 

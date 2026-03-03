@@ -60,7 +60,7 @@
 {
 	ModuleData* data = MSGNEW("Module::friend_newModuleData") ModuleData;	// no need to memorypool these since we never allocate more than one of each
 	if (ini)
-		ini->initFromINI(data, 0);	// this is just so that an "end" token is required
+		ini->initFromINI(data, nullptr);	// this is just so that an "end" token is required
 	return data;
 }
 
@@ -69,7 +69,7 @@
 Module::~Module()
 {
 
-}  // end ~Module
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -77,7 +77,7 @@ Module::~Module()
 void Module::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -92,15 +92,15 @@ void Module::xfer( Xfer *xfer )
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** load post process */
 // ------------------------------------------------------------------------------------------------
-void Module::loadPostProcess( void )
+void Module::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -112,18 +112,18 @@ ObjectModule::ObjectModule( Thing *thing, const ModuleData* moduleData ) : Modul
 		throw INI_INVALID_DATA;
 	}
 
-	DEBUG_ASSERTCRASH( thing, ("Thing passed to ObjectModule is NULL!") );
+	DEBUG_ASSERTCRASH( thing, ("Thing passed to ObjectModule is null!") );
 	m_object = AsObject(thing);
 	DEBUG_ASSERTCRASH( m_object, ("Thing passed to ObjectModule is not an Object!") );
 
-}  // end ObjectModule
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ObjectModule::~ObjectModule( void )
+ObjectModule::~ObjectModule()
 {
 
-}  // end ~ObjectModule
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -134,7 +134,7 @@ void ObjectModule::crc( Xfer *xfer )
 	// extend base class
 	Module::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -152,18 +152,18 @@ void ObjectModule::xfer( Xfer *xfer )
 	// extend base class
 	Module::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** load post process */
 // ------------------------------------------------------------------------------------------------
-void ObjectModule::loadPostProcess( void )
+void ObjectModule::loadPostProcess()
 {
 
 	// extend base class
 	Module::loadPostProcess();
 
-}  // end loadPostProcess
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -175,18 +175,18 @@ DrawableModule::DrawableModule( Thing *thing, const ModuleData* moduleData ) : M
 		throw INI_INVALID_DATA;
 	}
 
-	DEBUG_ASSERTCRASH( thing, ("Thing passed to DrawableModule is NULL!") );
+	DEBUG_ASSERTCRASH( thing, ("Thing passed to DrawableModule is null!") );
 	m_drawable = AsDrawable(thing);
 	DEBUG_ASSERTCRASH( m_drawable, ("Thing passed to DrawableModule is not a Drawable!") );
 
-}  // end ~DrawableModule
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-DrawableModule::~DrawableModule( void )
+DrawableModule::~DrawableModule()
 {
 
-}  // end ~DrawableModule
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -197,7 +197,7 @@ void DrawableModule::crc( Xfer *xfer )
 	// extend base class
 	Module::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -215,18 +215,18 @@ void DrawableModule::xfer( Xfer *xfer )
 	// extend base class
 	Module::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** load post process */
 // ------------------------------------------------------------------------------------------------
-void DrawableModule::loadPostProcess( void )
+void DrawableModule::loadPostProcess()
 {
 
 	// extend base class
 	Module::loadPostProcess();
 
-}  // end loadPostProcess
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

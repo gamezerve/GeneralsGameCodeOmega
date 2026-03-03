@@ -23,7 +23,7 @@
  *                                                                         *
  *                 Project Name : Westwood 3D                              *
  *                                                                         *
- *                    File Name : VECTOR4.H                                *
+ *                    File Name : VECTOR4.h                                *
  *                                                                         *
  *                   Programmer : Greg Hjelstrom                           *
  *                                                                         *
@@ -36,7 +36,7 @@
  *   Scalar Division Operator -- Divide a vector by a scalar               *
  *   Scalar Multiply Operator -- Multiply a vector by a scalar             *
  *   Vector Addition Operator -- Add two vectors                           *
- *   Vector Subtraction Operator -- Subract two vectors                    *
+ *   Vector Subtraction Operator -- Subtract two vectors                   *
  *   Vector Inner Product Operator -- Compute the inner or dot product     *
  *   Vector Equality Operator -- Detemine if two vectors are identical     *
  *   Vector Inequality Operator -- Detemine if two vectors are identical   *
@@ -44,12 +44,7 @@
  *   Vector4::Is_Valid -- Vector4::Is_Valid                                *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef VECTOR4_H
-#define VECTOR4_H
 
 #include "always.h"
 #include "wwmath.h"
@@ -70,7 +65,7 @@ public:
 
 
 	// Constructors
-	WWINLINE Vector4(void) {};
+	WWINLINE Vector4() {};
 	WWINLINE Vector4(const Vector4 & v) { X = v.X; Y = v.Y; Z = v.Z; W = v.W; }
 	WWINLINE Vector4(float x, float y, float z, float w) { X = x; Y = y; Z = z; W = w; }
 	WWINLINE Vector4(const float vector[4]) { X = vector[0]; Y = vector[1]; Z = vector[2]; W = vector[3]; }
@@ -84,9 +79,9 @@ public:
 	WWINLINE const float &  operator [](int i) const { return (&X)[i]; }
 
 	// normalize, compute length
-	void	Normalize(void);
-	WWINLINE float	Length(void) const;
-	WWINLINE float Length2(void) const;
+	void	Normalize();
+	WWINLINE float	Length() const;
+	WWINLINE float Length2() const;
 
 	// unary operators
 	WWINLINE Vector4 operator-() const { return(Vector4(-X,-Y,-Z,-W)); }
@@ -119,7 +114,7 @@ public:
 	static void Lerp(const Vector4 & a, const Vector4 & b, float alpha,Vector4 * set_result);
 
 	// verify that none of the members of this vector are invalid floats
-	WWINLINE bool Is_Valid(void) const;
+	WWINLINE bool Is_Valid() const;
 };
 
 /**************************************************************************
@@ -184,7 +179,7 @@ WWINLINE Vector4 operator + (const Vector4 &a,const Vector4 &b)
 }
 
 /**************************************************************************
- * Vector Subtraction Operator -- Subract two vectors                     *
+ * Vector Subtraction Operator -- Subtract two vectors                    *
  *                                                                        *
  * INPUT:                                                                 *
  *                                                                        *
@@ -402,11 +397,7 @@ WWINLINE void Vector4::Lerp(const Vector4 & a, const Vector4 & b, float alpha,Ve
  * HISTORY:                                                                                    *
  *   10/18/99   gth : Created.                                                                 *
  *=============================================================================================*/
-WWINLINE bool Vector4::Is_Valid(void) const
+WWINLINE bool Vector4::Is_Valid() const
 {
 	return (WWMath::Is_Valid_Float(X) && WWMath::Is_Valid_Float(Y) && WWMath::Is_Valid_Float(Z) && WWMath::Is_Valid_Float(W));
 }
-
-
-#endif /* VECTOR4_H */
-

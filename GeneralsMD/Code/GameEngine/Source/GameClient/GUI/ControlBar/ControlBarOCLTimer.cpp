@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/NameKeyGenerator.h"
 #include "Common/ThingTemplate.h"
@@ -48,12 +48,12 @@ void ControlBar::updateOCLTimerTextDisplay( UnsignedInt totalSeconds, Real perce
 {
 	UnicodeString text;
 	static UnsignedInt descID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:OCLTimerStaticText" );
-	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( NULL, descID );
+	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( nullptr, descID );
 
 	static UnsignedInt barID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:OCLTimerProgressBar" );
-	GameWindow *barWindow = TheWindowManager->winGetWindowFromId( NULL, barID );
+	GameWindow *barWindow = TheWindowManager->winGetWindowFromId( nullptr, barID );
 
-	// santiy
+	// sanity
 	DEBUG_ASSERTCRASH( descWindow, ("Under construction window not found") );
 
 	Int minutes = totalSeconds / 60;
@@ -71,7 +71,7 @@ void ControlBar::updateOCLTimerTextDisplay( UnsignedInt totalSeconds, Real perce
 	// record this as the last time displayed
 	m_displayedOCLTimerSeconds = totalSeconds;
 
-}  // end updateOCLTimerTextDisplay
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Populate the interface for an OCL Timer context. */
@@ -80,7 +80,7 @@ void ControlBar::populateOCLTimer( Object *creatorObject )
 {
 
 	// sanity
-	if( creatorObject == NULL )
+	if( creatorObject == nullptr )
 		return;
 
 	// get our parent window
@@ -120,7 +120,7 @@ void ControlBar::populateOCLTimer( Object *creatorObject )
 			//
 			showRallyPoint( exit->getRallyPoint() );
 
-		}  // end if
+		}
 	}
 	else
 	{
@@ -128,16 +128,16 @@ void ControlBar::populateOCLTimer( Object *creatorObject )
 	}
 
 	// set the text percent and bar of our timer we are displaying
-	updateContextOCLTimer( );
+	updateContextOCLTimer();
 
 	// set the portrait for the thing being constructed
 	setPortraitByObject( creatorObject );
 
-}  // end populateUnderConstruction
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void ControlBar::updateContextOCLTimer( void )
+void ControlBar::updateContextOCLTimer()
 {
 	Object *obj = m_currentSelectedDrawable->getObject();
 
@@ -153,4 +153,4 @@ void ControlBar::updateContextOCLTimer( void )
 	if( m_displayedOCLTimerSeconds != seconds )
 		updateOCLTimerTextDisplay( seconds, percent );
 
-}  // end updatecontextUnderConstruction
+}

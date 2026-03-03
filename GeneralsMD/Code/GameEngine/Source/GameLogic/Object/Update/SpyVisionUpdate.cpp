@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -52,7 +52,7 @@ SpyVisionUpdate::SpyVisionUpdate( Thing *thing, const ModuleData* moduleData ) :
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-SpyVisionUpdate::~SpyVisionUpdate( void )
+SpyVisionUpdate::~SpyVisionUpdate()
 {
 }
 
@@ -130,7 +130,7 @@ void SpyVisionUpdate::onDisabledEdge( Bool nowDisabled )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime SpyVisionUpdate::update( void )
+UpdateSleepTime SpyVisionUpdate::update()
 {
 	const SpyVisionUpdateModuleData *data = getSpyVisionUpdateModuleData();
 	UnsignedInt now = TheGameLogic->getFrame();
@@ -189,7 +189,7 @@ UpdateSleepTime SpyVisionUpdate::update( void )
 void SpyVisionUpdate::doActivationWork( Player *playerToSetFor, Bool setting )
 {
 	const SpyVisionUpdateModuleData *data = getSpyVisionUpdateModuleData();
-	if( playerToSetFor == NULL  ||  ThePlayerList == NULL )
+	if( playerToSetFor == nullptr  ||  ThePlayerList == nullptr )
 		return;
 
 	for (Int i=0; i < ThePlayerList->getPlayerCount(); ++i)
@@ -205,7 +205,7 @@ void SpyVisionUpdate::doActivationWork( Player *playerToSetFor, Bool setting )
 }
 
 //-------------------------------------------------------------------------------------------------
-void SpyVisionUpdate::onDelete( void )
+void SpyVisionUpdate::onDelete()
 {
 	// If I was left on at the time of death, then turn me off.
 	if( m_currentlyActive )
@@ -233,7 +233,7 @@ void SpyVisionUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -262,15 +262,15 @@ void SpyVisionUpdate::xfer( Xfer *xfer )
 		xfer->xferUnsignedInt( &m_disabledUntilFrame );
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SpyVisionUpdate::loadPostProcess( void )
+void SpyVisionUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -34,10 +34,9 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef LZOPIPE_H
-#define LZOPIPE_H
+#pragma once
 
-#include	"PIPE.H"
+#include "PIPE.h"
 
 
 /*
@@ -54,9 +53,9 @@ class LZOPipe : public Pipe
 		} CompControl;
 
 		LZOPipe(CompControl, int blocksize=1024*8);
-		virtual ~LZOPipe(void);
+		virtual ~LZOPipe();
 
-		virtual int Flush(void);
+		virtual int Flush();
 		virtual int Put(void const * source, int slen);
 
 	private:
@@ -97,6 +96,3 @@ class LZOPipe : public Pipe
 		LZOPipe(LZOPipe & rvalue);
 		LZOPipe & operator = (LZOPipe const & pipe);
 };
-
-
-#endif

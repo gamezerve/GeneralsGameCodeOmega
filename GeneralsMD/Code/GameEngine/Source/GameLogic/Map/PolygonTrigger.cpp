@@ -26,7 +26,7 @@
 // Class to encapsulate polygon trigger areas.
 // Author: John Ahlquist, November 2001
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/DataChunk.h"
 #include "Common/MapObject.h"
@@ -36,25 +36,22 @@
 #include "GameLogic/TerrainLogic.h"
 
 /* ********* PolygonTrigger class ****************************/
-PolygonTrigger *PolygonTrigger::ThePolygonTriggerListPtr = NULL;
+PolygonTrigger *PolygonTrigger::ThePolygonTriggerListPtr = nullptr;
 Int PolygonTrigger::s_currentID = 1;
 /**
  PolygonTrigger - Constructor.
 */
 PolygonTrigger::PolygonTrigger(Int initialAllocation) :
-m_nextPolygonTrigger(NULL),
-m_points(NULL),
+m_nextPolygonTrigger(nullptr),
+m_points(nullptr),
 m_numPoints(0),
 m_sizePoints(0),
 m_exportWithScripts(false),
 m_isWaterArea(false),
 m_shouldRender(true),
 m_selected(false),
-//Added By Sadullah Nader
-//Initializations inserted
 m_isRiver(FALSE),
 m_riverStart(0)
-//
 {
 	if (initialAllocation < 2) initialAllocation = 2;
 	m_points = NEW ICoord3D[initialAllocation];		// pool[]ify
@@ -69,18 +66,17 @@ m_riverStart(0)
 /**
  PolygonTrigger - Destructor - note - if linked, deletes linked items.
 */
-PolygonTrigger::~PolygonTrigger(void)
+PolygonTrigger::~PolygonTrigger()
 {
-	if (m_points) {
-		delete [] m_points;
-		m_points = NULL;
-	}
+	delete [] m_points;
+	m_points = nullptr;
+
 	if (m_nextPolygonTrigger) {
 		PolygonTrigger *cur = m_nextPolygonTrigger;
 		PolygonTrigger *next;
 		while (cur) {
 			next = cur->getNext();
-			cur->setNextPoly(NULL); // prevents recursion.
+			cur->setNextPoly(nullptr); // prevents recursion.
 			deleteInstance(cur);
 			cur = next;
 		}
@@ -93,7 +89,7 @@ PolygonTrigger::~PolygonTrigger(void)
  NOTE: It is expected that this will only get called in the editor, as in the game
  the poly triggers don't change.
 */
-void PolygonTrigger::reallocate(void)
+void PolygonTrigger::reallocate()
 {
 	DEBUG_ASSERTCRASH(m_numPoints <= m_sizePoints, ("Invalid m_numPoints."));
 	if (m_numPoints == m_sizePoints) {
@@ -125,7 +121,7 @@ PolygonTrigger *PolygonTrigger::getPolygonTriggerByID(Int triggerID)
 			return poly;
 
 	// not found
-	return NULL;
+	return nullptr;
 
 }
 
@@ -149,7 +145,7 @@ Bool PolygonTrigger::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChu
 	AsciiString layerName;
 	// Remove any existing polygon triggers, if any.
 	PolygonTrigger::deleteTriggers(); // just in case.
-	PolygonTrigger *pPrevTrig = NULL;
+	PolygonTrigger *pPrevTrig = nullptr;
 	ICoord3D loc;
 	count = file.readInt();
 	while (count>0) {
@@ -274,7 +270,7 @@ void PolygonTrigger::WritePolygonTriggersDataChunk(DataChunkOutput &chunkWriter)
 /**
  PolygonTrigger::updateBounds - Updates the bounds.
 */
-void PolygonTrigger::updateBounds(void)	const
+void PolygonTrigger::updateBounds()	const
 {
 	const Int BIG_INT=0x7ffff0;
 	m_bounds.lo.x = m_bounds.lo.y = BIG_INT;
@@ -313,7 +309,7 @@ void PolygonTrigger::addPolygonTrigger(PolygonTrigger *pTrigger)
 */
 void PolygonTrigger::removePolygonTrigger(PolygonTrigger *pTrigger)
 {
-	PolygonTrigger *pPrev = NULL;
+	PolygonTrigger *pPrev = nullptr;
 	PolygonTrigger *pTrig=getFirstPolygonTrigger();
 	for (; pTrig; pTrig = pTrig->getNext()) {
 		if (pTrig==pTrigger) break;
@@ -322,23 +318,23 @@ void PolygonTrigger::removePolygonTrigger(PolygonTrigger *pTrigger)
 	DEBUG_ASSERTCRASH(pTrig, ("Attempting to remove a polygon not in the list."));
 	if (pTrig) {
 		if (pPrev) {
-			DEBUG_ASSERTCRASH(pTrigger==pPrev->m_nextPolygonTrigger, ("Logic errror.  jba."));
+			DEBUG_ASSERTCRASH(pTrigger==pPrev->m_nextPolygonTrigger, ("Logic error.  jba."));
 			pPrev->m_nextPolygonTrigger = pTrig->m_nextPolygonTrigger;
 		} else {
-			DEBUG_ASSERTCRASH(pTrigger==ThePolygonTriggerListPtr, ("Logic errror.  jba."));
+			DEBUG_ASSERTCRASH(pTrigger==ThePolygonTriggerListPtr, ("Logic error.  jba."));
 			ThePolygonTriggerListPtr = pTrig->m_nextPolygonTrigger;
 		}
 	}
-	pTrigger->m_nextPolygonTrigger = NULL;
+	pTrigger->m_nextPolygonTrigger = nullptr;
 }
 
 /**
  PolygonTrigger::deleteTriggers Deletes list of triggers.
 */
-void PolygonTrigger::deleteTriggers(void)
+void PolygonTrigger::deleteTriggers()
 {
 	PolygonTrigger *pList = ThePolygonTriggerListPtr;
-	ThePolygonTriggerListPtr = NULL;
+	ThePolygonTriggerListPtr = nullptr;
 	s_currentID = 1;
 	deleteInstance(pList);
 }
@@ -423,7 +419,7 @@ void PolygonTrigger::deletePoint(Int ndx)
 
 void PolygonTrigger::getCenterPoint(Coord3D* pOutCoord)	const
 {
-	DEBUG_ASSERTCRASH(pOutCoord != NULL, ("pOutCoord was null. Non-Fatal, but shouldn't happen."));
+	DEBUG_ASSERTCRASH(pOutCoord != nullptr, ("pOutCoord was null. Non-Fatal, but shouldn't happen."));
 	if (!pOutCoord) {
 		return;
 	}
@@ -437,7 +433,7 @@ void PolygonTrigger::getCenterPoint(Coord3D* pOutCoord)	const
 	(*pOutCoord).z = TheTerrainLogic->getGroundHeight(pOutCoord->x, pOutCoord->y);
 }
 
-Real PolygonTrigger::getRadius(void)	const
+Real PolygonTrigger::getRadius()	const
 {
 	if (m_boundsNeedsUpdate) {
 		updateBounds();
@@ -488,17 +484,17 @@ Bool PolygonTrigger::pointInTrigger(ICoord3D &point) const
 }
 
 // ------------------------------------------------------------------------------------------------
-const WaterHandle* PolygonTrigger::getWaterHandle(void)	const
+const WaterHandle* PolygonTrigger::getWaterHandle()	const
 {
 
 	if( isWaterArea() )
 		return &m_waterHandle;
 
-	return NULL;  // this polygon trigger is not a water area
+	return nullptr;  // this polygon trigger is not a water area
 
 }
 
-Bool PolygonTrigger::isValid(void) const
+Bool PolygonTrigger::isValid() const
 {
 	if (m_numPoints == 0) {
 		return FALSE;
@@ -513,7 +509,7 @@ Bool PolygonTrigger::isValid(void) const
 void PolygonTrigger::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -542,7 +538,7 @@ void PolygonTrigger::xfer( Xfer *xfer )
 		// xfer point
 		xfer->xferICoord3D( point );
 
-	}  // end for, i
+	}
 
 	// bounds
 	xfer->xferIRegion2D( &m_bounds );
@@ -553,12 +549,12 @@ void PolygonTrigger::xfer( Xfer *xfer )
 	// bounds need update
 	xfer->xferBool( &m_boundsNeedsUpdate );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void PolygonTrigger::loadPostProcess( void )
+void PolygonTrigger::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}

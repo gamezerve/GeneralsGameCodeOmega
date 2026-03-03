@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __THINGTEMPLATE_H_
-#define __THINGTEMPLATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
 
@@ -82,7 +79,7 @@ typedef std::map<AsciiString, const FXList*> PerUnitFXMap;
 //	INV_IMAGE_HILITE,
 //	INV_IMAGE_PUSHED,
 //
-//	INV_IMAGE_NUM_IMAGES  // keep this last
+//	INV_IMAGE_NUM_IMAGES
 //
 //};
 //-------------------------------------------------------------------------------------------------
@@ -120,7 +117,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_soundStealthOff,          ///< Sound when unit destealths
 	TTAUDIO_soundCreated,							///< Sound when unit is created
 	TTAUDIO_soundOnDamaged,           ///< Sound when unit enters damaged state
-	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters reallyd damaged state
+	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters really damaged state
 	TTAUDIO_soundEnter,								///< Sound when another unit enters me.
 	TTAUDIO_soundExit,								///< Sound when another unit exits me.
 	TTAUDIO_soundPromotedVeteran,			///< Sound when unit gets promoted to Veteran level
@@ -137,7 +134,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_voiceAttackAir,						///< Unit is ordered to attack an airborne unit
 	TTAUDIO_voiceGuard,								///< Unit is ordered to guard an area
 
-	TTAUDIO_COUNT   // keep last!
+	TTAUDIO_COUNT
 };
 
 class AudioArray
@@ -148,14 +145,13 @@ public:
 	AudioArray()
 	{
 		for (Int i = 0; i < TTAUDIO_COUNT; ++i)
-			m_audio[i] = NULL;
+			m_audio[i] = nullptr;
 	}
 
 	~AudioArray()
 	{
 		for (Int i = 0; i < TTAUDIO_COUNT; ++i)
-			if (m_audio[i])
-				deleteInstance(m_audio[i]);
+			deleteInstance(m_audio[i]);
 	}
 
 	AudioArray(const AudioArray& that)
@@ -165,7 +161,7 @@ public:
 			if (that.m_audio[i])
 				m_audio[i] = newInstance(DynamicAudioEventRTS)(*that.m_audio[i]);
 			else
-				m_audio[i] = NULL;
+				m_audio[i] = nullptr;
 		}
 	}
 
@@ -184,7 +180,7 @@ public:
 				}
 				else
 				{
-					m_audio[i] = NULL;
+					m_audio[i] = nullptr;
 				}
 			}
 		}
@@ -201,17 +197,18 @@ enum BuildCompletionType CPP_11(: Int)
 	BC_APPEARS_AT_RALLY_POINT,	///< unit appears at rally point of its #1 prereq
 	BC_PLACED_BY_PLAYER,				///< unit must be manually placed by player
 
-	BC_NUM_TYPES								// leave this last
+	BC_NUM_TYPES
 };
 #ifdef DEFINE_BUILD_COMPLETION_NAMES
-static const char *BuildCompletionNames[] =
+static const char *const BuildCompletionNames[] =
 {
 	"INVALID",
 	"APPEARS_AT_RALLY_POINT",
 	"PLACED_BY_PLAYER",
 
-	NULL
+	nullptr
 };
+static_assert(ARRAY_SIZE(BuildCompletionNames) == BC_NUM_TYPES + 1, "Incorrect array size");
 #endif  // end DEFINE_BUILD_COMPLETION_NAMES
 
 enum BuildableStatus CPP_11(: Int)
@@ -222,18 +219,19 @@ enum BuildableStatus CPP_11(: Int)
 	BSTATUS_NO,
 	BSTATUS_ONLY_BY_AI,
 
-	BSTATUS_NUM_TYPES	// leave this last
+	BSTATUS_NUM_TYPES
 };
 
 #ifdef DEFINE_BUILDABLE_STATUS_NAMES
-static const char *BuildableStatusNames[] =
+static const char *const BuildableStatusNames[] =
 {
 	"Yes",
 	"Ignore_Prerequisites",
 	"No",
 	"Only_By_AI",
-	NULL
+	nullptr
 };
+static_assert(ARRAY_SIZE(BuildableStatusNames) == BSTATUS_NUM_TYPES + 1, "Incorrect array size");
 #endif	// end DEFINE_BUILDABLE_STATUS_NAMES
 
 //-------------------------------------------------------------------------------------------------
@@ -290,7 +288,7 @@ public:
 	Bool containsPartialName(const char* n) const
 	{
 		for (size_t i = 0; i < m_info.size(); i++)
-			if (strstr(m_info[i].first.str(), n) != NULL)
+			if (strstr(m_info[i].first.str(), n) != nullptr)
 				return true;
 		return false;
 	}
@@ -320,7 +318,7 @@ public:
 		{
 			return m_info[i].second;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	// for use only by ThingTemplate::friend_getAIModuleInfo
@@ -400,18 +398,18 @@ public:
 	EditorSortingType getEditorSorting() const { return (EditorSortingType)m_editorSorting; }
 
 	/// return true iff the template has the specified kindOf flag set.
-	inline Bool isKindOf(KindOfType t) const
+	Bool isKindOf(KindOfType t) const
 	{
 		return TEST_KINDOFMASK(m_kindof, t);
 	}
 
 	/// convenience for doing multiple kindof testing at once.
-	inline Bool isKindOfMulti(const KindOfMaskType& mustBeSet, const KindOfMaskType& mustBeClear) const
+	Bool isKindOfMulti(const KindOfMaskType& mustBeSet, const KindOfMaskType& mustBeClear) const
 	{
 		return TEST_KINDOFMASK_MULTI(m_kindof, mustBeSet, mustBeClear);
 	}
 
-	inline Bool isAnyKindOf( const KindOfMaskType& anyKindOf ) const
+	Bool isAnyKindOf( const KindOfMaskType& anyKindOf ) const
 	{
 		return TEST_KINDOFMASK_ANY(m_kindof, anyKindOf);
 	}
@@ -429,6 +427,7 @@ public:
 	Real getFenceXOffset() const { return m_fenceXOffset; }  // return fence offset
 
 	Bool isBridge() const { return m_isBridge; }  // return fence offset
+	Bool isBridgeLike() const { return isBridge() || isKindOf(KINDOF_WALK_ON_TOP_OF_WALL); }
 
 	// Only Object can ask this.  Everyone else should ask the Object.  In fact, you really should ask the Object everything.
 	Real friend_calcVisionRange() const { return m_visionRange; }  ///< get vision range
@@ -438,7 +437,7 @@ public:
 	Real getShroudRevealToAllRange() const { return m_shroudRevealToAllRange; }
 
 	// This function is only for use by the AIUpdateModuleData::parseLocomotorSet function.
-	AIUpdateModuleData *friend_getAIModuleInfo(void);
+	AIUpdateModuleData *friend_getAIModuleInfo();
 
 	ShadowType getShadowType() const { return (ShadowType)m_shadowType; }
 	Real getShadowSizeX() const { return m_shadowSizeX; }
@@ -446,15 +445,15 @@ public:
 	Real getShadowOffsetX() const { return m_shadowOffsetX; }
 	Real getShadowOffsetY() const { return m_shadowOffsetY; }
 
-	const AsciiString& getShadowTextureName( void ) const { return m_shadowTextureName; }
-	UnsignedInt getOcclusionDelay(void) const { return m_occlusionDelay;}
+	const AsciiString& getShadowTextureName() const { return m_shadowTextureName; }
+	UnsignedInt getOcclusionDelay() const { return m_occlusionDelay;}
 
 	const ModuleInfo& getBehaviorModuleInfo() const { return m_behaviorModuleInfo; }
 	const ModuleInfo& getDrawModuleInfo() const { return m_drawModuleInfo; }
 	const ModuleInfo& getClientUpdateModuleInfo() const { return m_clientUpdateModuleInfo; }
 
-	const Image *getSelectedPortraitImage( void ) const { return m_selectedPortraitImage; }
-	const Image *getButtonImage( void ) const { return m_buttonImage; }
+	const Image *getSelectedPortraitImage() const { return m_selectedPortraitImage; }
+	const Image *getButtonImage() const { return m_buttonImage; }
 
 	//Code renderer handles these states now.
 	//const AsciiString& getInventoryImageName( InventoryImageType type ) const { return m_inventoryImage[ type ]; }
@@ -546,10 +545,10 @@ public:
 	// these are intended ONLY for the private use of ThingFactory and do not use
 	// the m_override pointer, it deals only with templates at the "top" level
 	//
-	inline void friend_setTemplateName( const AsciiString& name ) { m_nameString = name; }
-	inline ThingTemplate *friend_getNextTemplate() const { return m_nextThingTemplate; }
-	inline void friend_setNextTemplate(ThingTemplate *tmplate) { m_nextThingTemplate = tmplate; }
-	inline void friend_setTemplateID(UnsignedShort id) { m_templateID = id; }
+	void friend_setTemplateName( const AsciiString& name ) { m_nameString = name; }
+	ThingTemplate *friend_getNextTemplate() const { return m_nextThingTemplate; }
+	void friend_setNextTemplate(ThingTemplate *tmplate) { m_nextThingTemplate = tmplate; }
+	void friend_setTemplateID(UnsignedShort id) { m_templateID = id; }
 
 	Int getEnergyProduction() const { return m_energyProduction; }
 	Int getEnergyBonus() const { return m_energyBonus; }
@@ -579,7 +578,7 @@ public:
 	*/
 	const ThingTemplate *getBuildFacilityTemplate( const Player *player ) const;
 
-	Bool isBuildableItem(void) const;
+	Bool isBuildableItem() const;
 
 	/// calculate how long (in logic frames) it will take the given player to build this unit
 	Int calcTimeToBuild( const Player* player) const;
@@ -597,14 +596,14 @@ public:
 	const FieldParse* getReskinFieldParse() const { return s_objectReskinFieldParseTable; }
 
 	Bool isBuildFacility() const { return m_isBuildFacility; }
-	Real getPlacementViewAngle( void ) const { return m_placementViewAngle; }
+	Real getPlacementViewAngle() const { return m_placementViewAngle; }
 
 	Real getFactoryExitWidth() const { return m_factoryExitWidth; }
 	Real getFactoryExtraBibWidth() const { return m_factoryExtraBibWidth; }
 
 	void setCopiedFromDefault();
 
-	void setReskinnedFrom(const ThingTemplate* tt) { DEBUG_ASSERTCRASH(m_reskinnedFrom == NULL, ("should be null")); m_reskinnedFrom = tt; }
+	void setReskinnedFrom(const ThingTemplate* tt) { DEBUG_ASSERTCRASH(m_reskinnedFrom == nullptr, ("should be null")); m_reskinnedFrom = tt; }
 
 	Bool isPrerequisite() const { return m_isPrerequisite; }
 
@@ -622,7 +621,7 @@ public:
 
 	AsciiString getUpgradeCameoName( Int n)const{ return m_upgradeCameoUpgradeNames[n];	}
 
-	const WeaponTemplateSetVector& getWeaponTemplateSets(void) const {return m_weaponTemplateSets;}
+	const WeaponTemplateSetVector& getWeaponTemplateSets() const {return m_weaponTemplateSets;}
 
 protected:
 
@@ -632,10 +631,10 @@ protected:
 	//
 	Int getBuildCost() const { return m_buildCost; }
 	Real getBuildTime() const { return m_buildTime; }
-	const PerUnitSoundMap* getAllPerUnitSounds( void ) const { return &m_perUnitSounds; }
+	const PerUnitSoundMap* getAllPerUnitSounds() const { return &m_perUnitSounds; }
 	void validateAudio();
 	const AudioEventRTS* getAudio(ThingTemplateAudioType t) const { return m_audioarray.m_audio[t] ? &m_audioarray.m_audio[t]->m_event : &s_audioEventNoSound; }
-  Bool hasAudio(ThingTemplateAudioType t) const { return m_audioarray.m_audio[t] != NULL; }
+  Bool hasAudio(ThingTemplateAudioType t) const { return m_audioarray.m_audio[t] != nullptr; }
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	/** Table for parsing the object fields */
@@ -716,7 +715,7 @@ private:
 
 	// ---- Pointer-sized things
 	ThingTemplate*				m_nextThingTemplate;
-	const ThingTemplate*	m_reskinnedFrom;									///< non NULL if we were generated via a reskin
+	const ThingTemplate*	m_reskinnedFrom;									///< non nullptr if we were generated via a reskin
 	const Image *					m_selectedPortraitImage;		/// portrait image when selected (to display in GUI)
 	const Image	*					m_buttonImage;
 
@@ -785,6 +784,3 @@ private:
 //-----------------------------------------------------------------------------
 //           Externals
 //-----------------------------------------------------------------------------
-
-#endif // __THINGTEMPLATE_H_
-

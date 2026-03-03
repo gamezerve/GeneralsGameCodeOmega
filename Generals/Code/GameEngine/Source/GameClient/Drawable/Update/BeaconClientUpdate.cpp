@@ -58,9 +58,9 @@ void BeaconClientUpdateModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "RadarPulseFrequency",	INI::parseDurationUnsignedInt, NULL, offsetof(BeaconClientUpdateModuleData, m_framesBetweenRadarPulses) },
-		{ "RadarPulseDuration",		INI::parseDurationUnsignedInt, NULL, offsetof(BeaconClientUpdateModuleData, m_radarPulseDuration) },
-		{ 0, 0, 0, 0 }
+		{ "RadarPulseFrequency",	INI::parseDurationUnsignedInt, nullptr, offsetof(BeaconClientUpdateModuleData, m_framesBetweenRadarPulses) },
+		{ "RadarPulseDuration",		INI::parseDurationUnsignedInt, nullptr, offsetof(BeaconClientUpdateModuleData, m_radarPulseDuration) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -76,7 +76,7 @@ BeaconClientUpdate::BeaconClientUpdate( Thing *thing, const ModuleData* moduleDa
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-BeaconClientUpdate::~BeaconClientUpdate( void )
+BeaconClientUpdate::~BeaconClientUpdate()
 {
 
 }
@@ -85,7 +85,7 @@ BeaconClientUpdate::~BeaconClientUpdate( void )
 //-------------------------------------------------------------------------------------------------
 static ParticleSystem* createParticleSystem( Drawable *draw )
 {
-	ParticleSystem *system = NULL;
+	ParticleSystem *system = nullptr;
 	if (draw)
 	{
 		Object *obj = draw->getObject();
@@ -125,7 +125,7 @@ static ParticleSystem* createParticleSystem( Drawable *draw )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void BeaconClientUpdate::hideBeacon( void )
+void BeaconClientUpdate::hideBeacon()
 {
 	Drawable *draw = getDrawable();
 	if (draw)
@@ -150,7 +150,7 @@ void BeaconClientUpdate::hideBeacon( void )
 		if( system )
 			system->stop();
 
-	}  // end if
+	}
 
 //	DEBUG_LOG(("in hideBeacon(): draw=%d, m_particleSystemID=%d", draw, m_particleSystemID));
 
@@ -159,7 +159,7 @@ void BeaconClientUpdate::hideBeacon( void )
 //-------------------------------------------------------------------------------------------------
 /** The client update callback. */
 //-------------------------------------------------------------------------------------------------
-void BeaconClientUpdate::clientUpdate( void )
+void BeaconClientUpdate::clientUpdate()
 {
 	Drawable *draw = getDrawable();
 	if (!draw)
@@ -192,7 +192,7 @@ void BeaconClientUpdate::crc( Xfer *xfer )
 	// extend base class
 	ClientUpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -216,15 +216,15 @@ void BeaconClientUpdate::xfer( Xfer *xfer )
 	// last radar pulse
 	xfer->xferUnsignedInt( &m_lastRadarPulse );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void BeaconClientUpdate::loadPostProcess( void )
+void BeaconClientUpdate::loadPostProcess()
 {
 
 	// extend base class
 	ClientUpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -45,7 +45,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
@@ -115,10 +115,10 @@ struct GameWindowParse
 ///////////////////////////////////////////////////////////////////////////////
 
 // window methods and their string representations
-static GameWinSystemFunc		systemFunc = NULL;
-static GameWinInputFunc		inputFunc = NULL;
-static GameWinTooltipFunc	tooltipFunc = NULL;
-static GameWinDrawFunc			drawFunc = NULL;
+static GameWinSystemFunc		systemFunc = nullptr;
+static GameWinInputFunc		inputFunc = nullptr;
+static GameWinTooltipFunc	tooltipFunc = nullptr;
+static GameWinDrawFunc			drawFunc = nullptr;
 static AsciiString theSystemString;
 static AsciiString theInputString;
 static AsciiString theTooltipString;
@@ -131,27 +131,27 @@ static Color defBackgroundColor	= 0;
 static Color defHiliteColor			= 0;
 static Color defSelectedColor		= 0;
 static Color defTextColor				= 0;
-static GameFont  *defFont				= NULL;
+static GameFont  *defFont				= nullptr;
 
 //
 // These strings must be in the same order as they are in their definitions
 // (see WIN_STATUS_* enums and GWS_* enums).
 //
-const char *WindowStatusNames[] = { "ACTIVE", "TOGGLE", "DRAGABLE", "ENABLED", "HIDDEN",
+const char *const WindowStatusNames[] = { "ACTIVE", "TOGGLE", "DRAGABLE", "ENABLED", "HIDDEN",
 														  "ABOVE", "BELOW", "IMAGE", "TABSTOP", "NOINPUT",
 														  "NOFOCUS", "DESTROYED", "BORDER",
 														  "SMOOTH_TEXT", "ONE_LINE", "NO_FLUSH", "SEE_THRU",
 															"RIGHT_CLICK", "WRAP_CENTERED", "CHECK_LIKE","HOTKEY_TEXT",
 															"USE_OVERLAY_STATES", "NOT_READY", "FLASHING", "ALWAYS_COLOR",
-															NULL };
+															nullptr };
 
-const char *WindowStyleNames[] = { "PUSHBUTTON",	"RADIOBUTTON",	"CHECKBOX",
+const char *const WindowStyleNames[] = { "PUSHBUTTON",	"RADIOBUTTON",	"CHECKBOX",
 														 "VERTSLIDER",	"HORZSLIDER",		"SCROLLLISTBOX",
 														 "ENTRYFIELD",	"STATICTEXT",		"PROGRESSBAR",
 														 "USER",				"MOUSETRACK",		"ANIMATED",
 														 "TABSTOP",			"TABCONTROL",		"TABPANE",
 														 "COMBOBOX",
-														 NULL };
+														 nullptr };
 
 // Implement a stack to keep track of parent/child nested window descriptions.
 static GameWindow *windowStack[ WIN_STACK_DEPTH ];
@@ -199,15 +199,15 @@ static GameWindow *parseWindow( File *inFile, char *buffer );
 	* if successful.  Returns TRUE on success, else FALSE. */
 //=============================================================================
 static Bool parseBitFlag( const char *flagString, UnsignedInt *bits,
-													const char **flagList )
+													ConstCharPtrArray flagList )
 {
-	const char **c;
+	ConstCharPtrArray c;
 	int i;
 
 	for( i = 0, c = flagList; *c; i++, c++ )
 	{
 
-		if( !stricmp( *c, flagString ) )
+		if( stricmp( *c, flagString ) == 0 )
 		{
 			*bits |= (1 << i);
 			return TRUE;
@@ -217,7 +217,7 @@ static Bool parseBitFlag( const char *flagString, UnsignedInt *bits,
 
 	return FALSE;
 
-}  // end parseBitFlag
+}
 
 // parseBitString =============================================================
 /** Given a character string of the form 'A+B+C+D', parse the
@@ -225,17 +225,17 @@ static Bool parseBitFlag( const char *flagString, UnsignedInt *bits,
 	* argument.
 	* Note that this routine does not clear any bits, only sets them. */
 //=============================================================================
-static void parseBitString( const char *inBuffer, UnsignedInt *bits, const char **flagList )
+static void parseBitString( const char *inBuffer, UnsignedInt *bits, ConstCharPtrArray flagList )
 {
 	char buffer[256];
 	char *tok;
 
 	// do not modify the inBuffer argument
-	strcpy( buffer, inBuffer );
+	strlcpy(buffer, inBuffer, ARRAY_SIZE(buffer));
 
-	if( strncmp( buffer, "NULL", 4 ) )
+	if( strncmp( buffer, "NULL", 4 ) != 0 )
 	{
-		for( tok = strtok( buffer, "+" ); tok; tok = strtok( NULL, "+" ) )
+		for( tok = strtok( buffer, "+" ); tok; tok = strtok( nullptr, "+" ) )
 		{
 			if ( !parseBitFlag( tok, bits, flagList ) )
 			{
@@ -244,7 +244,7 @@ static void parseBitString( const char *inBuffer, UnsignedInt *bits, const char 
 		}
 	}
 
-}  // end parseBitString
+}
 
 // readUntilSemicolon =========================================================
 //=============================================================================
@@ -290,7 +290,7 @@ static void readUntilSemicolon( File *fp, char *buffer, int maxBufLen )
 
 	buffer[ maxBufLen - 1 ] = '\000';
 
-}  // end readUntilSemicolon
+}
 
 // scanBool ===================================================================
 //=============================================================================
@@ -301,7 +301,7 @@ static Int scanBool( const char *source, Bool& val )
 	val = (Bool)temp;
 
 	return ret;
-}  // end scanBool
+}
 
 // scanShort ==================================================================
 //=============================================================================
@@ -312,7 +312,7 @@ static Int scanShort( const char *source, Short& val )
 	val = (Short)temp;
 
 	return ret;
-}  // end scanShort
+}
 
 // scanInt ====================================================================
 //=============================================================================
@@ -321,7 +321,7 @@ static Int scanInt( const char *source, Int& val )
 	Int ret = sscanf( source, "%d", &val ); // not strictly necessary to wrap this, but it's more consistent
 
 	return ret;
-}  // end scanInt
+}
 
 // scanUnsignedInt ============================================================
 //=============================================================================
@@ -330,21 +330,21 @@ static Int scanUnsignedInt( const char *source, UnsignedInt& val )
 	Int ret = sscanf( source, "%d", &val ); // not strictly necessary to wrap this, but it's more consistent
 
 	return ret;
-}  // end scanUnsignedInt
+}
 
 // resetWindowStack ===========================================================
 //=============================================================================
-static void resetWindowStack( void )
+static void resetWindowStack()
 {
 
   memset( windowStack, 0, sizeof( windowStack ) );
   stackPtr = windowStack;
 
-}  // end resetWindowStack
+}
 
 // resetWindowDefaults ========================================================
 //=============================================================================
-static void resetWindowDefaults( void )
+static void resetWindowDefaults()
 {
 
 	defEnabledColor = 0;
@@ -353,33 +353,33 @@ static void resetWindowDefaults( void )
 	defHiliteColor = 0;
 	defSelectedColor = 0;
 	defTextColor = 0;
-	defFont = 0;
+	defFont = nullptr;
 
-}  // end resetWindowDefaults
+}
 
 // peekWindow =================================================================
 //=============================================================================
-static GameWindow *peekWindow( void )
+static GameWindow *peekWindow()
 {
   if (stackPtr == windowStack)
-    return NULL;
+    return nullptr;
 
   return *(stackPtr - 1);
 
-}  // end peekWindow
+}
 
 // popWindow ==================================================================
 //=============================================================================
-static GameWindow *popWindow( void )
+static GameWindow *popWindow()
 {
 
   if( stackPtr == windowStack )
-    return NULL;
+    return nullptr;
   stackPtr--;
 
   return *stackPtr;
 
-}  // end popWindow
+}
 
 // pushWindow =================================================================
 //=============================================================================
@@ -392,11 +392,11 @@ static void pushWindow( GameWindow *window )
     DEBUG_LOG(( "pushWindow: Warning, stack overflow" ));
     return;
 
-  }  // end if
+  }
 
   *stackPtr++ = window;
 
-}  // end pushWindow
+}
 
 // parseColor =================================================================
 /** Parse a color entry and store it in the value pointed to by the
@@ -410,17 +410,17 @@ static Bool parseColor( Color *color, char *buffer )
 	c = strtok( buffer, " \t\n\r" );
   red = atoi(c);
 
-	c = strtok( NULL, " \t\n\r" );
+	c = strtok( nullptr, " \t\n\r" );
   green = atoi(c);
 
-	c = strtok( NULL, " \t\n\r" );
+	c = strtok( nullptr, " \t\n\r" );
   blue = atoi(c);
 
 	*color = TheWindowManager->winMakeColor( red, green, blue, 255 );
 
   return TRUE;
 
-}  // end parseColor
+}
 
 // parseDefaultColor ==========================================================
 /** Parse a default color entry and store it in the value pointed to by
@@ -436,18 +436,18 @@ static Bool parseDefaultColor( Color *color, File *inFile, char *buffer )
   // Read the rest of the color definition
 	readUntilSemicolon( inFile, buffer, WIN_BUFFER_LENGTH );
 
-  if (!strcmp( buffer, "TRANSPARENT" ))
+  if (strcmp( buffer, "TRANSPARENT" ) == 0)
 	{
 
 		*color = WIN_COLOR_UNDEFINED;
 
-	}  // end if
+	}
   else
     parseColor( color, buffer );
 
   return TRUE;
 
-}  // end parseDefaultColor
+}
 
 // parseDefaultFont ===========================================================
 /** Parse the default font */
@@ -465,12 +465,12 @@ static Bool parseDefaultFont( GameFont *font, File *inFile, char *buffer )
 
 	/// @todo font parsing for window files work needed here
 //	*font = GetFont( buffer );
-//	if( *font == NULL )
+//	if( *font == nullptr )
 //		return FALSE;
 
 	return TRUE;
 
-}  // end parseDefaultFont
+}
 
 // parseTooltip ===============================================================
 /** Parse the tooltip field */
@@ -485,7 +485,7 @@ static Bool parseTooltip( const char *token, WinInstanceData *instData,
 	instData->setTooltipText( tooltip );
 	return TRUE;
 
-}  // end parseTooltip
+}
 
 // parseScreenRect ============================================================
 /** Parse the screen rect entry which tells us the position and size
@@ -502,22 +502,22 @@ static Bool parseScreenRect( const char *token, char *buffer,
 	const char *seps = " ,:=\n\r\t";
 	char *c;
 
-	c = strtok( NULL, seps );  // UPPERLEFT token
-	c = strtok( NULL, seps );  // x position
+	c = strtok( nullptr, seps );  // UPPERLEFT token
+	c = strtok( nullptr, seps );  // x position
 	scanInt( c, screenRegion.lo.x );
-	c = strtok( NULL, seps );  // y posotion
+	c = strtok( nullptr, seps );  // y posotion
 	scanInt( c, screenRegion.lo.y );
 
-	c = strtok( NULL, seps );  // BOTTOMRIGHT token
-	c = strtok( NULL, seps );  // x position
+	c = strtok( nullptr, seps );  // BOTTOMRIGHT token
+	c = strtok( nullptr, seps );  // x position
 	scanInt( c, screenRegion.hi.x );
-	c = strtok( NULL, seps );  // y posotion
+	c = strtok( nullptr, seps );  // y posotion
 	scanInt( c, screenRegion.hi.y );
 
-	c = strtok( NULL, seps );  // CREATIONRESOLUTION token
-	c = strtok( NULL, seps );  // x creation resolution
+	c = strtok( nullptr, seps );  // CREATIONRESOLUTION token
+	c = strtok( nullptr, seps );  // x creation resolution
 	scanInt( c, createRes.x );
-	c = strtok( NULL, seps );  // y creation resolution
+	c = strtok( nullptr, seps );  // y creation resolution
 	scanInt( c, createRes.y );
 
 	//
@@ -548,14 +548,14 @@ static Bool parseScreenRect( const char *token, char *buffer,
 		*x = screenRegion.lo.x - parentScreenPos.x;
 		*y = screenRegion.lo.y - parentScreenPos.y;
 
-	}  // end if
+	}
 	else
 	{
 
 		*x = screenRegion.lo.x;
 		*y = screenRegion.lo.y;
 
-	}  // end else
+	}
 
 	// save our width and height from the adjusted screen region locations
 	*width = screenRegion.hi.x - screenRegion.lo.x;
@@ -563,7 +563,7 @@ static Bool parseScreenRect( const char *token, char *buffer,
 
 	return TRUE;
 
-}  // end parseScreenRect
+}
 
 // parseImageOffset ===========================================================
 /** Parse the image draw offset */
@@ -576,12 +576,12 @@ static Bool parseImageOffset( const char *token, WinInstanceData *instData,
 	c = strtok( buffer, " \t\n\r" );
 	instData->m_imageOffset.x = atoi( c );
 
-	c = strtok( NULL, " \t\n\r" );
+	c = strtok( nullptr, " \t\n\r" );
 	instData->m_imageOffset.y = atoi( c );
 
   return TRUE;
 
-}  // end parseImageOffset
+}
 
 // parseFont ==================================================================
 /** Parse the font field */
@@ -604,31 +604,28 @@ static Bool parseFont( const char *token, WinInstanceData *instData,
 		ptr++;
 	ptr++;  // skip the "
 	c = strtok( ptr, stringSeps );  // value
-	strcpy( fontName, c );
+	strlcpy(fontName, c, ARRAY_SIZE(fontName));
 
 	// "SIZE"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, fontSize );
 
 	// "BOLD"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, fontBold );
 
 	if( TheFontLibrary )
 	{
-		GameFont *font;
-
-		font = TheFontLibrary->getFont( AsciiString(fontName), fontSize, fontBold );
+		GameFont *font = TheFontLibrary->getFont( AsciiString(fontName), fontSize, fontBold );
 		if( font )
 			instData->m_font = font;
-
-	}  // end if
+	}
 
 	return TRUE;
 
-}  // end parseFont
+}
 
 // parseName =================================================================
 /** Parse the NAME field */
@@ -655,7 +652,7 @@ static Bool parseName( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseName
+}
 
 // parseStatus ================================================================
 /** Parse the STATUS field */
@@ -669,7 +666,7 @@ static Bool parseStatus( const char *token, WinInstanceData *instData,
 
   return TRUE;
 
-}  // end parseStatus
+}
 
 // parseStyle =================================================================
 /** Parse the STYLE field */
@@ -683,7 +680,7 @@ static Bool parseStyle( const char *token, WinInstanceData *instData,
 
   return TRUE;
 
-}  // end parseStyle
+}
 
 // parseSystemCallback ========================================================
 /** Parse the system method callback for a window */
@@ -710,7 +707,7 @@ static Bool parseSystemCallback( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseSystemCallback
+}
 
 // parseInputCallback =========================================================
 /** Parse the Input method callback for a window */
@@ -737,7 +734,7 @@ static Bool parseInputCallback( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseInputCallback
+}
 
 // parseTooltipCallback =======================================================
 /** Parse the Tooltip method callback for a window */
@@ -764,7 +761,7 @@ static Bool parseTooltipCallback( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseTooltipCallback
+}
 
 // parseDrawCallback ==========================================================
 /** Parse the Draw method callback for a window */
@@ -791,7 +788,7 @@ static Bool parseDrawCallback( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseDrawCallback
+}
 
 // parseHeaderTemplate ==========================================================
 /** Parse the Draw method callback for a window */
@@ -817,7 +814,7 @@ static Bool parseHeaderTemplate( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseDrawCallback
+}
 
 // parseListboxData ===========================================================
 /** Parse listbox data entry */
@@ -831,21 +828,21 @@ static Bool parseListboxData( const char *token, WinInstanceData *instData,
 
 	// "LENGTH"
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );
+	c = strtok( nullptr, seps );
 	scanShort( c, listData->listLength );
 
 	// "AUTOSCROLL"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, listData->autoScroll );
 
 	// "SCROLLIFATEND" (optional)
-	c = strtok( NULL, seps );  // label
-	if ( !stricmp(c, "ScrollIfAtEnd") )
+	c = strtok( nullptr, seps );  // label
+	if ( stricmp(c, "ScrollIfAtEnd") == 0 )
 	{
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanBool( c, listData->scrollIfAtEnd );
-		c = strtok( NULL, seps );  // label
+		c = strtok( nullptr, seps );  // label
 	}
 	else
 	{
@@ -853,22 +850,22 @@ static Bool parseListboxData( const char *token, WinInstanceData *instData,
 	}
 
 	// "AUTOPURGE"
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, listData->autoPurge );
 
 	// "SCROLLBAR"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, listData->scrollBar );
 
 	// "MULTISELECT"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, listData->multiSelect );
 
 	// "COLUMNS"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanShort( c, listData->columns );
 	if(listData->columns > 1)
 	{
@@ -876,24 +873,24 @@ static Bool parseListboxData( const char *token, WinInstanceData *instData,
 		for(Int i = 0; i < listData->columns; i++ )
 		{
 			// "COLUMNS"
-			c = strtok( NULL, seps );  // label
-			c = strtok( NULL, seps );  // value
+			c = strtok( nullptr, seps );  // label
+			c = strtok( nullptr, seps );  // value
 			scanInt( c, listData->columnWidthPercentage[i] );
 		}
 	}
 	else
-		listData->columnWidthPercentage = NULL;
-	listData->columnWidth = NULL;
+		listData->columnWidthPercentage = nullptr;
+	listData->columnWidth = nullptr;
 	// "FORCESELECT"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, listData->forceSelect );
 
 
 	// "
 	return TRUE;
 
-}  // end parseListboxData
+}
 
 // parseComboBoxData ===========================================================
 /** Parse Combo Box data entry */
@@ -906,28 +903,28 @@ static Bool parseComboBoxData( const char *token, WinInstanceData *instData,
 	const char *seps = " :,\n\r\t";
 
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );	// value
+	c = strtok( nullptr, seps );	// value
   scanBool( c, comboData->isEditable );
 
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );	// value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );	// value
   scanInt( c, comboData->maxChars );
 
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );	// value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );	// value
   scanInt( c, comboData->maxDisplay );
 
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );	// value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );	// value
   scanBool( c, comboData->asciiOnly );
 
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );	// value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );	// value
   scanBool( c, comboData->lettersAndNumbersOnly );
 
 
   return TRUE;
-}//parseComboBoxData
+}
 
 // parseSliderData ============================================================
 /** Parse slider data entry */
@@ -941,17 +938,17 @@ static Bool parseSliderData( const char *token, WinInstanceData *instData,
 
 	// "MINVALUE"
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, sliderData->minVal );
 
 	// "MAXVALUE"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, sliderData->maxVal );
 
 	return TRUE;
 
-}  // end parseSliderData
+}
 
 // parseRadioButtonData =======================================================
 /** Parse radio button data entry */
@@ -965,12 +962,12 @@ static Bool parseRadioButtonData( const char *token, WinInstanceData *instData,
 
 	// "GROUP"
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, radioData->group );
 
 	return TRUE;
 
-}  // end parseRadioButtonData
+}
 
 
 // parseTooltipText ===========================================================
@@ -997,14 +994,14 @@ static Bool parseTooltipText( const char *token, WinInstanceData *instData,
 		assert( 0 );
 		return FALSE;
 
-	}  // end if
+	}
 	instData->m_tooltipString.set(c);
 	instData->setTooltipText(TheGameText->fetch(c));
 
 
   return TRUE;
 
-}  // end parseTooltipText
+}
 
 // parseTooltipDelay =======================================================
 /** Parse the tooltip delay */
@@ -1022,7 +1019,7 @@ static Bool parseTooltipDelay( const char *token, WinInstanceData *instData,
 
 	return TRUE;
 
-}  // end parseTooltipDelay
+}
 
 
 // parseText ==================================================================
@@ -1047,13 +1044,13 @@ static Bool parseText( const char *token, WinInstanceData *instData,
 		assert( 0 );
 		return FALSE;
 
-	}  // end if
+	}
 	instData->m_textLabelString = c;
 
 
   return TRUE;
 
-}  // end parseText
+}
 
 // parseTextColor =============================================================
 /** Parse text color entries for enabled, disabled, and hilite with
@@ -1086,41 +1083,41 @@ static Bool parseTextColor( const char *token, WinInstanceData *instData,
 			assert( 0 );
 			return FALSE;
 
-		}  // end else
+		}
 
 		// color
 		if( first == TRUE )
 			c = strtok( buffer, seps );  // label
 		else
-			c = strtok( NULL, seps );  // label
+			c = strtok( nullptr, seps );  // label
 		first = FALSE;
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, r );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, g );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, b );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, a );
 		textData->color = GameMakeColor( r, g, b, a );
 
 		// border color
-		c = strtok( NULL, seps );  // label
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // label
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, r );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, g );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, b );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, a );
 		textData->borderColor = GameMakeColor( r, g, b, a );
 
-	}  // end if
+	}
 
 	return TRUE;
 
-}  // end parseTextColor
+}
 
 // parseStaticTextData ========================================================
 /** Parse static text data entry */
@@ -1134,12 +1131,12 @@ static Bool parseStaticTextData( const char *token, WinInstanceData *instData,
 
 	// "CENTERED"
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, textData->centered );
 
 	return TRUE;
 
-}  // end parseStaticTextDAta
+}
 
 // parseTextEntryData =========================================================
 /** Parse text entry data entry */
@@ -1153,32 +1150,32 @@ static Bool parseTextEntryData( const char *token, WinInstanceData *instData,
 
 	// "MAXLEN"
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanShort( c, entryData->maxTextLen );
 
 	// "SECRETTEXT"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, entryData->secretText );
 
 	// "NUMERICALONLY"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, entryData->numericalOnly );
 
 	// "ALPHANUMERICALONLY"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, entryData->alphaNumericalOnly );
 
 	// "ASCIIONLY"
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanBool( c, entryData->aSCIIOnly );
 
 	return TRUE;
 
-}  // end parseStaticTextDAta
+}
 
 // parseTabControlData =========================================================
 /** Parse tab control data entry */
@@ -1192,43 +1189,43 @@ static Bool parseTabControlData( const char *token, WinInstanceData *instData,
 
 	//TABORIENTATION
 	c = strtok( buffer, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->tabOrientation );
 
 	//TABEDGE
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->tabEdge );
 
 	//TABWIDTH
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->tabWidth );
 
 	//TABHEIGHT
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->tabHeight );
 
 	//TABCOUNT
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->tabCount );
 
 	//PANEBORDER
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, tabControlData->paneBorder );
 
 	//PANEDISABLED
 	Int entryCount = 0;
-	c = strtok( NULL, seps );  // label
-	c = strtok( NULL, seps );  // value
+	c = strtok( nullptr, seps );  // label
+	c = strtok( nullptr, seps );  // value
 	scanInt( c, entryCount );
 
 	for( Int paneIndex = 0; paneIndex < entryCount; paneIndex ++ )
 	{
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanBool( c, tabControlData->subPaneDisabled[paneIndex] );
 	}
 
@@ -1307,54 +1304,54 @@ static Bool parseDrawData( const char *token, WinInstanceData *instData,
 			assert( 0 );
 			return FALSE;
 
-		}  // end else
+		}
 
 		// IMAGE: X
 		if( first == TRUE )
 			c = strtok( buffer, seps );  // label
 		else
-			c = strtok( NULL, seps );  // label
+			c = strtok( nullptr, seps );  // label
 		first = FALSE;
 
-		c = strtok( NULL, seps );  // value
-		if( strcmp( c, "NoImage" ) )
+		c = strtok( nullptr, seps );  // value
+		if( strcmp( c, "NoImage" ) != 0 )
 			drawData->image = TheMappedImageCollection->findImageByName( AsciiString( c ) );
 		else
-			drawData->image = NULL;
+			drawData->image = nullptr;
 		// COLOR: R G B A
-		c = strtok( NULL, seps );  // label
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // label
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, r );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, g );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, b );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, a );
 		drawData->color = GameMakeColor( r, g, b, a );
 
 		// BORDERCOLOR: R G B A
-		c = strtok( NULL, seps );  // label
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // label
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, r );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, g );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, b );
-		c = strtok( NULL, seps );  // value
+		c = strtok( nullptr, seps );  // value
 		scanUnsignedInt( c, a );
 		drawData->borderColor = GameMakeColor( r, g, b, a );
 
-	}  // end for i
+	}
 
 	return TRUE;
 
-}  // end parseDrawData
+}
 
 // getDataTemplate ============================================================
 /** Given a window type style string return the address of a static
 	* gadget data type used for the generic data pointers in the
-	* GUI gadget contorls */
+	* GUI gadget controls */
 //=============================================================================
 void *getDataTemplate( char *type )
 {
@@ -1367,57 +1364,57 @@ void *getDataTemplate( char *type )
 	static ComboBoxData	cData;
 	void *data;
 
-  if( !strcmp( type, "VERTSLIDER" ) || !strcmp( type, "HORZSLIDER" ) )
+  if( strcmp( type, "VERTSLIDER" ) == 0 || strcmp( type, "HORZSLIDER" ) == 0 )
 	{
 
     memset( &sData, 0, sizeof( SliderData ) );
     data = &sData;
 
   }
-	else if( !strcmp( type, "SCROLLLISTBOX" ) )
+	else if( strcmp( type, "SCROLLLISTBOX" ) == 0 )
 	{
 
     memset( &lData, 0, sizeof( ListboxData ) );
     data = &lData;
 
   }
-	else if( !strcmp( type, "TABCONTROL" ) )
+	else if( strcmp( type, "TABCONTROL" ) == 0 )
 	{
     memset( &tcData, 0, sizeof( TabControlData ) );
     data = &tcData;
   }
-	else if( !strcmp( type, "ENTRYFIELD" ) )
+	else if( strcmp( type, "ENTRYFIELD" ) == 0 )
 	{
 
     memset( &eData, 0, sizeof( EntryData ) );
     data = &eData;
 
   }
-	else if( !strcmp( type, "STATICTEXT" ) )
+	else if( strcmp( type, "STATICTEXT" ) == 0 )
 	{
 
 		memset( &tData, 0, sizeof( TextData ) );
 		data = &tData;
 
   }
-	else if( !strcmp( type, "RADIOBUTTON" ) )
+	else if( strcmp( type, "RADIOBUTTON" ) == 0 )
 	{
 
 		memset( &rData, 0, sizeof( RadioButtonData ) );
 		data = &rData;
 	}
-	else if( !strcmp( type, "COMBOBOX" ) )
+	else if( strcmp( type, "COMBOBOX" ) == 0 )
 	{
 
 		memset( &cData, 0, sizeof( ComboBoxData ) );
 		data = &cData;
 	}
 	else
-    data = NULL;
+    data = nullptr;
 
   return data;
 
-}  // end getDataTemplate
+}
 
 // parseData ==================================================================
 //
@@ -1449,7 +1446,7 @@ static Bool parseData( void **data, char *type, char *buffer )
 	static RadioButtonData rData;
 	static ComboBoxData cData;
 
-  if( !strcmp( type, "VERTSLIDER" ) || !strcmp( type, "HORZSLIDER" ) )
+  if( strcmp( type, "VERTSLIDER" ) == 0 || strcmp( type, "HORZSLIDER" ) == 0 )
 	{
 
     memset( &sData, 0, sizeof( SliderData ) );
@@ -1457,13 +1454,13 @@ static Bool parseData( void **data, char *type, char *buffer )
 	  c = strtok( buffer, " \t\n\r" );
     sData.minVal = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
     sData.maxVal = atoi(c);
 
     *data = &sData;
 
   }
-	else if( !strcmp( type, "SCROLLLISTBOX" ) )
+	else if( strcmp( type, "SCROLLLISTBOX" ) == 0 )
 	{
 
     memset( &lData, 0, sizeof( ListboxData ) );
@@ -1471,28 +1468,28 @@ static Bool parseData( void **data, char *type, char *buffer )
 	  c = strtok( buffer, " \t\n\r" );
     lData.listLength = atoi(c);
 
-//	  c = strtok( NULL, " \t\n\r" );
+//	  c = strtok( nullptr, " \t\n\r" );
 //    lData.entryHeight = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
     lData.autoScroll = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
     lData.autoPurge = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
     lData.scrollBar = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
     lData.multiSelect = atoi(c);
 
-		c = strtok( NULL, " \t\n\r" );
+		c = strtok( nullptr, " \t\n\r" );
 		lData.forceSelect = atoi(c);
 
     *data = &lData;
 
   }
-	else if( !strcmp( type, "ENTRYFIELD" ) )
+	else if( strcmp( type, "ENTRYFIELD" ) == 0 )
 	{
 
     memset( &eData, 0, sizeof( EntryData ) );
@@ -1500,13 +1497,13 @@ static Bool parseData( void **data, char *type, char *buffer )
 	  c = strtok( buffer, " \t\n\r" );
     eData.maxTextLen = atoi(c);
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
 //    if (c)
 //      eData.entryWidth = atoi(c);
 //    else
 //      eData.entryWidth = -1;
 
-		c = strtok( NULL, " \t\n\r" );
+		c = strtok( nullptr, " \t\n\r" );
 		if (c)
 		{
 			eData.secretText = atoi(c);
@@ -1517,7 +1514,7 @@ static Bool parseData( void **data, char *type, char *buffer )
 		else
 			eData.secretText = FALSE;
 
-		c = strtok( NULL, " \t\n\r" );
+		c = strtok( nullptr, " \t\n\r" );
 		if (c)
 		{
 			eData.numericalOnly = ( atoi(c) == 1 );
@@ -1533,7 +1530,7 @@ static Bool parseData( void **data, char *type, char *buffer )
     *data = &eData;
 
   }
-	else if( !strcmp( type, "STATICTEXT" ) )
+	else if( strcmp( type, "STATICTEXT" ) == 0 )
 	{
 
 	  c = strtok( buffer, " \t\n\r" );
@@ -1542,7 +1539,7 @@ static Bool parseData( void **data, char *type, char *buffer )
 		if( tData.centered != FALSE )
 			tData.centered = TRUE;
 
-	  c = strtok( NULL, " \t\n\r" );
+	  c = strtok( nullptr, " \t\n\r" );
 
 		/** @todo need to get a label from the translation manager, uncomment
 		the following line and remove the WideChar assignment when
@@ -1554,7 +1551,7 @@ static Bool parseData( void **data, char *type, char *buffer )
 		*data = &tData;
 
   }
-	else if( !strcmp( type, "RADIOBUTTON" ) )
+	else if( strcmp( type, "RADIOBUTTON" ) == 0 )
 	{
 
 		c = strtok( buffer, " \t\n\r" );
@@ -1567,11 +1564,11 @@ static Bool parseData( void **data, char *type, char *buffer )
 		*data = &rData;
 	}
 	else
-    *data = NULL;
+    *data = nullptr;
 
   return TRUE;
 
-}  // end parseData
+}
 
 // setWindowText ==============================================================
 /** Set the default text for a window or gadget control */
@@ -1603,7 +1600,7 @@ static void setWindowText( GameWindow *window, AsciiString textLabel )
 	else
 		window->winSetText( theText );
 
-}  // end setWindowText
+}
 
 // createGadget ===============================================================
 /** Create a gadget based on the 'type' parm */
@@ -1616,11 +1613,11 @@ static GameWindow *createGadget( char *type,
 																 WinInstanceData *instData,
 																 void *data )
 {
-  GameWindow *window = NULL;
+  GameWindow *window = nullptr;
 
   instData->m_owner = parent;
 
-  if( !strcmp( type, "PUSHBUTTON" ) )
+  if( strcmp( type, "PUSHBUTTON" ) == 0 )
 	{
 
     instData->m_style |= GWS_PUSH_BUTTON;
@@ -1630,7 +1627,7 @@ static GameWindow *createGadget( char *type,
 																										 instData->m_font, FALSE );
 
   }
-	else if( !strcmp( type, "RADIOBUTTON" ) )
+	else if( strcmp( type, "RADIOBUTTON" ) == 0 )
 	{
 		RadioButtonData *rData = (RadioButtonData *)data;
 		char filename[ MAX_WINDOW_NAME_LEN ];
@@ -1641,13 +1638,13 @@ static GameWindow *createGadget( char *type,
 		// filename the radio button was saved in
 		//
 
-		strcpy( filename, instData->m_decoratedNameString.str() );
+		strlcpy(filename, instData->m_decoratedNameString.str(), ARRAY_SIZE(filename));
 		c = strchr( filename, ':' );
 		if( c )
 			*c = 0;  // terminate after filename (format is filename:gadgetname)
 		assert( TheNameKeyGenerator );
 		if( TheNameKeyGenerator )
-			rData->screen = (Int)(TheNameKeyGenerator->nameToKey( AsciiString(filename) ));
+			rData->screen = (Int)(TheNameKeyGenerator->nameToKey( filename ));
 
     instData->m_style |= GWS_RADIO_BUTTON;
     window = TheWindowManager->gogoGadgetRadioButton( parent, status, x, y,
@@ -1656,7 +1653,7 @@ static GameWindow *createGadget( char *type,
 																											instData->m_font, FALSE );
 
   }
-	else if( !strcmp( type, "CHECKBOX" ) )
+	else if( strcmp( type, "CHECKBOX" ) == 0 )
 	{
 
     instData->m_style |= GWS_CHECK_BOX;
@@ -1666,7 +1663,7 @@ static GameWindow *createGadget( char *type,
 																									 instData->m_font, FALSE );
 
   }
-	else if( !strcmp( type, "TABCONTROL" ) )
+	else if( strcmp( type, "TABCONTROL" ) == 0 )
 	{
 		TabControlData *tcData = (TabControlData *)data;
     instData->m_style |= GWS_TAB_CONTROL;
@@ -1675,7 +1672,7 @@ static GameWindow *createGadget( char *type,
 																										instData, tcData,
 																										instData->m_font, FALSE );
 	}
-	else if( !strcmp( type, "VERTSLIDER" ) )
+	else if( strcmp( type, "VERTSLIDER" ) == 0 )
 	{
     SliderData *sData = (SliderData *)data;
 
@@ -1702,12 +1699,12 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledSliderThumbDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteSliderThumbDrawData[ i ];
 
-			}  // end for i
+			}
 
-		}  //end if
+		}
 
   }
-	else if( !strcmp( type, "HORZSLIDER" ) )
+	else if( strcmp( type, "HORZSLIDER" ) == 0 )
 	{
     SliderData *sData = (SliderData *)data;
 
@@ -1734,12 +1731,12 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledSliderThumbDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteSliderThumbDrawData[ i ];
 
-			}  // end for i
+			}
 
-		}  //end if
+		}
 
   }
-	else if( !strcmp( type, "SCROLLLISTBOX" ) )
+	else if( strcmp( type, "SCROLLLISTBOX" ) == 0 )
 	{
 
     ListboxData *lData = (ListboxData *)data;
@@ -1767,9 +1764,9 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledUpButtonDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteUpButtonDrawData[ i ];
 
-			}  // end for i
+			}
 
-		}  // end if
+		}
 
 		GameWindow *downButton = GadgetListBoxGetDownButton( window );
 		if( downButton )
@@ -1783,9 +1780,9 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledDownButtonDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteDownButtonDrawData[ i ];
 
-			}  // end for i
+			}
 
-		}  // end if
+		}
 
 		GameWindow *slider = GadgetListBoxGetSlider( window );
 		if( slider )
@@ -1799,7 +1796,7 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledSliderDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteSliderDrawData[ i ];
 
-			}  // end for i
+			}
 
 			// do the slider thumb
 			GameWindow *thumb = slider->winGetChild();
@@ -1814,14 +1811,14 @@ static GameWindow *createGadget( char *type,
 					instData->m_disabledDrawData[ i ] = disabledSliderThumbDrawData[ i ];
 					instData->m_hiliteDrawData[ i ] = hiliteSliderThumbDrawData[ i ];
 
-				}  // end for i
+				}
 
-			}  //end if
+			}
 
-		}  // end if
+		}
 
   }
-	else if( !strcmp( type, "COMBOBOX" ) )
+	else if( strcmp( type, "COMBOBOX" ) == 0 )
 	{
 		ComboBoxData *cData = (ComboBoxData *)data;
 		cData->entryData = NEW EntryData;
@@ -1848,8 +1845,8 @@ static GameWindow *createGadget( char *type,
 		cData->listboxData->multiSelect = 0;
 		cData->listboxData->forceSelect = 1;
 		cData->listboxData->columns = 1;
-		cData->listboxData->columnWidth = NULL;
-		cData->listboxData->columnWidthPercentage = NULL;
+		cData->listboxData->columnWidth = nullptr;
+		cData->listboxData->columnWidthPercentage = nullptr;
 
     instData->m_style |= GWS_COMBO_BOX;
     window = TheWindowManager->gogoGadgetComboBox( parent, status, x, y,
@@ -1869,8 +1866,8 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledDropDownButtonDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteDropDownButtonDrawData[ i ];
 
-			}  // end for i
-		} // end if
+			}
+		}
 
 		GameWindow *editBox = GadgetComboBoxGetEditBox( window );
 		if( editBox )
@@ -1884,8 +1881,8 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledEditBoxDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteEditBoxDrawData[ i ];
 
-			}  // end for i
-		} // end if
+			}
+		}
 
 
 		GameWindow *listBox = GadgetComboBoxGetListBox( window );
@@ -1900,7 +1897,7 @@ static GameWindow *createGadget( char *type,
 				instData->m_disabledDrawData[ i ] = disabledListBoxDrawData[ i ];
 				instData->m_hiliteDrawData[ i ] = hiliteListBoxDrawData[ i ];
 
-			}  // end for i
+			}
 
 
 			GameWindow *upButton = GadgetListBoxGetUpButton( listBox );
@@ -1915,9 +1912,9 @@ static GameWindow *createGadget( char *type,
 					instData->m_disabledDrawData[ i ] = disabledUpButtonDrawData[ i ];
 					instData->m_hiliteDrawData[ i ] = hiliteUpButtonDrawData[ i ];
 
-				}  // end for i
+				}
 
-			}  // end if
+			}
 
 			GameWindow *downButton = GadgetListBoxGetDownButton( listBox );
 			if( downButton )
@@ -1931,9 +1928,9 @@ static GameWindow *createGadget( char *type,
 					instData->m_disabledDrawData[ i ] = disabledDownButtonDrawData[ i ];
 					instData->m_hiliteDrawData[ i ] = hiliteDownButtonDrawData[ i ];
 
-				}  // end for i
+				}
 
-			}  // end if
+			}
 
 			GameWindow *slider = GadgetListBoxGetSlider( listBox );
 			if( slider )
@@ -1947,7 +1944,7 @@ static GameWindow *createGadget( char *type,
 					instData->m_disabledDrawData[ i ] = disabledSliderDrawData[ i ];
 					instData->m_hiliteDrawData[ i ] = hiliteSliderDrawData[ i ];
 
-				}  // end for i
+				}
 
 				// do the slider thumb
 				GameWindow *thumb = slider->winGetChild();
@@ -1962,14 +1959,14 @@ static GameWindow *createGadget( char *type,
 						instData->m_disabledDrawData[ i ] = disabledSliderThumbDrawData[ i ];
 						instData->m_hiliteDrawData[ i ] = hiliteSliderThumbDrawData[ i ];
 
-					}  // end for i
+					}
 
-				}  //end if
+				}
 
-			}  // end if
+			}
 		}
   }
-	else if( !strcmp( type, "ENTRYFIELD" ) )
+	else if( strcmp( type, "ENTRYFIELD" ) == 0 )
 	{
     EntryData *eData = (EntryData *)data;
 
@@ -1980,7 +1977,7 @@ static GameWindow *createGadget( char *type,
 																										instData->m_font, FALSE );
 
   }
-	else if( !strcmp( type, "STATICTEXT" ) )
+	else if( strcmp( type, "STATICTEXT" ) == 0 )
 	{
     TextData *tData = (TextData *)data;
 
@@ -1992,7 +1989,7 @@ static GameWindow *createGadget( char *type,
 
 
   }
-	else if( !strcmp( type, "PROGRESSBAR" ) )
+	else if( strcmp( type, "PROGRESSBAR" ) == 0 )
 	{
 
     instData->m_style |= GWS_PROGRESS_BAR;
@@ -2005,7 +2002,7 @@ static GameWindow *createGadget( char *type,
 
   return window;
 
-}  // end createGadget
+}
 
 // createWindow ===============================================================
 // Create a user window or a gadget depending on the 'type' parm
@@ -2028,7 +2025,7 @@ static GameWindow *createWindow( char *type,
   parent = peekWindow();
 
   // If this is a regular window just create it
-  if( !strcmp( type, "USER" ) )
+  if( strcmp( type, "USER" ) == 0 )
 	{
 
     window = TheWindowManager->winCreate( parent,
@@ -2042,10 +2039,10 @@ static GameWindow *createWindow( char *type,
 			window->winSetInstanceData( instData );
 			window->winSetWindowId( id );
 
-		}  // end if
+		}
 
   }
-	else if( !strcmp( type, "TABPANE" ) )
+	else if( strcmp( type, "TABPANE" ) == 0 )
 	{
 
     window = TheWindowManager->winCreate( parent,
@@ -2059,7 +2056,7 @@ static GameWindow *createWindow( char *type,
 			window->winSetInstanceData( instData );
 			window->winSetWindowId( id );
 
-		}  // end if
+		}
 
   }
 
@@ -2080,11 +2077,11 @@ static GameWindow *createWindow( char *type,
 			// set id
 			window->winSetWindowId( id );
 
-		}  // end if
+		}
 
   }
 
-	// assign the callbacks if they are not empty/NULL, that means they were read
+	// assign the callbacks if they are not empty/nullptr, that means they were read
 	// in and parsed from the window definition file
 	if( window )
 	{
@@ -2108,9 +2105,9 @@ static GameWindow *createWindow( char *type,
 			editData->tooltipCallbackString = theTooltipString;
 			editData->drawCallbackString = theDrawString;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	if( window )
 	{
@@ -2118,7 +2115,7 @@ static GameWindow *createWindow( char *type,
 		// set any text read from the textLabel
 		setWindowText( window, instData->m_textLabelString );
 
-	}  // end if
+	}
 
   // If there is a parent window, send it the SCRIPT_CREATE message
   if( window && parent )
@@ -2126,7 +2123,7 @@ static GameWindow *createWindow( char *type,
 
   return window;
 
-}  // end createWindow
+}
 
 // parseChildWindows ==========================================================
 /** Parse window descriptions until an extra end is encountered indicating
@@ -2143,7 +2140,7 @@ static Bool parseChildWindows( GameWindow *window,
 	//of the ones from the script file.  So kill them before reading.
 	if( BitIsSet( window->winGetStyle(), GWS_TAB_CONTROL ) )
 	{
-		GameWindow *nextWindow = NULL;
+		GameWindow *nextWindow = nullptr;
 		for( GameWindow *myChild = window->winGetChild(); myChild; myChild = nextWindow )
 		{
 			nextWindow = myChild->winGetNext();
@@ -2218,14 +2215,14 @@ static Bool parseChildWindows( GameWindow *window,
 		{
 
       // Parse window descriptions until the last END is read
-			if( parseWindow( inFile, buffer ) == NULL )
+			if( parseWindow( inFile, buffer ) == nullptr )
 			{
 				return FALSE;
 			}
 
 		}
 
-	}  // end while( TRUE )
+	}
 
   // Pop the current window off the stack
   lastWindow = popWindow();
@@ -2243,7 +2240,7 @@ static Bool parseChildWindows( GameWindow *window,
 
   return TRUE;
 
-}  // end parseChildWindows
+}
 
 // lookup table for parsing functions
 static GameWindowParse gameWindowFieldList[] =
@@ -2298,7 +2295,7 @@ static GameWindowParse gameWindowFieldList[] =
 	{ "IMAGEOFFSET", parseImageOffset },
 	{ "TOOLTIP", parseTooltip },
 
-	{ NULL, NULL }
+	{ nullptr, nullptr }
 };
 
 // parseWindow ================================================================
@@ -2307,14 +2304,14 @@ static GameWindowParse gameWindowFieldList[] =
 static GameWindow *parseWindow( File *inFile, char *buffer )
 {
 	GameWindowParse *parse;
-	GameWindow *window = NULL;
+	GameWindow *window = nullptr;
 	GameWindow *parent = peekWindow();
 	WinInstanceData instData;
 	char type[64];
 	char token[ 256 ];
 	char *c;
 	Int x, y, width, height;
-	void *data = NULL;
+	void *data = nullptr;
 	ICoord2D parentSize;
 	AsciiString asciibuf;
 
@@ -2322,10 +2319,10 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	// reset our 'static globals' that house the current parsed window callback
 	// definitions to empty
 	//
-	systemFunc = NULL;
-	inputFunc = NULL;
-	tooltipFunc = NULL;
-	drawFunc = NULL;
+	systemFunc = nullptr;
+	inputFunc = nullptr;
+	tooltipFunc = nullptr;
+	drawFunc = nullptr;
 	theSystemString.clear();
 	theInputString.clear();
 	theTooltipString.clear();
@@ -2335,12 +2332,12 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	if( parent )
 	{
 		parent->winGetSize( &parentSize.x, &parentSize.y );
-	}  // end if
+	}
 	else
 	{
 		parentSize.x = TheDisplay->getWidth();
 		parentSize.y = TheDisplay->getHeight();
-	}  // end else
+	}
 
 	// Initialize the instance data to the defaults
 	/// @todo need to support enabled/disabled/hilite text colors here
@@ -2364,8 +2361,8 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	readUntilSemicolon( inFile, buffer, WIN_BUFFER_LENGTH );
 	c = strtok( buffer, seps );
 	assert( strcmp( c, "WINDOWTYPE" ) == 0 );
-	c = strtok( NULL, seps );  // get data to right of = sign
-	strcpy( type, c );
+	c = strtok( nullptr, seps );  // get data to right of = sign
+	strlcpy(type, c, ARRAY_SIZE(type));
 
 	//
 	// based on the window type get a pointer for any specific data
@@ -2394,7 +2391,7 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 			if (asciibuf.compare(parse->name) == 0)
 			{
 
-				strcpy( token, asciibuf.str() );
+				strlcpy(token, asciibuf.str(), ARRAY_SIZE(token));
 
 				// eat '='
 				inFile->scanString(asciibuf);
@@ -2410,9 +2407,9 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 				break;
 			}
 
-		}  // end for
+		}
 
-		if( parse->parse == NULL )
+		if( parse->parse == nullptr )
 		{
 
 			// If it's the END keyword
@@ -2438,7 +2435,7 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 					instData.m_font = TheHeaderTemplateManager->getFontFromTemplate(instData.m_headerTemplateName);
 
 				// Create a window using the current description
-				if( window == NULL )
+				if( window == nullptr )
 					window = createWindow( type, instData.m_id, instData.getStatus(), x, y,
 																 width, height, &instData, data,
 																 systemFunc, inputFunc, tooltipFunc, drawFunc );
@@ -2455,7 +2452,7 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 															 width, height, &instData, data,
 															 systemFunc, inputFunc, tooltipFunc, drawFunc );
 
-				if (window == NULL)
+				if (window == nullptr)
 					goto cleanupAndExit;
 
 				// Parses the CHILD's window info.
@@ -2463,10 +2460,10 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 				{
 
 					TheWindowManager->winDestroy( window );
-					window = NULL;
+					window = nullptr;
 					goto cleanupAndExit;
 
-				}  // end if
+				}
 
 			}
 			else
@@ -2477,9 +2474,9 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 
 			}
 
-		}  // end if
+		}
 
-	}  // end while( TRUE )
+	}
 
 cleanupAndExit:
 
@@ -2490,11 +2487,11 @@ cleanupAndExit:
 	//
 	// I am commenting this out to get tooltips working, If for
 	// some reason we start having displayString problems... CLH
-//	assert( instData.m_text == NULL && instData.m_tooltip == NULL );
+//	assert( instData.m_text == nullptr && instData.m_tooltip == nullptr );
 
 	return window;
 
-}  // end parseWindow
+}
 
 //=================================================================================================
 //=================================================================================================
@@ -2517,7 +2514,7 @@ Bool parseInit( const char *token, char *buffer, UnsignedInt version, WindowLayo
 
 	return TRUE;  // success
 
-}  // end parseInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Parse update for layout file */
@@ -2536,7 +2533,7 @@ Bool parseUpdate( const char *token, char *buffer, UnsignedInt version, WindowLa
 
 	return TRUE;  // success
 
-}  // end parseUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Parse shutdown for layout file */
@@ -2555,7 +2552,7 @@ Bool parseShutdown( const char *token, char *buffer, UnsignedInt version, Window
 
 	return TRUE;  // success
 
-}  // end parseShutdown
+}
 
 static LayoutScriptParse layoutScriptTable[] =
 {
@@ -2563,7 +2560,7 @@ static LayoutScriptParse layoutScriptTable[] =
 	{ "LAYOUTUPDATE",									parseUpdate },
 	{ "LAYOUTSHUTDOWN",								parseShutdown },
 
-	{ NULL,															NULL },
+	{ nullptr,															nullptr },
 
 };
 
@@ -2610,7 +2607,7 @@ Bool parseLayoutBlock( File *inFile, char *buffer, UnsignedInt version, WindowLa
 				// eat equals separator " = "
 				c = strtok( buffer, " =" );
 
-				strcpy(token, asciitoken.str());
+				strlcpy(token, asciitoken.str(), ARRAY_SIZE(token));
 
 				// parse it
 				if( parse->parse( token, c, version, info ) == FALSE )
@@ -2618,15 +2615,15 @@ Bool parseLayoutBlock( File *inFile, char *buffer, UnsignedInt version, WindowLa
 
 				break;  // exit for
 
-			}  // end if
+			}
 
-		}  // end for parse
+		}
 
-	}  // end while
+	}
 
 	return TRUE;
 
-}  // end parseLayoutBlock
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
@@ -2648,19 +2645,19 @@ WindowLayout *GameWindowManager::winCreateLayout( AsciiString filename )
 	{
 
 		deleteInstance(layout);
-		return NULL;
+		return nullptr;
 
-	}  // end if
+	}
 
 	// return loaded layout
 	return layout;
 
-}  // end winCreateLayout
+}
 
 /** Free up the memory used by static strings.  Normally this memory
 is freed by the string destructor but we do it here to make the
 memory leak detection code happy.*/
-void GameWindowManager::freeStaticStrings(void)
+void GameWindowManager::freeStaticStrings()
 {
 	theSystemString.clear();
 	theInputString.clear();
@@ -2670,9 +2667,9 @@ void GameWindowManager::freeStaticStrings(void)
 
 WindowLayoutInfo::WindowLayoutInfo() :
 	version(0),
-	init(NULL),
-	update(NULL),
-	shutdown(NULL),
+	init(nullptr),
+	update(nullptr),
+	shutdown(nullptr),
 	initNameString(AsciiString::TheEmptyString),
 	updateNameString(AsciiString::TheEmptyString),
 	shutdownNameString(AsciiString::TheEmptyString)
@@ -2695,7 +2692,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 {
 	const char* filename = filenameString.str();
 	static char buffer[ WIN_BUFFER_LENGTH ]; 		// input buffer for reading
-	GameWindow *firstWindow = NULL;
+	GameWindow *firstWindow = nullptr;
   GameWindow *window;
   char filepath[ _MAX_PATH ] = "Window\\";
   File *inFile;
@@ -2716,22 +2713,22 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	// a filename only make sure the current directory is set to the right
 	// place for the window files subdirectory
 	//
-	if( strchr( filename, '\\' ) == NULL )
-		sprintf( filepath, "Window\\%s", filename );
+	if( strchr( filename, '\\' ) == nullptr )
+		snprintf( filepath, ARRAY_SIZE(filepath), "Window\\%s", filename );
 	else
-		strcpy( filepath, filename );
+		strlcpy(filepath, filename, ARRAY_SIZE(filepath));
 
   // Open the input file
 	inFile = TheFileSystem->openFile(filepath, File::READ);
-	if (inFile == NULL)
+	if (inFile == nullptr)
 	{
 		DEBUG_LOG(( "WinCreateFromScript: Cannot access file '%s'.", filename ));
-		return NULL;
+		return nullptr;
 	}
 
 	// read the file version
 	Int version;
-	inFile->read(NULL, strlen("FILE_VERSION = "));
+	inFile->read(nullptr, strlen("FILE_VERSION = "));
 	inFile->scanInt(version);
 	inFile->nextLine();
 
@@ -2745,9 +2742,9 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			DEBUG_LOG(( "WinCreateFromScript: Error parsing layout block" ));
 			return FALSE;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 	else
 	{
 
@@ -2756,7 +2753,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 		scriptInfo.updateNameString = "[None]";
 		scriptInfo.shutdownNameString = "[None]";
 
-	}  // end else
+	}
 
 	while( TRUE )
 	{
@@ -2775,8 +2772,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defEnabledColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2786,8 +2783,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defDisabledColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2797,8 +2794,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defHiliteColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2808,8 +2805,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defSelectedColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2819,8 +2816,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defTextColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2830,8 +2827,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultColor( &defBackgroundColor, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2841,8 +2838,8 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 			if( parseDefaultFont( defFont, inFile, buffer ) == FALSE )
 			{
 				inFile->close();
-				inFile = NULL;
-				return NULL;
+				inFile = nullptr;
+				return nullptr;
 			}
 
 		}
@@ -2853,18 +2850,18 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
       window = parseWindow( inFile, buffer );
 
 			// save first window created
-			if( firstWindow == NULL )
+			if( firstWindow == nullptr )
 				firstWindow = window;
 
 			scriptInfo.windows.push_back(window);
 
-    }  // end else if
+    }
 
-	}  // end while( TRUE )
+	}
 
 	// close the file
 	inFile->close();
-	inFile = NULL;
+	inFile = nullptr;
 
 	// if info parameter is provided, copy info to the param
 	if( info )
@@ -2873,5 +2870,5 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	// return the first window created
 	return firstWindow;
 
-}  // end WinCreateFromScript
+}
 

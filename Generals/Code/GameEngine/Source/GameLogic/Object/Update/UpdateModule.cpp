@@ -92,7 +92,7 @@ void UpdateModule::crc( Xfer *xfer )
 	// extend base class
 	BehaviorModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -178,18 +178,18 @@ void UpdateModule::xfer( Xfer *xfer )
 		m_indexInLogic = -1;
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void UpdateModule::loadPostProcess( void )
+void UpdateModule::loadPostProcess()
 {
 
 	// extned base class
 	BehaviorModule::loadPostProcess();
 
-}  // end loadPostProcess
+}
 
 
 

@@ -52,12 +52,7 @@
  *   AABoxClass::Init -- Init from a line segment                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef AABOX_H
-#define AABOX_H
 
 #include "always.h"
 #include "matrix3d.h"
@@ -84,7 +79,7 @@ class AABoxClass
 
 public:
 
-	WWINLINE AABoxClass(void) { }
+	WWINLINE AABoxClass() { }
 
 	WWINLINE AABoxClass(const Vector3 & center,const Vector3 & extent) :
 		Center(center),
@@ -113,7 +108,7 @@ public:
 	void		Transform(const Matrix3D & tm);
 	void		Translate(const Vector3 & pos);
 
-	WWINLINE float Volume(void) const { return 2.0*Extent.X * 2.0*Extent.Y * 2.0*Extent.Z; }
+	WWINLINE float Volume() const { return 2.0*Extent.X * 2.0*Extent.Y * 2.0*Extent.Z; }
 	WWINLINE bool		Contains(const Vector3 & point) const;
 	WWINLINE bool		Contains(const AABoxClass & other_box) const;
 	WWINLINE bool		Contains(const MinMaxAABoxClass & other_box) const;
@@ -135,7 +130,7 @@ class MinMaxAABoxClass
 {
 public:
 
-	WWINLINE MinMaxAABoxClass(void) { }
+	WWINLINE MinMaxAABoxClass() { }
 
 	WWINLINE MinMaxAABoxClass(const Vector3 & min_corner,const Vector3 & max_corner) :
 		MinCorner(min_corner),
@@ -149,7 +144,7 @@ public:
 
 	WWINLINE void		Init(Vector3 * points,int num);
 	WWINLINE void		Init(const AABoxClass & box);
-	void		Init_Empty(void);
+	void		Init_Empty();
 
 	void		Add_Point(const Vector3 & point);
 	void		Add_Box(const MinMaxAABoxClass & box);
@@ -159,7 +154,7 @@ public:
 	void		Transform(const Matrix3D & tm);
 	void		Translate(const Vector3 & pos);
 
-	WWINLINE float		Volume(void) const { Vector3 size = MaxCorner - MinCorner; return size.X*size.Y*size.Z; }
+	WWINLINE float		Volume() const { Vector3 size = MaxCorner - MinCorner; return size.X*size.Y*size.Z; }
 
 	Vector3	MinCorner;
 	Vector3	MaxCorner;
@@ -523,7 +518,7 @@ WWINLINE bool AABoxClass::Contains(const Vector3 & point) const
 WWINLINE void MinMaxAABoxClass::Init(Vector3 * points,int num)
 {
 	assert(num > 0);
-	assert(points != NULL);
+	assert(points != nullptr);
 	MinCorner = points[0];
 	MaxCorner = points[0];
 	for (int i=0; i<num; i++) {
@@ -674,6 +669,3 @@ WWINLINE void MinMaxAABoxClass::Translate(const Vector3 & pos)
 	MinCorner+=pos;
 	MaxCorner+=pos;
 }
-
-
-#endif

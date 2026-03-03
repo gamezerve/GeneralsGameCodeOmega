@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef VECTOR2I_H
-#define VECTOR2I_H
 
 #include "always.h"
 
@@ -51,7 +45,7 @@ public:
 	int		I;
 	int		J;
 
-	WWINLINE Vector2i(void);
+	WWINLINE Vector2i();
 	WWINLINE Vector2i(int i,int j);
 
 	WWINLINE void Set(int i, int j);
@@ -65,7 +59,7 @@ public:
 };
 
 
-WWINLINE Vector2i::Vector2i(void)
+WWINLINE Vector2i::Vector2i()
 {
 }
 
@@ -108,6 +102,3 @@ WWINLINE void Vector2i::Swap(Vector2i & other)
 	other.J ^= J;
 	J ^= other.J;
 }
-
-
-#endif

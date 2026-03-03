@@ -35,7 +35,7 @@
 
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/Radar.h"
@@ -65,7 +65,7 @@ ConvertToHijackedVehicleCrateCollide::ConvertToHijackedVehicleCrateCollide( Thin
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ConvertToHijackedVehicleCrateCollide::~ConvertToHijackedVehicleCrateCollide( void )
+ConvertToHijackedVehicleCrateCollide::~ConvertToHijackedVehicleCrateCollide()
 {
 }
 
@@ -155,7 +155,7 @@ Bool ConvertToHijackedVehicleCrateCollide::executeCrateBehavior( Object *other )
 
 	//Before the actual defection takes place, play the "vehicle stolen" EVA
 	//event if the local player is the victim!
-	if( other->isLocallyControlled() )
+	if( other->isLocallyViewed() )
 	{
 		TheEva->setShouldPlay( EVA_VehicleStolen );
 	}
@@ -197,7 +197,7 @@ Bool ConvertToHijackedVehicleCrateCollide::executeCrateBehavior( Object *other )
 
 
 	Bool targetCanEject = FALSE;
-	BehaviorModule **dmi = NULL;
+	BehaviorModule **dmi = nullptr;
 	for( dmi = other->getBehaviorModules(); *dmi; ++dmi )
 	{
 		if( (*dmi)->getEjectPilotDieInterface() )
@@ -205,7 +205,7 @@ Bool ConvertToHijackedVehicleCrateCollide::executeCrateBehavior( Object *other )
 			targetCanEject = TRUE;
 			break;
 		}
-	}  // end for dmi
+	}
 
 	if ( ! targetCanEject )
 	{
@@ -262,7 +262,7 @@ void ConvertToHijackedVehicleCrateCollide::crc( Xfer *xfer )
 	// extend base class
 	CrateCollide::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -280,15 +280,15 @@ void ConvertToHijackedVehicleCrateCollide::xfer( Xfer *xfer )
 	// extend base class
 	CrateCollide::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ConvertToHijackedVehicleCrateCollide::loadPostProcess( void )
+void ConvertToHijackedVehicleCrateCollide::loadPostProcess()
 {
 
 	// extend base class
 	CrateCollide::loadPostProcess();
 
-}  // end loadPostProcess
+}

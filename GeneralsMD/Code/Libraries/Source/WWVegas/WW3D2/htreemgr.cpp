@@ -45,7 +45,6 @@
 
 
 #include "htreemgr.h"
-#include <string.h>
 #include "htree.h"
 #include "chunkio.h"
 #include "wwmemlog.h"
@@ -64,11 +63,11 @@
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-HTreeManagerClass::HTreeManagerClass(void) :
+HTreeManagerClass::HTreeManagerClass() :
 	NumTrees(0)
 {
 	for (int treeidx=0; treeidx < MAX_TREES; treeidx++) {
-		TreePtr[treeidx] = NULL;
+		TreePtr[treeidx] = nullptr;
 	}
 }
 
@@ -84,7 +83,7 @@ HTreeManagerClass::HTreeManagerClass(void) :
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-HTreeManagerClass::~HTreeManagerClass(void)
+HTreeManagerClass::~HTreeManagerClass()
 {
 	Free();
 }
@@ -101,7 +100,7 @@ HTreeManagerClass::~HTreeManagerClass(void)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void HTreeManagerClass::Free(void)
+void HTreeManagerClass::Free()
 {
 	Free_All_Trees();
 }
@@ -118,16 +117,14 @@ void HTreeManagerClass::Free(void)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void HTreeManagerClass::Free_All_Trees(void)
+void HTreeManagerClass::Free_All_Trees()
 {
 	// Clear the hash table
 	TreeHash.Remove_All();
 
 	for (int treeidx=0; treeidx < MAX_TREES; treeidx++) {
-		if (TreePtr[treeidx] != NULL) {
-			delete TreePtr[treeidx];
-			TreePtr[treeidx] = NULL;
-		}
+		delete TreePtr[treeidx];
+		TreePtr[treeidx] = nullptr;
 	}
 	NumTrees = 0;
 }
@@ -152,7 +149,7 @@ void HTreeManagerClass::Free_All_Trees_With_Exclusion_List(const W3DExclusionLis
 
 	int treeidx=0;
 	for (; treeidx < MAX_TREES; treeidx++) {
-		if (TreePtr[treeidx] != NULL) {
+		if (TreePtr[treeidx] != nullptr) {
 
 			if (exclusion_list.Is_Excluded(TreePtr[treeidx])) {
 
@@ -164,7 +161,7 @@ void HTreeManagerClass::Free_All_Trees_With_Exclusion_List(const W3DExclusionLis
 
 				//WWDEBUG_SAY(("deleting tree %s",TreePtr[treeidx]->Get_Name()));
 				delete TreePtr[treeidx];
-				TreePtr[treeidx] = NULL;
+				TreePtr[treeidx] = nullptr;
 			}
 		}
 	}
@@ -200,7 +197,7 @@ int HTreeManagerClass::Load_Tree(ChunkLoadClass & cload)
 	WWMEMLOG(MEM_ANIMATION);
 	HTreeClass * newtree = W3DNEW HTreeClass;
 
-	if (newtree == NULL) {
+	if (newtree == nullptr) {
 		goto Error;
 	}
 
@@ -278,7 +275,7 @@ char *HTreeManagerClass::Get_Tree_Name(const int idx)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -307,7 +304,7 @@ HTreeClass * HTreeManagerClass::Get_Tree(const char * name)
 //			return TreePtr[i];
 //		}
 //	}
-//	return NULL;
+//	return nullptr;
 }
 
 
@@ -328,6 +325,6 @@ HTreeClass * HTreeManagerClass::Get_Tree(int id)
 	if ((id >= 0) && (id < NumTrees)) {
 		return TreePtr[id];
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }

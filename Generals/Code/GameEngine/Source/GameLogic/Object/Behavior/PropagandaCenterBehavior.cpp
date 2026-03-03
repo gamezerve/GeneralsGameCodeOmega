@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Player.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -46,12 +46,12 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-PropagandaCenterBehaviorModuleData::PropagandaCenterBehaviorModuleData( void )
+PropagandaCenterBehaviorModuleData::PropagandaCenterBehaviorModuleData()
 {
 
 	m_brainwashDuration = 0;
 
-}  // end PropagandaCenterBehaviorModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -62,14 +62,14 @@ PropagandaCenterBehaviorModuleData::PropagandaCenterBehaviorModuleData( void )
 	static const FieldParse dataFieldParse[] =
 	{
 
-		{	"BrainwashDuration", INI::parseDurationUnsignedInt, NULL, offsetof( PropagandaCenterBehaviorModuleData, m_brainwashDuration ) },
+		{	"BrainwashDuration", INI::parseDurationUnsignedInt, nullptr, offsetof( PropagandaCenterBehaviorModuleData, m_brainwashDuration ) },
 		{ 0, 0, 0, 0 }
 
 	};
 
   p.add( dataFieldParse );
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,18 +84,18 @@ PropagandaCenterBehavior::PropagandaCenterBehavior( Thing *thing, const ModuleDa
 	m_brainwashingSubjectID = INVALID_ID;
 	m_brainwashingSubjectStartFrame = 0;
 
-}  // end PropagandaCenterBehavior
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-PropagandaCenterBehavior::~PropagandaCenterBehavior( void )
+PropagandaCenterBehavior::~PropagandaCenterBehavior()
 {
 
-}  // end ~PropagandaCenterBehavior
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void PropagandaCenterBehavior::onDelete( void )
+void PropagandaCenterBehavior::onDelete()
 {
 
 	// extend functionality
@@ -119,18 +119,18 @@ void PropagandaCenterBehavior::onDelete( void )
 			// return this object under the control of the original owner
 			obj->restoreOriginalTeam();
 
-		}  // end if
+		}
 
-	}  // end for
+	}
 
 	// clear the list
 	m_brainwashedList.clear();
 
-}  // end onDelete
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-UpdateSleepTime PropagandaCenterBehavior::update( void )
+UpdateSleepTime PropagandaCenterBehavior::update()
 {
 	Object *us = getObject();
 	const PropagandaCenterBehaviorModuleData *modData = getPropagandaCenterBehaviorModuleData();
@@ -164,7 +164,7 @@ UpdateSleepTime PropagandaCenterBehavior::update( void )
 					// remove any surrender status from this object
 					AIUpdateInterface *ai = brainwashingSubject->getAIUpdateInterface();
 					if( ai )
-						ai->setSurrendered( NULL, FALSE );
+						ai->setSurrendered( nullptr, FALSE );
 
 					// add this object to our brainwashed list if we're not already in it
 					for( BrainwashedIDListIterator it = m_brainwashedList.begin();
@@ -178,13 +178,13 @@ UpdateSleepTime PropagandaCenterBehavior::update( void )
 					// exit the prison
 					exitObjectViaDoor( brainwashingSubject, exitDoor );
 
-				}  // end if
+				}
 
-			}  // end if
+			}
 
-		}  // end if,
+		}
 
-	}  // end if
+	}
 
 	// if we have no brainwashing subject, hook one up if we have people inside us
 	if( m_brainwashingSubjectID == INVALID_ID )
@@ -202,33 +202,33 @@ UpdateSleepTime PropagandaCenterBehavior::update( void )
 				m_brainwashingSubjectID = obj->getID();
 				m_brainwashingSubjectStartFrame = TheGameLogic->getFrame();
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	return UPDATE_SLEEP_NONE;
-}  // end update
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 void PropagandaCenterBehavior::onRemoving( Object *obj )
 {
 
-	// if we're removing the brainwashing subject, NULL the pointer
+	// if we're removing the brainwashing subject, nullptr the pointer
 	if( m_brainwashingSubjectID == obj->getID() )
 	{
 
 		m_brainwashingSubjectID = INVALID_ID;
 		m_brainwashingSubjectStartFrame = 0;
 
-	}  // end if
+	}
 
 	// extend functionality
 	PrisonBehavior::onRemoving( obj );
 
-}  // end onRemoving
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -239,7 +239,7 @@ void PropagandaCenterBehavior::crc( Xfer *xfer )
 	// extend base class
 	PrisonBehavior::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -266,17 +266,17 @@ void PropagandaCenterBehavior::xfer( Xfer *xfer )
 	// brainwashed list size and data
 	xfer->xferSTLObjectIDList( &m_brainwashedList );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void PropagandaCenterBehavior::loadPostProcess( void )
+void PropagandaCenterBehavior::loadPostProcess()
 {
 
 	// extend base class
 	PrisonBehavior::loadPostProcess();
 
-}  // end loadPostProcess
+}
 
 #endif

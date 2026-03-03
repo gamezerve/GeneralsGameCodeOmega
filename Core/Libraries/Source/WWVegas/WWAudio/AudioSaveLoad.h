@@ -34,16 +34,10 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __AUDIO_SAVE_LOAD_H
-#define __AUDIO_SAVE_LOAD_H
 
 #include "saveloadsubsystem.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "bittype.h"
 
 
@@ -64,22 +58,22 @@ public:
 	//////////////////////////////////////////////////////////////
 	//	Public constructors/destructors
 	//////////////////////////////////////////////////////////////
-	StaticAudioSaveLoadClass (void)				{ }
-	virtual ~StaticAudioSaveLoadClass (void)	{ }
+	StaticAudioSaveLoadClass ()				{ }
+	virtual ~StaticAudioSaveLoadClass ()	{ }
 
 	//////////////////////////////////////////////////////////////
 	//	Public methods
 	//////////////////////////////////////////////////////////////
 
 	// From SaveLoadSubSystemClass
-	virtual uint32				Chunk_ID (void) const;
+	virtual uint32				Chunk_ID () const;
 
 protected:
 
 	//////////////////////////////////////////////////////////////
 	//	Protected methods
 	//////////////////////////////////////////////////////////////
-	virtual bool				Contains_Data(void) const;
+	virtual bool				Contains_Data() const;
 	virtual bool				Save (ChunkSaveClass &csave);
 	virtual bool				Load (ChunkLoadClass &cload);
 	virtual const char*		Name() const { return "StaticAudioSaveLoadClass"; }
@@ -98,22 +92,22 @@ public:
 	//////////////////////////////////////////////////////////////
 	//	Public constructors/destructors
 	//////////////////////////////////////////////////////////////
-	DynamicAudioSaveLoadClass (void)				{ }
-	virtual ~DynamicAudioSaveLoadClass (void)	{ }
+	DynamicAudioSaveLoadClass ()				{ }
+	virtual ~DynamicAudioSaveLoadClass ()	{ }
 
 	//////////////////////////////////////////////////////////////
 	//	Public methods
 	//////////////////////////////////////////////////////////////
 
 	// From SaveLoadSubSystemClass
-	virtual uint32				Chunk_ID (void) const;
+	virtual uint32				Chunk_ID () const;
 
 protected:
 
 	//////////////////////////////////////////////////////////////
 	//	Protected methods
 	//////////////////////////////////////////////////////////////
-	virtual bool				Contains_Data(void) const;
+	virtual bool				Contains_Data() const;
 	virtual bool				Save (ChunkSaveClass &csave);
 	virtual bool				Load (ChunkLoadClass &cload);
 	virtual const char*		Name() const { return "DynamicAudioSaveLoadClass"; }
@@ -121,8 +115,3 @@ protected:
 	//bool							Save_Micro_Chunks (ChunkSaveClass &csave);
 	//bool							Load_Micro_Chunks (ChunkLoadClass &cload);
 };
-
-
-#endif //__AUDIO_SAVE_LOAD_H
-
-

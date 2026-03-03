@@ -41,12 +41,7 @@
  *   OBBoxClass::Compute_Axis_Aligned_Extent -- computes extent of an AABox enclosing this box *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef OBBOX_H
-#define OBBOX_H
 
 #include "always.h"
 #include "vector3.h"
@@ -77,7 +72,7 @@ class OBBoxClass
 {
 public:
 
-	OBBoxClass(void) { }
+	OBBoxClass() { }
 
 	OBBoxClass(const OBBoxClass & that) :
 		Basis(that.Basis),
@@ -105,7 +100,7 @@ public:
 	void		Init_From_Box_Points(Vector3 * points,int num_points);
 	void		Init_Random(float min_extent = 0.5f,float max_extent = 1.0f);
 	float		Project_To_Axis(const Vector3 & axis) const;
-	float		Volume(void) const { return 2.0*Extent.X * 2.0*Extent.Y * 2.0*Extent.Z; }
+	float		Volume() const { return 2.0*Extent.X * 2.0*Extent.Y * 2.0*Extent.Z; }
 	void		Compute_Point(float params[3],Vector3 * set_point) const;
 	void		Compute_Axis_Aligned_Extent(Vector3 * set_extent) const;
 
@@ -216,7 +211,7 @@ inline void OBBoxClass::Compute_Point(float params[3],Vector3 * set_point) const
  *=============================================================================================*/
 inline void OBBoxClass::Compute_Axis_Aligned_Extent(Vector3 * set_extent) const
 {
-	WWASSERT(set_extent != NULL);
+	WWASSERT(set_extent != nullptr);
 
 	// x extent is the box projected onto the x axis
 	set_extent->X =	WWMath::Fabs(Extent[0] * Basis[0][0]) +
@@ -267,5 +262,3 @@ inline bool OBBoxClass::operator!= (const OBBoxClass &src)
 {
 	return (Center != src.Center) || (Extent != src.Extent) || (Basis != src.Basis);
 }
-
-#endif

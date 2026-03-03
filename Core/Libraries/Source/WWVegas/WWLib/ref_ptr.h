@@ -34,18 +34,9 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
 
-#ifndef REF_PTR_H
-#define REF_PTR_H
-
-#ifndef ALWAYS_H
 #include "always.h"
-#endif
-
 #include "wwdebug.h"
 
 /*
@@ -78,17 +69,17 @@
 				class MyClass : public RefCountClass
 				{
 					public:
-						static RefCountPtr<T> Create(void)
+						static RefCountPtr<T> Create()
 						{
 							return NEW MyClass;
 						}
 
-						void Do_Something(void);
-						void Do_Something_Else(void);
+						void Do_Something();
+						void Do_Something_Else();
 						bool Is_Nice() const;
 
 					private:
-						MyClass(void);
+						MyClass();
 				};
 
 				void MyOtherClass
@@ -96,7 +87,7 @@
 					public:
 						MyOtherClass(const RefCountPtr<T> & my_object) : MyObject(my_object) {}
 
-						void Do_It(void)
+						void Do_It()
 						{
 							if (MyObject) {
 								MyObject->Do_Something();
@@ -108,7 +99,7 @@
 							MyObject = object;
 						}
 
-						const RefCountPtr<T> & Get_Object(void) {
+						const RefCountPtr<T> & Get_Object() {
 							return MyObject;
 						}
 
@@ -116,7 +107,7 @@
 						RefCountPtr<T>	MyObject;
 				};
 
-				RefCountPtr<T> Get_Nice_One(void)
+				RefCountPtr<T> Get_Nice_One()
 				{
 					do {
 						RefCountPtr<T> object = MyClass::Create();
@@ -166,7 +157,7 @@
 
 		When used...
 			1. As a local variable.  use RefCountPtr<T> :
-						void My_Function(void)
+						void My_Function()
 						{
 							RefCountPtr<T> myobject = MyClass::Get();
 							if (myobject) {
@@ -183,8 +174,8 @@
 					class MyClass
 					{
 						public:
-							RefCountPtr<T>				Make_Something(void);
-							const RefCountPtr<T> &	Get_Something(void) const {return MyObject;}
+							RefCountPtr<T>				Make_Something();
+							const RefCountPtr<T> &	Get_Something() const {return MyObject;}
 						private:
 							RefCountPtr<T>				MyObject;
 					};
@@ -209,7 +200,7 @@
 							}
 
 							// Get using a return value.  Preferable to above
-							const RefCountPtr<T> & Get(void) const {return MyThing;}
+							const RefCountPtr<T> & Get() const {return MyThing;}
 
 						private:
 							RefCountPtr<T> MyThing;
@@ -228,7 +219,7 @@ class RefCountPtr
 		// Is generally used for objects returned by operator new and "Get" functions.
 		static RefCountPtr<T> Create_NoAddRef(T *t)
 		{
-			WWASSERT(t == NULL || t->Num_Refs() >= 1);
+			WWASSERT(t == nullptr || t->Num_Refs() >= 1);
 			return RefCountPtr<T>(t, RefCountPtr<T>::GET);
 		}
 
@@ -239,7 +230,7 @@ class RefCountPtr
 			return RefCountPtr<T>(t, RefCountPtr<T>::PEEK);
 		}
 
-		RefCountPtr(void)
+		RefCountPtr()
 			: Referent(0)
 		{
 		}
@@ -338,7 +329,7 @@ class RefCountPtr
 			return *this;
 		}
 
-		~RefCountPtr(void)
+		~RefCountPtr()
 		{
 			if (Referent) {
 				Referent->Release_Ref();
@@ -353,12 +344,12 @@ class RefCountPtr
 		// class automatically when trying to compare against 0 or with !my_ptr
 		// However, the compiler will not perform conversions from DummyPtrType *
 		//  (except to void *, which is probably acceptable).
-		operator const DummyPtrType *(void) const
+		operator const DummyPtrType *() const
 		{
 			return (DummyPtrType *)(Referent);
 		}
 
-		void Clear(void)
+		void Clear()
 		{
 			if (Referent) {
 				Referent->Release_Ref();
@@ -366,12 +357,12 @@ class RefCountPtr
 			}
 		}
 
-		T * operator ->(void) const
+		T * operator ->() const
 		{
 			return Referent;
 		}
 
-		T & operator *(void) const
+		T & operator *() const
 		{
 			WWASSERT(0 != Referent);
 			return *Referent;
@@ -380,13 +371,13 @@ class RefCountPtr
 		// Note : This should typically only be used when mixing code that uses RefCountPtr and
 		//   manually managed ref counts on raw points.
 		// Code that consistently uses RefCountPtr should never get a hold of a raw T*
-		T * Peek(void) const
+		T * Peek() const
 		{
 			return Referent;
 		}
 
 		// Releases the held pointer without changing its reference counter.
-		T * Release(void)
+		T * Release()
 		{
 			T * p = Referent;
 			Referent = 0;
@@ -452,5 +443,3 @@ RefCountPtr<Derived> Static_Cast(const RefCountPtr<Base> & base)
 {
 	return RefCountPtr<Derived>::Create_AddRef((Derived *)base.Peek());
 }
-
-#endif

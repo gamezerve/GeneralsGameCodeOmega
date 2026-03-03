@@ -50,7 +50,7 @@
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GlobalData.h"
 #include "Common/encrypt.h"
@@ -80,30 +80,30 @@ static NameKeyType staticTextLadderNameID = NAMEKEY_INVALID;
 static NameKeyType buttonOkID = NAMEKEY_INVALID;
 static NameKeyType buttonCancelID = NAMEKEY_INVALID;
 
-static GameWindow *parent = NULL;
-static GameWindow *listboxLadderSelect = NULL;
-static GameWindow *listboxLadderDetails = NULL;
-static GameWindow *staticTextLadderName = NULL;
-static GameWindow *buttonOk = NULL;
-static GameWindow *buttonCancel = NULL;
+static GameWindow *parent = nullptr;
+static GameWindow *listboxLadderSelect = nullptr;
+static GameWindow *listboxLadderDetails = nullptr;
+static GameWindow *staticTextLadderName = nullptr;
+static GameWindow *buttonOk = nullptr;
+static GameWindow *buttonCancel = nullptr;
 
 // password entry popup
 static NameKeyType passwordParentID = NAMEKEY_INVALID;
 static NameKeyType buttonPasswordOkID = NAMEKEY_INVALID;
 static NameKeyType buttonPasswordCancelID = NAMEKEY_INVALID;
 static NameKeyType textEntryPasswordID = NAMEKEY_INVALID;
-static GameWindow *passwordParent = NULL;
-static GameWindow *textEntryPassword = NULL;
+static GameWindow *passwordParent = nullptr;
+static GameWindow *textEntryPassword = nullptr;
 
 // incorrect password popup
 static NameKeyType badPasswordParentID = NAMEKEY_INVALID;
 static NameKeyType buttonBadPasswordOkID = NAMEKEY_INVALID;
-static GameWindow *badPasswordParent = NULL;
+static GameWindow *badPasswordParent = nullptr;
 
 static void updateLadderDetails( Int ladderID, GameWindow *staticTextLadderName, GameWindow *listboxLadderDetails );
 
-void PopulateQMLadderComboBox( void );
-void PopulateCustomLadderComboBox( void );
+void PopulateQMLadderComboBox();
+void PopulateCustomLadderComboBox();
 
 void PopulateQMLadderListBox( GameWindow *win );
 void PopulateCustomLadderListBox( GameWindow *win );
@@ -113,14 +113,14 @@ void HandleCustomLadderSelection(Int ladderID);
 
 void CustomMatchHideHostPopup(Bool hide);
 
-static void populateLadderComboBox( void )
+static void populateLadderComboBox()
 {
 	// only one of these will do any work...
 	PopulateQMLadderComboBox();
 	PopulateCustomLadderComboBox();
 }
 
-static void populateLadderListBox( void )
+static void populateLadderListBox()
 {
 	// only one of these will do any work...
 	PopulateQMLadderListBox(listboxLadderSelect);
@@ -218,7 +218,7 @@ static void setPasswordMode(PasswordMode mode)
 void PopupLadderSelectInit( WindowLayout *layout, void *userData )
 {
 	parentID = NAMEKEY("PopupLadderSelect.wnd:Parent");
-	parent = TheWindowManager->winGetWindowFromId(NULL, parentID);
+	parent = TheWindowManager->winGetWindowFromId(nullptr, parentID);
 
 	listboxLadderSelectID = NAMEKEY("PopupLadderSelect.wnd:ListBoxLadderSelect");
 	listboxLadderSelect = TheWindowManager->winGetWindowFromId(parent, listboxLadderSelectID);
@@ -301,25 +301,25 @@ WindowMsgHandledType PopupLadderSelectInput( GameWindow *window, UnsignedInt msg
 							break;
 						}
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
 }
 
 static Int ladderIndex = 0;
-void ladderSelectedCallback(void)
+void ladderSelectedCallback()
 {
 	handleLadderSelection( ladderIndex );
 
@@ -341,16 +341,16 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 		case GWM_CREATE:
 		{
 			break;
-		}  // end create
+		}
     //---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
-			parent = NULL;
-			listboxLadderSelect = NULL;
-			listboxLadderDetails = NULL;
+			parent = nullptr;
+			listboxLadderSelect = nullptr;
+			listboxLadderDetails = nullptr;
 			CustomMatchHideHostPopup(FALSE);
 			break;
-		}  // end case
+		}
 
     //----------------------------------------------------------------------------------------------
     case GWM_INPUT_FOCUS:
@@ -359,7 +359,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 			if( mData1 == TRUE )
 				*(Bool *)mData2 = TRUE;
 			break;
-		}  // end input
+		}
     //----------------------------------------------------------------------------------------------
     case GBM_SELECTED:
 		{
@@ -429,7 +429,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 				setPasswordMode(PASS_NONE);
 			}
 			break;
-		}  // end input
+		}
 
     //---------------------------------------------------------------------------------------------
 		case GLM_SELECTED:
@@ -445,7 +445,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 
 			updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
 			break;
-		}  // end GLM_DOUBLE_CLICKED
+		}
 
     //---------------------------------------------------------------------------------------------
 		case GLM_DOUBLE_CLICKED:
@@ -479,7 +479,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 
@@ -592,7 +592,7 @@ static void closeRightClickMenu(GameWindow *win)
 			return;
 		winLay->destroyWindows();
 		deleteInstance(winLay);
-		winLay = NULL;
+		winLay = nullptr;
 
 	}
 }
@@ -613,19 +613,19 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 				ladderInfoID = NAMEKEY("RCGameDetailsMenu.wnd:ButtonLadderDetails");
 				buttonOkID = NAMEKEY("PopupLadderDetails.wnd:ButtonOk");
 				break;
-			} // case GWM_DESTROY:
+			}
 
 		case GGM_CLOSE:
 			{
 				closeRightClickMenu(window);
-				//rcMenu = NULL;
+				//rcMenu = nullptr;
 				break;
 			}
 
 		case GWM_DESTROY:
 			{
 				break;
-			} // case GWM_DESTROY:
+			}
 
 		case GBM_SELECTED:
 			{
@@ -648,7 +648,7 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 						const LadderInfo *linfo = TheLadderList->findLadder(theRoom->getLadderIP(), theRoom->getLadderPort());
 						if (linfo)
 						{
-							WindowLayout *rcLayout = TheWindowManager->winCreateLayout(AsciiString("Menus/PopupLadderDetails.wnd"));
+							WindowLayout *rcLayout = TheWindowManager->winCreateLayout("Menus/PopupLadderDetails.wnd");
 							if (!rcLayout)
 								break;
 
@@ -660,9 +660,9 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 							rcMenu->winSetUserData((void *)selectedID);
 							TheWindowManager->winSetLoneWindow(rcMenu);
 
-							GameWindow *st = TheWindowManager->winGetWindowFromId(NULL,
+							GameWindow *st = TheWindowManager->winGetWindowFromId(nullptr,
 								NAMEKEY("PopupLadderDetails.wnd:StaticTextLadderName"));
-							GameWindow *lb = TheWindowManager->winGetWindowFromId(NULL,
+							GameWindow *lb = TheWindowManager->winGetWindowFromId(nullptr,
 								NAMEKEY("PopupLadderDetails.wnd:ListBoxLadderDetails"));
 							updateLadderDetails(selectedID, st, lb);
 						}
@@ -673,6 +673,6 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 		default:
 			return MSG_IGNORED;
 
-	}//Switch
+	}
 	return MSG_HANDLED;
 }

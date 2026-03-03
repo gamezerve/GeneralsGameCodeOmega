@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
 #include "Common/NameKeyGenerator.h"
@@ -50,14 +50,13 @@ static NameKeyType buttonBack = NAMEKEY_INVALID;
 static NameKeyType buttonOK = NAMEKEY_INVALID;
 static NameKeyType listboxMap = NAMEKEY_INVALID;
 static NameKeyType winMapPreviewID = NAMEKEY_INVALID;
-static GameWindow *parent = NULL;
-static GameWindow *mapList = NULL;
-static GameWindow *winMapPreview = NULL;
+static GameWindow *parent = nullptr;
+static GameWindow *mapList = nullptr;
+static GameWindow *winMapPreview = nullptr;
 static NameKeyType radioButtonSystemMapsID = NAMEKEY_INVALID;
 static NameKeyType radioButtonUserMapsID = NAMEKEY_INVALID;
 
-static GameWindow *buttonMapStartPosition[MAX_SLOTS] = {NULL,NULL,NULL,NULL,
-																								NULL,NULL,NULL,NULL };
+static GameWindow *buttonMapStartPosition[MAX_SLOTS] = {0};
 static NameKeyType buttonMapStartPositionID[MAX_SLOTS] = { NAMEKEY_INVALID,NAMEKEY_INVALID,
 																									NAMEKEY_INVALID,NAMEKEY_INVALID,
 																										NAMEKEY_INVALID,NAMEKEY_INVALID,
@@ -80,20 +79,20 @@ static const char *gadgetsToHide[] =
 	"ButtonStart",
 	"StaticTextMapPreview",
 
-	NULL // keep this last
+	nullptr
 };
 static const char *perPlayerGadgetsToHide[] =
 {
 	"ComboBoxTeam",
 	"ComboBoxColor",
 	"ComboBoxPlayerTemplate",
-	NULL // keep this last
+	nullptr
 };
 
 static void showLANGameOptionsUnderlyingGUIElements( Bool show )
 {
 	ShowUnderlyingGUIElements( show, layoutFilename, parentName, gadgetsToHide, perPlayerGadgetsToHide );
-	GameWindow *win	= TheWindowManager->winGetWindowFromId( NULL, TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ButtonBack") );
+	GameWindow *win	= TheWindowManager->winGetWindowFromId( nullptr, TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ButtonBack") );
 	if(win)
 		win->winEnable( show );
 
@@ -101,16 +100,16 @@ static void showLANGameOptionsUnderlyingGUIElements( Bool show )
 
 static void NullifyControls()
 {
-	parent = NULL;
-	mapList = NULL;
+	parent = nullptr;
+	mapList = nullptr;
 	if (winMapPreview)
 	{
-		winMapPreview->winSetUserData(NULL);
-		winMapPreview = NULL;
+		winMapPreview->winSetUserData(nullptr);
+		winMapPreview = nullptr;
 	}
 	for (Int i=0; i<MAX_SLOTS; ++i)
 	{
-		buttonMapStartPosition[i] = NULL;
+		buttonMapStartPosition[i] = nullptr;
 	}
 }
 
@@ -122,9 +121,8 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	showLANGameOptionsUnderlyingGUIElements(FALSE);
 
 	// set keyboard focus to main parent
-	AsciiString parentName( "LanMapSelectMenu.wnd:LanMapSelectMenuParent" );
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( parentName );
-	parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
+	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:LanMapSelectMenuParent" );
+	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 
 	TheWindowManager->winSetFocus( parent );
 
@@ -138,10 +136,10 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	}
 
 
-	buttonBack = TheNameKeyGenerator->nameToKey( AsciiString("LanMapSelectMenu.wnd:ButtonBack") );
-	buttonOK = TheNameKeyGenerator->nameToKey( AsciiString("LanMapSelectMenu.wnd:ButtonOK") );
-	listboxMap = TheNameKeyGenerator->nameToKey( AsciiString("LanMapSelectMenu.wnd:ListboxMap") );
-	winMapPreviewID = TheNameKeyGenerator->nameToKey( AsciiString("LanMapSelectMenu.wnd:WinMapPreview") );
+	buttonBack = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonBack" );
+	buttonOK = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonOK" );
+	listboxMap = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ListboxMap" );
+	winMapPreviewID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:WinMapPreview" );
 
 	radioButtonSystemMapsID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:RadioButtonSystemMaps" );
 	radioButtonUserMapsID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:RadioButtonUserMaps" );
@@ -165,8 +163,7 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	// get the listbox window
-	AsciiString listString( "LanMapSelectMenu.wnd:ListboxMap" );
-	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( listString );
+	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ListboxMap" );
 	mapList = TheWindowManager->winGetWindowFromId( parent, mapListID );
 	if( mapList )
 	{
@@ -174,7 +171,7 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 			TheMapCache->updateCache();
 		populateMapListbox( mapList, usesSystemMapDir, TRUE, TheLAN->GetMyGame()->getMap() );
 	}
-}  // end LanMapSelectMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu shutdown method */
@@ -189,7 +186,7 @@ void LanMapSelectMenuShutdown( WindowLayout *layout, void *userData )
 
 	// our shutdown is complete
 	TheShell->shutdownComplete( layout );
-}  // end LanMapSelectMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu update method */
@@ -197,7 +194,7 @@ void LanMapSelectMenuShutdown( WindowLayout *layout, void *userData )
 void LanMapSelectMenuUpdate( WindowLayout *layout, void *userData )
 {
 
-}  // end LanMapSelectMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Map select menu input callback */
@@ -228,29 +225,28 @@ WindowMsgHandledType LanMapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 					//
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
-						AsciiString buttonName( "LanMapSelectMenu.wnd:ButtonBack" );
-						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( buttonName );
+						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonBack" );
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)button, buttonID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end LanMapSelectMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu window system callback */
@@ -258,8 +254,8 @@ WindowMsgHandledType LanMapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 																				  WindowMsgData mData1, WindowMsgData mData2 )
 {
-	GameWindow *mapWindow = NULL;
-	if (listboxMap != NULL)
+	GameWindow *mapWindow = nullptr;
+	if (listboxMap != NAMEKEY_INVALID)
 	{
 		mapWindow = TheWindowManager->winGetWindowFromId( parent, listboxMap );
 	}
@@ -273,7 +269,7 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 
 			break;
 
-		}  // end create
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
@@ -282,7 +278,7 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 
 			break;
 
-		}  // end case
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -294,7 +290,7 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 
 			return MSG_HANDLED;
 
-		}  // end input
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GLM_DOUBLE_CLICKED:
@@ -347,21 +343,21 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 				{
 					mapSelectLayout->destroyWindows();
 					deleteInstance(mapSelectLayout);
-					mapSelectLayout = NULL;
+					mapSelectLayout = nullptr;
 				}
 
-				// set the controls to NULL since they've been destroyed.
+				// set the controls to nullptr since they've been destroyed.
 				NullifyControls();
 				showLANGameOptionsUnderlyingGUIElements(TRUE);
 				PostToLanGameOptions( MAP_BACK );
-			}  // end if
+			}
 			else if ( controlID == buttonOK )
 			{
 				Int selected = -1;
 				UnicodeString map;
 
 				// get the selected index
-				if (mapWindow != NULL)
+				if (mapWindow != nullptr)
 				{
 					GadgetListBoxGetSelected( mapWindow, &selected );
 				}
@@ -397,21 +393,21 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					{
 						mapSelectLayout->destroyWindows();
 						deleteInstance(mapSelectLayout);
-						mapSelectLayout = NULL;
+						mapSelectLayout = nullptr;
 					}
 
-					// set the controls to NULL since they've been destroyed.
+					// set the controls to nullptr since they've been destroyed.
 					NullifyControls();
 
 					showLANGameOptionsUnderlyingGUIElements(TRUE);
 					PostToLanGameOptions(SEND_GAME_OPTS);
 
-				}  // end if
-			}  // end else if
+				}
+			}
 
 			break;
 
-		}  // end selected
+		}
 
 		case GLM_SELECTED:
 			{
@@ -459,8 +455,8 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 
-}  // end LanMapSelectMenuSystem
+}

@@ -36,9 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef RENDEROBJECTRECYCLER_H
-#define RENDEROBJECTRECYCLER_H
+#pragma once
 
 #include "always.h"
 #include "robjlist.h"
@@ -64,7 +62,7 @@ class RenderObjectRecyclerClass
 {
 public:
 
-	void					Reset(void);
+	void					Reset();
 	RenderObjClass*	Get_Render_Object(const char * name,const Matrix3D & tm);
 	void					Return_Render_Object(RenderObjClass * obj);
 
@@ -77,8 +75,3 @@ private:
 	RefRenderObjListClass	InactiveModels;
 
 };
-
-
-
-
-#endif //RENDEROBJECTRECYCLER_H

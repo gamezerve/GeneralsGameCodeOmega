@@ -41,15 +41,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-
-#ifndef __EDITABLE_H
-#define __EDITABLE_H
-
 
 #include "always.h"
 #include "persist.h"
@@ -74,7 +66,7 @@ public:
 	// by the DECLARE_EDITABLE macro.
 	//
 	/////////////////////////////////////////////////////////////////////
-	virtual int						Get_Parameter_Count (void) const;
+	virtual int						Get_Parameter_Count () const;
 	virtual ParameterClass *	Lock_Parameter (int i);
 	virtual void					Unlock_Parameter (int i);
 };
@@ -83,7 +75,7 @@ public:
 //	Get_Parameter_Count
 /////////////////////////////////////////////////////////////////////
 inline int
-EditableClass::Get_Parameter_Count (void) const
+EditableClass::Get_Parameter_Count () const
 {
 	return 0;
 }
@@ -95,7 +87,7 @@ inline ParameterClass *
 EditableClass::Lock_Parameter (int i)
 {
 	WWASSERT (0);
-	return NULL;
+	return nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -117,7 +109,7 @@ EditableClass::Unlock_Parameter (int i)
 	//////////////////////////////////////////////////////////////////////////////////
 	#define DECLARE_EDITABLE(_class, _parent)										\
 	ParameterListClass plist_##_class;												\
-	virtual int _class::Get_Parameter_Count(void) const						\
+	virtual int _class::Get_Parameter_Count() const						\
 	{																							\
 		return plist_##_class.Count () + _parent::Get_Parameter_Count ();	\
 	}																							\
@@ -331,9 +323,3 @@ EditableClass::Unlock_Parameter (int i)
 	#define GENERIC_DEFID_PARAM(_class, data, root_class_id)
 
 #endif //PARAM_EDITING_ON
-
-
-#endif //__EDITABLE_H
-
-
-

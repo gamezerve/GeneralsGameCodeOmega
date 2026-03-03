@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : Commando / G 3D engine                                       *
  *                                                                                             *
- *                    File Name : MESH.CPP                                                     *
+ *                    File Name : MESH.cpp                                                     *
  *                                                                                             *
  *                   Programmer : Greg Hjelstrom                                               *
  *                                                                                             *
@@ -88,7 +88,6 @@
 
 #include "mesh.h"
 #include <assert.h>
-#include <string.h>
 #include "w3d_file.h"
 #include "assetmgr.h"
 #include "w3derr.h"
@@ -119,7 +118,6 @@
 #include "visrasterizer.h"
 #include "wwmemlog.h"
 #include "dx8rendererdebugger.h"
-#include <stdio.h>
 #include <wwprofile.h>
 
 static unsigned MeshDebugIdCount;
@@ -158,12 +156,12 @@ static DynamicVectorClass<Vector3>	_TempVertexBuffer;
  * HISTORY:                                                                                    *
  *   1/6/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-MeshClass::MeshClass(void) :
-	Model(NULL),
-	DecalMesh(NULL),
-	LightEnvironment(NULL),
+MeshClass::MeshClass() :
+	Model(nullptr),
+	DecalMesh(nullptr),
+	LightEnvironment(nullptr),
 	BaseVertexOffset(0),
-	NextVisibleSkin(NULL),
+	NextVisibleSkin(nullptr),
 	IsDisabledByDebugger(false),
 	MeshDebugId(MeshDebugIdCount++),
 	m_alphaOverride(1.0f),
@@ -188,11 +186,11 @@ MeshClass::MeshClass(void) :
  *=============================================================================================*/
 MeshClass::MeshClass(const MeshClass & that) :
 	RenderObjClass(that),
-	Model(NULL),
-	DecalMesh(NULL),
-	LightEnvironment(NULL),
+	Model(nullptr),
+	DecalMesh(nullptr),
+	LightEnvironment(nullptr),
 	BaseVertexOffset(that.BaseVertexOffset),
-	NextVisibleSkin(NULL),
+	NextVisibleSkin(nullptr),
 	IsDisabledByDebugger(false),
 	MeshDebugId(MeshDebugIdCount++),
 	m_alphaOverride(1.0f),
@@ -226,7 +224,7 @@ MeshClass & MeshClass::operator = (const MeshClass & that)
 
 		// just dont copy the decals or light environment
 		REF_PTR_RELEASE(DecalMesh);
-		LightEnvironment = NULL;
+		LightEnvironment = nullptr;
 	}
 	return * this;
 }
@@ -244,7 +242,7 @@ MeshClass & MeshClass::operator = (const MeshClass & that)
  * HISTORY:                                                                                    *
  *   1/6/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-MeshClass::~MeshClass(void)
+MeshClass::~MeshClass()
 {
 	Free();
 }
@@ -284,7 +282,7 @@ bool MeshClass::Contains(const Vector3 &point)
  * HISTORY:                                                                                    *
  *   1/6/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshClass::Free(void)
+void MeshClass::Free()
 {
 	REF_PTR_RELEASE(Model);
 	REF_PTR_RELEASE(DecalMesh);
@@ -303,7 +301,7 @@ void MeshClass::Free(void)
  * HISTORY:                                                                                    *
  *   1/6/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-RenderObjClass * MeshClass::Clone(void) const
+RenderObjClass * MeshClass::Clone() const
 {
 	return NEW_REF( MeshClass, (*this));
 }
@@ -321,7 +319,7 @@ RenderObjClass * MeshClass::Clone(void) const
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-const char * MeshClass::Get_Name(void) const
+const char * MeshClass::Get_Name() const
 {
 	return Model->Get_Name();
 }
@@ -356,7 +354,7 @@ void MeshClass::Set_Name(const char * name)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-uint32 MeshClass::Get_W3D_Flags(void)
+uint32 MeshClass::Get_W3D_Flags()
 {
 	return Model->W3dAttributes;
 }
@@ -374,7 +372,7 @@ uint32 MeshClass::Get_W3D_Flags(void)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-const char * MeshClass::Get_User_Text(void) const
+const char * MeshClass::Get_User_Text() const
 {
 	return Model->Get_User_Text();
 }
@@ -392,7 +390,7 @@ const char * MeshClass::Get_User_Text(void) const
  * HISTORY:                                                                                    *
  *   5/20/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-MaterialInfoClass * MeshClass::Get_Material_Info(void)
+MaterialInfoClass * MeshClass::Get_Material_Info()
 {
 	if (Model) {
 		if (Model->MatInfo) {
@@ -400,7 +398,7 @@ MaterialInfoClass * MeshClass::Get_Material_Info(void)
 			return Model->MatInfo;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 
@@ -416,9 +414,9 @@ MaterialInfoClass * MeshClass::Get_Material_Info(void)
  * HISTORY:                                                                                    *
  *   2/4/99     GTH : Created.                                                                 *
  *=============================================================================================*/
-MeshModelClass * MeshClass::Get_Model(void)
+MeshModelClass * MeshClass::Get_Model()
 {
-	if (Model != NULL) {
+	if (Model != nullptr) {
 		Model->Add_Ref();
 	}
 	return Model;
@@ -519,8 +517,8 @@ void	MeshClass::Get_Deformed_Vertices(Vector3 *dst_vert, Vector3 *dst_norm)
 void MeshClass::Get_Deformed_Vertices(Vector3 *dst_vert)
 {
 	WWASSERT(Model->Get_Flag(MeshGeometryClass::SKIN));
-	WWASSERT(Container != NULL);
-	WWASSERT(Container->Get_HTree() != NULL);
+	WWASSERT(Container != nullptr);
+	WWASSERT(Container->Get_HTree() != nullptr);
 
 	Model->get_deformed_vertices(dst_vert,Container->Get_HTree());
 }
@@ -563,7 +561,7 @@ void MeshClass::Create_Decal(DecalGeneratorClass * generator)
 		Model->Generate_Rigid_APT(localbox, temp_apt);
 
 		if (temp_apt.Count() > 0) {
-			if (DecalMesh == NULL) {
+			if (DecalMesh == nullptr) {
 				DecalMesh =		NEW_REF(RigidDecalMeshClass, (this, generator->Peek_Decal_System()));
 			}
 			DecalMesh->Create_Decal(generator, localbox, temp_apt);
@@ -591,7 +589,7 @@ void MeshClass::Create_Decal(DecalGeneratorClass * generator)
 
 		// if it is not empty, add a decal
 		if (temp_apt.Count() > 0) {
-			if (DecalMesh == NULL) {
+			if (DecalMesh == nullptr) {
 				DecalMesh = NEW_REF(SkinDecalMeshClass, (this, generator->Peek_Decal_System()));
 			}
 			DecalMesh->Create_Decal(generator, worldbox, temp_apt, &_TempVertexBuffer);
@@ -614,7 +612,7 @@ void MeshClass::Create_Decal(DecalGeneratorClass * generator)
  *=============================================================================================*/
 void MeshClass::Delete_Decal(uint32 decal_id)
 {
-	if (DecalMesh != NULL) {
+	if (DecalMesh != nullptr) {
 		DecalMesh->Delete_Decal(decal_id);
 	}
 }
@@ -632,7 +630,7 @@ void MeshClass::Delete_Decal(uint32 decal_id)
  * HISTORY:                                                                                    *
  *   1/6/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-int MeshClass::Get_Num_Polys(void) const
+int MeshClass::Get_Num_Polys() const
 {
 	if (Model) {
 		int num_passes=Model->Get_Pass_Count();
@@ -785,14 +783,14 @@ void MeshClass::Render(RenderInfoClass & rinfo)
 			** to tell the mesh rendering system to process this skin
 			*/
 			if (rendered_something && Model->Get_Flag(MeshGeometryClass::SKIN)) {
-				//WWASSERT(dynamic_cast<DX8SkinFVFCategoryContainer *>(fvf_container) != NULL);
+				//WWASSERT(dynamic_cast<DX8SkinFVFCategoryContainer *>(fvf_container) != nullptr);
 				static_cast<DX8SkinFVFCategoryContainer*>(fvf_container)->Add_Visible_Skin(this);
 			}
 
 			/*
 			** If we have a decal mesh, link it into the mesh rendering system
 			*/
-			if (	(DecalMesh != NULL) &&
+			if (	(DecalMesh != nullptr) &&
 					((rinfo.Current_Override_Flags() & RenderInfoClass::RINFO_OVERRIDE_ADDITIONAL_PASSES_ONLY) == 0))
 			{
 				const SphereClass & ws_sphere = Get_Bounding_Sphere();
@@ -828,7 +826,7 @@ void MeshClass::Render_Material_Pass(MaterialPassClass * pass,IndexBufferClass *
 	float oldOpacity=-1.0f;
 	Vector3 oldEmissive(-1,-1,-1);
 
-	if (LightEnvironment != NULL) {
+	if (LightEnvironment != nullptr) {
 		DX8Wrapper::Set_Light_Environment(LightEnvironment);
 	}
 
@@ -879,7 +877,7 @@ void MeshClass::Render_Material_Pass(MaterialPassClass * pass,IndexBufferClass *
 		//MW: Need uninstall custom materials in case they leave D3D in unknown state
 		pass->UnInstall_Materials();
 
-	} else if ((pass->Get_Cull_Volume() != NULL) && (MaterialPassClass::Is_Per_Polygon_Culling_Enabled())) {
+	} else if ((pass->Get_Cull_Volume() != nullptr) && (MaterialPassClass::Is_Per_Polygon_Culling_Enabled())) {
 
 		/*
 		** Generate the APT
@@ -1029,7 +1027,7 @@ void MeshClass::Special_Render(SpecialRenderInfoClass & rinfo)
 
 	if (rinfo.RenderType == SpecialRenderInfoClass::RENDER_VIS) {
 
-		WWASSERT(rinfo.VisRasterizer != NULL);
+		WWASSERT(rinfo.VisRasterizer != nullptr);
 		rinfo.VisRasterizer->Enable_Two_Sided_Rendering(!!Model->Get_Flag(MeshGeometryClass::TWO_SIDED));
 
 		if (Model->Get_Flag(MeshModelClass::SKIN) == 0) {
@@ -1058,8 +1056,8 @@ void MeshClass::Special_Render(SpecialRenderInfoClass & rinfo)
 	}
 
 	if (rinfo.RenderType == SpecialRenderInfoClass::RENDER_SHADOW) {
-		const HTreeClass * htree = NULL;
-		if (Container!=NULL) {
+		const HTreeClass * htree = nullptr;
+		if (Container!=nullptr) {
 			htree = Container->Get_HTree();
 		}
 		Model->Shadow_Render(rinfo,Transform,htree);
@@ -1146,7 +1144,7 @@ WW3DErrorType MeshClass::Load_W3D(ChunkLoadClass & cload)
 	** Create empty MaterialInfo and Model
 	*/
 	Model = NEW_REF(MeshModelClass,());
-	if (Model == NULL) {
+	if (Model == nullptr) {
 		WWDEBUG_SAY(("MeshClass::Load - Failed to allocate model"));
 		return WW3D_ERROR_LOAD_FAILED;
 	}
@@ -1276,7 +1274,7 @@ bool MeshClass::Cast_AABox(AABoxCollisionTestClass & boxtest)
 
 	WWASSERT(Model);
 
-	// This function analyses the tranform to call optimized functions in certain cases
+	// This function analyses the transform to call optimized functions in certain cases
 	bool hit = Model->Cast_World_Space_AABox(boxtest, Get_Transform());
 
 	if (hit) {
@@ -1443,7 +1441,7 @@ void MeshClass::Get_Obj_Space_Bounding_Box(AABoxClass & box) const
  * HISTORY:                                                                                    *
  *   6/18/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshClass::Generate_Culling_Tree(void)
+void MeshClass::Generate_Culling_Tree()
 {
 	Model->Generate_Culling_Tree();
 }
@@ -1471,7 +1469,7 @@ void MeshClass::Add_Dependencies_To_List
 	// Get a pointer to this mesh's material information object
 	//
 	MaterialInfoClass *material = Get_Material_Info ();
-	if (material != NULL) {
+	if (material != nullptr) {
 
 		//
 		// Loop through all the textures and add their filenames to our list
@@ -1482,7 +1480,7 @@ void MeshClass::Add_Dependencies_To_List
 			//	Add this texture's filename to the list
 			//
 			TextureClass *texture = material->Peek_Texture (index);
-			if (texture != NULL) {
+			if (texture != nullptr) {
 				file_list.Add (texture->Get_Full_Path ());
 			}
 		}
@@ -1510,7 +1508,7 @@ void MeshClass::Add_Dependencies_To_List
  * HISTORY:                                                                                    *
  *   5/14/2001    NH : Created.                                                                *
  *=============================================================================================*/
-void MeshClass::Update_Cached_Bounding_Volumes(void) const
+void MeshClass::Update_Cached_Bounding_Volumes() const
 {
 	Get_Obj_Space_Bounding_Sphere(CachedBoundingSphere);
 
@@ -1521,7 +1519,7 @@ void MeshClass::Update_Cached_Bounding_Volumes(void) const
 #endif
 
 	// If we are camera-aligned or -oriented, we don't know which way we are facing at this point,
-	// so the box we return needs to contain the sphere. Otherewise do the normal computation.
+	// so the box we return needs to contain the sphere. Otherwise do the normal computation.
 	if (Model->Get_Flag(MeshModelClass::ALIGNED) || Model->Get_Flag(MeshModelClass::ORIENTED)) {
 		CachedBoundingBox.Center = CachedBoundingSphere.Center;
 		CachedBoundingBox.Extent.Set(CachedBoundingSphere.Radius, CachedBoundingSphere.Radius, CachedBoundingSphere.Radius);
@@ -1559,7 +1557,7 @@ void Set_MeshModel_Flag(RenderObjClass *robj, int flag, int onoff)
 	}
 }
 
-int MeshClass::Get_Sort_Level(void) const
+int MeshClass::Get_Sort_Level() const
 {
 	if (Model) {
 		return (Model->Get_Sort_Level());
@@ -1574,9 +1572,9 @@ void MeshClass::Set_Sort_Level(int level)
 	}
 }
 
-int MeshClass::Get_Draw_Call_Count(void) const
+int MeshClass::Get_Draw_Call_Count() const
 {
-	if (Model != NULL) {
+	if (Model != nullptr) {
 		// Prefer to return the number of polygon renderers
 		int prcount = Model->PolygonRendererList.Count();
 		if (prcount > 0) {
@@ -1584,7 +1582,7 @@ int MeshClass::Get_Draw_Call_Count(void) const
 		}
 
 		// Otherwise if we have textures, return the number of textures (e.g. dont have prs when sorting)
-		if ((Model->MatInfo != NULL) && (Model->MatInfo->Texture_Count() > 0)) {
+		if ((Model->MatInfo != nullptr) && (Model->MatInfo->Texture_Count() > 0)) {
 			return Model->MatInfo->Texture_Count();
 		}
 

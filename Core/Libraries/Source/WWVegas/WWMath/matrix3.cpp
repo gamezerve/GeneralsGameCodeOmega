@@ -263,7 +263,7 @@ void Matrix3x3::Compute_Jacobi_Rotation(int i,int j,Matrix3x3 * r,Matrix3x3 * ri
 
 }
 
-void Matrix3x3::Symmetric_Eigen_Solve(void)
+void Matrix3x3::Symmetric_Eigen_Solve()
 {
 	Matrix3x3 eigen_vals = *this;
 	Matrix3x3 eigen_vecs(1);
@@ -290,7 +290,7 @@ void Matrix3x3::Symmetric_Eigen_Solve(void)
 void Matrix3x3::Multiply(const Matrix3x3 & A,const Matrix3x3 & B,Matrix3x3 * set_res)
 {
 	Matrix3x3 tmp;
-	Matrix3x3 * Aptr;
+	const Matrix3x3 * Aptr;
 	float tmp1,tmp2,tmp3;
 
 	// Check for aliased parameters, copy the 'A' matrix into a temporary if the
@@ -300,7 +300,7 @@ void Matrix3x3::Multiply(const Matrix3x3 & A,const Matrix3x3 & B,Matrix3x3 * set
 		tmp = A;
 		Aptr = &tmp;
 	} else {
-		Aptr = (Matrix3x3 *)&A;
+		Aptr = &A;
 	}
 
 	tmp1 = B[0][0];
@@ -328,7 +328,7 @@ void Matrix3x3::Multiply(const Matrix3x3 & A,const Matrix3x3 & B,Matrix3x3 * set
 	(*set_res)[2][2] = (float)((*Aptr)[2][0]*tmp1 + (*Aptr)[2][1]*tmp2 + (*Aptr)[2][2]*tmp3);
 }
 
-int Matrix3x3::Is_Orthogonal(void) const
+int Matrix3x3::Is_Orthogonal() const
 {
 	Vector3 x(Row[0].X,Row[0].Y,Row[0].Z);
 	Vector3 y(Row[1].X,Row[1].Y,Row[1].Z);
@@ -345,7 +345,7 @@ int Matrix3x3::Is_Orthogonal(void) const
 	return 1;
 }
 
-void Matrix3x3::Re_Orthogonalize(void)
+void Matrix3x3::Re_Orthogonalize()
 {
 	Vector3 x(Row[0][0],Row[0][1],Row[0][2]);
 	Vector3 y(Row[1][0],Row[1][1],Row[1][2]);

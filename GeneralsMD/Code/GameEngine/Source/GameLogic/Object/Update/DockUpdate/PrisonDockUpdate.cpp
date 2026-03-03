@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -45,14 +45,14 @@ PrisonDockUpdate::PrisonDockUpdate( Thing *thing, const ModuleData* moduleData )
 								: DockUpdate( thing, moduleData )
 {
 
-}  // end PrisonDockUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-PrisonDockUpdate::~PrisonDockUpdate( void )
+PrisonDockUpdate::~PrisonDockUpdate()
 {
 
-}  // end ~PrisonDockUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Do the action while docked
@@ -63,7 +63,7 @@ Bool PrisonDockUpdate::action( Object *docker, Object *drone )
 {
 
 	// sanity
-	if( docker == NULL )
+	if( docker == nullptr )
 		return FALSE;
 
 	// if docker has no contents, do nothing and stop the dock process
@@ -84,7 +84,7 @@ Bool PrisonDockUpdate::action( Object *docker, Object *drone )
 	// end docking
 	return FALSE;
 
-}  // end action
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -95,7 +95,7 @@ void PrisonDockUpdate::crc( Xfer *xfer )
 	// extend base class
 	DockUpdate::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -113,17 +113,17 @@ void PrisonDockUpdate::xfer( Xfer *xfer )
 	// extend base class
 	DockUpdate::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void PrisonDockUpdate::loadPostProcess( void )
+void PrisonDockUpdate::loadPostProcess()
 {
 
 	// extend base class
 	DockUpdate::loadPostProcess();
 
-}  // end loadPostProcess
+}
 
 #endif

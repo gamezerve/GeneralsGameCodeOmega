@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __TUNNEL_CONTAIN_H_
-#define __TUNNEL_CONTAIN_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
 #include "GameLogic/Module/HealContain.h"
@@ -68,7 +65,7 @@ public:
 
 		static const FieldParse dataFieldParse[] =
 		{
-			{ "TimeForFullHeal", INI::parseDurationReal, NULL, offsetof( TunnelContainModuleData, m_framesForFullHeal ) },
+			{ "TimeForFullHeal", INI::parseDurationReal, nullptr, offsetof( TunnelContainModuleData, m_framesForFullHeal ) },
 			{ 0, 0, 0, 0 }
 		};
     p.add(dataFieldParse);
@@ -110,21 +107,23 @@ public:
 	virtual void removeFromContain( Object *obj, Bool exposeStealthUnits = FALSE );	///< remove 'obj' from contain list
 	virtual void removeAllContained( Bool exposeStealthUnits = FALSE );				///< remove all objects on contain list
   virtual void harmAndForceExitAllContained( DamageInfo *info );
-  virtual void killAllContained( void );				///< kill all objects on contain list
+  virtual void killAllContained();				///< kill all objects on contain list
 
 	// contain list access
 	virtual void iterateContained( ContainIterateFunc func, void *userData, Bool reverse );
 	virtual UnsignedInt getContainCount() const;
-	virtual Int getContainMax( void ) const;
+	virtual UnsignedInt getHeroUnitsContained() const;
+	virtual Int getContainMax() const;
 	virtual const ContainedItemsList* getContainedItemsList() const;
+	virtual UnsignedInt getFullTimeForHeal() const; ///< Returns the time in frames until a contained object becomes fully healed
 	virtual Bool isDisplayedOnControlBar() const { return TRUE; } ///< Does this container display its contents on the ControlBar?
 	virtual Bool isKickOutOnCapture(){ return FALSE; }///< Caves and Tunnels don't kick out on capture.
 
 	// override the onDie we inherit from OpenContain
 	virtual void onDie( const DamageInfo *damageInfo );  ///< the die callback
 
-	virtual void onDelete( void );
-	virtual void onCreate( void );
+	virtual void onDelete();
+	virtual void onCreate();
 	virtual void onObjectCreated();
 	virtual void onBuildComplete();
 	virtual Bool shouldDoOnBuildComplete() const { return m_needToRunOnBuildComplete; }
@@ -139,5 +138,3 @@ protected:
 	Bool m_isCurrentlyRegistered; ///< Keeps track if this is registered with the player, so we don't double remove and mess up
 
 };
-
-#endif  // end __TUNNEL_CONTAIN_H_

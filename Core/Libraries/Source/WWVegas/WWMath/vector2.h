@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : Westwood 3D                                                  *
  *                                                                                             *
- *                    File Name : VECTOR2.H                                                    *
+ *                    File Name : VECTOR2.h                                                    *
  *                                                                                             *
  *                   Programmer : Greg Hjelstrom                                               *
  *                                                                                             *
@@ -36,7 +36,7 @@
  *   Scalar Division Operator -- Divide a vector by a scalar                                   *
  *   Scalar Multiply Operator -- Multiply a vector by a scalar                                 *
  *   Vector Addition Operator -- Add two vectors                                               *
- *   Vector Subtraction Operator -- Subract two vectors                                        *
+ *   Vector Subtraction Operator -- Subtract two vectors                                       *
  *   Vector Inner Product Operator -- Compute the inner or dot product                         *
  *   Vector Equality Operator -- Detemine if two vectors are identical                         *
  *   Equal_Within_Epsilon -- Determine if two vectors are identical within                     *
@@ -45,16 +45,11 @@
  *   Vector2::Is_Valid -- Verifies that all components are valid floats                        *
  *	  Vector2::Update_Min -- sets each component of the vector to the min of this and a.        *
  *	  Vector2::Update_Max -- sets each component of the vector to the max of this and a.        *
- *   Vector2::Scale -- multiply components of a vector by independant scaling factors.			  *
+ *   Vector2::Scale -- multiply components of a vector by independent scaling factors.			  *
  *   Vector2::Lerp -- linearly interpolates two Vector2's                                      *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef VECTOR2_H
-#define VECTOR2_H
 
 #include "always.h"
 #include "wwmath.h"
@@ -81,7 +76,7 @@ public:
 	};
 
 	// Constructors
-	WWINLINE Vector2(void) {};
+	WWINLINE Vector2() {};
 	WWINLINE Vector2(const Vector2 & v) { X = v.X; Y = v.Y; }
 	WWINLINE Vector2(float x, float y) { X = x; Y = y; }
 	WWINLINE Vector2(const float vector[2]) { X = vector[0]; Y = vector[1]; }
@@ -97,9 +92,9 @@ public:
 	WWINLINE const float &  operator [](int i) const { return (&X)[i]; }
 
 	// normalize, compute length
-	WWINLINE void	Normalize(void);
-	WWINLINE float Length(void) const;
-	WWINLINE float Length2(void) const;
+	WWINLINE void	Normalize();
+	WWINLINE float Length() const;
+	WWINLINE float Length2() const;
 
 	// unary operators
 	WWINLINE Vector2 operator-() const { return Vector2(-X,-Y); }
@@ -138,7 +133,7 @@ public:
 	WWINLINE bool Rotate_Towards_Vector(Vector2 &target, float max_s, float max_c, bool & positive_turn);
 
 	// verify that none of the members of this vector are invalid floats
-	WWINLINE bool Is_Valid(void) const;
+	WWINLINE bool Is_Valid() const;
 
 	// make this vector the min or max of itself and the passed vector
 	WWINLINE void Update_Min (const Vector2 & a);
@@ -220,7 +215,7 @@ WWINLINE Vector2 operator + (const Vector2 &a,const Vector2 &b)
 }
 
 /**************************************************************************
- * Vector Subtraction Operator -- Subract two vectors                     *
+ * Vector Subtraction Operator -- Subtract two vectors                    *
  *                                                                        *
  * INPUT:                                                                 *
  *                                                                        *
@@ -505,7 +500,7 @@ WWINLINE void Swap(Vector2 & a,Vector2 & b)
  * HISTORY:                                                                                    *
  *   10/18/99   gth : Created.                                                                 *
  *=============================================================================================*/
-WWINLINE bool Vector2::Is_Valid(void) const
+WWINLINE bool Vector2::Is_Valid() const
 {
 	return (WWMath::Is_Valid_Float(X) && WWMath::Is_Valid_Float(Y));
 }
@@ -550,7 +545,7 @@ WWINLINE void Vector2::Update_Max (const Vector2 & a)
 
 
 /***********************************************************************************************
- * Vector2::Scale -- multiply components of a vector by independant scaling factors.			  *
+ * Vector2::Scale -- multiply components of a vector by independent scaling factors.			  *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -569,7 +564,7 @@ WWINLINE void Vector2::Scale (float a, float b)
 
 
 /***********************************************************************************************
- * Vector2::Scale -- multiply components of a vector by independant scaling factors.			  *
+ * Vector2::Scale -- multiply components of a vector by independent scaling factors.			  *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -661,11 +656,7 @@ WWINLINE float Distance(float x1, float y1, float x2, float y2)
  *=============================================================================================*/
 WWINLINE void Vector2::Lerp(const Vector2 & a,const Vector2 & b,float t,Vector2 * set_result)
 {
-	assert(set_result != NULL);
+	assert(set_result != nullptr);
 	set_result->X = (a.X + (b.X - a.X)*t);
    set_result->Y = (a.Y + (b.Y - a.Y)*t);
 }
-
-
-#endif /* VECTOR2_H */
-

@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef __CONTROL_BAR_SCHEME_H_
-#define __CONTROL_BAR_SCHEME_H_
-
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -76,15 +73,15 @@ enum TimeOfDay CPP_11(: Int);
 class ControlBarSchemeImage
 {
 public:
-	ControlBarSchemeImage( void );
-	~ControlBarSchemeImage( void );
+	ControlBarSchemeImage();
+	~ControlBarSchemeImage();
 
 	AsciiString m_name;						///< Name of the image
 	ICoord2D m_position;					///< the position we'll draw it at
 	ICoord2D m_size;							///< the size of the image needed when we draw it
 	Image *m_image;								///< the actual pointer to the mapped image
 
-	// m_layer is where the image will get drawn,  everything in layer 0-2 gets drawn during the forground draw
+	// m_layer is where the image will get drawn,  everything in layer 0-2 gets drawn during the foreground draw
 	// the layers 3-5 gets drawn during the background draw
 	Int m_layer; //layer means how deep the image will be drawn, it's a number between 0-5 with 0 being on top
 };
@@ -94,8 +91,8 @@ public:
 class ControlBarSchemeAnimation
 {
 public:
-	ControlBarSchemeAnimation( void );
-	~ControlBarSchemeAnimation( void );
+	ControlBarSchemeAnimation();
+	~ControlBarSchemeAnimation();
 	/// Enum that will contain all the kinds of animations we have... make sure in ControlBarScheme.cpp there's a
 	/// mapping for it for the INI translation
 	enum
@@ -111,9 +108,9 @@ public:
 	UnsignedInt m_animDuration;						///< Contians how long the animation should take based off game frames
 	ICoord2D m_finalPos;									///< The final position when we hit the m_animDuration frame
 
-	UnsignedInt getCurrentFrame(void) { return m_currentFrame; }
+	UnsignedInt getCurrentFrame() { return m_currentFrame; }
 	void setCurrentFrame( UnsignedInt currentFrame ) { m_currentFrame = currentFrame; }
-	ICoord2D getStartPos( void ) { return m_startPos; }
+	ICoord2D getStartPos() { return m_startPos; }
 	void setStartPos(ICoord2D startPos) { m_startPos = startPos;	}
 private:
 	ICoord2D m_startPos;									///< set when we first begin an animation
@@ -126,14 +123,14 @@ private:
 class ControlBarScheme
 {
 public:
-	ControlBarScheme( void );
-	~ControlBarScheme( void );
+	ControlBarScheme();
+	~ControlBarScheme();
 
-	void init( void );
-	void update( void );
+	void init();
+	void update();
 	void drawForeground( Coord2D multi, ICoord2D offset );	///< draw function to be called within a w3d draw procedure for the foreground
 	void drawBackground( Coord2D multi, ICoord2D offset );	///< draw function to be called within a w3d draw procedure for the background
-	void reset( void );
+	void reset();
 
 	void addAnimation( ControlBarSchemeAnimation *schemeAnim );
 	void addImage( ControlBarSchemeImage *schemeImage);
@@ -249,11 +246,11 @@ public:
 class ControlBarSchemeManager
 {
 public:
-	ControlBarSchemeManager( void );
-	~ControlBarSchemeManager( void );
+	ControlBarSchemeManager();
+	~ControlBarSchemeManager();
 
-	void init( void );						///< Initialize from the INI files
-	void update( void );					///< move the animations if we have any
+	void init();						///< Initialize from the INI files
+	void update();					///< move the animations if we have any
 	void drawForeground( ICoord2D offset );	///< draw function to be called within a w3d draw procedure for the foreground
 	void drawBackground( ICoord2D offset );	///< draw function to be called within a w3d draw procedure for the background
 
@@ -275,7 +272,7 @@ public:
 
 private:
 	ControlBarScheme *m_currentScheme;													///< the current scheme that everythign uses
-	Coord2D m_multiplyer;
+	Coord2D m_multiplier;
 
 	typedef std::list< ControlBarScheme* > ControlBarSchemeList;			///< list of control bar schemes
 	ControlBarSchemeList m_schemeList;
@@ -289,5 +286,3 @@ private:
 //-----------------------------------------------------------------------------
 // EXTERNALS //////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-
-#endif // __CONTROL_BAR_SCHEME_H_

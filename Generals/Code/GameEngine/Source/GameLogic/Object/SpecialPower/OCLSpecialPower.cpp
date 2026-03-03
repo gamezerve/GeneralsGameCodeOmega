@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/RandomValue.h"
@@ -49,7 +49,7 @@ enum
 	CREATE_ABOVE_LOCATION_HEIGHT = 300
 };
 
-static const char* TheOCLCreateLocTypeNames[] =
+static const char* const TheOCLCreateLocTypeNames[] =
 {
 	"CREATE_AT_EDGE_NEAR_SOURCE",
 	"CREATE_AT_EDGE_NEAR_TARGET",
@@ -57,14 +57,15 @@ static const char* TheOCLCreateLocTypeNames[] =
 	"USE_OWNER_OBJECT",
 	"CREATE_ABOVE_LOCATION",
 	"CREATE_AT_EDGE_FARTHEST_FROM_TARGET",
-	NULL
+	nullptr
 };
+static_assert(ARRAY_SIZE(TheOCLCreateLocTypeNames) == OCL_CREATE_LOC_COUNT + 1, "Incorrect array size");
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-OCLSpecialPowerModuleData::OCLSpecialPowerModuleData( void )
+OCLSpecialPowerModuleData::OCLSpecialPowerModuleData()
 {
-	m_defaultOCL = NULL;
+	m_defaultOCL = nullptr;
 	m_upgradeOCL.clear();
 	m_createLoc = CREATE_AT_EDGE_NEAR_SOURCE;
 }
@@ -75,8 +76,8 @@ static void parseOCLUpgradePair( INI* ini, void * /*instance*/, void *store, con
 {
 	OCLSpecialPowerModuleData::Upgrades up;
 
-	INI::parseScience(ini, NULL, &up.m_science, NULL);
-	INI::parseObjectCreationList(ini, NULL, &up.m_ocl, NULL);
+	INI::parseScience(ini, nullptr, &up.m_science, nullptr);
+	INI::parseObjectCreationList(ini, nullptr, &up.m_ocl, nullptr);
 
 	std::vector<OCLSpecialPowerModuleData::Upgrades>* s = (std::vector<OCLSpecialPowerModuleData::Upgrades>*)store;
 	s->push_back(up);
@@ -90,10 +91,10 @@ static void parseOCLUpgradePair( INI* ini, void * /*instance*/, void *store, con
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "UpgradeOCL", parseOCLUpgradePair, NULL, offsetof( OCLSpecialPowerModuleData, m_upgradeOCL ) },
-		{ "OCL", INI::parseObjectCreationList, NULL, offsetof( OCLSpecialPowerModuleData, m_defaultOCL ) },
+		{ "UpgradeOCL", parseOCLUpgradePair, nullptr, offsetof( OCLSpecialPowerModuleData, m_upgradeOCL ) },
+		{ "OCL", INI::parseObjectCreationList, nullptr, offsetof( OCLSpecialPowerModuleData, m_defaultOCL ) },
 		{ "CreateLocation", INI::parseIndexList, TheOCLCreateLocTypeNames, offsetof( OCLSpecialPowerModuleData, m_createLoc ) },
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
@@ -117,7 +118,7 @@ const ObjectCreationList* OCLSpecialPower::findOCL() const
 {
 	const OCLSpecialPowerModuleData* d = getOCLSpecialPowerModuleData();
 	const Player* controller = getObject()->getControllingPlayer();
-	if (controller != NULL)
+	if (controller != nullptr)
 	{
 		for (std::vector<OCLSpecialPowerModuleData::Upgrades>::const_iterator it = d->m_upgradeOCL.begin();
 					it != d->m_upgradeOCL.end();
@@ -132,7 +133,7 @@ const ObjectCreationList* OCLSpecialPower::findOCL() const
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-OCLSpecialPower::~OCLSpecialPower( void )
+OCLSpecialPower::~OCLSpecialPower()
 {
 
 }
@@ -146,7 +147,7 @@ void OCLSpecialPower::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, 
 		return;
 
 	// sanity
-	if( loc == NULL )
+	if( loc == nullptr )
 		return;
 
 	// call the base class action cause we are *EXTENDING* functionality
@@ -230,7 +231,7 @@ void OCLSpecialPower::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -248,15 +249,15 @@ void OCLSpecialPower::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void OCLSpecialPower::loadPostProcess( void )
+void OCLSpecialPower::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

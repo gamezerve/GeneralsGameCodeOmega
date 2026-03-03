@@ -46,12 +46,12 @@
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "Common/UserPreferences.h"
+#include "Common/OptionPreferences.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/Shell.h"
@@ -68,21 +68,21 @@
 //-----------------------------------------------------------------------------
 static GameDifficulty s_AIDiff = DIFFICULTY_NORMAL;
 static NameKeyType    buttonOkID      = NAMEKEY_INVALID;
-static GameWindow *   buttonOk       = NULL;
+static GameWindow *   buttonOk       = nullptr;
 static NameKeyType    buttonCancelID      = NAMEKEY_INVALID;
-static GameWindow *   buttonCancel       = NULL;
+static GameWindow *   buttonCancel       = nullptr;
 static NameKeyType    radioButtonEasyAIID      = NAMEKEY_INVALID;
 static NameKeyType    radioButtonMediumAIID      = NAMEKEY_INVALID;
 static NameKeyType    radioButtonHardAIID      = NAMEKEY_INVALID;
-static GameWindow *   radioButtonEasyAI       = NULL;
-static GameWindow *   radioButtonMediumAI       = NULL;
-static GameWindow *   radioButtonHardAI       = NULL;
+static GameWindow *   radioButtonEasyAI       = nullptr;
+static GameWindow *   radioButtonMediumAI       = nullptr;
+static GameWindow *   radioButtonHardAI       = nullptr;
 
 void setupGameStart(AsciiString mapName, GameDifficulty diff);
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-static void SetDifficultyRadioButton( void )
+static void SetDifficultyRadioButton()
 {
 	OptionPreferences pref;
 	if (!TheScriptEngine)
@@ -118,26 +118,25 @@ static void SetDifficultyRadioButton( void )
 			}
 
 		}
-	} // if (TheScriptEngine)
+	}
 
 }
 
 
 void DifficultySelectInit( WindowLayout *layout, void *userData )
 {
-	AsciiString parentName( "DifficultySelect.wnd:DifficultySelectParent" );
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( parentName );
-	GameWindow *parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
+	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:DifficultySelectParent" );
+	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 
 	buttonOkID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:ButtonOk" );
 	buttonOk = TheWindowManager->winGetWindowFromId( parent, buttonOkID );
 	buttonCancelID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:ButtonCancel" );
 	buttonCancel = TheWindowManager->winGetWindowFromId( parent, buttonCancelID );
-	radioButtonEasyAIID = TheNameKeyGenerator->nameToKey( AsciiString("DifficultySelect.wnd:RadioButtonEasy") );
+	radioButtonEasyAIID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:RadioButtonEasy" );
 	radioButtonEasyAI = TheWindowManager->winGetWindowFromId( parent, radioButtonEasyAIID );
-	radioButtonMediumAIID = TheNameKeyGenerator->nameToKey( AsciiString("DifficultySelect.wnd:RadioButtonMedium") );
+	radioButtonMediumAIID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:RadioButtonMedium" );
 	radioButtonMediumAI = TheWindowManager->winGetWindowFromId( parent, radioButtonMediumAIID );
-	radioButtonHardAIID = TheNameKeyGenerator->nameToKey( AsciiString("DifficultySelect.wnd:RadioButtonHard") );
+	radioButtonHardAIID = TheNameKeyGenerator->nameToKey( "DifficultySelect.wnd:RadioButtonHard" );
 	radioButtonHardAI = TheWindowManager->winGetWindowFromId( parent, radioButtonHardAIID );
 
 	s_AIDiff = DIFFICULTY_NORMAL;
@@ -145,14 +144,14 @@ void DifficultySelectInit( WindowLayout *layout, void *userData )
 	// set keyboard focus to main parent
 //	AsciiString parentName( "SkirmishMapSelectMenu.wnd:SkrimishMapSelectMenuParent" );
 //	NameKeyType parentID = TheNameKeyGenerator->nameToKey( parentName );
-//	parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
+//	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 //
 //	TheWindowManager->winSetFocus( parent );
 //
 	parent->winBringToTop();
 	TheWindowManager->winSetModal(parent);
 
-}  // end SkirmishMapSelectMenuInit
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -206,7 +205,7 @@ WindowMsgHandledType DifficultySelectInput( GameWindow *window, UnsignedInt msg,
 
 	return MSG_IGNORED;
 
-}  // end SkirmishMapSelectMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu window system callback */
@@ -223,14 +222,14 @@ WindowMsgHandledType DifficultySelectSystem( GameWindow *window, UnsignedInt msg
 		{
 			break;
 
-		}  // end create
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
 			break;
 
-		}  // end case
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -242,7 +241,7 @@ WindowMsgHandledType DifficultySelectSystem( GameWindow *window, UnsignedInt msg
 
 			return MSG_HANDLED;
 
-		}  // end input
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
@@ -294,12 +293,12 @@ WindowMsgHandledType DifficultySelectSystem( GameWindow *window, UnsignedInt msg
 
 			break;
 
-		}  // end selected
+		}
 
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 

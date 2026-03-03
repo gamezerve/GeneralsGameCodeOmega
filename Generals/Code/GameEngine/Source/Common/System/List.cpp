@@ -102,7 +102,7 @@
 // LList::LList
 //============================================================================
 
-LList::LList( )
+LList::LList()
 : m_sortMode(DESCENDING)
 {
 	m_head.setItem( &m_head.m_item);
@@ -202,11 +202,11 @@ void	LList::addItemToTail( void *item )
 // LList::Clear
 //============================================================================
 
-void LList::clear( void )
+void LList::clear()
 {
 	LListNode *node;
 
-	while ( (node = firstNode()) != NULL )
+	while ( (node = firstNode()) != nullptr )
 	{
 		node->remove();
 		node->destroy();
@@ -217,7 +217,7 @@ void LList::clear( void )
 // LList::nodeCount
 //=================================================================
 
-Int LList::nodeCount( void )
+Int LList::nodeCount()
 {
 	LListNode* node;
 	Int	count = 0;
@@ -252,7 +252,7 @@ LListNode*	LList::getNode( Int index )
 		node = node->next();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //============================================================================
@@ -262,7 +262,7 @@ LListNode*	LList::getNode( Int index )
 void LList::merge( LList *list )
 {
 
-	if ( list == NULL || list->isEmpty() )
+	if ( list == nullptr || list->isEmpty() )
 	{
 			return;
 	}
@@ -282,7 +282,7 @@ void LList::merge( LList *list )
 
 Bool LList::hasItem( void *item )
 {
-	return findItem( item ) != NULL;
+	return findItem( item ) != nullptr;
 }
 
 //============================================================================
@@ -304,7 +304,7 @@ LListNode* LList::findItem( void *item )
 		node = node->next();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //============================================================================
@@ -313,7 +313,7 @@ LListNode* LList::findItem( void *item )
 
 LListNode::LListNode()
 : m_pri(0),
-	m_item(NULL),
+	m_item(nullptr),
 	m_autoDelete(FALSE)
 {
 	m_next = m_prev = this;
@@ -347,7 +347,7 @@ void 		 	LListNode::append( LListNode* new_node )
 // LListNode::remove
 //=================================================================
 
-void 		 	LListNode::remove( void )
+void 		 	LListNode::remove()
 {
 	m_prev->m_next = m_next;
 	m_next->m_prev = m_prev;
@@ -358,12 +358,12 @@ void 		 	LListNode::remove( void )
 // LListNode::next
 //=================================================================
 
-LListNode*		LListNode::next( void )
+LListNode*		LListNode::next()
 {
 
-	if( m_next->isHead( ))
+	if( m_next->isHead())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	return m_next;
@@ -373,11 +373,11 @@ LListNode*		LListNode::next( void )
 // LListNode::prev
 //=================================================================
 
-LListNode*		LListNode::prev( void )
+LListNode*		LListNode::prev()
 {
 	if( m_prev->isHead())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	return m_prev;
@@ -387,19 +387,19 @@ LListNode*		LListNode::prev( void )
 // LListNode::loopNext
 //=================================================================
 
-LListNode*		LListNode::loopNext( void )
+LListNode*		LListNode::loopNext()
 {
 	LListNode*	next;
 
 	next = m_next;
 
-	if( next->isHead( ))
+	if( next->isHead())
 	{
 		// skip head node
 		next = next->m_next;
-		if( next->isHead( ))
+		if( next->isHead())
 		{
-			return NULL;	// it is an empty list
+			return nullptr;	// it is an empty list
 		}
 	}
 
@@ -410,7 +410,7 @@ LListNode*		LListNode::loopNext( void )
 // LListNode::loopPrev
 //=================================================================
 
-LListNode*		LListNode::loopPrev( void )
+LListNode*		LListNode::loopPrev()
 {
 	LListNode*	prev;
 
@@ -422,7 +422,7 @@ LListNode*		LListNode::loopPrev( void )
 		prev = prev->m_prev;
 		if( prev->isHead())
 		{
-			return NULL;	// it is an empty list
+			return nullptr;	// it is an empty list
 		}
 	}
 
@@ -433,7 +433,7 @@ LListNode*		LListNode::loopPrev( void )
 // LListNode::destroy
 //============================================================================
 
-void	LListNode::destroy( void )
+void	LListNode::destroy()
 {
 	if ( m_autoDelete )
 	{

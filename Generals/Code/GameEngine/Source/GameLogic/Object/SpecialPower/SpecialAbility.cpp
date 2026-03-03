@@ -29,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/Xfer.h"
@@ -46,14 +46,14 @@ SpecialAbility::SpecialAbility( Thing *thing, const ModuleData *moduleData )
 												: SpecialPowerModule( thing, moduleData )
 {
 
-}  // end SpecialAbility
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-SpecialAbility::~SpecialAbility( void )
+SpecialAbility::~SpecialAbility()
 {
 
-}  // end ~SpecialAbility
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void SpecialAbility::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, U
 		return;
 
 	// sanity
-	if( loc == NULL )
+	if( loc == nullptr )
 		return;
 
 	// call the base class action cause we are *EXTENDING* functionality
@@ -105,7 +105,7 @@ void SpecialAbility::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -123,15 +123,15 @@ void SpecialAbility::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SpecialAbility::loadPostProcess( void )
+void SpecialAbility::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/ThingTemplate.h"
@@ -92,19 +92,19 @@ void TransportContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Slots",	INI::parseInt,		NULL, offsetof( TransportContainModuleData, m_slotCapacity ) },
-		{ "ScatterNearbyOnExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_scatterNearbyOnExit ) },
-		{ "OrientLikeContainerOnExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_orientLikeContainerOnExit ) },
-		{ "KeepContainerVelocityOnExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_keepContainerVelocityOnExit ) },
-		{ "GoAggressiveOnExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_goAggressiveOnExit ) },
-		{ "ResetMoodCheckTimeOnExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_resetMoodCheckTimeOnExit ) },
-		{ "DestroyRidersWhoAreNotFreeToExit",	INI::parseBool,		NULL, offsetof( TransportContainModuleData, m_destroyRidersWhoAreNotFreeToExit ) },
-		{ "ExitBone",	INI::parseAsciiString,		NULL, offsetof( TransportContainModuleData, m_exitBone ) },
-		{ "ExitPitchRate",	INI::parseAngularVelocityReal,		NULL, offsetof( TransportContainModuleData, m_exitPitchRate ) },
-		{ "InitialPayload", parseInitialPayload, NULL, 0 },
-		{ "HealthRegen%PerSec", INI::parseReal, NULL, offsetof( TransportContainModuleData, m_healthRegen ) },
-		{ "ExitDelay",	INI::parseDurationUnsignedInt,		NULL, offsetof( TransportContainModuleData, m_exitDelay ) },
-		{ 0, 0, 0, 0 }
+		{ "Slots",	INI::parseInt,		nullptr, offsetof( TransportContainModuleData, m_slotCapacity ) },
+		{ "ScatterNearbyOnExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_scatterNearbyOnExit ) },
+		{ "OrientLikeContainerOnExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_orientLikeContainerOnExit ) },
+		{ "KeepContainerVelocityOnExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_keepContainerVelocityOnExit ) },
+		{ "GoAggressiveOnExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_goAggressiveOnExit ) },
+		{ "ResetMoodCheckTimeOnExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_resetMoodCheckTimeOnExit ) },
+		{ "DestroyRidersWhoAreNotFreeToExit",	INI::parseBool,		nullptr, offsetof( TransportContainModuleData, m_destroyRidersWhoAreNotFreeToExit ) },
+		{ "ExitBone",	INI::parseAsciiString,		nullptr, offsetof( TransportContainModuleData, m_exitBone ) },
+		{ "ExitPitchRate",	INI::parseAngularVelocityReal,		nullptr, offsetof( TransportContainModuleData, m_exitPitchRate ) },
+		{ "InitialPayload", parseInitialPayload, nullptr, 0 },
+		{ "HealthRegen%PerSec", INI::parseReal, nullptr, offsetof( TransportContainModuleData, m_healthRegen ) },
+		{ "ExitDelay",	INI::parseDurationUnsignedInt,		nullptr, offsetof( TransportContainModuleData, m_exitDelay ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -115,7 +115,7 @@ void TransportContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Int TransportContain::getContainMax( void ) const
+Int TransportContain::getContainMax() const
 {
 	if (getTransportContainModuleData())
 		return getTransportContainModuleData()->m_slotCapacity;
@@ -135,7 +135,7 @@ TransportContain::TransportContain( Thing *thing, const ModuleData *moduleData )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-TransportContain::~TransportContain( void )
+TransportContain::~TransportContain()
 {
 
 }
@@ -227,7 +227,7 @@ void TransportContain::onContaining( Object *rider )
 		if( draw )
 			draw->setModelConditionState( MODELCONDITION_LOADED );
 
-	}  // end if
+	}
 
 }
 
@@ -248,9 +248,9 @@ void TransportContain::onRemoving( Object *rider )
 		if (draw)
 		{
 			Coord3D bonePos, worldPos;
-			if (draw->getPristineBonePositions(d->m_exitBone.str(), 0, &bonePos, NULL, 1) == 1)
+			if (draw->getPristineBonePositions(d->m_exitBone.str(), 0, &bonePos, nullptr, 1) == 1)
 			{
-				getObject()->convertBonePosToWorldPos(&bonePos, NULL, &worldPos, NULL);
+				getObject()->convertBonePosToWorldPos(&bonePos, nullptr, &worldPos, nullptr);
 				rider->setPosition(&worldPos);
 			}
 		}
@@ -292,7 +292,7 @@ void TransportContain::onRemoving( Object *rider )
 		if( draw )
 			draw->clearModelConditionState( MODELCONDITION_LOADED );
 
-	}  // end if
+	}
 
 	if (getObject()->isAboveTerrain())
 	{
@@ -443,7 +443,7 @@ void TransportContain::killRidersWhoAreNotFreeToExit()
 // ------------------------------------------------------------------------------------------------
 Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 {
-	if( specificObject == NULL )
+	if( specificObject == nullptr )
 		return TRUE;	// I can, in general, exit people.
 
 	// This is a override, not an extend.  I will check for game legality for
@@ -517,7 +517,7 @@ void TransportContain::crc( Xfer *xfer )
 	// extend base class
 	OpenContain::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -544,15 +544,15 @@ void TransportContain::xfer( Xfer *xfer )
 	// frame exit not busy
 	xfer->xferUnsignedInt( &m_frameExitNotBusy );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void TransportContain::loadPostProcess( void )
+void TransportContain::loadPostProcess()
 {
 
 	// extend base class
 	OpenContain::loadPostProcess();
 
-}  // end loadPostProcess
+}

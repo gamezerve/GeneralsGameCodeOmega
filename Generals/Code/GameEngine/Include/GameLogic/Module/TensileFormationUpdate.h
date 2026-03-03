@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __TENSILEFORMATIONUPDATE_H_
-#define __TENSILEFORMATIONUPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 
@@ -44,7 +41,7 @@ class TensileFormationUpdateModuleData: public UpdateModuleData
 
 public:
 
-	TensileFormationUpdateModuleData( void );
+	TensileFormationUpdateModuleData();
 
 	static void buildFieldParse(MultiIniFieldParse& p);
 
@@ -71,7 +68,7 @@ public:
 protected:
 
 	void propagateDislodgement( Bool enabled );
-	void initLinks( void );
+	void initLinks();
 
 	struct TensileLink
 	{
@@ -90,5 +87,3 @@ protected:
 	AudioEventRTS				m_crackSound;
 
 };
-
-#endif  // end __TENSILEFORMATIONUPDATE_H_

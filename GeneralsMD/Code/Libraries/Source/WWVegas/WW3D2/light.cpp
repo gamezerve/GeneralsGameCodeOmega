@@ -49,8 +49,8 @@
  *   LightClass::Load_W3D -- Initialize this light from a W3D file                             *
  *   LightClass::Save_W3D -- Save this light's settings into a W3D file                        *
  *   LightClass::Get_Factory -- get the PersistFactory for LightClass                          *
- *   LightClass::Save -- persistant object support                                             *
- *   LightClass::Load -- persistant object support                                             *
+ *   LightClass::Save -- persistent object support                                             *
+ *   LightClass::Load -- persistent object support                                             *
  *   LightImpClass::LightImpClass -- constructor                                               *
  *   LightImpClass::Process_Push -- exposes the "push" process for an srLight                  *
  *   LightImpClass::Process_Pop -- exposes the "pop" process for an srLight                    *
@@ -207,7 +207,7 @@ LightClass & LightClass::operator = (const LightClass & that)
  * HISTORY:                                                                                    *
  *   3/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-LightClass::~LightClass(void)
+LightClass::~LightClass()
 {
 }
 
@@ -224,7 +224,7 @@ LightClass::~LightClass(void)
  * HISTORY:                                                                                    *
  *   3/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-RenderObjClass * LightClass::Clone(void) const
+RenderObjClass * LightClass::Clone() const
 {
 	return W3DNEW LightClass(*this);
 }
@@ -501,14 +501,14 @@ WW3DErrorType LightClass::Save_W3D(ChunkSaveClass & csave)
  * HISTORY:                                                                                    *
  *   9/23/99    GTH : Created.                                                                 *
  *=============================================================================================*/
-const PersistFactoryClass & LightClass::Get_Factory (void) const
+const PersistFactoryClass & LightClass::Get_Factory () const
 {
 	return _LightFactory;
 }
 
 
 /***********************************************************************************************
- * LightClass::Save -- persistant object support                                               *
+ * LightClass::Save -- persistent object support                                               *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *
@@ -535,7 +535,7 @@ bool LightClass::Save (ChunkSaveClass &csave)
 
 
 /***********************************************************************************************
- * LightClass::Load -- persistant object support                                               *
+ * LightClass::Load -- persistent object support                                               *
  *                                                                                             *
  * INPUT:                                                                                      *
  *                                                                                             *

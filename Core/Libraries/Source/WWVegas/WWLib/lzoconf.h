@@ -59,9 +59,7 @@
    markus.oberhumer@jk.uni-linz.ac.at
  */
 
-
-#ifndef __LZOCONF_H
-#define __LZOCONF_H
+#pragma once
 
 #define LZO_VERSION             0x0200
 #define LZO_VERSION_STRING      "0.20"
@@ -199,11 +197,11 @@ typedef void __LZO_ENTRY
 
 
 /* this should be the first function you call. Check the return code ! */
-LZO_EXTERN(int) lzo_init(void);
+LZO_EXTERN(int) lzo_init();
 
 /* version functions (useful for shared libraries) */
-LZO_EXTERN(unsigned) lzo_version(void);
-LZO_EXTERN(const char *) lzo_version_string(void);
+LZO_EXTERN(unsigned) lzo_version();
+LZO_EXTERN(const char *) lzo_version_string();
 
 /* string functions */
 LZO_EXTERN(int)
@@ -221,14 +219,12 @@ lzo_adler32(lzo_uint _adler, const lzo_byte *_buf, lzo_uint _len);
 
 /* misc. */
 LZO_EXTERN(int) lzo_assert(int _expr);
-LZO_EXTERN(int) _lzo_config_check(void);
+LZO_EXTERN(int) _lzo_config_check();
 
 
 //#ifdef __cplusplus
 //} /* extern "C" */
 //#endif
-
-#endif /* already included */
 
 /*
 vi:ts=4

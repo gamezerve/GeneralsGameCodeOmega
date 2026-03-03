@@ -27,8 +27,6 @@
 // JKMCD Aug 2002
 
 #pragma once
-#ifndef __WEAPONSETTYPE_H__
-#define __WEAPONSETTYPE_H__
 
 //-------------------------------------------------------------------------------------------------
 // IMPORTANT NOTE: you should endeavor to set up states such that the most "normal"
@@ -59,7 +57,5 @@ enum WeaponSetType CPP_11(: Int)
 	WEAPONSET_RIDER7,
 	WEAPONSET_RIDER8,
 
-	WEAPONSET_COUNT			///< keep last, please
+	WEAPONSET_COUNT
 };
-
-#endif /* __WEAPONSETTYPE_H__ */

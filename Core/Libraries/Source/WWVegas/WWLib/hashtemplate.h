@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HASH_TEMPLATE_H
-#define HASH_TEMPLATE_H
 
 #include "always.h"
 #include "wwstring.h"
@@ -78,11 +72,11 @@ public:
 
 	enum
 	{
-		NIL = -1								// internal enumeration for representing a NULL link
+		NIL = -1								// internal enumeration for representing a null link
 	};
 
-	HashTemplateClass(void);
-	~HashTemplateClass(void);
+	HashTemplateClass();
+	~HashTemplateClass();
 
 	void Insert(const KeyType& s, const ValueType& d);
 	void Set_Value(const KeyType& s, const ValueType& d);
@@ -92,8 +86,8 @@ public:
 	bool Get(const KeyType& s, ValueType& d) const;
 	bool Exists(const KeyType& s) const;
 	bool Exists(const KeyType& s, const ValueType& d) const;
-	void Remove_All(void);
-	unsigned int Get_Size(void) const;
+	void Remove_All();
+	unsigned int Get_Size() const;
 
 	int* Get_Hash() { return Hash; }
 	Entry* Get_Table() { return Table; }
@@ -102,9 +96,9 @@ private:
 	HashTemplateClass (const HashTemplateClass&);	// not allowed
 	HashTemplateClass& operator= (const HashTemplateClass&);	// not allowed
 	static unsigned int Get_Hash_Val(const KeyType& s, const unsigned int hash_array_size);
-	void Re_Hash(void);
+	void Re_Hash();
 
-	int Alloc_Entry(void);
+	int Alloc_Entry();
 
 	struct Entry
 	{
@@ -188,12 +182,12 @@ template <class KeyType, class ValueType> inline void HashTemplateClass<KeyType,
 	Hash[hval]		= h;
 }
 
-template <class KeyType, class ValueType> inline unsigned int HashTemplateClass<KeyType,ValueType>::Get_Size (void) const
+template <class KeyType, class ValueType> inline unsigned int HashTemplateClass<KeyType,ValueType>::Get_Size () const
 {
 	return Size;
 }
 
-template <class KeyType, class ValueType> inline void HashTemplateClass<KeyType,ValueType>::Remove_All (void)
+template <class KeyType, class ValueType> inline void HashTemplateClass<KeyType,ValueType>::Remove_All ()
 {
 	for (unsigned int i = 0; i < Size; i++)
 	{
@@ -402,10 +396,8 @@ template <class KeyType, class ValueType> inline HashTemplateClass<KeyType,Value
 
 template <class KeyType, class ValueType> inline HashTemplateClass<KeyType,ValueType>::~HashTemplateClass()
 {
-	if (Hash)
-		delete[] Hash;
-	if (Table)
-		delete[] Table;
+	delete[] Hash;
+	delete[] Table;
 }
 
 // Get_Hash_Value specialization for StringClass. This is intended to be used
@@ -427,7 +419,3 @@ template <> inline unsigned int HashTemplateKeyClass<StringClass>::Get_Hash_Valu
 	hval = hval + (hval>>5) + (hval>>10) + (hval >> 20);
 	return hval;
 }
-
-
-
-#endif

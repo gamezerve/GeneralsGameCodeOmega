@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _GAME_ENGINE_H_
-#define _GAME_ENGINE_H_
-
 #include "Common/SubsystemInterface.h"
 #include "Common/GameType.h"
 
@@ -53,85 +50,68 @@ class Radar;
 class WebBrowser;
 class ParticleSystemManager;
 
-/**
- * The implementation of the game engine
- */
 class GameEngine : public SubsystemInterface
 {
-
 public:
 
-	GameEngine( void );
+	GameEngine();
 	virtual ~GameEngine();
 
-	virtual void init( void );								///< Init engine by creating client and logic
-	virtual void reset( void );								///< reset system to starting state
-	virtual void update( void );							///< per frame update
+	virtual void init();								///< Init engine by creating client and logic
+	virtual void reset();								///< reset system to starting state
+	virtual void update();							///< per frame update
 
-	virtual void execute( void );											/**< The "main loop" of the game engine.
+	virtual void execute();											/**< The "main loop" of the game engine.
 																								 It will not return until the game exits. */
 
-	virtual void setFramesPerSecondLimit( Int fps ); ///< Set the max render and engine update fps.
-	virtual Int getFramesPerSecondLimit( void ); ///< Get the max render and engine update fps.
-	Real getUpdateTime(); ///< Get the last engine update delta time.
-	Real getUpdateFps(); ///< Get the last engine update fps.
-
-	virtual void setLogicTimeScaleFps( Int fps ); ///< Set the logic time scale fps and therefore scale the simulation time. Is capped by the max render fps and does not apply to network matches.
-	virtual Int getLogicTimeScaleFps(); ///< Get the raw logic time scale fps value.
-	virtual void enableLogicTimeScale( Bool enable ); ///< Enable the logic time scale setup. If disabled, the simulation time scale is bound to the render frame time or network update time.
-	virtual Bool isLogicTimeScaleEnabled(); ///< Check whether the logic time scale setup is enabled.
-	Int  getActualLogicTimeScaleFps(); ///< Get the real logic time scale fps, depending on the max render fps, network state and enabled state.
-	Real getActualLogicTimeScaleRatio(); ///< Get the real logic time scale ratio, depending on the max render fps, network state and enabled state.
-	Real getActualLogicTimeScaleOverFpsRatio(); ///< Get the real logic time scale over render fps ratio, used to scale down steps in render updates to match logic updates.
+	static Bool isTimeFrozen(); ///< Returns true if a script has frozen time.
+	static Bool isGameHalted(); ///< Returns true if the game is paused or the network is stalling.
 
 	virtual void setQuitting( Bool quitting );				///< set quitting status
-	virtual Bool getQuitting(void);						///< is app getting ready to quit.
+	virtual Bool getQuitting();						///< is app getting ready to quit.
 
-	virtual Bool isMultiplayerSession( void );
-	virtual void serviceWindowsOS(void) {};		///< service the native OS
-	virtual Bool isActive(void) {return m_isActive;}	///< returns whether app has OS focus.
+	virtual Bool isMultiplayerSession();
+	virtual void serviceWindowsOS() {};		///< service the native OS
+	virtual Bool isActive() {return m_isActive;}	///< returns whether app has OS focus.
 	virtual void setIsActive(Bool isActive) { m_isActive = isActive; };
-	virtual void checkAbnormalQuitting(void);	///< check if user is quitting at an unusual time - as in cheating!
+	virtual void checkAbnormalQuitting();	///< check if user is quitting at an unusual time - as in cheating!
 
 protected:
 
-	virtual void resetSubsystems( void );
+	virtual void resetSubsystems();
 
-	virtual FileSystem *createFileSystem( void );								///< Factory for FileSystem classes
-	virtual LocalFileSystem *createLocalFileSystem( void ) = 0;	///< Factory for LocalFileSystem classes
-	virtual ArchiveFileSystem *createArchiveFileSystem( void ) = 0;	///< Factory for ArchiveFileSystem classes
-	virtual GameLogic *createGameLogic( void ) = 0;							///< Factory for GameLogic classes.
-	virtual GameClient *createGameClient( void ) = 0;						///< Factory for GameClient classes.
-	virtual MessageStream *createMessageStream( void );					///< Factory for the message stream
-	virtual ModuleFactory *createModuleFactory( void ) = 0;			///< Factory for modules
-	virtual ThingFactory *createThingFactory( void ) = 0;				///< Factory for the thing factory
-	virtual FunctionLexicon *createFunctionLexicon( void ) = 0;	///< Factory for Function Lexicon
-	virtual Radar *createRadar( void ) = 0;											///< Factory for radar
-	virtual WebBrowser *createWebBrowser( void ) = 0;						///< Factory for embedded browser
-	virtual ParticleSystemManager* createParticleSystemManager( void ) = 0;
-	virtual AudioManager *createAudioManager( void ) = 0;				///< Factory for Audio Manager
+	Bool canUpdateGameLogic();
+	Bool canUpdateNetworkGameLogic();
+	Bool canUpdateRegularGameLogic();
 
-	Int m_maxFPS; ///< Maximum frames per second for rendering
-	Int m_logicTimeScaleFPS; ///< Maximum frames per second for logic time scale
+	virtual FileSystem *createFileSystem();								///< Factory for FileSystem classes
+	virtual LocalFileSystem *createLocalFileSystem() = 0;	///< Factory for LocalFileSystem classes
+	virtual ArchiveFileSystem *createArchiveFileSystem() = 0;	///< Factory for ArchiveFileSystem classes
+	virtual GameLogic *createGameLogic() = 0;							///< Factory for GameLogic classes.
+	virtual GameClient *createGameClient() = 0;						///< Factory for GameClient classes.
+	virtual MessageStream *createMessageStream();					///< Factory for the message stream
+	virtual ModuleFactory *createModuleFactory() = 0;			///< Factory for modules
+	virtual ThingFactory *createThingFactory() = 0;				///< Factory for the thing factory
+	virtual FunctionLexicon *createFunctionLexicon() = 0;	///< Factory for Function Lexicon
+	virtual Radar *createRadar() = 0;											///< Factory for radar
+	virtual WebBrowser *createWebBrowser() = 0;						///< Factory for embedded browser
+	virtual ParticleSystemManager* createParticleSystemManager() = 0;
+	virtual AudioManager *createAudioManager() = 0;				///< Factory for Audio Manager
 
-	Real m_updateTime; ///< Last engine update delta time
 	Real m_logicTimeAccumulator; ///< Frame time accumulated towards submitting a new logic frame
 
-  Bool m_quitting;  ///< true when we need to quit the game
-	Bool m_isActive;	///< app has OS focus.
-	Bool m_enableLogicTimeScale;
-
+	Bool m_quitting; ///< true when we need to quit the game
+	Bool m_isActive; ///< app has OS focus.
 };
+
 inline void GameEngine::setQuitting( Bool quitting ) { m_quitting = quitting; }
-inline Bool GameEngine::getQuitting(void) { return m_quitting; }
+inline Bool GameEngine::getQuitting() { return m_quitting; }
 
 // the game engine singleton
 extern GameEngine *TheGameEngine;
 
 /// This function creates a new game engine instance, and is device specific
-extern GameEngine *CreateGameEngine( void );
+extern GameEngine *CreateGameEngine();
 
 /// The entry point for the game system
 extern Int GameMain();
-
-#endif // _GAME_ENGINE_H_

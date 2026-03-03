@@ -38,15 +38,12 @@
 //
 // Created:    Colin Day, July 2001
 //
-// Desc:			 Manipulation the widows heirarchy through the tree
+// Desc:			 Manipulates the window's hierarchy through the tree
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#ifndef __HIERARCHYVIEW_H_
-#define __HIERARCHYVIEW_H_
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <windows.h>
@@ -136,7 +133,7 @@ protected:
 	GameWindow *m_dragTarget;  ///< target for drag and drop operations while mouse is moving
 	GameWindow *m_popupTarget;  ///< the target for right mouse popup menus
 
-};  // end HierarchyView
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // INLINING ///////////////////////////////////////////////////////////////////
@@ -152,6 +149,3 @@ inline GameWindow *HierarchyView::getPopupTarget( void ) { return m_popupTarget;
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
 extern HierarchyView *TheHierarchyView;  ///< singleton for our view
-
-#endif // __CONTROLPALETTE_H_
-

@@ -42,7 +42,7 @@
 
 #include "proto.h"
 #include "mesh.h"
-#include "hmdldef.H"
+#include "hmdldef.h"
 #include "hlod.h"
 #include "w3derr.h"
 
@@ -63,24 +63,24 @@ PrimitivePrototypeClass::PrimitivePrototypeClass(RenderObjClass * proto)
 	assert(Proto);
 	Proto->Add_Ref();
 }
-PrimitivePrototypeClass::~PrimitivePrototypeClass(void)
+PrimitivePrototypeClass::~PrimitivePrototypeClass()
 {
 	if (Proto) {
 		Proto->Release_Ref();
 	}
 }
 
-const char * PrimitivePrototypeClass::Get_Name(void) const
+const char * PrimitivePrototypeClass::Get_Name() const
 {
 	return Proto->Get_Name();
 }
 
-int PrimitivePrototypeClass::Get_Class_ID(void) const
+int PrimitivePrototypeClass::Get_Class_ID() const
 {
 	return Proto->Class_ID();
 }
 
-RenderObjClass * PrimitivePrototypeClass::Create(void)
+RenderObjClass * PrimitivePrototypeClass::Create()
 {
 	return (RenderObjClass *)( SET_REF_OWNER( Proto->Clone() ) );
 }
@@ -92,15 +92,15 @@ class HModelPrototypeClass : public W3DMPO, public PrototypeClass
 public:
 	HModelPrototypeClass(HModelDefClass * def)				{ HModelDef = def; assert(HModelDef); }
 
-	virtual const char *			Get_Name(void)	const			{ return HModelDef->Get_Name(); }
-	virtual int								Get_Class_ID(void) const	{ return RenderObjClass::CLASSID_HLOD; }
-	virtual RenderObjClass *	Create(void)					{ return NEW_REF( HLodClass, (*HModelDef) ); }
+	virtual const char *			Get_Name()	const			{ return HModelDef->Get_Name(); }
+	virtual int								Get_Class_ID() const	{ return RenderObjClass::CLASSID_HLOD; }
+	virtual RenderObjClass *	Create()					{ return NEW_REF( HLodClass, (*HModelDef) ); }
 	virtual void							DeleteSelf()										{ delete this; }
 
 	HModelDefClass *				HModelDef;
 
 protected:
-	virtual ~HModelPrototypeClass(void)							{ if (HModelDef) delete HModelDef; }
+	virtual ~HModelPrototypeClass()							{ delete HModelDef; }
 
 };
 
@@ -121,8 +121,8 @@ PrototypeClass * MeshLoaderClass::Load_W3D(ChunkLoadClass & cload)
 {
 	MeshClass * mesh = NEW_REF( MeshClass, () );
 
-	if (mesh == NULL) {
-		return NULL;
+	if (mesh == nullptr) {
+		return nullptr;
 	}
 
 	if (mesh->Load_W3D(cload) != WW3D_ERROR_OK) {
@@ -130,7 +130,7 @@ PrototypeClass * MeshLoaderClass::Load_W3D(ChunkLoadClass & cload)
 		// if the load failed, delete the mesh
 		assert(mesh->Num_Refs() == 1);
 		mesh->Release_Ref();
-		return NULL;
+		return nullptr;
 
 	} else {
 
@@ -159,15 +159,15 @@ PrototypeClass * HModelLoaderClass::Load_W3D(ChunkLoadClass & cload)
 {
 	HModelDefClass * hdef = W3DNEW HModelDefClass;
 
-	if (hdef == NULL) {
-		return NULL;
+	if (hdef == nullptr) {
+		return nullptr;
 	}
 
 	if (hdef->Load_W3D(cload) != HModelDefClass::OK) {
 
 		// load failed, delete the model and return an error
 		delete hdef;
-		return NULL;
+		return nullptr;
 
 	} else {
 

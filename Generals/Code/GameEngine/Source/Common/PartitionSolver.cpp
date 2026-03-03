@@ -49,7 +49,7 @@ Some info about partioning problems:
 	http://odysseus.nat.uni-magdeburg.de/~mertens/npp/index.shtml
 **************************************************************************************************/
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/PartitionSolver.h"
 
@@ -63,13 +63,10 @@ PartitionSolver::PartitionSolver(const EntriesVec& elements, const SpacesVec& sp
 	m_data = elements;
 	m_spacesForData = spaces;
 	m_howToSolve = solveHow;
-	//Added By Sadullah Nader
-	//Initializations inserted
 	m_currentSolutionLeftovers = 0;
-	//
 }
 
-void PartitionSolver::solve(void)
+void PartitionSolver::solve()
 {
 	m_bestSolution.clear();
 	m_currentSolution.clear();
@@ -120,7 +117,7 @@ void PartitionSolver::solve(void)
 	}
 }
 
-const SolutionVec& PartitionSolver::getSolution( void ) const
+const SolutionVec& PartitionSolver::getSolution() const
 {
 	return m_bestSolution;
 }

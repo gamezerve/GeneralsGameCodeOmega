@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _MISSILE_UPDATE_H_
-#define _MISSILE_UPDATE_H_
-
 #include "GameClient/RadiusDecal.h"
 #include "Common/GameType.h"
 #include "Common/GlobalData.h"
@@ -106,7 +103,7 @@ public:
 	virtual const Coord3D *getVelocity() const { return &m_vel; }		///< get current velocity
 
 	virtual UpdateSleepTime update();
-	virtual void onDelete( void );
+	virtual void onDelete();
 
 private:
 
@@ -132,12 +129,9 @@ private:
 
 	const ParticleSystemTemplate* m_exhaustSysTmpl;
 
-	void doLaunch( void );							///< implement LAUNCH state
-	void doAttack( void );							///< implement ATTACK state
+	void doLaunch();							///< implement LAUNCH state
+	void doAttack();							///< implement ATTACK state
 	void detonate();												///< blow it up. (usually only called by MissileCollide)
 
 
 };
-
-#endif // _MISSILE_UPDATE_H_
-

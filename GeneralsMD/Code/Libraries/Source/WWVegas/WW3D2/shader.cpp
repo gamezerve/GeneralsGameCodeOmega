@@ -856,7 +856,7 @@ void ShaderClass::Apply()
 					SNAPSHOT_SAY(("Warning: Using unsupported texture op: MODULATEALPHA_ADDCOLOR"));
 				}
 				break;
-			} // color operations
+			}
 
 			switch(Get_Post_Detail_Alpha_Func())
 			{
@@ -899,7 +899,7 @@ void ShaderClass::Apply()
 					SNAPSHOT_SAY(("Warning: Using unsupported texture op: ADDSMOOTH"));
 				}
 				break;
-			} // alpha operations
+			}
 
 			// if color is enabled and alpha is disabled set to pass alpha through
 			if ((SeccOp!=D3DTOP_DISABLE) && (SecaOp==D3DTOP_DISABLE)) {
@@ -909,8 +909,8 @@ void ShaderClass::Apply()
 				SeccOp = D3DTOP_SELECTARG2;
 				SeccArg2 = D3DTA_CURRENT;
 			}
-		}	// texturing enabled
-	}	// if diff sec_mask
+		}
+	}
 
 	bool kill_stage_2=false;
 
@@ -958,7 +958,7 @@ void ShaderClass::Apply()
 				DX8CALL(SetTextureStageState(2,D3DTSS_ALPHAARG1,D3DTA_CURRENT));
 				DX8CALL(SetTextureStageState(2,D3DTSS_ALPHAARG2,D3DTA_DIFFUSE));
 				DX8CALL(SetTextureStageState(2,D3DTSS_TEXCOORDINDEX,D3DTSS_TCI_PASSTHRU));
-				DX8CALL(SetTexture(2,0));
+				DX8CALL(SetTexture(2,nullptr));
 				kill_stage_2=false;
 				ShaderDirty=true;
 			}
@@ -1009,7 +1009,7 @@ void ShaderClass::Apply()
 			DX8CALL(SetTextureStageState(2,D3DTSS_ALPHAOP,D3DTOP_DISABLE));
 		}
 		DX8CALL(SetTextureStageState(2,D3DTSS_TEXCOORDINDEX,D3DTSS_TCI_PASSTHRU));
-		DX8CALL(SetTexture(2,0));
+		DX8CALL(SetTexture(2,nullptr));
 	}
 
 	if(!diff)
@@ -1082,7 +1082,7 @@ void ShaderClass::Invert_Backface_Culling(bool onoff)
  * HISTORY:                                                                                    *
  *   7/13/2001  hy : Created.                                                                  *
  *=============================================================================================*/
-ShaderClass::StaticSortCategoryType ShaderClass::Get_SS_Category(void) const
+ShaderClass::StaticSortCategoryType ShaderClass::Get_SS_Category() const
 {
 	// category: Opaque
 	if ( (ALPHATEST_DISABLE==Get_Alpha_Test()) && (DSTBLEND_ZERO==Get_Dst_Blend_Func()) )
@@ -1120,7 +1120,7 @@ ShaderClass::StaticSortCategoryType ShaderClass::Get_SS_Category(void) const
  * HISTORY:                                                                                    *
  *   8/27/2001  hy : Created.                                                                  *
  *=============================================================================================*/
-int ShaderClass::Guess_Sort_Level(void) const
+int ShaderClass::Guess_Sort_Level() const
 {
 	int sort_level;
 	StaticSortCategoryType scat=Get_SS_Category();
@@ -1156,7 +1156,7 @@ int ShaderClass::Guess_Sort_Level(void) const
  * HISTORY:                                                                                    *
  *   4/24/2001  gth : Created.                                                                 *
  *=============================================================================================*/
-bool ShaderClass::Is_Backface_Culling_Inverted(void)
+bool ShaderClass::Is_Backface_Culling_Inverted()
 {
 	return (_PolygonCullMode == D3DCULL_CCW);
 }

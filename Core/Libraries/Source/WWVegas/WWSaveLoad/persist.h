@@ -34,16 +34,9 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef PERSIST_H
-#define PERSIST_H
 
 #include "always.h"
-#include "refcount.h"
 #include "postloadable.h"
 
 class PersistFactoryClass;
@@ -66,12 +59,8 @@ class PersistClass : public PostLoadableClass
 {
 public:
 
-	virtual const PersistFactoryClass &	Get_Factory (void) const			= 0;
+	virtual const PersistFactoryClass &	Get_Factory () const			= 0;
 	virtual bool								Save (ChunkSaveClass &csave)		{ return true; }
 	virtual bool								Load (ChunkLoadClass &cload)		{ return true; }
 
 };
-
-
-
-#endif

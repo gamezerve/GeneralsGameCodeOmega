@@ -48,7 +48,7 @@ StatusDamageHelper::StatusDamageHelper( Thing *thing, const ModuleData *modData 
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-StatusDamageHelper::~StatusDamageHelper( void )
+StatusDamageHelper::~StatusDamageHelper()
 {
 
 }
@@ -101,7 +101,7 @@ void StatusDamageHelper::crc( Xfer *xfer )
 	// object helper crc
 	ObjectHelper::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -122,16 +122,16 @@ void StatusDamageHelper::xfer( Xfer *xfer )
 	xfer->xferUser( &m_statusToHeal, sizeof(ObjectStatusTypes) );// an enum
 	xfer->xferUnsignedInt( &m_frameToHeal );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void StatusDamageHelper::loadPostProcess( void )
+void StatusDamageHelper::loadPostProcess()
 {
 
 	// object helper base class
 	ObjectHelper::loadPostProcess();
 
-}  // end loadPostProcess
+}
 

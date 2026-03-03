@@ -43,12 +43,10 @@
 #include "w3d_util.h"
 #include "chunkio.h"
 #include "w3derr.h"
-#include "INI.H"
-#include "XSTRAW.H"
+#include "INI.h"
+#include "XSTRAW.h"
 #include "dx8wrapper.h"
 
-#include <stdio.h>
-#include <string.h>
 
 static unsigned int unique=1;
 
@@ -71,11 +69,11 @@ public:
 /*
 ** VertexMaterialClass Implementation
 */
-VertexMaterialClass::VertexMaterialClass(void):
+VertexMaterialClass::VertexMaterialClass():
 #ifdef DYN_MAT8
-	MaterialDyn(NULL),
+	MaterialDyn(nullptr),
 #else
-	MaterialOld(NULL),
+	MaterialOld(nullptr),
 #endif
 	Flags(0),
 	AmbientColorSource(D3DMCS_MATERIAL),
@@ -89,7 +87,7 @@ VertexMaterialClass::VertexMaterialClass(void):
 
 	for (i=0; i<MeshBuilderClass::MAX_STAGES; i++)
 	{
-		Mapper[i]=NULL;
+		Mapper[i]=nullptr;
 		UVSource[i] = i;
 	}
 
@@ -107,9 +105,9 @@ VertexMaterialClass::VertexMaterialClass(void):
 
 VertexMaterialClass::VertexMaterialClass(const VertexMaterialClass & src) :
 #ifdef DYN_MAT8
-	MaterialDyn(NULL),
+	MaterialDyn(nullptr),
 #else
-	MaterialOld(NULL),
+	MaterialOld(nullptr),
 #endif
 	Flags(src.Flags),
 	AmbientColorSource(src.AmbientColorSource),
@@ -123,7 +121,7 @@ VertexMaterialClass::VertexMaterialClass(const VertexMaterialClass & src) :
 	int i;
 	for (i=0; i<MeshBuilderClass::MAX_STAGES; i++)
 	{
-		Mapper[i]=NULL;
+		Mapper[i]=nullptr;
 		if (src.Mapper[i])
 		{
 			TextureMapperClass *mapper=src.Mapper[i]->Clone();
@@ -149,7 +147,7 @@ void VertexMaterialClass::Make_Unique()
 	unique++;
 }
 
-VertexMaterialClass::~VertexMaterialClass(void)
+VertexMaterialClass::~VertexMaterialClass()
 {
 	int i;
 
@@ -158,7 +156,7 @@ VertexMaterialClass::~VertexMaterialClass(void)
 		if (Mapper[i])
 		{
 			REF_PTR_RELEASE(Mapper[i]);
-			Mapper[i]=NULL;
+			Mapper[i]=nullptr;
 		}
 	}
 
@@ -183,9 +181,9 @@ VertexMaterialClass & VertexMaterialClass::operator = (const VertexMaterialClass
 		CRCDirty=src.CRCDirty;
 		int stage;
 		for (stage=0;stage<MeshBuilderClass::MAX_STAGES;++stage) {
-			if (Mapper[stage] != NULL) {
+			if (Mapper[stage] != nullptr) {
 				Mapper[stage]->Release_Ref();
-				Mapper[stage] = NULL;
+				Mapper[stage] = nullptr;
 			}
 		}
 		for (stage=0;stage<MeshBuilderClass::MAX_STAGES;++stage) {
@@ -202,7 +200,7 @@ VertexMaterialClass & VertexMaterialClass::operator = (const VertexMaterialClass
 	return *this;
 }
 
-unsigned long VertexMaterialClass::Compute_CRC(void) const
+unsigned long VertexMaterialClass::Compute_CRC() const
 {
 	unsigned long crc = 0;
 
@@ -324,7 +322,7 @@ void VertexMaterialClass::Set_Emissive(float r,float g,float b)
 }
 
 
-float	VertexMaterialClass::Get_Shininess(void) const
+float	VertexMaterialClass::Get_Shininess() const
 {
 	return Material->Power;
 }
@@ -335,7 +333,7 @@ void	VertexMaterialClass::Set_Shininess(float shin)
 	Material->Power=shin;
 }
 
-float	VertexMaterialClass::Get_Opacity(void) const
+float	VertexMaterialClass::Get_Opacity() const
 {
 	return Material->Diffuse.a;
 }
@@ -380,7 +378,7 @@ void	VertexMaterialClass::Set_Diffuse_Color_Source(ColorSourceType src)
 }
 
 VertexMaterialClass::ColorSourceType
-VertexMaterialClass::Get_Ambient_Color_Source(void)
+VertexMaterialClass::Get_Ambient_Color_Source()
 {
 	switch(AmbientColorSource)
 	{
@@ -391,7 +389,7 @@ VertexMaterialClass::Get_Ambient_Color_Source(void)
 }
 
 VertexMaterialClass::ColorSourceType
-VertexMaterialClass::Get_Emissive_Color_Source(void)
+VertexMaterialClass::Get_Emissive_Color_Source()
 {
 	switch(EmissiveColorSource)
 	{
@@ -402,7 +400,7 @@ VertexMaterialClass::Get_Emissive_Color_Source(void)
 }
 
 VertexMaterialClass::ColorSourceType
-VertexMaterialClass::Get_Diffuse_Color_Source(void)
+VertexMaterialClass::Get_Diffuse_Color_Source()
 {
 	switch(DiffuseColorSource)
 	{
@@ -465,8 +463,8 @@ WW3DErrorType VertexMaterialClass::Load_W3D(ChunkLoadClass & cload)
 	W3dVertexMaterialStruct vmat;
 	bool hasname = false;
 
-	char *mapping0_arg_buffer = NULL;
-	char *mapping1_arg_buffer = NULL;
+	char *mapping0_arg_buffer = nullptr;
+	char *mapping1_arg_buffer = nullptr;
 	unsigned int mapping0_arg_len = 0U;
 	unsigned int mapping1_arg_len = 0U;
 
@@ -512,35 +510,35 @@ WW3DErrorType VertexMaterialClass::Load_W3D(ChunkLoadClass & cload)
 	if (mapping0_arg_buffer) {
 
 		char *extended_arg_buffer = MSGW3DNEWARRAY("VertexMaterialClassTemp") char[mapping0_arg_len + 10];
-		sprintf(extended_arg_buffer, "[Args]\n%s", mapping0_arg_buffer);
+		snprintf(extended_arg_buffer, mapping0_arg_len + 10, "[Args]\n%s", mapping0_arg_buffer);
 		mapping0_arg_len = strlen(extended_arg_buffer) + 1;
 
 		delete [] mapping0_arg_buffer;
-		mapping0_arg_buffer = NULL;
+		mapping0_arg_buffer = nullptr;
 
 		BufferStraw map_arg_buf_straw((void *)extended_arg_buffer, mapping0_arg_len);
 
 		mapping0_arg_ini.Load(map_arg_buf_straw);
 
 		delete [] extended_arg_buffer;
-		extended_arg_buffer = NULL;
+		extended_arg_buffer = nullptr;
 	}
 	INIClass mapping1_arg_ini;
 	if (mapping1_arg_buffer) {
 
 		char *extended_arg_buffer = MSGW3DNEWARRAY("VertexMaterialClassTemp") char[mapping1_arg_len + 20];
-		sprintf(extended_arg_buffer, "[Args]\n%s", mapping1_arg_buffer);
+		snprintf(extended_arg_buffer, mapping1_arg_len + 20, "[Args]\n%s", mapping1_arg_buffer);
 		mapping1_arg_len = strlen(extended_arg_buffer) + 1;
 
 		delete [] mapping1_arg_buffer;
-		mapping1_arg_buffer = NULL;
+		mapping1_arg_buffer = nullptr;
 
 		BufferStraw map_arg_buf_straw((void *)extended_arg_buffer, mapping1_arg_len);
 
 		mapping1_arg_ini.Load(map_arg_buf_straw);
 
 		delete [] extended_arg_buffer;
-		extended_arg_buffer = NULL;
+		extended_arg_buffer = nullptr;
 	}
 
 	if (vmat.Attributes & W3DVERTMAT_USE_DEPTH_CUE) {
@@ -898,7 +896,7 @@ WW3DErrorType VertexMaterialClass::Save_W3D(ChunkSaveClass & csave)
 	return WW3D_ERROR_OK;
 }
 
-void VertexMaterialClass::Apply(void) const
+void VertexMaterialClass::Apply() const
 {
 	int i;
 
@@ -923,7 +921,7 @@ void VertexMaterialClass::Apply(void) const
 	}
 }
 
-void VertexMaterialClass::Apply_Null(void)
+void VertexMaterialClass::Apply_Null()
 {
 	int i;
 	static D3DMATERIAL8 default_settings =

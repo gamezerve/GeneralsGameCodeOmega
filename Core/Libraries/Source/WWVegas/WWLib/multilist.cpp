@@ -40,7 +40,7 @@
 #include "wwmemlog.h"
 
 /*
-** Delcare the pool for ListNodes
+** Declare the pool for ListNodes
 */
 DEFINE_AUTO_POOL(MultiListNodeClass, 256);
 
@@ -51,7 +51,7 @@ DEFINE_AUTO_POOL(MultiListNodeClass, 256);
 
 ***********************************************************************************************/
 
-MultiListObjectClass::~MultiListObjectClass(void)
+MultiListObjectClass::~MultiListObjectClass()
 {
 	while (ListNode) {
 		ListNode->List->Internal_Remove(this);
@@ -67,7 +67,7 @@ MultiListObjectClass::~MultiListObjectClass(void)
 
 ***********************************************************************************************/
 
-GenericMultiListClass::~GenericMultiListClass(void)
+GenericMultiListClass::~GenericMultiListClass()
 {
 	assert(Is_Empty());
 }
@@ -84,7 +84,7 @@ bool GenericMultiListClass::Contains(MultiListObjectClass * obj)
 	return false;
 }
 
-int GenericMultiListClass::Count(void)
+int GenericMultiListClass::Count()
 {
 	int counter = 0;
 	GenericMultiListIterator it(this);
@@ -168,7 +168,7 @@ bool GenericMultiListClass::Internal_Add_After(MultiListObjectClass * obj,const 
 		existing_node = existing_node->NextList;
 	}
 
-	if (existing_node == NULL) {
+	if (existing_node == nullptr) {
 		return false;	// he's not in this list!
 	}
 
@@ -194,14 +194,14 @@ bool GenericMultiListClass::Internal_Remove(MultiListObjectClass *obj)
 {
 	// find the list node in this object that belongs to this list
 	MultiListNodeClass * lnode = obj->Get_List_Node();
-	MultiListNodeClass * prevlnode = 0;
+	MultiListNodeClass * prevlnode = nullptr;
 
 	while ((lnode) && (lnode->List != this)) {
 		prevlnode = lnode;
 		lnode = lnode->NextList;
 	}
 
-	if (lnode == 0) {
+	if (lnode == nullptr) {
 		return false;
 	}
 
@@ -224,10 +224,10 @@ bool GenericMultiListClass::Internal_Remove(MultiListObjectClass *obj)
 	return true;
 }
 
-MultiListObjectClass * GenericMultiListClass::Internal_Remove_List_Head(void)
+MultiListObjectClass * GenericMultiListClass::Internal_Remove_List_Head()
 {
 	if (Head.Next == &Head) {
-		return 0;					// no more objects
+		return nullptr;					// no more objects
 	}
 
 	MultiListNodeClass * node = Head.Next;

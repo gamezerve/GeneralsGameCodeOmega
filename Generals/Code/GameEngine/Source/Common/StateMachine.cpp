@@ -26,7 +26,7 @@
 // Implementation of basic state machine
 // Author: Michael S. Booth, January 2002
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Errors.h"
 #include "Common/StateMachine.h"
@@ -88,7 +88,7 @@ public:
 };
 #ifdef STATE_MACHINE_DEBUG
 //-----------------------------------------------------------------------------
-std::vector<StateID> * State::getTransitions( void )
+std::vector<StateID> * State::getTransitions()
 {
 	std::vector<StateID> *ids = new std::vector<StateID>;
 	ids->push_back(m_successStateID);
@@ -266,12 +266,12 @@ StateMachine::StateMachine( Object *owner, AsciiString name )
 	m_sleepTill = 0;
 	m_defaultStateID = INVALID_STATE_ID;
 	m_defaultStateInited = false;
-	m_currentState = NULL;
+	m_currentState = nullptr;
 	m_locked = false;
 #ifdef STATE_MACHINE_DEBUG
 	m_name = name;
 	m_debugOutput = false;
-	m_lockedby = NULL;
+	m_lockedby = nullptr;
 #endif
 	internalClear();
 }
@@ -292,8 +292,7 @@ StateMachine::~StateMachine()
 	// delete all states in the mapping
 	for( i = m_stateMap.begin(); i != m_stateMap.end(); ++i )
 	{
-		if ((*i).second)
-			deleteInstance((*i).second);
+		deleteInstance((*i).second);
 	}
 }
 
@@ -312,7 +311,7 @@ Bool StateMachine::getWantsDebugOutput() const
 	}
 
 #ifdef DEBUG_OBJECT_ID_EXISTS
-	if (TheObjectIDToDebug != 0 && getOwner() != NULL && getOwner()->getID() == TheObjectIDToDebug)
+	if (TheObjectIDToDebug != 0 && getOwner() != nullptr && getOwner()->getID() == TheObjectIDToDebug)
 	{
 		return true;
 	}
@@ -360,7 +359,7 @@ void StateMachine::clear()
 	if (m_currentState)
 		m_currentState->onExit( EXIT_RESET );
 
-	m_currentState = NULL;
+	m_currentState = nullptr;
 
 	internalClear();
 }
@@ -390,7 +389,7 @@ StateReturnType StateMachine::resetToDefaultState()
 	// allow current state to exit with EXIT_RESET if present
 	if (m_currentState)
 		m_currentState->onExit( EXIT_RESET );
-	m_currentState = NULL;
+	m_currentState = nullptr;
 
 	//
 	// the current state has done an onExit, clear the internal guts before we set
@@ -417,7 +416,7 @@ StateReturnType StateMachine::updateStateMachine()
 	UnsignedInt now = TheGameLogic->getFrame();
 	if (m_sleepTill != 0 && now < m_sleepTill)
 	{
-		if( m_currentState == NULL )
+		if( m_currentState == nullptr )
 		{
 			return STATE_FAILURE;
 		}
@@ -442,7 +441,7 @@ StateReturnType StateMachine::updateStateMachine()
 		StateReturnType status = m_currentState->update();
 
 		// it is possible that the state's update() method clears the state machine.
-		if (m_currentState == NULL)
+		if (m_currentState == nullptr)
 		{
 			return STATE_FAILURE;
 		}
@@ -498,7 +497,7 @@ void StateMachine::defineState( StateID id, State *state, StateID successID, Sta
 	state->friend_onSuccess(successID);
 	state->friend_onFailure(failureID);
 
-	while (conditions && conditions->test != NULL)
+	while (conditions && conditions->test != nullptr)
 	{
 		state->friend_onCondition(conditions->test, conditions->toStateID, conditions->userData);
 		++conditions;
@@ -556,7 +555,7 @@ StateReturnType StateMachine::setState( StateID newStateID )
  */
 StateReturnType StateMachine::internalSetState( StateID newStateID )
 {
-	State *newState = NULL;
+	State *newState = nullptr;
 
 	// anytime the state changes, stop sleeping
 	m_sleepTill = 0;
@@ -617,7 +616,7 @@ StateReturnType StateMachine::internalSetState( StateID newStateID )
 		StateReturnType status = m_currentState->onEnter();
 
 		// it is possible that the state's onEnter() method may cause the state to be destroyed
-		if (m_currentState == NULL)
+		if (m_currentState == nullptr)
 		{
 			return STATE_FAILURE;
 		}
@@ -707,7 +706,7 @@ StateReturnType StateMachine::initDefaultState()
 		}
 		REALLY_VERBOSE_LOG(("\n"));
 		delete ids;
-		ids = NULL;
+		ids = nullptr;
 	}
 	REALLY_VERBOSE_LOG(("SM_END\n\n"));
 #endif
@@ -741,14 +740,14 @@ Bool StateMachine::isGoalObjectDestroyed() const
 	{
 		return false; // never had a goal object
 	}
-	return getGoalObject() == NULL;
+	return getGoalObject() == nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void StateMachine::halt()
 {
 	m_locked = true;
-	m_currentState = NULL; // don't exit current state, just clear it.
+	m_currentState = nullptr; // don't exit current state, just clear it.
 #ifdef STATE_MACHINE_DEBUG
 	if (getWantsDebugOutput())
 	{
@@ -805,7 +804,7 @@ void StateMachine::internalSetGoalPosition( const Coord3D *pos )
 void StateMachine::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
@@ -868,14 +867,14 @@ void StateMachine::xfer( Xfer *xfer )
 	xfer->xferCoord3D(&m_goalPosition);
 	xfer->xferBool(&m_locked);
 	xfer->xferBool(&m_defaultStateInited);
-}  // end xfer
+}
 
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void StateMachine::loadPostProcess( void )
+void StateMachine::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 

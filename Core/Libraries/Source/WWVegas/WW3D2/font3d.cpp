@@ -57,7 +57,7 @@ static	SurfaceClass	*_surface;
  ***********************************************************************************************/
 Font3DDataClass::Font3DDataClass( const char *filename )
 {
-	Texture = NULL;
+	Texture = nullptr;
 	Load_Font_Image( filename);
 	Name = strdup( filename);
 	Name = strupr( Name);
@@ -69,12 +69,10 @@ Font3DDataClass::Font3DDataClass( const char *filename )
  * Font3DDataClass::~Font3DDataClass -- destructor																	  *
  *                                                                                             *
  ***********************************************************************************************/
-Font3DDataClass::~Font3DDataClass(void)
+Font3DDataClass::~Font3DDataClass()
 {
-	if (Name != NULL) {
-		free(Name);
-		Name = NULL;
-	}
+	free(Name);
+	Name = nullptr;
 
 	REF_PTR_RELEASE(Texture);
 }
@@ -234,7 +232,7 @@ SurfaceClass *Font3DDataClass::Make_Proportional( SurfaceClass	*surface )
 	// now shink the image given the minimum char sizes
 //	surface = Minimize_Font_Image( surface );
 	Minimize_Font_Image( _surface );
-	return NULL;
+	return nullptr;
 }
 
 /***********************************************************************************************
@@ -304,7 +302,7 @@ bool	Font3DDataClass::Load_Font_Image( const char *filename )
 		// convert the just created mon-spaced font to proportional (optional)
 //		surface = Make_Proportional( surface );
 		_surface = surface;
-		surface = NULL;
+		surface = nullptr;
 		Minimize_Font_Image( _surface );
 
 	} else {
@@ -330,7 +328,7 @@ bool	Font3DDataClass::Load_Font_Image( const char *filename )
 		// convert the just created mon-spaced font to proportional (optional)
 
 		_surface = surface;
-		surface = NULL;
+		surface = nullptr;
 		Make_Proportional( _surface );
 	}
 
@@ -367,7 +365,7 @@ Font3DInstanceClass::Font3DInstanceClass( const char *filename )
  * Font3DInstanceClass::~Font3DInstanceClass -- destructor																	  *
  *                                                                                             *
  ***********************************************************************************************/
-Font3DInstanceClass::~Font3DInstanceClass(void)
+Font3DInstanceClass::~Font3DInstanceClass()
 {
 	REF_PTR_RELEASE(FontData);
 }
@@ -375,7 +373,7 @@ Font3DInstanceClass::~Font3DInstanceClass(void)
 /*
 **
 */
-void	Font3DInstanceClass::Set_Mono_Spaced( void )
+void	Font3DInstanceClass::Set_Mono_Spaced()
 {
 	MonoSpacing = FontData->Char_Width('W') + 1;
 	Build_Cached_Tables();

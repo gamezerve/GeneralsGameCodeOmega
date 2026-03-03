@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef _PLAYERLIST_H_
-#define _PLAYERLIST_H_
-
 #include "Common/SubsystemInterface.h"
 #include "Common/GameCommon.h"
 #include "Common/NameKeyGenerator.h"
@@ -83,12 +80,12 @@ public:
 	~PlayerList();
 
 	// subsystem methods
-	virtual void init( void );
-	virtual void reset( void );
-	virtual void update( void );
+	virtual void init();
+	virtual void reset();
+	virtual void update();
 
-	virtual void newGame( void ); // called during GameLogic::startNewGame()
-	virtual void newMap( void );	 // Called after a new map is loaded.
+	virtual void newGame(); // called during GameLogic::startNewGame()
+	virtual void newMap();	 // Called after a new map is loaded.
 
 	void teamAboutToBeDeleted(Team* team);
 
@@ -109,7 +106,7 @@ public:
 		all other players (this is so that everything can be associated with a nonnull
 		Player, to simplify the universe). This will never return null.
 	*/
-	Player *getNeutralPlayer() { DEBUG_ASSERTCRASH(m_players[0] != NULL, ("null neutral")); return m_players[0]; }
+	Player *getNeutralPlayer() { DEBUG_ASSERTCRASH(m_players[0] != nullptr, ("null neutral")); return m_players[0]; }
 
 	/**
 		return the Player with the given internal name, or null if none found.
@@ -120,7 +117,7 @@ public:
 		Return the "local" player (ie, the human playing the game).
 		This will never return null.
 	*/
-	inline Player *getLocalPlayer() { DEBUG_ASSERTCRASH(m_local != NULL, ("null m_local")); return m_local; }
+	inline Player *getLocalPlayer() { DEBUG_ASSERTCRASH(m_local != nullptr, ("null m_local")); return m_local; }
 
 	/**
 		Set the local player. You cannot set it to null; if you pass null, you'll
@@ -144,7 +141,7 @@ public:
 	/**
 		a convenience routine to quickly clear the entered/exited flags on all teams.
 	*/
-	void updateTeamStates(void);
+	void updateTeamStates();
 
 	/**
 		a convenience routine to return the players who srcPlayer considers to have one of the
@@ -158,7 +155,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 private:
 
@@ -171,5 +168,3 @@ private:
 
 // ----------------------------------------------------------------------------------------------
 extern PlayerList *ThePlayerList;	///< singleton instance of PlayerList
-
-#endif // _PLAYERLIST_H_

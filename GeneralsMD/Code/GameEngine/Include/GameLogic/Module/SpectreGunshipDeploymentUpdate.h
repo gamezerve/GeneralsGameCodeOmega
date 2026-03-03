@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __SPECTRE_GUNSHIP_DEPLOYMENT_UPDATE_H_
-#define __SPECTRE_GUNSHIP_DEPLOYMENT_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/KindOf.h"
 #include "GameLogic/Module/SpecialPowerUpdateModule.h"
@@ -55,6 +52,8 @@ enum GunshipCreateLocType CPP_11(: Int)
   CREATE_GUNSHIP_AT_EDGE_FARTHEST_FROM_SOURCE,
 	CREATE_GUNSHIP_AT_EDGE_NEAR_TARGET,
 	CREATE_GUNSHIP_AT_EDGE_FARTHEST_FROM_TARGET,
+
+	GUNSHIP_CREATE_LOC_COUNT
 };
 
 
@@ -118,7 +117,7 @@ public:
 	virtual Bool isActive() const {return FALSE;}
 	virtual SpecialPowerUpdateInterface* getSpecialPowerUpdateInterface() { return this; }
 	virtual CommandOption getCommandOption() const { return (CommandOption)0; }
-  virtual Bool isPowerCurrentlyInUse( const CommandButton *command = NULL ) const { return FALSE; };
+  virtual Bool isPowerCurrentlyInUse( const CommandButton *command = nullptr ) const { return FALSE; };
 	virtual ScienceType getExtraRequiredScience() const { return getSpectreGunshipDeploymentUpdateModuleData()->m_extraRequiredScience; } //Does this object have more than one special power module with the same spTemplate?
 
 	virtual void onObjectCreated();
@@ -145,7 +144,3 @@ protected:
 
 
 };
-
-
-#endif // __SPECTRE_GUNSHIP_DEPLOYMENT_UPDATE_H_
-

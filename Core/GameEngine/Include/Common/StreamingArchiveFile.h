@@ -43,11 +43,6 @@
 
 #pragma once
 
-#ifndef __STREAMINGARCHIVEFILE_H
-#define __STREAMINGARCHIVEFILE_H
-
-
-
 //----------------------------------------------------------------------------
 //           Includes
 //----------------------------------------------------------------------------
@@ -89,13 +84,13 @@ class StreamingArchiveFile : public RAMFile
 
 
 		virtual Bool	open( const Char *filename, Int access = NONE, size_t bufferSize = BUFFERSIZE ); ///< Open a file for access
-		virtual void	close( void );																			///< Close the file
+		virtual void	close();																			///< Close the file
 		virtual Int		read( void *buffer, Int bytes );										///< Read the specified number of bytes in to buffer: See File::read
 		virtual Int		write( const void *buffer, Int bytes );							///< Write the specified number of bytes from the buffer: See File::write
 		virtual Int		seek( Int new_pos, seekMode mode = CURRENT );				///< Set file position: See File::seek
 
 		// Ini's should not be parsed with streaming files, that's just dumb.
-		virtual void	nextLine(Char *buf = NULL, Int bufSize = 0) { DEBUG_CRASH(("Should not call nextLine on a streaming file.")); }
+		virtual void	nextLine(Char *buf = nullptr, Int bufSize = 0) { DEBUG_CRASH(("Should not call nextLine on a streaming file.")); }
 		virtual Bool	scanInt(Int &newInt) { DEBUG_CRASH(("Should not call scanInt on a streaming file."));  return FALSE; }
 		virtual Bool	scanReal(Real &newReal) { DEBUG_CRASH(("Should not call scanReal on a streaming file.")); return FALSE; }
 		virtual Bool	scanString(AsciiString &newString) { DEBUG_CRASH(("Should not call scanString on a streaming file.")); return FALSE; }
@@ -104,7 +99,7 @@ class StreamingArchiveFile : public RAMFile
 		virtual Bool	openFromArchive(File *archiveFile, const AsciiString& filename, Int offset, Int size); ///< copy file data from the given file at the given offset for the given size.
 		virtual Bool	copyDataToFile(File *localFile) { DEBUG_CRASH(("Are you sure you meant to copyDataToFile on a streaming file?")); return FALSE; }
 
-		virtual char* readEntireAndClose() { DEBUG_CRASH(("Are you sure you meant to readEntireAndClose on a streaming file?")); return NULL; }
+		virtual char* readEntireAndClose() { DEBUG_CRASH(("Are you sure you meant to readEntireAndClose on a streaming file?")); return nullptr; }
 		virtual File* convertToRAMFile() { DEBUG_CRASH(("Are you sure you meant to readEntireAndClose on a streaming file?")); return this; }
 };
 
@@ -114,6 +109,3 @@ class StreamingArchiveFile : public RAMFile
 //----------------------------------------------------------------------------
 //           Inlining
 //----------------------------------------------------------------------------
-
-
-#endif // __STREAMINGARCHIVEFILE_H

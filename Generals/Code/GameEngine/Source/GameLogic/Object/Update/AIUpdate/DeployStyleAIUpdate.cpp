@@ -26,7 +26,7 @@
 // Author: Kris Morness, August 2002
 // Desc:   A standard ai update that also handles units that must deploy to attack and pack before moving.
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/ThingFactory.h"
@@ -61,7 +61,7 @@ DeployStyleAIUpdate::DeployStyleAIUpdate( Thing *thing, const ModuleData* module
 }
 
 //-------------------------------------------------------------------------------------------------
-DeployStyleAIUpdate::~DeployStyleAIUpdate( void )
+DeployStyleAIUpdate::~DeployStyleAIUpdate()
 {
 }
 
@@ -147,14 +147,14 @@ void DeployStyleAIUpdate::aiDoCommand( const AICommandParms* parms )
 }
 
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime DeployStyleAIUpdate::update( void )
+UpdateSleepTime DeployStyleAIUpdate::update()
 {
 	// have to call our parent's isIdle, because we override it to never return true
 	// when we have a pending command...
 	Object *self = getObject();
 	Weapon *weapon = self->getCurrentWeapon();
 	Bool inRange = FALSE;
-	Object *designatedTarget = NULL;
+	Object *designatedTarget = nullptr;
 	Bool isAttacking = FALSE;
 
 	if( weapon )
@@ -171,7 +171,7 @@ UpdateSleepTime DeployStyleAIUpdate::update( void )
 			designatedTarget = TheGameLogic->findObjectByID( m_attackObjectID );
 			if( designatedTarget && designatedTarget->isEffectivelyDead() )
 			{
-				designatedTarget = NULL;
+				designatedTarget = nullptr;
 			}
 			if( designatedTarget )
 			{
@@ -192,7 +192,7 @@ UpdateSleepTime DeployStyleAIUpdate::update( void )
 			}
 			else
 			{
-				//Get the current goal object (NULL if we have a turret).
+				//Get the current goal object (nullptr if we have a turret).
 				designatedTarget = getGoalObject();
 			}
 			if( !designatedTarget )
@@ -223,12 +223,12 @@ UpdateSleepTime DeployStyleAIUpdate::update( void )
 					}
 					else
 					{
-						designatedTarget = NULL;
+						designatedTarget = nullptr;
 					}
 				}
 				else
 				{
-					designatedTarget = NULL;
+					designatedTarget = nullptr;
 				}
 			}
 			else if( designatedTarget )
@@ -264,7 +264,7 @@ UpdateSleepTime DeployStyleAIUpdate::update( void )
 			break;
 
 		case READY_TO_ATTACK:
-			if( !remainDeployed && (!inRange && isAttacking || !isAttacking && (isWaitingForPath() || getPath())) )
+			if( !remainDeployed && ((!inRange && isAttacking) || (!isAttacking && (isWaitingForPath() || getPath()))) )
 			{
 				WhichTurretType tur = getWhichTurretForCurWeapon();
 				if( tur != TURRET_INVALID )
@@ -465,7 +465,7 @@ void DeployStyleAIUpdate::crc( Xfer *xfer )
 {
 	// extend base class
 	AIUpdateInterface::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -512,14 +512,14 @@ void DeployStyleAIUpdate::xfer( Xfer *xfer )
 		obsolete.doXfer(xfer);
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void DeployStyleAIUpdate::loadPostProcess( void )
+void DeployStyleAIUpdate::loadPostProcess()
 {
  // extend base class
 	AIUpdateInterface::loadPostProcess();
-}  // end loadPostProcess
+}
 

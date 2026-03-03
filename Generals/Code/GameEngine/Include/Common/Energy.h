@@ -44,10 +44,7 @@
 
 #pragma once
 
-#ifndef _ENERGY_H_
-#define _ENERGY_H_
-
-// INLCUDES /////////////////////////////////////////////////////////////////////////////////////
+// INCLUDES /////////////////////////////////////////////////////////////////////////////////////
 #include "Common/Snapshot.h"
 
 // ----------------------------------------------------------------------------------------------
@@ -82,7 +79,7 @@ public:
 	/// return current energy consumption in kilowatts
 	Int getConsumption() const { return m_energyConsumption; }
 
-	Bool hasSufficientPower(void) const;
+	Bool hasSufficientPower() const;
 
 	// If adding is false, we're supposed to be removing this.
 	void adjustPower(Int powerDelta, Bool adding);
@@ -107,7 +104,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 	void addProduction(Int amt);
 	void addConsumption(Int amt);
@@ -118,6 +115,3 @@ private:
 	Int		m_energyConsumption;	///< level of energy consumption, in kw
 	Player *m_owner;						///< Tight pointer to the Player I am intrinsic to.
 };
-
-#endif // _ENERGY_H_
-

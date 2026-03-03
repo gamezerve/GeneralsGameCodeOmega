@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __CashBountyPower_H_
-#define __CashBountyPower_H_
-
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -98,7 +95,7 @@ public:
 #endif
 	Real											m_defaultBounty;
 
-	CashBountyPowerModuleData( void );
+	CashBountyPowerModuleData();
 	static void buildFieldParse(MultiIniFieldParse& p);
 };
 
@@ -127,5 +124,3 @@ protected:
 	Real findBounty() const;
 
 };
-
-#endif // __CashBountyPower_H_

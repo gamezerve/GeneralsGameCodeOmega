@@ -32,7 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "Common/ThingTemplate.h"
@@ -66,10 +66,10 @@ void HelixContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-    { "PayloadTemplateName",  INI::parseAsciiStringVectorAppend, NULL, offsetof(HelixContainModuleData, m_payloadTemplateNameData) },
-    {"ShouldDrawPips",  INI::parseBool, NULL, offsetof(HelixContainModuleData, m_drawPips) },
+    { "PayloadTemplateName",  INI::parseAsciiStringVectorAppend, nullptr, offsetof(HelixContainModuleData, m_payloadTemplateNameData) },
+    {"ShouldDrawPips",  INI::parseBool, nullptr, offsetof(HelixContainModuleData, m_drawPips) },
 
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -99,13 +99,13 @@ HelixContain::HelixContain( Thing *thing, const ModuleData *moduleData ) :
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-HelixContain::~HelixContain( void )
+HelixContain::~HelixContain()
 {
 
 }
 
 
-void HelixContain::onObjectCreated( void )
+void HelixContain::onObjectCreated()
 {
   HelixContain::createPayload();
 }
@@ -128,7 +128,7 @@ UpdateSleepTime HelixContain::update()
 }
 
 
-void HelixContain::redeployOccupants( void )
+void HelixContain::redeployOccupants()
 {
   Coord3D firePos = *getObject()->getPosition();
   firePos.z += 8;
@@ -182,7 +182,7 @@ void HelixContain::createPayload()
 
 		contain->enableLoadSounds( TRUE );
 
-  } // endif contain
+  }
 
 	m_payloadCreated = TRUE;
 
@@ -205,7 +205,7 @@ void HelixContain::onBodyDamageStateChange( const DamageInfo* damageInfo,
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Object* HelixContain::getPortableStructure( void )
+Object* HelixContain::getPortableStructure()
 {
   return TheGameLogic->findObjectByID( m_portableStructureID );
 }
@@ -223,13 +223,13 @@ void HelixContain::onDie( const DamageInfo *damageInfo )
 }
 
 //-------------------------------------------------------------------------------------------------
-void HelixContain::onDelete( void )
+void HelixContain::onDelete()
 {
   Object *portable = getPortableStructure();
   if ( portable )
     TheGameLogic->destroyObject( portable );
 
-  TransportContain::onDelete( );
+  TransportContain::onDelete();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -317,7 +317,7 @@ const Object *HelixContain::friend_getRider() const
     return portableAsRider;
   }
 
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -409,7 +409,7 @@ void HelixContain::onContaining( Object *obj, Bool wasSelected )
 
 
 
-}  // end onContaining
+}
 
 void HelixContain::onRemoving( Object *obj )
 {
@@ -420,7 +420,7 @@ void HelixContain::onRemoving( Object *obj )
 	obj->clearWeaponBonusCondition( WEAPONBONUSCONDITION_GARRISONED );
   obj->clearDisabled( DISABLED_HELD );
 
-} // end onRemoving
+}
 
 
 
@@ -440,7 +440,7 @@ void HelixContain::crc( Xfer *xfer )
 	// extend base class
 	TransportContain::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -462,15 +462,15 @@ void HelixContain::xfer( Xfer *xfer )
   	TransportContain::xfer( xfer );
 
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void HelixContain::loadPostProcess( void )
+void HelixContain::loadPostProcess()
 {
 
 	// extend base class
 	TransportContain::loadPostProcess();
 
-}  // end loadPostProcess
+}

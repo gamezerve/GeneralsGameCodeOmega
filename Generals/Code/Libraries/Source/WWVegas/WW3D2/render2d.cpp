@@ -35,7 +35,6 @@
 #include "render2d.h"
 #include "mutex.h"
 #include "ww3d.h"
-#include "refcount.h"
 #include "font3d.h"
 #include "rect.h"
 #include "texture.h"
@@ -61,7 +60,7 @@ RectClass							Render2DClass::ScreenResolution( 0,0,0,0 );
 Render2DClass::Render2DClass( TextureClass* tex ) :
 	CoordinateScale( 1, 1 ),
 	CoordinateOffset( 0, 0 ),
-	Texture(0),
+	Texture(nullptr),
 	ZValue(0),
 	IsHidden( false ),
 	IsGrayScale (false)
@@ -77,7 +76,7 @@ Render2DClass::~Render2DClass()
 }
 
 ShaderClass
-Render2DClass::Get_Default_Shader( void )
+Render2DClass::Get_Default_Shader()
 {
 	ShaderClass shader;
 
@@ -92,7 +91,7 @@ Render2DClass::Get_Default_Shader( void )
 	return shader;
 }
 
-void	Render2DClass::Reset(void)
+void	Render2DClass::Reset()
 {
 	Vertices.Delete_All( false );
 	UVCoordinates.Delete_All( false );
@@ -111,7 +110,7 @@ void Render2DClass::Set_Texture( const char * filename)
 {
 	TextureClass * tex = WW3DAssetManager::Get_Instance()->Get_Texture( filename, MIP_LEVELS_1 );
 	Set_Texture( tex );
-	if ( tex != NULL ) {
+	if ( tex != nullptr ) {
 		SET_REF_OWNER( tex );
 		tex->Release_Ref();
 	}
@@ -171,7 +170,7 @@ void	Render2DClass::Set_Coordinate_Range( const RectClass & range )
 	Update_Bias();
 }
 
-void	  Render2DClass::Update_Bias( void )
+void	  Render2DClass::Update_Bias()
 {
 	BiasedCoordinateOffset = CoordinateOffset;
 
@@ -417,7 +416,7 @@ void	Render2DClass::Add_Tri( const Vector2 & v0, const Vector2 & v1, const Vecto
 	int new_vert_count = old_vert_count + 3;
 	int new_index_count = Indices.Count() + 3;
 
-	// Add the verticies (translated to new coordinates)
+	// Add the vertices (translated to new coordinates)
 #if 0
 	Vertices.Add( Convert_Vert( v0 ), new_vert_count );
 	Vertices.Add( Convert_Vert( v1 ), new_vert_count );
@@ -526,7 +525,7 @@ void	Render2DClass::Add_Outline( const RectClass & rect, float width, const Rect
 	Add_Line (Vector2 (rect.Right, rect.Bottom),	Vector2 (rect.Left + 1, rect.Bottom),	width, color);
 }
 
-void Render2DClass::Render(void)
+void Render2DClass::Render()
 {
 	if ( !Indices.Count() || IsHidden) {
 		return;
@@ -612,6 +611,9 @@ void Render2DClass::Render(void)
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLORARG2, D3DTA_TFACTOR);
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+
+			// TheSuperHackers @bugfix Stubbjax 08/01/2026 Fix possible greyscale rendering issues on hardware without DOT3 support.
+			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP, D3DTOP_DISABLE);
 		}
 	}
 	else
@@ -635,7 +637,7 @@ void Render2DClass::Render(void)
 Render2DTextClass::Render2DTextClass(Font3DInstanceClass *font) :
 	Location(0.0f,0.0f),
 	Cursor(0.0f,0.0f),
-	Font(NULL),
+	Font(nullptr),
 	WrapWidth(0),
 	ClipRect(0, 0, 0, 0),
 	IsClippedEnabled(false)
@@ -651,7 +653,7 @@ Render2DTextClass::~Render2DTextClass()
 	REF_PTR_RELEASE(Font);
 }
 
-void	Render2DTextClass::Reset(void)
+void	Render2DTextClass::Reset()
 {
 	Render2DClass::Reset();
 	Cursor = Location;
@@ -666,7 +668,7 @@ void	Render2DTextClass::Set_Font( Font3DInstanceClass *font )
 {
 	REF_PTR_SET(Font,font);
 
-	if ( Font != NULL ) {
+	if ( Font != nullptr ) {
 		Set_Texture( Font->Peek_Texture() );
 
 	#define	BLOCK_CHAR	0

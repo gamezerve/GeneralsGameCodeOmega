@@ -26,7 +26,7 @@
 // GameSpy Persistent Storage callbacks, utils, etc
 // Author: Matthew D. Campbell, March 2002
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "gamespy/gstats/gpersist.h"
 
@@ -39,7 +39,7 @@
 
 static Bool isProfileAuthorized = false;
 
-static Bool gameSpyInitPersistentStorageConnection( void );
+static Bool gameSpyInitPersistentStorageConnection();
 static void getPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, char *data, int len, void *instance);
 static void setPersistentDataCallback(int localid, int profileid, persisttype_t type, int index, int success, void *instance);
 
@@ -50,25 +50,25 @@ public:
 	GameSpyPlayerInfo() { m_locale.clear(); m_wins = m_losses = m_operationCount = 0; m_shouldDisconnect = false; }
 	virtual ~GameSpyPlayerInfo() { reset(); }
 
-	virtual void init( void ) { m_locale.clear(); m_wins = m_losses = m_operationCount = 0; queueDisconnect(); };
-	virtual void reset( void ) { m_locale.clear(); m_wins = m_losses = m_operationCount = 0; queueDisconnect(); };
-	virtual void update( void );
+	virtual void init() { m_locale.clear(); m_wins = m_losses = m_operationCount = 0; queueDisconnect(); };
+	virtual void reset() { m_locale.clear(); m_wins = m_losses = m_operationCount = 0; queueDisconnect(); };
+	virtual void update();
 
-	virtual AsciiString getLocale( void ) { return m_locale; }
-	virtual Int getWins( void ) { return m_wins; }
-	virtual Int getLosses( void ) { return m_losses; }
+	virtual AsciiString getLocale() { return m_locale; }
+	virtual Int getWins() { return m_wins; }
+	virtual Int getLosses() { return m_losses; }
 
 	virtual void setLocale( AsciiString locale, Bool setOnServer );
 	virtual void setWins( Int wins, Bool setOnServer );
 	virtual void setLosses( Int losses, Bool setOnServer );
 
-	virtual void readFromServer( void );
-	virtual void threadReadFromServer( void );
+	virtual void readFromServer();
+	virtual void threadReadFromServer();
 	virtual void threadSetLocale( AsciiString val );
 	virtual void threadSetWins  ( AsciiString val );
 	virtual void threadSetLosses( AsciiString val );
 
-	void queueDisconnect( void ) { 	MutexClass::LockClass m(TheGameSpyMutex); if (IsStatsConnected()) m_shouldDisconnect = true; else m_shouldDisconnect = false; }
+	void queueDisconnect() { 	MutexClass::LockClass m(TheGameSpyMutex); if (IsStatsConnected()) m_shouldDisconnect = true; else m_shouldDisconnect = false; }
 
 private:
 	void setValue( AsciiString key, AsciiString val, Bool setOnServer );
@@ -80,7 +80,7 @@ private:
 	Bool m_shouldDisconnect;
 };
 
-void GameSpyPlayerInfo::update( void )
+void GameSpyPlayerInfo::update()
 {
 	if (IsStatsConnected())
 	{
@@ -96,12 +96,12 @@ void GameSpyPlayerInfo::update( void )
 	}
 }
 
-void GameSpyPlayerInfo::readFromServer( void )
+void GameSpyPlayerInfo::readFromServer()
 {
 	TheGameSpyThread->queueReadPersistentStatsFromServer();
 }
 
-void GameSpyPlayerInfo::threadReadFromServer( void )
+void GameSpyPlayerInfo::threadReadFromServer()
 {
 	MutexClass::LockClass m(TheGameSpyMutex);
 	if (gameSpyInitPersistentStorageConnection())
@@ -219,9 +219,9 @@ void GameSpyPlayerInfo::threadSetLosses( AsciiString val )
 	free(writable);
 }
 
-GameSpyPlayerInfoInterface *TheGameSpyPlayerInfo = NULL;
+GameSpyPlayerInfoInterface *TheGameSpyPlayerInfo = nullptr;
 
-GameSpyPlayerInfoInterface *createGameSpyPlayerInfo( void )
+GameSpyPlayerInfoInterface *createGameSpyPlayerInfo()
 {
 	return NEW GameSpyPlayerInfo;
 }
@@ -316,7 +316,7 @@ static void setPersistentDataCallback(int localid, int profileid, persisttype_t 
 	}
 }
 
-static Bool gameSpyInitPersistentStorageConnection( void )
+static Bool gameSpyInitPersistentStorageConnection()
 {
 	if (IsStatsConnected())
 		return true;
@@ -358,12 +358,12 @@ static Bool gameSpyInitPersistentStorageConnection( void )
 		in the password for the profile we are authenticating.
 		Again, if this is done in a client/server setting, with the Persistent Storage
 		access being done on the server, and the P&M SDK is used on the client, the
-		server will need to send the challenge (GetChallenge(NULL)) to the client, the
+		server will need to send the challenge (GetChallenge(nullptr)) to the client, the
 		client will create the validation token using GenerateAuth, and send it
 		back to the server for use in PreAuthenticatePlayerPM
 		***********/
 		char *munkeeHack = strdup(TheGameSpyChat->getPassword().str()); // GenerateAuth takes a char*, not a const char* :P
-		GenerateAuth(GetChallenge(NULL), munkeeHack, validate);
+		GenerateAuth(GetChallenge(nullptr), munkeeHack, validate);
 		free (munkeeHack);
 
 		/************
@@ -372,7 +372,7 @@ static Bool gameSpyInitPersistentStorageConnection( void )
 		We pass the same authentication callback as for the first user, but a different
 		localid this time.
 		************/
-		PreAuthenticatePlayerPM(0, TheGameSpyChat->getProfileID(), validate, persAuthCallback, NULL);
+		PreAuthenticatePlayerPM(0, TheGameSpyChat->getProfileID(), validate, persAuthCallback, nullptr);
 	}
 	else
 	{

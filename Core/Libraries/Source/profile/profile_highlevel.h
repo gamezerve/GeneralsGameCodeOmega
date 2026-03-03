@@ -26,11 +26,8 @@
 //
 // High level profiling
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef PROFILE_HIGHLEVEL_H // Include guard
-#define PROFILE_HIGHLEVEL_H
+
+#pragma once
 
 /// \internal internal Id representation
 class ProfileId;
@@ -54,7 +51,7 @@ public:
     friend ProfileHighLevel;
 
   public:
-    Id(void): m_idPtr(0) {}
+    Id(): m_idPtr(0) {}
 
     /**
       \brief Increment the internal profile value.
@@ -83,21 +80,21 @@ public:
 
       \return internal Id name, e.g. 'render.texture.count.512x512'
     */
-    const char *GetName(void) const;
+    const char *GetName() const;
 
     /**
       \brief Returns the descriptive name.
 
       \return descriptive name, e.g. '# of 512x512 textures'
     */
-    const char *GetDescr(void) const;
+    const char *GetDescr() const;
 
     /**
       \brief Returns the value's unit text.
 
       \return unit text, e.g. 'bytes'
     */
-    const char *GetUnit(void) const;
+    const char *GetUnit() const;
 
     /**
       \brief Returns the current value.
@@ -113,7 +110,7 @@ public:
 
       \return current value
     */
-    const char *GetCurrentValue(void) const;
+    const char *GetCurrentValue() const;
 
     /**
       \brief Returns the value for the given recorded frame/range.
@@ -122,7 +119,7 @@ public:
       any consecutive call to any profile module function.
 
       \param frame number of recorded frame/range
-      \return value at given frame, NULL if frame not found
+      \return value at given frame, nullptr if frame not found
     */
     const char *GetValue(unsigned frame) const;
 
@@ -136,7 +133,7 @@ public:
 
       \return total value
     */
-    const char *GetTotalValue(void) const;
+    const char *GetTotalValue() const;
 
   private:
 
@@ -226,16 +223,14 @@ private:
 
   /** \internal
 
-    Undocumented default constructor. Initializes high level profiler.
-    We can make this private as well so nobody accidently tries to create
+    Undocumented default constructor. Initializes high-level profiler.
+    We can make this private as well so nobody accidentally tries to create
     another instance.
   */
-  ProfileHighLevel(void);
+  ProfileHighLevel();
 
   /**
     \brief The only high level profiler instance.
   */
   static ProfileHighLevel Instance;
 };
-
-#endif // PROFILE_HIGHLEVEL_H

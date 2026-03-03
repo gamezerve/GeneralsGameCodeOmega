@@ -50,9 +50,6 @@
 
 #pragma once
 
-#ifndef __GADGETTEXTENTRY_H_
-#define __GADGETTEXTENTRY_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -72,6 +69,7 @@ inline void GadgetTextEntrySetText( GameWindow *g, UnicodeString text )
 	TheWindowManager->winSendSystemMsg( g, GEM_SET_TEXT, (WindowMsgData)&text, 0 );
 }
 extern UnicodeString GadgetTextEntryGetText( GameWindow *textentry ); ///< Get the text from the text entry field
+extern void GadgetTextEntrySetMaxLen( GameWindow *g, Short length );
 extern void GadgetTextEntrySetFont( GameWindow *g, GameFont *font );  ///< set font for window and edit text display strings
 inline void GadgetTextEntrySetTextColor( GameWindow *g, Color color )
 {
@@ -124,6 +122,3 @@ inline Color GadgetTextEntryGetHiliteColor( GameWindow *g )								{ return g->w
 inline Color GadgetTextEntryGetHiliteBorderColor( GameWindow *g )					{ return g->winGetHiliteBorderColor( 0 ); }
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
-
-#endif // __GADGETTEXTENTRY_H_
-

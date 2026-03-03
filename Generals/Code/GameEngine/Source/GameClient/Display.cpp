@@ -26,7 +26,7 @@
 // The implementation of the Display class
 // Author: Michael S. Booth, March 2001
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameClient/Display.h"
 #include "GameClient/Mouse.h"
@@ -38,37 +38,34 @@
 //#include "GameLogic/GameLogic.h"
 
 /// The Display singleton instance.
-Display *TheDisplay = NULL;
+Display *TheDisplay = nullptr;
 
 
 Display::Display()
 {
-	m_viewList = NULL;
+	m_viewList = nullptr;
 	m_width = 0;
 	m_height = 0;
 	m_bitDepth = 0;
 	m_windowed = FALSE;
-	m_videoBuffer = NULL;
-	m_videoStream = NULL;
-	m_debugDisplayCallback = NULL;
-	m_debugDisplayUserData = NULL;
-	m_debugDisplay = NULL;
+	m_videoBuffer = nullptr;
+	m_videoStream = nullptr;
+	m_debugDisplayCallback = nullptr;
+	m_debugDisplayUserData = nullptr;
+	m_debugDisplay = nullptr;
 	m_letterBoxFadeLevel = 0;
 	m_letterBoxEnabled = FALSE;
 	m_cinematicText = AsciiString::TheEmptyString;
-	m_cinematicFont = NULL;
+	m_cinematicFont = nullptr;
 	m_cinematicTextFrames = 0;
 	m_movieHoldTime	= -1;
 	m_copyrightHoldTime = -1;
 	m_elapsedMovieTime = 0;
 	m_elapsedCopywriteTime = 0;
-	m_copyrightDisplayString = NULL;
+	m_copyrightDisplayString = nullptr;
 
-	// Added by Sadullah Nader
-	// Initializations missing and needed
 	m_currentlyPlayingMovie.clear();
 	m_letterBoxFadeStartTime = 0;
-	// End Add
 }
 
 /**
@@ -86,7 +83,7 @@ Display::~Display()
 /**
 	* Delete all views in the Display
 	*/
-void Display::deleteViews( void )
+void Display::deleteViews()
 {
 	View *v, *next;
 
@@ -95,7 +92,7 @@ void Display::deleteViews( void )
 		next = v->getNextView();
 		delete v;
 	}
-	m_viewList = NULL;
+	m_viewList = nullptr;
 }
 
 /**
@@ -111,7 +108,7 @@ void Display::attachView( View *view )
 /**
  * Render all views of the world
  */
-void Display::drawViews( void )
+void Display::drawViews()
 {
 
 	for( View *v = m_viewList; v; v = v->getNextView() )
@@ -123,7 +120,7 @@ void Display::drawViews( void )
  * Updates all views of the world.  This forces state variables
    to refresh without actually drawing anything.
  */
-void Display::updateViews( void )
+void Display::updateViews()
 {
 
 	for( View *v = m_viewList; v; v = v->getNextView() )
@@ -131,7 +128,7 @@ void Display::updateViews( void )
 
 }
 
-void Display::stepViews( void )
+void Display::stepViews()
 {
 
 	for( View *v = m_viewList; v; v = v->getNextView() )
@@ -140,7 +137,7 @@ void Display::stepViews( void )
 }
 
 /// Redraw the entire display
-void Display::draw( void )
+void Display::draw()
 {
 	// redraw all views
 	drawViews();
@@ -185,7 +182,7 @@ void Display::setWidth( UnsignedInt width )
 	if( TheMouse )
 		TheMouse->setMouseLimits();
 
-}  // end setWidth
+}
 
 // Display::setHeight =========================================================
 /** Set the height of the display */
@@ -200,7 +197,7 @@ void Display::setHeight( UnsignedInt height )
 	if( TheMouse )
 		TheMouse->setMouseLimits();
 
-}  // end setHeight
+}
 
 //============================================================================
 // Display::playLogoMovie
@@ -215,7 +212,7 @@ void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minC
 
 	m_videoStream = TheVideoPlayer->open( movieName );
 
-	if ( m_videoStream == NULL )
+	if ( m_videoStream == nullptr )
 	{
 		return;
 	}
@@ -223,10 +220,10 @@ void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minC
 	m_currentlyPlayingMovie = movieName;
 	m_movieHoldTime = minMovieLength;
 	m_copyrightHoldTime = minCopyrightLength;
-	m_elapsedMovieTime = timeGetTime();  // we're using time get time becuase legal want's actual "Seconds"
+	m_elapsedMovieTime = timeGetTime();  // we're using time get time because legal wants actual "Seconds"
 
 	m_videoBuffer = createVideoBuffer();
-	if (	m_videoBuffer == NULL ||
+	if (	m_videoBuffer == nullptr ||
 				!m_videoBuffer->allocate(	m_videoStream->width(),
 													m_videoStream->height())
 		)
@@ -250,7 +247,7 @@ void Display::playMovie( AsciiString movieName)
 
 	m_videoStream = TheVideoPlayer->open( movieName );
 
-	if ( m_videoStream == NULL )
+	if ( m_videoStream == nullptr )
 	{
 		return;
 	}
@@ -258,7 +255,7 @@ void Display::playMovie( AsciiString movieName)
 	m_currentlyPlayingMovie = movieName;
 
 	m_videoBuffer = createVideoBuffer();
-	if (	m_videoBuffer == NULL ||
+	if (	m_videoBuffer == nullptr ||
 				!m_videoBuffer->allocate(	m_videoStream->width(),
 													m_videoStream->height())
 		)
@@ -273,15 +270,15 @@ void Display::playMovie( AsciiString movieName)
 // Display::stopMovie
 //============================================================================
 
-void Display::stopMovie( void )
+void Display::stopMovie()
 {
 	delete m_videoBuffer;
-	m_videoBuffer = NULL;
+	m_videoBuffer = nullptr;
 
 	if ( m_videoStream )
 	{
 		m_videoStream->close();
-		m_videoStream = NULL;
+		m_videoStream = nullptr;
 	}
 
 	if (!m_currentlyPlayingMovie.isEmpty()) {
@@ -291,7 +288,7 @@ void Display::stopMovie( void )
 	if(m_copyrightDisplayString)
 	{
 		TheDisplayStringManager->freeDisplayString(m_copyrightDisplayString);
-		m_copyrightDisplayString = NULL;
+		m_copyrightDisplayString = nullptr;
 	}
 	m_copyrightHoldTime = -1;
 	m_movieHoldTime = -1;
@@ -301,7 +298,7 @@ void Display::stopMovie( void )
 // Display::update
 //============================================================================
 
-void Display::update( void )
+void Display::update()
 {
 	if ( m_videoStream && m_videoBuffer )
 	{
@@ -316,8 +313,7 @@ void Display::update( void )
 				if( m_elapsedCopywriteTime == 0 && m_elapsedCopywriteTime >= 0)
 				{
 					//display the copyrighttext;
-					if(m_copyrightDisplayString)
-						deleteInstance(m_copyrightDisplayString);
+					deleteInstance(m_copyrightDisplayString);
 					m_copyrightDisplayString = TheDisplayStringManager->newDisplayString();
 					m_copyrightDisplayString->setText(TheGameText->fetch("GUI:EACopyright"));
 					if (TheGlobalLanguageData && TheGlobalLanguageData->m_copyrightFont.name.isNotEmpty())
@@ -368,9 +364,9 @@ void Display::reset()
 // Display::isMoviePlaying
 //============================================================================
 
-Bool Display::isMoviePlaying(void)
+Bool Display::isMoviePlaying()
 {
-	return m_videoStream != NULL && m_videoBuffer != NULL;
+	return m_videoStream != nullptr && m_videoBuffer != nullptr;
 }
 
 //============================================================================

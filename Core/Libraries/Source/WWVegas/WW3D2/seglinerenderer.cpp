@@ -44,7 +44,7 @@
 #include "sortingrenderer.h"
 #include "vp.h"
 #include "Vector3i.h"
-#include "RANDOM.H"
+#include "RANDOM.h"
 #include "v3_rnd.h"
 #include "meshgeometry.h"
 
@@ -68,8 +68,8 @@
 
 
 
-SegLineRendererClass::SegLineRendererClass(void) :
-		Texture(NULL),
+SegLineRendererClass::SegLineRendererClass() :
+		Texture(nullptr),
 		Shader(ShaderClass::_PresetAdditiveSpriteShader),
 		Width(0.0f),
 		Color(Vector3(1,1,1)),
@@ -78,18 +78,18 @@ SegLineRendererClass::SegLineRendererClass(void) :
 		NoiseAmplitude(0.0f),
 		MergeAbortFactor(1.5f),
 		TextureTileFactor(1.0f),
-		LastUsedSyncTime(WW3D::Get_Sync_Time()),
+		LastUsedSyncTime(WW3D::Get_Logic_Time_Milliseconds()),
 		CurrentUVOffset(0.0f,0.0f),
 		UVOffsetDeltaPerMS(0.0f, 0.0f),
 		Bits(DEFAULT_BITS),
 		m_vertexBufferSize(0),
-		m_vertexBuffer(NULL)
+		m_vertexBuffer(nullptr)
 {
 	// EMPTY
 }
 
 SegLineRendererClass::SegLineRendererClass(const SegLineRendererClass & that) :
-		Texture(NULL),
+		Texture(nullptr),
 		Shader(ShaderClass::_PresetAdditiveSpriteShader),
 		Width(0.0f),
 		Color(Vector3(1,1,1)),
@@ -103,7 +103,7 @@ SegLineRendererClass::SegLineRendererClass(const SegLineRendererClass & that) :
 		UVOffsetDeltaPerMS(0.0f, 0.0f),
 		Bits(DEFAULT_BITS),
 		m_vertexBufferSize(0),
-		m_vertexBuffer(NULL)
+		m_vertexBuffer(nullptr)
 {
 	*this = that;
 }
@@ -129,7 +129,7 @@ SegLineRendererClass & SegLineRendererClass::operator = (const SegLineRendererCl
 	return *this;
 }
 
-SegLineRendererClass::~SegLineRendererClass(void)
+SegLineRendererClass::~SegLineRendererClass()
 {
 	REF_PTR_RELEASE(Texture);
 	delete [] m_vertexBuffer;
@@ -171,9 +171,9 @@ void SegLineRendererClass::Set_Texture(TextureClass *texture)
 	REF_PTR_SET(Texture,texture);
 }
 
-TextureClass * SegLineRendererClass::Get_Texture(void) const
+TextureClass * SegLineRendererClass::Get_Texture() const
 {
-	if (Texture != NULL) {
+	if (Texture != nullptr) {
 		Texture->Add_Ref();
 	}
 	return Texture;
@@ -199,9 +199,9 @@ void SegLineRendererClass::Set_Texture_Tile_Factor(float factor)
 	TextureTileFactor = factor;
 }
 
-void SegLineRendererClass::Reset_Line(void)
+void SegLineRendererClass::Reset_Line()
 {
-	LastUsedSyncTime = WW3D::Get_Sync_Time();
+	LastUsedSyncTime = WW3D::Get_Logic_Time_Milliseconds();
 	CurrentUVOffset.Set(0.0f,0.0f);
 }
 
@@ -227,9 +227,9 @@ void SegLineRendererClass::Render
 	/*
 	** Handle texture UV offset animation (done once for entire line).
 	*/
-	unsigned int delta = WW3D::Get_Sync_Time() - LastUsedSyncTime;
-	float del = (float)delta;
-	Vector2 uv_offset = CurrentUVOffset + UVOffsetDeltaPerMS * del;
+	// TheSuperHackers @tweak The render update is now decoupled from the logic step.
+	const unsigned int delta = WW3D::Get_Logic_Time_Milliseconds() - LastUsedSyncTime;
+	Vector2 uv_offset = CurrentUVOffset + UVOffsetDeltaPerMS * (float)delta;
 
 	// ensure offsets are in [0, 1] range:
 	uv_offset.X = uv_offset.X - floorf(uv_offset.X);
@@ -237,7 +237,7 @@ void SegLineRendererClass::Render
 
 	// Update state
 	CurrentUVOffset = uv_offset;
-	LastUsedSyncTime = WW3D::Get_Sync_Time();
+	LastUsedSyncTime = WW3D::Get_Logic_Time_Milliseconds();
 
 	// Used later
 	TextureMapMode map_mode = Get_Texture_Mapping_Mode();
@@ -337,7 +337,7 @@ void SegLineRendererClass::Render
 		Vector4 subdiv_rgbas[MAX_SEGLINE_POINT_BUFFER_SIZE];
 		unsigned int sub_point_cnt;
 
-		Vector4 *rgbasPointer = rgbas ? &rgbas[ chidx ] : NULL;
+		Vector4 *rgbasPointer = rgbas ? &rgbas[ chidx ] : nullptr;
 
 		subdivision_util(point_cnt, xformed_pts, base_tex_v, &sub_point_cnt, xformed_subdiv_pts, subdiv_tex_v, rgbasPointer, subdiv_rgbas);
 
@@ -714,7 +714,7 @@ void SegLineRendererClass::Render
 				segment[iidx].StartPlane = -start_pl;
 			}
 
-		}	// for iidx
+		}
 
 
 		/*
@@ -875,7 +875,7 @@ void SegLineRendererClass::Render
 							next_int = &(intersection[iidx_r + 1][edge]);
 							next_seg = &(segment[next_int->NextSegmentID]);
 
-						}	// while <merging needed>
+						}
 
 						// Copy from "read index" to "write index"
 						write_int->PointCount		= curr_int->PointCount;
@@ -886,7 +886,7 @@ void SegLineRendererClass::Render
 						write_int->Direction			= curr_int->Direction;
 						write_int->Fold				= curr_int->Fold;
 
-					}	// for iidx
+					}
 
 					// If iidx_r is exactly equal to num_isects (rather than being larger by one) at this
 					// point, this means that the last intersection was not merged with the previous one. In
@@ -912,9 +912,9 @@ void SegLineRendererClass::Render
 					assert(total_cnt == point_cnt);
 #endif
 
-				}	// for edge
-			}	// while (merged)
-		}	// if (Is_Merge_Intersections())
+				}
+			}
+		}
 
 		/*
 		** Find vertex positions, generate vertices and triangles:
@@ -1120,7 +1120,7 @@ void SegLineRendererClass::Render
 			mat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_NODIFFUSE);
 		}
 
-		// If Texture is non-NULL enable texturing in shader - otherwise disable.
+		// If Texture is non-null enable texturing in shader - otherwise disable.
 		if (Texture) {
 			shader.Set_Texturing(ShaderClass::TEXTURING_ENABLE);
 		} else {
@@ -1158,7 +1158,7 @@ void SegLineRendererClass::Render
 				texture->V = vArray[i].v1;
 				vb += vbSize;
 			}
-		} // copy
+		}
 
 		DynamicIBAccessClass ib_access((sorting?BUFFER_TYPE_DYNAMIC_SORTING:BUFFER_TYPE_DYNAMIC_DX8),tidx*3);
 		{
@@ -1188,7 +1188,7 @@ void SegLineRendererClass::Render
 
 		REF_PTR_RELEASE(mat);
 
-	}	// Chunking loop
+	}
 
 	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
 

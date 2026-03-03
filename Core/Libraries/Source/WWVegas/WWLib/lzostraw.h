@@ -34,11 +34,9 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef LZOSTRAW_H
-#define LZOSTRAW_H
+#pragma once
 
-
-#include	"STRAW.H"
+#include "STRAW.h"
 
 /*
 **	This class handles LZO compression/decompression to the data stream that is drawn through
@@ -55,7 +53,7 @@ class LZOStraw : public Straw
 		} CompControl;
 
 		LZOStraw(CompControl control, int blocksize=1024*8);
-		virtual ~LZOStraw(void);
+		virtual ~LZOStraw();
 
 		virtual int Get(void * source, int slen);
 
@@ -98,6 +96,3 @@ class LZOStraw : public Straw
 		LZOStraw(LZOStraw & rvalue);
 		LZOStraw & operator = (LZOStraw const & pipe);
 };
-
-
-#endif

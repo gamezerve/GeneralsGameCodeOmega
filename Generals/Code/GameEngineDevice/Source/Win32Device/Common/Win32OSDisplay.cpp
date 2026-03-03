@@ -103,7 +103,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	Int returnResult = 0;
 	if (TheSystemIsUnicode)
 	{
-		returnResult = ::MessageBoxW(NULL, mesgStr.str(), promptStr.str(), windowsOptionsFlags);
+		returnResult = ::MessageBoxW(nullptr, mesgStr.str(), promptStr.str(), windowsOptionsFlags);
 	}
 	else
 	{
@@ -114,7 +114,7 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 		mesgA.translate(mesgStr);
 		//Make sure main window is not TOP_MOST
 		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-		returnResult = ::MessageBoxA(NULL, mesgA.str(), promptA.str(), windowsOptionsFlags);
+		returnResult = ::MessageBoxA(nullptr, mesgA.str(), promptA.str(), windowsOptionsFlags);
 	}
 
 	if (returnResult == IDOK) {
@@ -122,4 +122,14 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 	}
 
 	return OSDBT_CANCEL;
+}
+
+//-------------------------------------------------------------------------------------------------
+void OSDisplaySetBusyState(Bool busyDisplay, Bool busySystem)
+{
+	EXECUTION_STATE state = ES_CONTINUOUS;
+	state |= busyDisplay ? ES_DISPLAY_REQUIRED : 0;
+	state |= busySystem ? ES_SYSTEM_REQUIRED : 0;
+
+	::SetThreadExecutionState(state);
 }

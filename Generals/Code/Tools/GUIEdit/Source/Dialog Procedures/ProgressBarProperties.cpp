@@ -181,12 +181,12 @@ static LRESULT CALLBACK progressBarPropertiesCallback( HWND hWndDialog,
 						info = GetStateInfo( PROGRESS_BAR_HILITE_BAR_SMALL_CENTER );
 						GadgetProgressBarSetHiliteBarImageSmallCenter( window, info->image );
 
-					}  // end if
+					}
 
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end OK
+				}
 
 				// --------------------------------------------------------------------
         case IDCANCEL:
@@ -195,13 +195,13 @@ static LRESULT CALLBACK progressBarPropertiesCallback( HWND hWndDialog,
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end cancel
+				}
 
-      }  // end switch( LOWORD( wParam ) )
+      }
 
       return 0;
 
-    } // end of WM_COMMAND
+    }
 
 		// ------------------------------------------------------------------------
     case WM_CLOSE:
@@ -210,15 +210,15 @@ static LRESULT CALLBACK progressBarPropertiesCallback( HWND hWndDialog,
       DestroyWindow( hWndDialog );
       return 0;
 
-		}  // end close
+		}
 
 		// ------------------------------------------------------------------------
 		default:
 			return 0;
 
-  }  // end of switch
+  }
 
-}  // end progressBarPropertiesCallback
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -237,8 +237,8 @@ HWND InitProgressBarPropertiesDialog( GameWindow *window )
 												 (LPCTSTR)PROGRESS_BAR_PROPERTIES_DIALOG,
 												 TheEditor->getWindowHandle(),
 												 (DLGPROC)progressBarPropertiesCallback );
-	if( dialog == NULL )
-		return NULL;
+	if( dialog == nullptr )
+		return nullptr;
 
 	// do the common initialization
 	CommonDialogInitialize( window, dialog );
@@ -327,7 +327,7 @@ HWND InitProgressBarPropertiesDialog( GameWindow *window )
 
 	return dialog;
 
-}  // end InitProgressBarPropertiesDialog
+}
 
 
 

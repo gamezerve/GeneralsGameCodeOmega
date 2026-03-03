@@ -33,14 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
+
 #pragma once
-#endif // _MSC_VER >= 1000
-
-
-#ifndef HASHCALC_H
-#define HASHCALC_H
-
 
 /*
 ** HashCalculatorClass
@@ -64,11 +58,7 @@ template <class T> class HashCalculatorClass
 public:
 	virtual bool	Items_Match(const T & a, const T & b) = 0;
 	virtual void	Compute_Hash(const T & item) = 0;
-	virtual int		Num_Hash_Bits(void) = 0;
-	virtual int		Num_Hash_Values(void) = 0;
+	virtual int		Num_Hash_Bits() = 0;
+	virtual int		Num_Hash_Values() = 0;
 	virtual int		Get_Hash_Value(int index = 0) = 0;
 };
-
-
-
-#endif

@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GlobalData.h"
 #include "Common/Xfer.h"
@@ -56,7 +56,7 @@ void BaseRegenerateUpdateModuleData::buildFieldParse( MultiIniFieldParse &p )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 
   p.add( dataFieldParse );
@@ -85,7 +85,7 @@ BaseRegenerateUpdate::BaseRegenerateUpdate( Thing *thing, const ModuleData* modu
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-BaseRegenerateUpdate::~BaseRegenerateUpdate( void )
+BaseRegenerateUpdate::~BaseRegenerateUpdate()
 {
 }
 
@@ -110,7 +110,7 @@ void BaseRegenerateUpdate::onDamage( DamageInfo *damageInfo )
 	* to be used in concert with an upgrade and doesn't have any of the "only regenerate
 	* if we haven't been damaged recently" restrictions */
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime BaseRegenerateUpdate::update( void )
+UpdateSleepTime BaseRegenerateUpdate::update()
 {
 	// this is us!
 	Object *me = getObject();
@@ -143,7 +143,7 @@ UpdateSleepTime BaseRegenerateUpdate::update( void )
 
 		return UPDATE_SLEEP(HEAL_RATE);
 	}
-}  // end update
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -154,7 +154,7 @@ void BaseRegenerateUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -172,15 +172,15 @@ void BaseRegenerateUpdate::xfer( Xfer *xfer )
 	// extend base class
 	UpdateModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void BaseRegenerateUpdate::loadPostProcess( void )
+void BaseRegenerateUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameAudio.h"
 #include "Common/GlobalData.h"
@@ -59,15 +59,12 @@
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-HelicopterSlowDeathBehaviorModuleData::HelicopterSlowDeathBehaviorModuleData( void )
+HelicopterSlowDeathBehaviorModuleData::HelicopterSlowDeathBehaviorModuleData()
 {
-	//Added By Sadullah Nader
-	//Initializations missing and needed
 	m_attachParticleBone.clear();
 	m_bladeBone.clear();
 	m_bladeObjectName.clear();
 	m_finalRubbleObject.clear();
-	//
 
 	m_spiralOrbitTurnRate = 0.0f;
 	m_spiralOrbitForwardSpeed = 0.0f;
@@ -80,21 +77,21 @@ HelicopterSlowDeathBehaviorModuleData::HelicopterSlowDeathBehaviorModuleData( vo
 	m_minBladeFlyOffDelay = 0.0;
 	m_maxBladeFlyOffDelay = 0.0;
 
-	m_attachParticleSystem = NULL;
+	m_attachParticleSystem = nullptr;
 	m_attachParticleLoc.x = 0.0f;
 	m_attachParticleLoc.y = 0.0f;
 	m_attachParticleLoc.z = 0.0f;
-	m_oclEjectPilot = NULL;
-	m_fxBlade = NULL;
-	m_oclBlade = NULL;
-	m_fxHitGround = NULL;
-	m_oclHitGround = NULL;
-	m_fxFinalBlowUp = NULL;
-	m_oclFinalBlowUp = NULL;
+	m_oclEjectPilot = nullptr;
+	m_fxBlade = nullptr;
+	m_oclBlade = nullptr;
+	m_fxHitGround = nullptr;
+	m_oclHitGround = nullptr;
+	m_fxFinalBlowUp = nullptr;
+	m_oclFinalBlowUp = nullptr;
 	m_delayFromGroundToFinalDeath = 0;
 	m_maxBraking = 99999.0f;
 
-}  // end HelicopterSlowDeathBehaviorModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -104,40 +101,40 @@ HelicopterSlowDeathBehaviorModuleData::HelicopterSlowDeathBehaviorModuleData( vo
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "SpiralOrbitTurnRate",	INI::parseAngularVelocityReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitTurnRate ) },
-		{ "SpiralOrbitForwardSpeed", INI::parseVelocityReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitForwardSpeed ) },
-		{ "SpiralOrbitForwardSpeedDamping", INI::parseReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitForwardSpeedDamping ) },
-		{ "MinSelfSpin", INI::parseAngularVelocityReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_minSelfSpin ) },
-		{ "MaxSelfSpin", INI::parseAngularVelocityReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxSelfSpin ) },
-		{ "SelfSpinUpdateDelay", INI::parseDurationReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_selfSpinUpdateDelay ) },
-		{ "SelfSpinUpdateAmount", INI::parseAngleReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_selfSpinUpdateAmount ) },
-		{ "FallHowFast", INI::parsePercentToReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fallHowFast ) },
-		{ "MinBladeFlyOffDelay", INI::parseDurationReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_minBladeFlyOffDelay ) },
-		{ "MaxBladeFlyOffDelay", INI::parseDurationReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxBladeFlyOffDelay ) },
-		{ "AttachParticle", INI::parseParticleSystemTemplate, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleSystem ) },
-		{ "AttachParticleBone", INI::parseAsciiString, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleBone ) },
-		{ "AttachParticleLoc", INI::parseCoord3D, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleLoc ) },
-		{ "BladeObjectName", INI::parseAsciiString, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_bladeObjectName ) },
-		{ "BladeBoneName", INI::parseAsciiString, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_bladeBone ) },
-		{ "OCLEjectPilot", INI::parseObjectCreationList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclEjectPilot ) },
-		{ "FXBlade", INI::parseFXList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxBlade ) },
-		{ "OCLBlade", INI::parseObjectCreationList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclBlade ) },
-		{ "FXHitGround", INI::parseFXList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxHitGround ) },
-		{ "OCLHitGround", INI::parseObjectCreationList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclHitGround ) },
-		{ "FXFinalBlowUp", INI::parseFXList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxFinalBlowUp ) },
-		{ "OCLFinalBlowUp", INI::parseObjectCreationList, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclFinalBlowUp ) },
-		{ "DelayFromGroundToFinalDeath", INI::parseDurationReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_delayFromGroundToFinalDeath ) },
-		{ "FinalRubbleObject", INI::parseAsciiString, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_finalRubbleObject ) },
-		{ "SoundDeathLoop", INI::parseAudioEventRTS, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_deathSound) },
-		{ "MaxBraking", INI::parseAccelerationReal, NULL, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxBraking) },
+		{ "SpiralOrbitTurnRate",	INI::parseAngularVelocityReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitTurnRate ) },
+		{ "SpiralOrbitForwardSpeed", INI::parseVelocityReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitForwardSpeed ) },
+		{ "SpiralOrbitForwardSpeedDamping", INI::parseReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_spiralOrbitForwardSpeedDamping ) },
+		{ "MinSelfSpin", INI::parseAngularVelocityReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_minSelfSpin ) },
+		{ "MaxSelfSpin", INI::parseAngularVelocityReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxSelfSpin ) },
+		{ "SelfSpinUpdateDelay", INI::parseDurationReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_selfSpinUpdateDelay ) },
+		{ "SelfSpinUpdateAmount", INI::parseAngleReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_selfSpinUpdateAmount ) },
+		{ "FallHowFast", INI::parsePercentToReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fallHowFast ) },
+		{ "MinBladeFlyOffDelay", INI::parseDurationReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_minBladeFlyOffDelay ) },
+		{ "MaxBladeFlyOffDelay", INI::parseDurationReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxBladeFlyOffDelay ) },
+		{ "AttachParticle", INI::parseParticleSystemTemplate, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleSystem ) },
+		{ "AttachParticleBone", INI::parseAsciiString, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleBone ) },
+		{ "AttachParticleLoc", INI::parseCoord3D, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_attachParticleLoc ) },
+		{ "BladeObjectName", INI::parseAsciiString, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_bladeObjectName ) },
+		{ "BladeBoneName", INI::parseAsciiString, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_bladeBone ) },
+		{ "OCLEjectPilot", INI::parseObjectCreationList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclEjectPilot ) },
+		{ "FXBlade", INI::parseFXList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxBlade ) },
+		{ "OCLBlade", INI::parseObjectCreationList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclBlade ) },
+		{ "FXHitGround", INI::parseFXList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxHitGround ) },
+		{ "OCLHitGround", INI::parseObjectCreationList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclHitGround ) },
+		{ "FXFinalBlowUp", INI::parseFXList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_fxFinalBlowUp ) },
+		{ "OCLFinalBlowUp", INI::parseObjectCreationList, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_oclFinalBlowUp ) },
+		{ "DelayFromGroundToFinalDeath", INI::parseDurationReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_delayFromGroundToFinalDeath ) },
+		{ "FinalRubbleObject", INI::parseAsciiString, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_finalRubbleObject ) },
+		{ "SoundDeathLoop", INI::parseAudioEventRTS, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_deathSound) },
+		{ "MaxBraking", INI::parseAccelerationReal, nullptr, offsetof( HelicopterSlowDeathBehaviorModuleData, m_maxBraking) },
 
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 
 	};
 
   p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Helicopter slow death update ///////////////////////////////////////////////////////////////////
@@ -165,14 +162,14 @@ HelicopterSlowDeathBehavior::HelicopterSlowDeathBehavior( Thing *thing, const Mo
 	m_bladeFlyOffFrame = 0;
 	m_hitGroundFrame = 0;
 
-}  // end HelicopterSlowDeathBehavior
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-HelicopterSlowDeathBehavior::~HelicopterSlowDeathBehavior( void )
+HelicopterSlowDeathBehavior::~HelicopterSlowDeathBehavior()
 {
 
-}  // end ~HelicopterSlowDeathBehavior
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -247,37 +244,37 @@ void HelicopterSlowDeathBehavior::beginSlowDeath( const DamageInfo *damageInfo )
 				{
 					Coord3D pos;
 
-					if( draw->getPristineBonePositions( modData->m_attachParticleBone.str(), 0, &pos, NULL, 1 ) )
+					if( draw->getPristineBonePositions( modData->m_attachParticleBone.str(), 0, &pos, nullptr, 1 ) )
 						pSys->setPosition( &pos );
 
-				}  // end if
+				}
 
-			}  // end if
+			}
 			else
 			{
 
 				// use location coord specified ... it will be zero if not given which is center of obj anyway
 				pSys->setPosition( &modData->m_attachParticleLoc );
 
-			}  // end else
+			}
 
 			// attach the particle system to the object
 			pSys->attachToObject( getObject() );
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 
 
-}  // end beginSlowDeath
+}
 
 
 
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
+UpdateSleepTime HelicopterSlowDeathBehavior::update()
 {
 /// @todo srj use SLEEPY_UPDATE here
 	// call the base class cause we're extending functionality
@@ -328,9 +325,9 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 					m_selfSpin = modData->m_maxSelfSpin;  // cap at max
 					m_selfSpinTowardsMax = FALSE;					// now start changing spin towards min again
 
-				}  // end if
+				}
 
-			}  // end if
+			}
 			else
 			{
 
@@ -342,14 +339,14 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 					m_selfSpin = modData->m_minSelfSpin;  // cap at min
 					m_selfSpinTowardsMax = TRUE;					// now start chaning spin towards max again
 
-				}  // end if
+				}
 
-			}  // end else
+			}
 
 			// we have made a change to the self spinning
 			m_lastSelfSpinUpdateFrame = TheGameLogic->getFrame();
 
-		}  // end if
+		}
 
 		// get the physics update module
 		PhysicsBehavior *physics = copter->getPhysics();
@@ -387,10 +384,10 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 				if( draw )
 				{
 
-					draw->getPristineBonePositions( modData->m_bladeBone.str(), 0, &bladePos, NULL, 1 );
-					draw->convertBonePosToWorldPos( &bladePos, NULL, &bladePos, NULL );
+					draw->getPristineBonePositions( modData->m_bladeBone.str(), 0, &bladePos, nullptr, 1 );
+					draw->convertBonePosToWorldPos( &bladePos, nullptr, &bladePos, nullptr );
 
-				}  // end if
+				}
 
 				// create the blades flying through the air
 	//			const ObjectCreationList *ocl = TheObjectCreationListStore->findObjectCreationList( "OCL_ComancheBlades" );
@@ -398,7 +395,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 
 				// run the fx at the blade position
 				FXList::doFXPos( modData->m_fxBlade, &bladePos );
-				ObjectCreationList::create( modData->m_oclBlade, copter, &bladePos, NULL );
+				ObjectCreationList::create( modData->m_oclBlade, copter, &bladePos, nullptr );
 
 				//
 				// if we have (potentially) a pilot ejection, do it here.
@@ -406,13 +403,13 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 				// because the former makes the right sounds, and also constrains to veteran-or-better status.
 				//
 				if( modData->m_oclEjectPilot && copter->getVeterancyLevel() > LEVEL_REGULAR )
-					EjectPilotDie::ejectPilot( modData->m_oclEjectPilot, copter, NULL );
+					EjectPilotDie::ejectPilot( modData->m_oclEjectPilot, copter, nullptr );
 
-			}  // end if
+			}
 
-		}  // endif
+		}
 
-	}  // end if, not on ground
+	}
 
 
 
@@ -452,7 +449,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 
 			// make hit ground effect
 			FXList::doFXObj( modData->m_fxHitGround, copter );
-			ObjectCreationList::create( modData->m_oclHitGround, copter, NULL );
+			ObjectCreationList::create( modData->m_oclHitGround, copter, nullptr );
 
 			// hold the copter in place now
 			copter->setDisabled( DISABLED_HELD );
@@ -465,7 +462,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 			// Stop the sound from playing.
 			TheAudio->removeAudioEvent(m_deathSound.getPlayingHandle());
 
-		}  // end if
+		}
 	}
 
 	// if we're on the ground, see if it's time for our final boom
@@ -475,7 +472,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 
 		// make effect
 		FXList::doFXObj( modData->m_fxFinalBlowUp, copter );
-		ObjectCreationList::create( modData->m_oclFinalBlowUp, copter, NULL );
+		ObjectCreationList::create( modData->m_oclFinalBlowUp, copter, nullptr );
 
 		// we are now all done, destroy us and make a rubble shell copter
 		const ThingTemplate* ttn = TheThingFactory->findTemplate(modData->m_finalRubbleObject);
@@ -485,16 +482,16 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update( void )
 
 			rubble->setTransformMatrix( copter->getTransformMatrix() );
 
-		}  // end if
+		}
 
 		// destroy the copter finally
 		TheGameLogic->destroyObject( copter );
 
-	}  // end if
+	}
 
 	return UPDATE_SLEEP_NONE;
 
-}  // end update
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -505,7 +502,7 @@ void HelicopterSlowDeathBehavior::crc( Xfer *xfer )
 	// extend base class
 	SlowDeathBehavior::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -547,15 +544,15 @@ void HelicopterSlowDeathBehavior::xfer( Xfer *xfer )
 	// hit ground frame
 	xfer->xferUnsignedInt( &m_hitGroundFrame );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void HelicopterSlowDeathBehavior::loadPostProcess( void )
+void HelicopterSlowDeathBehavior::loadPostProcess()
 {
 
 	// extend base class
 	SlowDeathBehavior::loadPostProcess();
 
-}  // end loadPostProcess
+}

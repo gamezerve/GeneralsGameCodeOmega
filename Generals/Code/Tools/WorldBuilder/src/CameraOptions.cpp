@@ -30,7 +30,7 @@
 // CameraOptions dialog
 
 
-CameraOptions::CameraOptions(CWnd* pParent /*=NULL*/)
+CameraOptions::CameraOptions(CWnd* pParent /*=nullptr*/)
 	: CDialog(CameraOptions::IDD, pParent)
 {
 	m_updating = false;
@@ -193,7 +193,7 @@ void CameraOptions::GetPopSliderInfo(const long sliderID, long *pMin, long *pMax
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 }
 
 void CameraOptions::PopSliderChanged(const long sliderID, long theVal)
@@ -209,7 +209,7 @@ void CameraOptions::PopSliderChanged(const long sliderID, long theVal)
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 }
 
 void CameraOptions::PopSliderFinished(const long sliderID, long theVal)
@@ -222,7 +222,7 @@ void CameraOptions::PopSliderFinished(const long sliderID, long theVal)
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 
 }
 

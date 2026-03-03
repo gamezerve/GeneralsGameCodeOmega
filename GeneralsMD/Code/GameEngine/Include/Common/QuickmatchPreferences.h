@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __QUICKMATCHPREFERENCES_H__
-#define __QUICKMATCHPREFERENCES_H__
-
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -51,32 +48,30 @@ public:
 	Bool isMapSelected(const AsciiString& mapName);
 
 	void setLastLadder(const AsciiString& addr, UnsignedShort port);
-	AsciiString getLastLadderAddr( void );
-	UnsignedShort getLastLadderPort( void );
+	AsciiString getLastLadderAddr();
+	UnsignedShort getLastLadderPort();
 
 	void setMaxDisconnects(Int val);
-	Int getMaxDisconnects( void );
+	Int getMaxDisconnects();
 
 	void setMaxPoints(Int val);
-	Int getMaxPoints( void );
+	Int getMaxPoints();
 
 	void setMinPoints(Int val);
-	Int getMinPoints( void );
+	Int getMinPoints();
 
 	void setWaitTime(Int val);
-	Int getWaitTime( void );
+	Int getWaitTime();
 
 	void setNumPlayers(Int val);
-	Int getNumPlayers( void );
+	Int getNumPlayers();
 
 	void setMaxPing(Int val);
-	Int getMaxPing( void );
+	Int getMaxPing();
 
 	void setColor(Int val);
-	Int getColor( void );
+	Int getColor();
 
 	void setSide(Int val);
-	Int getSide( void );
+	Int getSide();
 };
-
-#endif // __QUICKMATCHPREFERENCES_H__

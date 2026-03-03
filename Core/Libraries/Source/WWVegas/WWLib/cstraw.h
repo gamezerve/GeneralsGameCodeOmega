@@ -33,15 +33,11 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
+
 #pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef CSTRAW_H
-#define CSTRAW_H
-
-#include	"BUFF.H"
-#include	"STRAW.H"
+#include "BUFF.h"
+#include "STRAW.h"
 
 /*
 **	This class handles transfer of data by perform regulated requests for data from the next
@@ -61,12 +57,7 @@ class CacheStraw : public Straw
 		int Index;
 		int Length;
 
-		bool Is_Valid(void) {return(BufferPtr.Is_Valid());}
+		bool Is_Valid() {return(BufferPtr.Is_Valid());}
 		CacheStraw(CacheStraw & rvalue);
 		CacheStraw & operator = (CacheStraw const & pipe);
 };
-
-
-
-#endif
-

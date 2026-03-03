@@ -29,9 +29,8 @@
 
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#define DEFINE_DAMAGE_NAMES
 #include "Common/INI.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -50,7 +49,7 @@ FXListDie::FXListDie( Thing *thing, const ModuleData* moduleData ) : DieModule( 
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-FXListDie::~FXListDie( void )
+FXListDie::~FXListDie()
 {
 
 }
@@ -87,7 +86,7 @@ void FXListDie::crc( Xfer *xfer )
 	// extend base class
 	DieModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -105,15 +104,15 @@ void FXListDie::xfer( Xfer *xfer )
 	// extend base class
 	DieModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void FXListDie::loadPostProcess( void )
+void FXListDie::loadPostProcess()
 {
 
 	// extend base class
 	DieModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

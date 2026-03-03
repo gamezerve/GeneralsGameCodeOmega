@@ -26,12 +26,8 @@
 
 #pragma once
 
-#ifndef _ArmorSet_H_
-#define _ArmorSet_H_
-
 #include "Lib/BaseType.h"
 #include "Common/GameType.h"
-#include "Common/SparseMatchFinder.h"
 #include "Common/SparseMatchFinder.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -55,7 +51,7 @@ enum ArmorSetType CPP_11(: Int)
 	ARMORSET_CRATE_UPGRADE_ONE, ///< Just like weaponset type from salvage.
 	ARMORSET_CRATE_UPGRADE_TWO,
 
-	ARMORSET_COUNT			///< keep last, please
+	ARMORSET_COUNT
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -70,25 +66,25 @@ private:
 	const DamageFX* m_fx;
 
 public:
-	inline ArmorTemplateSet()
+	ArmorTemplateSet()
 	{
 		clear();
 	}
 
-	inline void clear()
+	void clear()
 	{
 		m_types.clear();
-		m_template = NULL;
-		m_fx = NULL;
+		m_template = nullptr;
+		m_fx = nullptr;
 	}
 
-	inline const ArmorTemplate* getArmorTemplate() const { return m_template; }
-	inline const DamageFX* getDamageFX() const { return m_fx; }
+	const ArmorTemplate* getArmorTemplate() const { return m_template; }
+	const DamageFX* getDamageFX() const { return m_fx; }
 
-	inline Int getConditionsYesCount() const { return 1; }
-	inline const ArmorSetFlags& getNthConditionsYes(Int i) const { return m_types; }
+	Int getConditionsYesCount() const { return 1; }
+	const ArmorSetFlags& getNthConditionsYes(Int i) const { return m_types; }
 #if defined(RTS_DEBUG)
-	inline AsciiString getDescription() const { return AsciiString("ArmorTemplateSet"); }
+	inline AsciiString getDescription() const { return "ArmorTemplateSet"; }
 #endif
 
 	void parseArmorTemplateSet( INI* ini );
@@ -96,5 +92,3 @@ public:
 
 //-------------------------------------------------------------------------------------------------
 typedef std::vector<ArmorTemplateSet> ArmorTemplateSetVector;
-
-#endif	// _ArmorSet_H_

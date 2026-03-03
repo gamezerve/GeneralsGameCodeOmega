@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/BFIOFILE.H                                $*
+ *                     $Archive:: /Commando/Library/BFIOFILE.h                                $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *
@@ -34,10 +34,9 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef BFIOFILE_H
-#define BFIOFILE_H
+#pragma once
 
-#include	"RAWFILE.H"
+#include "RAWFILE.h"
 
 /*
 **	This derivation of the raw file class handles buffering the input/output in order to
@@ -51,22 +50,22 @@ class BufferIOFileClass : public RawFileClass
 	public:
 
 		BufferIOFileClass(char const * filename);
-		BufferIOFileClass(void);
-		virtual ~BufferIOFileClass(void);
+		BufferIOFileClass();
+		virtual ~BufferIOFileClass();
 
-		bool Cache( long size=0, void * ptr=NULL);
-		void Free( void);
-		bool Commit( void);
+		bool Cache( long size=0, void * ptr=nullptr);
+		void Free();
+		bool Commit();
 		virtual char const * Set_Name(char const * filename);
 		virtual bool Is_Available(int forced=false);
-		virtual bool Is_Open(void) const;
+		virtual bool Is_Open() const;
 		virtual int Open(char const * filename, int rights=READ);
 		virtual int Open(int rights=READ);
 		virtual int Read(void * buffer, int size);
 		virtual int Seek(int pos, int dir=SEEK_CUR);
-		virtual int Size(void);
+		virtual int Size();
 		virtual int Write(void const * buffer, int size);
-		virtual void Close(void);
+		virtual void Close();
 
 		enum {MINIMUM_BUFFER_SIZE=1024};
 
@@ -92,5 +91,3 @@ class BufferIOFileClass : public RawFileClass
 		long FilePos;
 		long TrueFileStart;
 };
-
-#endif

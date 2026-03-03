@@ -51,7 +51,7 @@ void WBPopupSliderButton::SetupPopSliderButton
 
 	if (hbmOld)
 		::DeleteObject(hbmOld);
-	hbmOld = NULL;
+	hbmOld = nullptr;
 
 }
 
@@ -61,7 +61,7 @@ void WBPopupSliderButton::SetupPopSliderButton
 
 WBPopupSliderButton::WBPopupSliderButton()
 {
-	m_owner = NULL;
+	m_owner = nullptr;
 }
 
 WBPopupSliderButton::~WBPopupSliderButton()
@@ -118,7 +118,7 @@ point;
 /////////////////////////////////////////////////////////////////////////////
 // PopupSlider static member variables
 
-PopupSlider *PopupSlider::gPopupSlider = 0;
+PopupSlider *PopupSlider::gPopupSlider = nullptr;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ void PopupSlider::New(CWnd *pParentWnd, long kind,
 	DEBUG_ASSERTCRASH(((SB_HORZ == kind) || (SB_VERT == kind)),
 					("PopupSlider - unexpected kind of slider!"));
 
-	DEBUG_ASSERTCRASH(pSliderOwner, ("slider owner is NULL!"));
+	DEBUG_ASSERTCRASH(pSliderOwner, ("slider owner is null!"));
 
 	try {
 		CRect rect;
@@ -256,12 +256,10 @@ void PopupSlider::New(CWnd *pParentWnd, long kind,
 		member function */
 	} catch (...) {
 		// don't rethrow
-		if (pPopupSlider) {
-			delete pPopupSlider;
-			pPopupSlider = NULL;
-		}
+		delete pPopupSlider;
+		pPopupSlider = nullptr;
 
-	}	// catch
+	}
 
 	gPopupSlider = pPopupSlider;
 	// gPopupSlider will be deleted when its PostNcDestroy method is called
@@ -272,13 +270,13 @@ void PopupSlider::New(CWnd *pParentWnd, long kind,
 
 PopupSlider::PopupSlider()
 {
-	mSliderOwner = NULL;
+	mSliderOwner = nullptr;
 
 	mDraggingThumb = false;
 	mClickThrough = false;
 	mSetOrigPt = false;
 	mEverMoved = false;
-	mIcon = NULL;
+	mIcon = nullptr;
 	m_lo = m_hi = m_curValue = 0;
 
 	m_valOnLastFinished = 0;
@@ -291,7 +289,7 @@ PopupSlider::~PopupSlider()
 		(void)bRet;
 		DEBUG_ASSERTCRASH(bRet != 0, ("Oops."));
 
-		mIcon = NULL;
+		mIcon = nullptr;
 	}
 }
 
@@ -328,7 +326,7 @@ BOOL PopupSlider::Create(const RECT& rect, CWnd* pParentWnd)
 		DWORD dwExStyle = WS_EX_TOPMOST;
 		DWORD dwStyle = WS_POPUP;
 		UINT nClassStyle = CS_HREDRAW | CS_VREDRAW | CS_BYTEALIGNCLIENT | CS_SAVEBITS;
-		HCURSOR hCursor = ::LoadCursor(NULL, IDC_ARROW);
+		HCURSOR hCursor = ::LoadCursor(nullptr, IDC_ARROW);
 		CString className = AfxRegisterWndClass(nClassStyle, hCursor, (HBRUSH) m_brush3dFaceColor);
 
 		long winWidth, winHeight;
@@ -343,7 +341,7 @@ BOOL PopupSlider::Create(const RECT& rect, CWnd* pParentWnd)
 							  dwStyle, winRect.left, winRect.top,
 							  winRect.Width(), winRect.Height(),
 							  pParentWnd->GetSafeHwnd(),
-							  NULL, NULL))
+							  nullptr, nullptr))
 			throw(-1);
 
 
@@ -372,7 +370,7 @@ BOOL PopupSlider::Create(const RECT& rect, CWnd* pParentWnd)
 			CRect myWindowRect;
 			GetWindowRect(&myWindowRect);
 			myWindowRect.OffsetRect(hAdjustToCenter, vAdjustToCenter);
-			SetWindowPos(NULL, myWindowRect.left, myWindowRect.top, myWindowRect.Width(), myWindowRect.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE | SWP_NOREDRAW);
+			SetWindowPos(nullptr, myWindowRect.left, myWindowRect.top, myWindowRect.Width(), myWindowRect.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE | SWP_NOREDRAW);
 		}
 
 		// finally, make sure the window appears on screen
@@ -386,7 +384,7 @@ BOOL PopupSlider::Create(const RECT& rect, CWnd* pParentWnd)
 	} catch (...) {
 		// don't rethrow
 		retVal = FALSE;
-	}	// catch
+	}
 
 	return retVal;
 }
@@ -402,7 +400,7 @@ void PopupSlider::PostNcDestroy()
 	// now that the window has gone away, delete ourselves
 	if (gPopupSlider == this) {
 		delete gPopupSlider;
-		gPopupSlider = NULL;
+		gPopupSlider = nullptr;
 	}
 }
 
@@ -441,7 +439,7 @@ void PopupSlider::OnPaint()
 		CRect iconRect;
 		GetThumbIconRect(&iconRect);
 		::DrawIconEx(dc.GetSafeHdc(), iconRect.left, iconRect.top,
-					 mIcon, 0, 0, 0, NULL, DI_NORMAL);
+					 mIcon, 0, 0, 0, nullptr, DI_NORMAL);
 	}
 	// Do not call CWnd::OnPaint() for painting messages
 }
@@ -579,7 +577,7 @@ void PopupSlider::OnMouseMove(UINT nFlags, CPoint point)
 			if (mSliderOwner) {
 				mSliderOwner->PopSliderChanged(mSliderID, m_curValue);
 			}
-		}	// if (PtInRect)
+		}
 	}
 }
 

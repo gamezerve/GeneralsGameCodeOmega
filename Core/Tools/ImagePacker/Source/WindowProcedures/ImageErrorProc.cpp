@@ -41,7 +41,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #include <windows.h>
-#include <stdio.h>
+#include <Utility/stdio_adapter.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "ImagePacker.h"
@@ -83,7 +83,7 @@ BOOL CALLBACK ImageErrorProc( HWND hWndDialog, UINT message,
 			//
 
 			// sanity
-			if( TheImagePacker == NULL )
+			if( TheImagePacker == nullptr )
 				return TRUE;
 
 			// go through all images
@@ -101,7 +101,7 @@ BOOL CALLBACK ImageErrorProc( HWND hWndDialog, UINT message,
 				image = TheImagePacker->getImage( i );
 
 				// sanity
-				if( image == NULL )
+				if( image == nullptr )
 					continue;
 
 				// if image can't be processed find out why
@@ -121,16 +121,16 @@ BOOL CALLBACK ImageErrorProc( HWND hWndDialog, UINT message,
 
 					SendMessage( list, LB_INSERTSTRING, -1, (LPARAM)buffer );
 
-				}  // end if
+				}
 
-			}  // end for i
+			}
 
 			// set the extents for the horizontal scroll bar in the listbox
 			SendMessage( list, LB_SETHORIZONTALEXTENT, 1280, 0 );
 
 			return TRUE;
 
-		}  // end init
+		}
 
 		// ------------------------------------------------------------------------
 		case WM_COMMAND:
@@ -149,7 +149,7 @@ BOOL CALLBACK ImageErrorProc( HWND hWndDialog, UINT message,
 					EndDialog( hWndDialog, TRUE );
 					break;
 
-				}  // end proceed
+				}
 
 				// --------------------------------------------------------------------
 				case BUTTON_CANCEL:
@@ -158,18 +158,18 @@ BOOL CALLBACK ImageErrorProc( HWND hWndDialog, UINT message,
 					EndDialog( hWndDialog, FALSE );
 					break;
 
-				}  // end cancel
+				}
 
-			}  // end switch
+			}
 
 			break;
 
-		}  // end command
+		}
 
-	}  // end switch message
+	}
 
 	return 0;
 
-}  // end ImageErrorProc
+}
 
 

@@ -45,7 +45,7 @@ void UpgradeModule::crc( Xfer *xfer )
 	// extned base class
 	UpgradeMux::upgradeMuxCRC( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -64,12 +64,12 @@ void UpgradeModule::xfer( Xfer *xfer )
 	// extend base class
 	UpgradeMux::upgradeMuxXfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void UpgradeModule::loadPostProcess( void )
+void UpgradeModule::loadPostProcess()
 {
 
 	// call base class
@@ -78,7 +78,7 @@ void UpgradeModule::loadPostProcess( void )
 	// extend base class
 	UpgradeMux::upgradeMuxLoadPostProcess();
 
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void UpgradeMux::forceRefreshUpgrade()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-Bool UpgradeMux::attemptUpgrade( UpgradeMaskType keyMask )
+Bool UpgradeMux::attemptUpgrade( const UpgradeMaskType& keyMask )
 {
 	if (wouldUpgrade(keyMask))
 	{
@@ -121,7 +121,7 @@ Bool UpgradeMux::attemptUpgrade( UpgradeMaskType keyMask )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-Bool UpgradeMux::wouldUpgrade( UpgradeMaskType keyMask ) const
+Bool UpgradeMux::wouldUpgrade( const UpgradeMaskType& keyMask ) const
 {
 	UpgradeMaskType activation, conflicting;
 	getUpgradeActivationMasks(activation, conflicting);
@@ -156,7 +156,7 @@ Bool UpgradeMux::wouldUpgrade( UpgradeMaskType keyMask ) const
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool UpgradeMux::testUpgradeConditions( UpgradeMaskType keyMask ) const
+Bool UpgradeMux::testUpgradeConditions( const UpgradeMaskType& keyMask ) const
 {
 	UpgradeMaskType activation, conflicting;
 	getUpgradeActivationMasks(activation, conflicting);
@@ -197,7 +197,7 @@ Bool UpgradeMux::testUpgradeConditions( UpgradeMaskType keyMask ) const
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-Bool UpgradeMux::resetUpgrade( UpgradeMaskType keyMask )
+Bool UpgradeMux::resetUpgrade( const UpgradeMaskType& keyMask )
 {
 	UpgradeMaskType activation, conflicting;
 	getUpgradeActivationMasks(activation, conflicting);
@@ -238,7 +238,7 @@ void UpgradeMux::upgradeMuxXfer( Xfer *xfer )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void UpgradeMux::upgradeMuxLoadPostProcess( void )
+void UpgradeMux::upgradeMuxLoadPostProcess()
 {
 
 }

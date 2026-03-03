@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameLogic/Module/StickyBombUpdate.h"
 
@@ -56,16 +56,13 @@ StickyBombUpdate::StickyBombUpdate( Thing *thing, const ModuleData *moduleData )
 {
 	m_targetID		= INVALID_ID;
 	m_dieFrame		= 0;
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_nextPingFrame = 0;
-	//
 	setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-StickyBombUpdate::~StickyBombUpdate( void )
+StickyBombUpdate::~StickyBombUpdate()
 {
 }
 
@@ -87,7 +84,7 @@ void StickyBombUpdate::onObjectCreated()
 			Object *target = ai->getGoalObject();
 			if( target )
 			{
-				initStickyBomb( target, NULL);
+				initStickyBomb( target, nullptr);
 			}
 		}
 	}
@@ -163,7 +160,7 @@ void StickyBombUpdate::initStickyBomb( Object *target, const Object *bomber, con
 }
 
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime StickyBombUpdate::update( void )
+UpdateSleepTime StickyBombUpdate::update()
 {
 	// Continually reset position of stickybomb to match the position of the target.
 	const Object *target = getTargetObject();
@@ -262,7 +259,7 @@ void StickyBombUpdate::detonate()
 			damageInfo.in.m_sourcePlayerMask = getObject()->getControllingPlayer()->getPlayerMask();
 			damageInfo.in.m_damageStatusType = data->m_geometryBasedDamageWeaponTemplate->getDamageStatusType();
 
-			for (; curVictim != NULL; curVictim = iter ? iter->nextWithNumeric(&curVictimDistSqr) : NULL)
+			for (; curVictim != nullptr; curVictim = iter ? iter->nextWithNumeric(&curVictimDistSqr) : nullptr)
 			{
 				damageInfo.in.m_amount = (curVictimDistSqr <= primaryDamageRangeSqr) ? primaryDamage : secondaryDamage;
 				curVictim->attemptDamage(&damageInfo);
@@ -271,7 +268,7 @@ void StickyBombUpdate::detonate()
 			if( data->m_geometryBasedDamageFX )
 			{
 				// And we make FX based on that size too.
-				FXList::doFXPos(data->m_geometryBasedDamageFX, boobyTrappedObject->getPosition(), NULL, 0, NULL, secondaryDamageRange);
+				FXList::doFXPos(data->m_geometryBasedDamageFX, boobyTrappedObject->getPosition(), nullptr, 0, nullptr, secondaryDamageRange);
 			}
 		}
 	}
@@ -294,7 +291,7 @@ void StickyBombUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -321,15 +318,15 @@ void StickyBombUpdate::xfer( Xfer *xfer )
 	//Next frame that a ping sound will play.
 	xfer->xferUnsignedInt( &m_nextPingFrame );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void StickyBombUpdate::loadPostProcess( void )
+void StickyBombUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

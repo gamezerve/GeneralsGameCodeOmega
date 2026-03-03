@@ -45,7 +45,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/Language.h"
@@ -122,11 +122,11 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 				default:
 					return TheWindowManager->winSendInputMsg( editBox, GWM_CHAR, mData1, mData2 );
 
-			}  // end switch( mData1 )
+			}
 
 			break;
 
-		}  // end case char
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_WHEEL_DOWN:
@@ -134,14 +134,14 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end wheel down
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_WHEEL_UP:
 		{
 			break;
 
-		}  // end wheel up
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_LEFT_UP:
@@ -158,7 +158,7 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 				if( TheAudio )
 				{
 					TheAudio->addAudioEvent( &buttonClick );
-				}  // end if
+				}
 
 				GameWindow *listBox = GadgetComboBoxGetListBox(window);
 				if (listBox)
@@ -212,14 +212,14 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 					}
 				}			break;
 
-		}  // end left click, left up
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_RIGHT_UP:
 		{
 			break;
 
-		}  // end right up, right click
+		}
 
 /*
 		// ------------------------------------------------------------------------
@@ -236,11 +236,11 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 																						0 );
 				TheWindowManager->winSetFocus( window );
 
-			}  // end if
+			}
 
 			break;
 
-		}  //  end mouse entering
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_MOUSE_LEAVING:
@@ -254,11 +254,11 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 																						GBM_MOUSE_LEAVING,
 																						(WindowMsgData)window,
 																						0 );
-			}  // end if
+			}
 
 			break;
 
-		}  // end mouse leaving
+		}
 */
 
 		// ------------------------------------------------------------------------
@@ -281,11 +281,11 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch msg
+	}
 
 	return MSG_HANDLED;
 
-}  // end GadgetComboBoxInput
+}
 
 // HideListBox ================================================================
 /** Called to close the listbox if it is opened */
@@ -325,7 +325,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			instData->setText(*(UnicodeString*)mData1);
 			break;
 
-		}  // end set lavel
+		}
 
 		// ------------------------------------------------------------------------
 		case GCM_GET_TEXT:
@@ -333,7 +333,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			if(comboData->editBox)
 				*(UnicodeString*)mData2 = GadgetTextEntryGetText(comboData->editBox);
 			break;
-		} // end Get text
+		}
 
 		// ------------------------------------------------------------------------
 		case GCM_SET_TEXT:
@@ -342,7 +342,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 				GadgetTextEntrySetText(comboData->editBox,*(const UnicodeString*)mData1);
 			break;
 
-		}  // end set text
+		}
 
 		case GEM_UPDATE_TEXT:
 		{
@@ -395,11 +395,11 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 				GadgetListBoxGetSelected(comboData->listBox, (Int *)mData2);
 			else
 			{
-				DEBUG_ASSERTCRASH(0,("We don't have a listbox as part of the combo box"));
+				DEBUG_CRASH(("We don't have a listbox as part of the combo box"));
 				*(Int *)mData2 = -1;
 			}
 			break;
-		} //case GCM_GET_SELECTION:
+		}
 		// ------------------------------------------------------------------------
 		// Set the User Data for the specified listbox element
 		case GCM_SET_ITEM_DATA:
@@ -463,7 +463,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end left drag
+		}
 
 		// ------------------------------------------------------------------------
 		case GCM_DEL_ALL:
@@ -476,7 +476,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			//HideListBox(window);
 			break;
 
-		}  // end delete all
+		}
 
 		// ------------------------------------------------------------------------
 		case GCM_DEL_ENTRY:
@@ -484,14 +484,14 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end delete entry
+		}
 		// ------------------------------------------------------------------------
 		case GGM_CLOSE:
 		{
 			HideListBox(window);
 			break;
 
-		}  // end delete entry
+		}
 
 		// ------------------------------------------------------------------------
 		case GCM_ADD_ENTRY:
@@ -550,7 +550,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			}
 
 			return( (WindowMsgHandledType) addedIndex );
-		}  // end add entry
+		}
 
 
 		// ------------------------------------------------------------------------
@@ -587,19 +587,19 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			}
 			break;
 
-		}  // end resized
+		}
 
 		// ------------------------------------------------------------------------
 
 		// ------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
-			TheWindowManager->winSetLoneWindow(NULL); // if we are transitioning screens, close all combo boxes
+			TheWindowManager->winSetLoneWindow(nullptr); // if we are transitioning screens, close all combo boxes
 			delete (ComboBoxData *)window->winGetUserData();
-			window->winSetUserData(NULL);
-			comboData = NULL;
+			window->winSetUserData(nullptr);
+			comboData = nullptr;
 			break;
-		}  // end destroy
+		}
 
 		// ------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -628,7 +628,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			*(Bool*)mData2 = TRUE;
 			break;
 
-		}  // end input focus
+		}
 
 
 		case GBM_SELECTED:
@@ -699,11 +699,11 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch( msg )
+	}
 
 	return MSG_HANDLED;
 
-}  // end GadgetListBoxSystem
+}
 
 // GadgetComboBoxSetColors ====================================================
 /** Set the colors for a Combo box, note that this will also automatically
@@ -800,7 +800,7 @@ void GadgetComboBoxSetColors( GameWindow *comboBox,
 													hiliteSelectedItemColor,
 													hiliteSelectedItemBorderColor );
 	}
-}  // end GadgetComboBoxSetColors
+}
 
 // GadgetComboBoxSetIsEditable ================================================
 /** Sets up the Text Entry gadget as editable or not */
@@ -830,7 +830,7 @@ void GadgetComboBoxSetIsEditable(GameWindow *comboBox, Bool isEditable  )
 //		BitSet(status, WIN_STATUS_NO_FOCUS);
 		editBox->winSetStatus(status);
 	}
-}//void GadgetComboBoxSetIsEditable(GameWindow *comboBox, Int maxChars )
+}
 
 // GadgetComboBoxSetIsAsciiOnly ==================================================
 /** Get the text the Combo Box */
@@ -838,7 +838,7 @@ void GadgetComboBoxSetIsEditable(GameWindow *comboBox, Bool isEditable  )
 void GadgetComboBoxSetLettersAndNumbersOnly(GameWindow *comboBox, Bool isLettersAndNumbersOnly)
 {
 	//sanity
-	if(comboBox == NULL)
+	if(comboBox == nullptr)
 		return;
 	ComboBoxData *comboData = (ComboBoxData *)comboBox->winGetUserData();
 
@@ -854,7 +854,7 @@ void GadgetComboBoxSetLettersAndNumbersOnly(GameWindow *comboBox, Bool isLetters
 void GadgetComboBoxSetAsciiOnly(GameWindow *comboBox, Bool isAsciiOnly  )
 {
 	//sanity
-	if(comboBox == NULL)
+	if(comboBox == nullptr)
 		return;
 	ComboBoxData *comboData = (ComboBoxData *)comboBox->winGetUserData();
 
@@ -870,14 +870,14 @@ void GadgetComboBoxSetAsciiOnly(GameWindow *comboBox, Bool isAsciiOnly  )
 void GadgetComboBoxSetMaxChars( GameWindow *comboBox, Int maxChars )
 {
 	//sanity
-	if(comboBox == NULL)
+	if(comboBox == nullptr)
 		return;
 
 	ComboBoxData *comboData = (ComboBoxData *)comboBox->winGetUserData();
 	comboData->maxChars = maxChars;
 	comboData->entryData->maxTextLen = maxChars;
 
-}//void GadgetComboBoxSetMaxChars( GameWindow *comboBox, Int maxChars )
+}
 
 // GadgetComboBoxSetMaxDisplay ================================================
 /** Sets the MaxDisplay variable to the new Max Display */
@@ -887,7 +887,7 @@ void GadgetComboBoxSetMaxDisplay( GameWindow *comboBox, Int maxDisplay )
 	ComboBoxData *comboData = (ComboBoxData *)comboBox->winGetUserData();
 	comboData->maxDisplay = maxDisplay;
 
-}//void GadgetComboBoxSetMaxDisplay( GameWindow *comboBox, Int maxDisplay );
+}
 
 // GadgetComboBoxGetText =======================================================
 /** Get the text the Combo Box */
@@ -896,7 +896,7 @@ UnicodeString GadgetComboBoxGetText( GameWindow *comboBox )
 {
 
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return UnicodeString::TheEmptyString;
 
 	// verify that this is a combo box
@@ -911,7 +911,7 @@ UnicodeString GadgetComboBoxGetText( GameWindow *comboBox )
 //=============================================================================
 void GadgetComboBoxSetText( GameWindow *comboBox, UnicodeString text )
 {
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	GadgetTextEntrySetText(GadgetComboBoxGetEditBox(comboBox), text);
@@ -923,7 +923,7 @@ void GadgetComboBoxSetText( GameWindow *comboBox, UnicodeString text )
 Int GadgetComboBoxAddEntry( GameWindow *comboBox, UnicodeString text, Color color )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return -1;
 	return (Int)TheWindowManager->winSendSystemMsg( comboBox, GCM_ADD_ENTRY, (WindowMsgData)&text, color );
 }
@@ -933,7 +933,7 @@ Int GadgetComboBoxAddEntry( GameWindow *comboBox, UnicodeString text, Color colo
 void GadgetComboBoxReset( GameWindow *comboBox )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 	// reset via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_DEL_ALL, 0, 0 );
@@ -944,7 +944,7 @@ void GadgetComboBoxReset( GameWindow *comboBox )
 void GadgetComboBoxHideList( GameWindow *comboBox )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 	// reset via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GGM_CLOSE, 0, 0 );
@@ -955,7 +955,7 @@ void GadgetComboBoxHideList( GameWindow *comboBox )
 void GadgetComboBoxSetFont( GameWindow *comboBox, GameFont *font )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	// set the ListBox gadget's font
@@ -986,7 +986,7 @@ void GadgetComboBoxSetFont( GameWindow *comboBox, GameFont *font )
 void GadgetComboBoxSetEnabledTextColors(GameWindow *comboBox, Color color, Color borderColor )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	ComboBoxData *comboBoxData = (ComboBoxData *)comboBox->winGetUserData();
@@ -1002,7 +1002,7 @@ void GadgetComboBoxSetDisabledTextColors(GameWindow *comboBox, Color color, Colo
 {
 	ComboBoxData *comboBoxData = (ComboBoxData *)comboBox->winGetUserData();
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	if(comboBoxData->listBox)
@@ -1016,7 +1016,7 @@ void GadgetComboBoxSetDisabledTextColors(GameWindow *comboBox, Color color, Colo
 void GadgetComboBoxSetHiliteTextColors( GameWindow *comboBox,Color color, Color borderColor )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	ComboBoxData *comboBoxData = (ComboBoxData *)comboBox->winGetUserData();
@@ -1032,7 +1032,7 @@ void GadgetComboBoxSetHiliteTextColors( GameWindow *comboBox,Color color, Color 
 void GadgetComboBoxSetIMECompositeTextColors(GameWindow *comboBox, Color color, Color borderColor )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
 	ComboBoxData *comboBoxData = (ComboBoxData *)comboBox->winGetUserData();
@@ -1049,10 +1049,10 @@ void GadgetComboBoxSetIMECompositeTextColors(GameWindow *comboBox, Color color, 
 void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
-	// get selected indeces via system message
+	// get selected indices via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_SELECTION, 0, (WindowMsgData)selectedIndex );
 }
 
@@ -1064,10 +1064,10 @@ void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex )
 void GadgetComboBoxSetSelectedPos( GameWindow *comboBox, Int selectedIndex, Bool dontHide )
 {
 	// sanity
-	if( comboBox == NULL )
+	if( comboBox == nullptr )
 		return;
 
-	// get selected indeces via system message
+	// get selected indices via system message
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_SET_SELECTION, selectedIndex, dontHide );
 }
 // GadgetComboBoxSetItemData ==================================================
@@ -1083,7 +1083,7 @@ void GadgetComboBoxSetItemData( GameWindow *comboBox, Int index, void *data )
 //=============================================================================
 void *GadgetComboBoxGetItemData( GameWindow *comboBox, Int index )
 {
-	void *data = NULL;
+	void *data = nullptr;
 
 	if (comboBox)
 	{
@@ -1103,5 +1103,5 @@ Int GadgetComboBoxGetLength( GameWindow *combobox )
 		return comboboxData->entryCount;
 
 	return 0;
-}  // end GadgetListBoxGetListLength
+}
 

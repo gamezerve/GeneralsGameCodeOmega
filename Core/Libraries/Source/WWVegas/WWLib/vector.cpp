@@ -53,8 +53,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"always.h"
-#include	"Vector.H"
-#include	<string.h>
+#include "Vector.h"
 
 /*
 **	The following template function can be located here ONLY if all the instantiations are
@@ -86,7 +85,7 @@ BooleanVectorClass::BooleanVectorClass(unsigned size, unsigned char * array) :
 	BitCount(size),
 	Copy(false),
 	LastIndex(-1),
-	BitArray(0, 0)
+	BitArray(0, nullptr)
 {
 	BitArray.Resize(((size + (8-1)) / 8), array);
 //	LastIndex = -1;
@@ -238,7 +237,7 @@ int BooleanVectorClass::Resize(unsigned size)
  * HISTORY:                                                                                    *
  *   07/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void BooleanVectorClass::Clear(void)
+void BooleanVectorClass::Clear()
 {
 	Fixup();
 	BitCount = 0;
@@ -260,7 +259,7 @@ void BooleanVectorClass::Clear(void)
  * HISTORY:                                                                                    *
  *   07/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void BooleanVectorClass::Reset(void)
+void BooleanVectorClass::Reset()
 {
 	LastIndex = -1;
 	if (BitArray.Length() > 0) {
@@ -283,7 +282,7 @@ void BooleanVectorClass::Reset(void)
  * HISTORY:                                                                                    *
  *   07/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void BooleanVectorClass::Set(void)
+void BooleanVectorClass::Set()
 {
 	LastIndex = -1;
 	if (BitArray.Length() > 0) {

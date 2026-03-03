@@ -36,7 +36,7 @@
 /* Revision History:                                                         */
 /*		12/20/2002 : Initial creation - modified from AIGuard.cpp                                           */
 /*---------------------------------------------------------------------------*/
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/PerfTimer.h"
 #include "Common/Team.h"
@@ -59,7 +59,7 @@ const Real CLOSE_ENOUGH = (25.0f);
 static Bool hasAttackedMeAndICanReturnFire( State *thisState, void* /*userData*/ )
 {
 	Object *obj = thisState->getMachineOwner();
-	BodyModuleInterface *bmi = obj ? obj->getBodyModule() : NULL;
+	BodyModuleInterface *bmi = obj ? obj->getBodyModule() : nullptr;
 
 	if (!(obj && bmi)) {
 		return FALSE;
@@ -102,9 +102,9 @@ static Bool hasAttackedMeAndICanReturnFire( State *thisState, void* /*userData*/
 
 static Object *findBestTunnel(Player *ownerPlayer, const Coord3D *pos)
 {
-	if (!ownerPlayer) return NULL; // should never happen, but hey.  jba.
+	if (!ownerPlayer) return nullptr; // should never happen, but hey.  jba.
 	TunnelTracker *tunnels = ownerPlayer->getTunnelSystem();
-	Object *bestTunnel = NULL;
+	Object *bestTunnel = nullptr;
 	Real bestDistSqr = 0;
 	const std::list<ObjectID> *allTunnels = tunnels->getContainerList();
 	for( std::list<ObjectID>::const_iterator iter = allTunnels->begin(); iter != allTunnels->end(); iter++ ) {
@@ -114,7 +114,7 @@ static Object *findBestTunnel(Player *ownerPlayer, const Coord3D *pos)
 			Real dx = currentTunnel->getPosition()->x-pos->x;
 			Real dy = currentTunnel->getPosition()->y-pos->y;
 			Real distSqr = dx*dx+dy*dy;
-			if (bestTunnel==NULL || distSqr<bestDistSqr) {
+			if (bestTunnel==nullptr || distSqr<bestDistSqr) {
 				bestDistSqr = distSqr;
 				bestTunnel = currentTunnel;
 			}
@@ -151,8 +151,8 @@ AITNGuardMachine::AITNGuardMachine( Object *owner ) :
 
 	static const StateConditionInfo attackAggressors[] =
 	{
-		StateConditionInfo(hasAttackedMeAndICanReturnFire, AI_TN_GUARD_ATTACK_AGGRESSOR, NULL),
-		StateConditionInfo(NULL, NULL, NULL)	// keep last
+		StateConditionInfo(hasAttackedMeAndICanReturnFire, AI_TN_GUARD_ATTACK_AGGRESSOR, nullptr),
+		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 	// order matters: first state is the default state.
@@ -184,12 +184,12 @@ AITNGuardMachine::~AITNGuardMachine()
 }
 
 //--------------------------------------------------------------------------------------
-Bool AITNGuardMachine::lookForInnerTarget(void)
+Bool AITNGuardMachine::lookForInnerTarget()
 {
 	Object* owner = getOwner();
 
 	// Check if team auto targets same victim.
-	Object *teamVictim = NULL;
+	Object *teamVictim = nullptr;
 	if (owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 	{
 		teamVictim = owner->getTeam()->getTeamTargetObject();
@@ -205,7 +205,7 @@ Bool AITNGuardMachine::lookForInnerTarget(void)
 	Player *ownerPlayer = getOwner()->getControllingPlayer();
 	if (!ownerPlayer) return false; // should never happen, but hey.  jba.
 	TunnelTracker *tunnels = ownerPlayer->getTunnelSystem();
-	if (tunnels==NULL) return false;
+	if (tunnels==nullptr) return false;
 	if (tunnels->getCurNemesis()) {
 		setNemesisID(tunnels->getCurNemesis()->getID());
 		return true;	// Transitions to AITNGuardInnerState.
@@ -263,7 +263,7 @@ Bool AITNGuardMachine::lookForInnerTarget(void)
 // ------------------------------------------------------------------------------------------------
 void AITNGuardMachine::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -282,14 +282,14 @@ void AITNGuardMachine::xfer( Xfer *xfer )
 	xfer->xferObjectID(&m_nemesisToAttack);
 	xfer->xferCoord3D(&m_positionToGuard);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITNGuardMachine::loadPostProcess( void )
+void AITNGuardMachine::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //-- AITNGuardInnerState ----------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -297,7 +297,7 @@ void AITNGuardMachine::loadPostProcess( void )
 // ------------------------------------------------------------------------------------------------
 void AITNGuardInnerState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -309,29 +309,29 @@ void AITNGuardInnerState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITNGuardInnerState::loadPostProcess( void )
+void AITNGuardInnerState::loadPostProcess()
 {
 	onEnter();
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
-AITNGuardInnerState::~AITNGuardInnerState(void)
+AITNGuardInnerState::~AITNGuardInnerState()
 {
 	deleteInstance(m_attackState);
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardInnerState::onEnter( void )
+StateReturnType AITNGuardInnerState::onEnter()
 {
 	Object* nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID()) ;
-	if (nemesis == NULL)
+	if (nemesis == nullptr)
 	{
-		DEBUG_LOG(("Unexpected NULL nemesis in AITNGuardInnerState."));
+		DEBUG_LOG(("Unexpected null nemesis in AITNGuardInnerState."));
 		return STATE_SUCCESS;
 	}
 	m_exitConditions.m_attackGiveUpFrame = TheGameLogic->getFrame() + TheAI->getAiData()->m_guardChaseUnitFrames;
@@ -364,18 +364,18 @@ static Object *TunnelNetworkScan(Object *owner)
 
 		Real visionRange = AITNGuardMachine::getStdGuardRange(owner);
 
-		filters[count++] = NULL;
+		filters[count++] = nullptr;
 
 		Object* target = ThePartitionManager->getClosestObject(owner->getPosition(), visionRange, FROM_CENTER_2D, filters);
 		return target;
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardInnerState::update( void )
+StateReturnType AITNGuardInnerState::update()
 {
 	Object* nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID()) ;
 	Player *ownerPlayer = getMachineOwner()->getControllingPlayer();
-	TunnelTracker *tunnels = NULL;
+	TunnelTracker *tunnels = nullptr;
 	if (ownerPlayer) {
 		tunnels = ownerPlayer->getTunnelSystem();
 	}
@@ -383,7 +383,7 @@ StateReturnType AITNGuardInnerState::update( void )
 	Object* owner = getMachineOwner();
 	// killed him.
 	Object *teamVictim = owner->getTeam()->getTeamTargetObject();
-	if (nemesis == NULL)
+	if (nemesis == nullptr)
 	{
 		if (teamVictim)
 		{
@@ -416,7 +416,7 @@ StateReturnType AITNGuardInnerState::update( void )
 			}
 		}
 	} else {
-		if (nemesis != teamVictim && teamVictim != NULL) {
+		if (nemesis != teamVictim && teamVictim != nullptr) {
 			tunnels->updateNemesis(nemesis);
 			getGuardMachine()->setNemesisID(teamVictim->getID());
 		}
@@ -431,7 +431,7 @@ void AITNGuardInnerState::onExit( StateExitType status )
 	{
 		m_attackState->onExit(status);
 		deleteInstance(m_attackState);
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
 }
 
@@ -441,7 +441,7 @@ void AITNGuardInnerState::onExit( StateExitType status )
 // ------------------------------------------------------------------------------------------------
 void AITNGuardOuterState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -453,24 +453,24 @@ void AITNGuardOuterState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITNGuardOuterState::loadPostProcess( void )
+void AITNGuardOuterState::loadPostProcess()
 {						 AITNGuardOuterState
 	onEnter();
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
-AITNGuardOuterState::~AITNGuardOuterState(void)
+AITNGuardOuterState::~AITNGuardOuterState()
 {
 	deleteInstance(m_attackState);
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardOuterState::onEnter( void )
+StateReturnType AITNGuardOuterState::onEnter()
 {
 	if (getGuardMachine()->getGuardMode() == GUARDMODE_GUARD_WITHOUT_PURSUIT)
 	{
@@ -479,9 +479,9 @@ StateReturnType AITNGuardOuterState::onEnter( void )
 	}
 
 	Object* nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID()) ;
-	if (nemesis == NULL)
+	if (nemesis == nullptr)
 	{
-		DEBUG_LOG(("Unexpected NULL nemesis in AITNGuardOuterState."));
+		DEBUG_LOG(("Unexpected null nemesis in AITNGuardOuterState."));
 		return STATE_SUCCESS;
 	}
 
@@ -499,7 +499,7 @@ StateReturnType AITNGuardOuterState::onEnter( void )
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardOuterState::update( void )
+StateReturnType AITNGuardOuterState::update()
 {
 	Object *owner = getMachineOwner();
 	Object* goalObj = m_attackState->getMachineGoalObject();
@@ -511,8 +511,8 @@ StateReturnType AITNGuardOuterState::update( void )
 			goalObj = nemesis;
 		}
 		// Check if team auto targets same victim.
-		Object *teamVictim = NULL;
-		if (goalObj == NULL && owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
+		Object *teamVictim = nullptr;
+		if (goalObj == nullptr && owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 		{
 			teamVictim = owner->getTeam()->getTeamTargetObject();
 			if (teamVictim)
@@ -534,7 +534,7 @@ void AITNGuardOuterState::onExit( StateExitType status )
 	{
 		m_attackState->onExit(status);
 		deleteInstance(m_attackState);
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
 }
 
@@ -545,7 +545,7 @@ void AITNGuardOuterState::onExit( StateExitType status )
 void AITNGuardReturnState::crc( Xfer *xfer )
 {
 	AIEnterState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -560,18 +560,18 @@ void AITNGuardReturnState::xfer( Xfer *xfer )
 	AIEnterState::xfer(xfer);
 
 	xfer->xferUnsignedInt(&m_nextReturnScanTime);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITNGuardReturnState::loadPostProcess( void )
+void AITNGuardReturnState::loadPostProcess()
 {
 	AIEnterState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardReturnState::onEnter( void )
+StateReturnType AITNGuardReturnState::onEnter()
 {
 	UnsignedInt now = TheGameLogic->getFrame();
 	m_nextReturnScanTime = now + GameLogicRandomValue(0, TheAI->getAiData()->m_guardEnemyReturnScanRate);
@@ -583,7 +583,7 @@ StateReturnType AITNGuardReturnState::onEnter( void )
 	// Find tunnel network to enter.
 	// Scan my tunnels.
 	Object *bestTunnel = findBestTunnel(getMachineOwner()->getControllingPlayer(), getMachineOwner()->getPosition());
-	if (bestTunnel==NULL) return STATE_FAILURE;
+	if (bestTunnel==nullptr) return STATE_FAILURE;
 
 	getMachine()->setGoalObject(bestTunnel);
 	getMachineOwner()->getAI()->friend_setGoalObject(bestTunnel);
@@ -592,7 +592,7 @@ StateReturnType AITNGuardReturnState::onEnter( void )
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardReturnState::update( void )
+StateReturnType AITNGuardReturnState::update()
 {
 	Player *ownerPlayer = getMachineOwner()->getControllingPlayer();
 	if (getMachineOwner()->getTeam()) {
@@ -603,7 +603,7 @@ StateReturnType AITNGuardReturnState::update( void )
 		}
 	}
 	// Check tunnel for target.
-	TunnelTracker *tunnels = NULL;
+	TunnelTracker *tunnels = nullptr;
 	if (ownerPlayer) {
 		tunnels = ownerPlayer->getTunnelSystem();
 	}
@@ -639,7 +639,7 @@ void AITNGuardReturnState::onExit( StateExitType status )
 // ------------------------------------------------------------------------------------------------
 void AITNGuardIdleState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -652,29 +652,29 @@ void AITNGuardIdleState::xfer( Xfer *xfer )
   xfer->xferVersion( &version, currentVersion );
 
 	xfer->xferUnsignedInt(&m_nextEnemyScanTime);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITNGuardIdleState::loadPostProcess( void )
+void AITNGuardIdleState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardIdleState::onEnter( void )
+StateReturnType AITNGuardIdleState::onEnter()
 {
 	// first time thru, use a random amount so that everyone doesn't scan on the same frame,
 	// to avoid "spikes".
 	UnsignedInt now = TheGameLogic->getFrame();
 	m_nextEnemyScanTime = now + GameLogicRandomValue(0, TheAI->getAiData()->m_guardEnemyScanRate);
 
-	getMachineOwner()->getAI()->friend_setGoalObject(NULL);
+	getMachineOwner()->getAI()->friend_setGoalObject(nullptr);
 	return STATE_CONTINUE;
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardIdleState::update( void )
+StateReturnType AITNGuardIdleState::update()
 {
 	//DEBUG_LOG(("AITNGuardIdleState frame %d: %08lx",TheGameLogic->getFrame(),getMachineOwner()));
 
@@ -684,7 +684,7 @@ StateReturnType AITNGuardIdleState::update( void )
 
 	m_nextEnemyScanTime = now + TheAI->getAiData()->m_guardEnemyScanRate;
 
-	getMachineOwner()->getAI()->friend_setGoalObject(NULL);
+	getMachineOwner()->getAI()->friend_setGoalObject(nullptr);
 
 #ifdef STATE_MACHINE_DEBUG
 	//getMachine()->setDebugOutput(true);
@@ -702,15 +702,15 @@ StateReturnType AITNGuardIdleState::update( void )
 	if (getGuardMachine()->lookForInnerTarget())
 	{
 		Object *nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID());
-		if (nemesis == NULL)
+		if (nemesis == nullptr)
 		{
-			DEBUG_LOG(("Unexpected NULL nemesis in AITNGuardAttackAggressorState."));
+			DEBUG_LOG(("Unexpected null nemesis in AITNGuardAttackAggressorState."));
 			return STATE_SLEEP(0);
 		}
 		if (getMachineOwner()->getContainedBy()) {
 			Object *bestTunnel = findBestTunnel(owner->getControllingPlayer(), nemesis->getPosition());
-			ExitInterface* goalExitInterface = bestTunnel->getContain() ? bestTunnel->getContain()->getContainExitInterface() : NULL;
-			if( goalExitInterface == NULL )
+			ExitInterface* goalExitInterface = bestTunnel->getContain() ? bestTunnel->getContain()->getContainExitInterface() : nullptr;
+			if( goalExitInterface == nullptr )
 				return STATE_FAILURE;
 
 			if( goalExitInterface->isExitBusy() )
@@ -742,7 +742,7 @@ AITNGuardPickUpCrateState::AITNGuardPickUpCrateState( StateMachine *machine )	: 
 #endif
 }
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardPickUpCrateState::onEnter( void )
+StateReturnType AITNGuardPickUpCrateState::onEnter()
 {
 	Object *owner = getMachineOwner();
 	AIUpdateInterface *ai = owner->getAIUpdateInterface();
@@ -759,7 +759,7 @@ StateReturnType AITNGuardPickUpCrateState::onEnter( void )
 }
 
 //--------------------------------------------------------------------------------------
-StateReturnType AITNGuardPickUpCrateState::update( void )
+StateReturnType AITNGuardPickUpCrateState::update()
 {
 	return AIPickUpCrateState::update();
 }
@@ -775,17 +775,17 @@ void AITNGuardPickUpCrateState::onExit( StateExitType status )
 AITNGuardAttackAggressorState::AITNGuardAttackAggressorState( StateMachine *machine ) :
 	State( machine, "AITNGuardAttackAggressorState" )
 {
-	m_attackState = NULL;
+	m_attackState = nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------
-AITNGuardAttackAggressorState::~AITNGuardAttackAggressorState(void)
+AITNGuardAttackAggressorState::~AITNGuardAttackAggressorState()
 {
 	deleteInstance(m_attackState);
 }
 
 //-------------------------------------------------------------------------------------------------
-StateReturnType AITNGuardAttackAggressorState::onEnter( void )
+StateReturnType AITNGuardAttackAggressorState::onEnter()
 {
 	Object *obj = getMachineOwner();
 	ObjectID nemID = INVALID_ID;
@@ -797,14 +797,14 @@ StateReturnType AITNGuardAttackAggressorState::onEnter( void )
 	}
 
 	Object *nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID());
-	if (nemesis == NULL)
+	if (nemesis == nullptr)
 	{
-		DEBUG_LOG(("Unexpected NULL nemesis in AITNGuardAttackAggressorState."));
+		DEBUG_LOG(("Unexpected null nemesis in AITNGuardAttackAggressorState."));
 		return STATE_SUCCESS;
 	}
 
 	Player *ownerPlayer = getMachineOwner()->getControllingPlayer();
-	TunnelTracker *tunnels = NULL;
+	TunnelTracker *tunnels = nullptr;
 	if (ownerPlayer) {
 		tunnels = ownerPlayer->getTunnelSystem();
 	}
@@ -824,12 +824,12 @@ StateReturnType AITNGuardAttackAggressorState::onEnter( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-StateReturnType AITNGuardAttackAggressorState::update( void )
+StateReturnType AITNGuardAttackAggressorState::update()
 {
 	if (m_attackState->getMachine()->getCurrentStateID() == AttackStateMachine::FIRE_WEAPON) {
 		Object *nemesis = TheGameLogic->findObjectByID(getGuardMachine()->getNemesisID());
 		Player *ownerPlayer = getMachineOwner()->getControllingPlayer();
-		TunnelTracker *tunnels = NULL;
+		TunnelTracker *tunnels = nullptr;
 		if (ownerPlayer) {
 			tunnels = ownerPlayer->getTunnelSystem();
 		}
@@ -846,12 +846,12 @@ void AITNGuardAttackAggressorState::onExit( StateExitType status )
 	{
 		m_attackState->onExit(status);
 		deleteInstance(m_attackState);
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
 
 	if (obj->getTeam())
 	{
-		obj->getTeam()->setTeamTargetObject(NULL); // clear the target.
+		obj->getTeam()->setTeamTargetObject(nullptr); // clear the target.
 	}
 }
 

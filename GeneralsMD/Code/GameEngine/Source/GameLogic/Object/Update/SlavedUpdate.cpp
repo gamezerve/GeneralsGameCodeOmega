@@ -30,7 +30,7 @@
 //				can use any or all features, some of which are specialized.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/RandomValue.h"
 #include "Common/Xfer.h"
@@ -68,7 +68,7 @@ SlavedUpdate::SlavedUpdate( Thing *thing, const ModuleData* moduleData ) : Updat
 }
 
 //-------------------------------------------------------------------------------------------------
-SlavedUpdate::~SlavedUpdate( void )
+SlavedUpdate::~SlavedUpdate()
 {
 }
 
@@ -107,7 +107,7 @@ void SlavedUpdate::onSlaverDamage( const DamageInfo *info )
 
 
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime SlavedUpdate::update( void )
+UpdateSleepTime SlavedUpdate::update()
 {
 /// @todo srj use SLEEPY_UPDATE here
 	if( m_framesToWait > 0 )
@@ -182,7 +182,7 @@ UpdateSleepTime SlavedUpdate::update( void )
 
 	//Get my master's AI. If he is attacking something, grant him a range bonus,
 	//and I'll fly over the target.
-	Object *target = NULL;
+	Object *target = nullptr;
 	AIUpdateInterface *masterAI = master->getAIUpdateInterface();
 	if( masterAI )
 	{
@@ -628,7 +628,7 @@ void SlavedUpdate::setRepairState( RepairStates repairState )
 						{
 							Coord3D pos;
 							//Get the bone position
-							if( draw->getPristineBonePositions( data->m_weldingFXBone.str(), 0, &pos, NULL, 1 ) )
+							if( draw->getPristineBonePositions( data->m_weldingFXBone.str(), 0, &pos, nullptr, 1 ) )
 							{
 								pos.add( obj->getPosition() );
 							}
@@ -704,7 +704,7 @@ void SlavedUpdate::moveToNewRepairSpot()
 //-------------------------------------------------------------------------------------------------
 void SlavedUpdate::startSlavedEffects( const Object *slaver )
 {
-	if( slaver == NULL )
+	if( slaver == nullptr )
 		return;
 
 	m_slaver = slaver->getID();
@@ -754,7 +754,7 @@ void SlavedUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -787,16 +787,16 @@ void SlavedUpdate::xfer( Xfer *xfer )
 	// repairing
 	xfer->xferBool( &m_repairing );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SlavedUpdate::loadPostProcess( void )
+void SlavedUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}
 

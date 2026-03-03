@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/Team.h"
@@ -41,7 +41,7 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-CashHackSpecialPowerModuleData::CashHackSpecialPowerModuleData( void )
+CashHackSpecialPowerModuleData::CashHackSpecialPowerModuleData()
 {
 	m_upgrades.clear();
 	m_defaultAmountToSteal = 0;
@@ -53,8 +53,8 @@ static void parseCashHackUpgradePair( INI* ini, void * /*instance*/, void *store
 {
 	CashHackSpecialPowerModuleData::Upgrades up;
 
-	INI::parseScience(ini, NULL, &up.m_science, NULL);
-	INI::parseInt(ini, NULL, &up.m_amountToSteal, NULL);
+	INI::parseScience(ini, nullptr, &up.m_science, nullptr);
+	INI::parseInt(ini, nullptr, &up.m_amountToSteal, nullptr);
 
 	std::vector<CashHackSpecialPowerModuleData::Upgrades>* s = (std::vector<CashHackSpecialPowerModuleData::Upgrades>*)store;
 	s->push_back(up);
@@ -68,13 +68,13 @@ static void parseCashHackUpgradePair( INI* ini, void * /*instance*/, void *store
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "UpgradeMoneyAmount", parseCashHackUpgradePair, NULL, offsetof( CashHackSpecialPowerModuleData, m_upgrades ) },
-		{ "MoneyAmount", INI::parseInt, NULL, offsetof( CashHackSpecialPowerModuleData, m_defaultAmountToSteal ) },
-		{ 0, 0, 0, 0 }
+		{ "UpgradeMoneyAmount", parseCashHackUpgradePair, nullptr, offsetof( CashHackSpecialPowerModuleData, m_upgrades ) },
+		{ "MoneyAmount", INI::parseInt, nullptr, offsetof( CashHackSpecialPowerModuleData, m_defaultAmountToSteal ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,14 +86,14 @@ CashHackSpecialPower::CashHackSpecialPower( Thing *thing, const ModuleData *modu
 												: SpecialPowerModule( thing, moduleData )
 {
 
-}  // end CashHackSpecialPower
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-CashHackSpecialPower::~CashHackSpecialPower( void )
+CashHackSpecialPower::~CashHackSpecialPower()
 {
 
-}  // end ~CashHackSpecialPower
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ Int CashHackSpecialPower::findAmountToSteal() const
 {
 	const CashHackSpecialPowerModuleData* d = getCashHackSpecialPowerModuleData();
 	const Player* controller = getObject()->getControllingPlayer();
-	if (controller != NULL)
+	if (controller != nullptr)
 	{
 		for (std::vector<CashHackSpecialPowerModuleData::Upgrades>::const_iterator it = d->m_upgrades.begin();
 					it != d->m_upgrades.end();
@@ -187,7 +187,7 @@ void CashHackSpecialPower::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -205,15 +205,15 @@ void CashHackSpecialPower::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void CashHackSpecialPower::loadPostProcess( void )
+void CashHackSpecialPower::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

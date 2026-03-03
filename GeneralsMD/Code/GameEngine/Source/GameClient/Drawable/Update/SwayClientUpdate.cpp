@@ -28,10 +28,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameClient/Drawable.h"
 #include "GameClient/Module/SwayClientUpdate.h"
+#include "Common/FramePacer.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ThingFactory.h"
@@ -65,7 +66,7 @@ SwayClientUpdate::SwayClientUpdate( Thing *thing, const ModuleData* moduleData )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-SwayClientUpdate::~SwayClientUpdate( void )
+SwayClientUpdate::~SwayClientUpdate()
 {
 
 }
@@ -93,7 +94,7 @@ void SwayClientUpdate::updateSway()
 //-------------------------------------------------------------------------------------------------
 /** The client update callback. */
 //-------------------------------------------------------------------------------------------------
-void SwayClientUpdate::clientUpdate( void )
+void SwayClientUpdate::clientUpdate()
 {
 	if( !m_swaying )
 		return;
@@ -114,7 +115,10 @@ void SwayClientUpdate::clientUpdate( void )
 			return;
 	}
 
-	m_curValue += m_curDelta;
+	// TheSuperHackers @tweak The tree sway time step is now decoupled from the render update.
+	const Real timeScale = TheFramePacer->getActualLogicTimeScaleOverFpsRatio();
+
+	m_curValue += m_curDelta * timeScale;
 	if (m_curValue > 2*PI)
 		m_curValue -= 2*PI;
 	Real cosine = Cos(m_curValue);
@@ -145,7 +149,7 @@ void SwayClientUpdate::crc( Xfer *xfer )
 	// extend base class
 	ClientUpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -184,12 +188,12 @@ void SwayClientUpdate::xfer( Xfer *xfer )
 	// swaying
 	xfer->xferBool( &m_swaying );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SwayClientUpdate::loadPostProcess( void )
+void SwayClientUpdate::loadPostProcess()
 {
 
 	// extend base class
@@ -197,4 +201,4 @@ void SwayClientUpdate::loadPostProcess( void )
 
 	updateSway();
 
-}  // end loadPostProcess
+}

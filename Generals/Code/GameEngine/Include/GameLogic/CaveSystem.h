@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef CAVE_SYSTEM_H
-#define CAVE_SYSTEM_H
-
 class Object;
 class TunnelTracker; // The player owns one such object for his Tunnels, so instead of duplicating
 // so much code, this SubSystem will manage all of the Cave systems.
@@ -63,7 +60,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer ) { }
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void ) { }
+	virtual void loadPostProcess() { }
 
 private:
 	std::vector<TunnelTracker*> m_tunnelTrackerVector;// A vector of pointers where the indexes are known by
@@ -73,4 +70,3 @@ private:
 };
 
 extern CaveSystem *TheCaveSystem;
-#endif

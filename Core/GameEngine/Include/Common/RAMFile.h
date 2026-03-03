@@ -43,11 +43,6 @@
 
 #pragma once
 
-#ifndef __RAMFILE_H
-#define __RAMFILE_H
-
-
-
 //----------------------------------------------------------------------------
 //           Includes
 //----------------------------------------------------------------------------
@@ -88,7 +83,7 @@ class RAMFile : public File
 
 
 		virtual Bool	open( const Char *filename, Int access = NONE, size_t bufferSize = 0 ); ///< Open a file for access
-		virtual void	close( void );																			///< Close the file
+		virtual void	close();																			///< Close the file
 		virtual Int		read( void *buffer, Int bytes );										///< Read the specified number of bytes in to buffer: See File::read
 		virtual Int		readChar();																///< Read a character from the file
 		virtual Int		readWideChar();															///< Read a wide character from the file
@@ -99,7 +94,7 @@ class RAMFile : public File
 		virtual Int		writeChar( const WideChar* character );							///< Write a wide character to the file
 		virtual Int		seek( Int new_pos, seekMode mode = CURRENT );				///< Set file position: See File::seek
 		virtual Bool	flush();													///< flush data to disk
-		virtual void	nextLine(Char *buf = NULL, Int bufSize = 0);				///< moves current position to after the next new-line
+		virtual void	nextLine(Char *buf = nullptr, Int bufSize = 0);				///< moves current position to after the next new-line
 
 		virtual Bool	scanInt(Int &newInt);																///< return what gets read as an integer from the current memory position.
 		virtual Bool	scanReal(Real &newReal);														///< return what gets read as a float from the current memory position.
@@ -130,6 +125,3 @@ class RAMFile : public File
 //----------------------------------------------------------------------------
 //           Inlining
 //----------------------------------------------------------------------------
-
-
-#endif // __WSYS_RAMFILE_H

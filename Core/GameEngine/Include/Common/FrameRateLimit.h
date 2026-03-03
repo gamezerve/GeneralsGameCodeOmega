@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "Common/GameCommon.h"
+
+
 class FrameRateLimit
 {
 public:
@@ -26,8 +29,8 @@ public:
 	Real wait(UnsignedInt maxFps);
 
 private:
-	LARGE_INTEGER m_freq;
-	LARGE_INTEGER m_start;
+	Int64 m_freq;
+	Int64 m_start;
 };
 
 
@@ -60,6 +63,11 @@ class LogicTimeScaleFpsPreset
 public:
 	enum CPP_11(: UnsignedInt)
 	{
+#if RTS_DEBUG
+		MinFpsValue = 5,
+#else
+		MinFpsValue = LOGICFRAMES_PER_SECOND,
+#endif
 		StepFpsValue = 5,
 	};
 

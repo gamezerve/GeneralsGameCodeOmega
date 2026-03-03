@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __POW_TRUCK_BEHAVIOR_H_
-#define __POW_TRUCK_BEHAVIOR_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
 
@@ -44,7 +41,7 @@ class POWTruckBehaviorModuleData : public OpenContainModuleData
 
 public:
 
-	POWTruckBehaviorModuleData( void );
+	POWTruckBehaviorModuleData();
 
 	static void buildFieldParse( MultiIniFieldParse &p );
 
@@ -71,5 +68,3 @@ protected:
 };
 
 #endif
-
-#endif  // end __POW_TRUCK_BEHAVIOR_H_

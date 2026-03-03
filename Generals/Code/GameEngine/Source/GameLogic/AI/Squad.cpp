@@ -36,7 +36,7 @@
 /* Revision History:                                                         */
 /*		4/19/2002 : Initial creation                                          */
 /*---------------------------------------------------------------------------*/
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameLogic/Squad.h"
 
@@ -82,9 +82,9 @@ void Squad::clearSquad() {
 }
 
 // getAllObjects //////////////////////////////////////////////////////////////////////////////////
-const VecObjectPtr& Squad::getAllObjects(void) // Not a const function cause we clear away dead object here too
+const VecObjectPtr& Squad::getAllObjects() // Not a const function cause we clear away dead object here too
 {
-	// prunes all NULL objects
+	// prunes all null objects
 	m_objectsCached.clear();
 	for (VecObjectIDIt it = m_objectIDs.begin(); it != m_objectIDs.end(); ) {
 		Object *obj = TheGameLogic->findObjectByID(*it);
@@ -100,7 +100,7 @@ const VecObjectPtr& Squad::getAllObjects(void) // Not a const function cause we 
 }
 
 // getLiveObjects /////////////////////////////////////////////////////////////////////////////////
-const VecObjectPtr& Squad::getLiveObjects(void)
+const VecObjectPtr& Squad::getLiveObjects()
 {
 	// first get all the objects.
 	// cheat, since we are a member function, and just use m_objectsCached
@@ -117,7 +117,7 @@ const VecObjectPtr& Squad::getLiveObjects(void)
 }
 
 // getSizeOfGroup /////////////////////////////////////////////////////////////////////////////////
-Int Squad::getSizeOfGroup(void) const
+Int Squad::getSizeOfGroup() const
 {
 	return m_objectIDs.size();
 }
@@ -193,7 +193,7 @@ void Squad::aiGroupFromSquad(AIGroup* aiGroupToFill)
 void Squad::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -226,20 +226,20 @@ void Squad::xfer( Xfer *xfer )
 			objectID = *it;
 			xfer->xferObjectID( &objectID );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
 		// the cached objects list should be empty
-		if( m_objectsCached.size() != 0 )
+		if( !m_objectsCached.empty() )
 		{
 
-			DEBUG_CRASH(( "Squad::xfer - m_objectsCached should be emtpy, but is not" ));
+			DEBUG_CRASH(( "Squad::xfer - m_objectsCached should be empty, but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end of
+		}
 
 		// read all items
 		for( UnsignedShort i = 0; i < objectCount; ++i )
@@ -251,16 +251,16 @@ void Squad::xfer( Xfer *xfer )
 			// put on list
 			m_objectIDs.push_back( objectID );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void Squad::loadPostProcess( void )
+void Squad::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __NEUTRONMISSILESlowDeathBehavior_H_
-#define __NEUTRONMISSILESlowDeathBehavior_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/SlowDeathBehavior.h"
 
@@ -51,7 +48,7 @@ enum NeutronBlast CPP_11(: Int)
 	NEUTRON_BLAST_8,
 	NEUTRON_BLAST_9,
 
-	MAX_NEUTRON_BLASTS  // keep this last
+	MAX_NEUTRON_BLASTS
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -76,7 +73,7 @@ class NeutronMissileSlowDeathBehaviorModuleData : public SlowDeathBehaviorModule
 
 public:
 
-	NeutronMissileSlowDeathBehaviorModuleData( void );
+	NeutronMissileSlowDeathBehaviorModuleData();
 
 	static void buildFieldParse(MultiIniFieldParse& p);
 
@@ -99,7 +96,7 @@ public:
 	NeutronMissileSlowDeathBehavior( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 
-	virtual UpdateSleepTime update( void );				 ///< the update call
+	virtual UpdateSleepTime update();				 ///< the update call
 
 protected:
 
@@ -112,5 +109,3 @@ protected:
 	Bool m_scorchPlaced;														///< TRUE once we've placed the scorch mark
 
 };
-
-#endif  // end __NEUTRONMISSILESlowDeathBehavior_H_

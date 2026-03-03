@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "GameLogic/ExperienceTracker.h"
@@ -47,7 +47,7 @@ VeterancyCrateCollide::VeterancyCrateCollide( Thing *thing, const ModuleData* mo
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-VeterancyCrateCollide::~VeterancyCrateCollide( void )
+VeterancyCrateCollide::~VeterancyCrateCollide()
 {
 
 }
@@ -139,7 +139,7 @@ Bool VeterancyCrateCollide::executeCrateBehavior( Object *other )
 	if (range == 0)
 	{
 		// do just the collider
-		if (other != NULL)
+		if (other != nullptr)
 		{
 			other->getExperienceTracker()->gainExpForLevel( levelsToGain, ( ! md->m_isPilot) );
 		}
@@ -148,7 +148,7 @@ Bool VeterancyCrateCollide::executeCrateBehavior( Object *other )
 	{
 		PartitionFilterSamePlayer othersPlayerFilter( other->getControllingPlayer() );
 		PartitionFilterSameMapStatus filterMapStatus(other);
-		PartitionFilter *filters[] = { &othersPlayerFilter, &filterMapStatus, NULL };
+		PartitionFilter *filters[] = { &othersPlayerFilter, &filterMapStatus, nullptr };
 		ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( other, range, FROM_CENTER_2D, filters, ITER_FASTEST );
 		MemoryPoolObjectHolder hold(iter);
 
@@ -178,7 +178,7 @@ void VeterancyCrateCollide::crc( Xfer *xfer )
 	// extend base class
 	CrateCollide::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -196,15 +196,15 @@ void VeterancyCrateCollide::xfer( Xfer *xfer )
 	// extend base class
 	CrateCollide::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void VeterancyCrateCollide::loadPostProcess( void )
+void VeterancyCrateCollide::loadPostProcess()
 {
 
 	// extend base class
 	CrateCollide::loadPostProcess();
 
-}  // end loadPostProcess
+}

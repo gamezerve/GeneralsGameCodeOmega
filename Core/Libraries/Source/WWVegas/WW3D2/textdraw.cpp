@@ -73,20 +73,20 @@ TextDrawClass::TextDrawClass( int max_chars ) :
 
 /***********************************************************************************************
  *                                                                                             *
- * TextDrawClass::~TextDrawClass( void ) -- Destructor													  *
+ * TextDrawClass::~TextDrawClass() -- Destructor													  *
  *                                                                                             *
  ***********************************************************************************************/
-TextDrawClass::~TextDrawClass( void )
+TextDrawClass::~TextDrawClass()
 {
 	DefaultVertexMaterial->Release_Ref();
 }
 
 /***********************************************************************************************
  *                                                                                             *
- * TextDrawClass::Reset( void ) -- Flush the mesh
+ * TextDrawClass::Reset() -- Flush the mesh
  *                                                                                             *
  ***********************************************************************************************/
-void TextDrawClass::Reset( void )
+void TextDrawClass::Reset()
 {
 	Reset_Flags();
 	Reset_Mesh_Counters();
@@ -267,7 +267,7 @@ float	TextDrawClass::Print( Font3DInstanceClass *font, char ch, float screen_x, 
 	}
 
 	/*
-	** Get the font texture uv coordinate for teh upper right and lower left corners of the rect
+	** Get the font texture uv coordinate for the upper right and lower left corners of the rect
 	*/
 	RectClass font_uv = font->Char_UV( ch );
 

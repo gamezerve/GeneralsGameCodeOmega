@@ -47,7 +47,7 @@
 #include "motchan.h"
 #include "w3d_file.h"
 #include "chunkio.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "wwmath.h"
 #include "quat.h"
 
@@ -90,11 +90,11 @@ static bool table_valid = false;
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-MotionChannelClass::MotionChannelClass(void) :
+MotionChannelClass::MotionChannelClass() :
 	PivotIdx(0),
 	Type(0),
 	VectorLen(0),
-	Data(NULL),
+	Data(nullptr),
 	FirstFrame(-1),
 	LastFrame(-1)
 {
@@ -112,7 +112,7 @@ MotionChannelClass::MotionChannelClass(void) :
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-MotionChannelClass::~MotionChannelClass(void)
+MotionChannelClass::~MotionChannelClass()
 {
 	Free();
 }
@@ -129,12 +129,10 @@ MotionChannelClass::~MotionChannelClass(void)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void MotionChannelClass::Free(void)
+void MotionChannelClass::Free()
 {
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] Data;
+	Data = nullptr;
 }
 
 
@@ -190,13 +188,13 @@ bool MotionChannelClass::Load_W3D(ChunkLoadClass & cload)
  *                                                                                             *
  * HISTORY:                                                                                    *
  *=============================================================================================*/
-BitChannelClass::BitChannelClass(void) :
+BitChannelClass::BitChannelClass() :
 	PivotIdx(0),
 	Type(0),
 	DefaultVal(0),
 	FirstFrame(-1),
 	LastFrame(-1),
-	Bits(NULL)
+	Bits(nullptr)
 {
 }
 
@@ -213,7 +211,7 @@ BitChannelClass::BitChannelClass(void) :
  * HISTORY:                                                                                    *
  *   1/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-BitChannelClass::~BitChannelClass(void)
+BitChannelClass::~BitChannelClass()
 {
 	Free();
 }
@@ -231,12 +229,10 @@ BitChannelClass::~BitChannelClass(void)
  * HISTORY:                                                                                    *
  *   1/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void BitChannelClass::Free(void)
+void BitChannelClass::Free()
 {
-	if (Bits != NULL) {
-		delete[] Bits;
-		Bits = NULL;
-	}
+	delete[] Bits;
+	Bits = nullptr;
 }
 
 
@@ -303,12 +299,12 @@ bool BitChannelClass::Load_W3D(ChunkLoadClass & cload)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-TimeCodedMotionChannelClass::TimeCodedMotionChannelClass(void) :
+TimeCodedMotionChannelClass::TimeCodedMotionChannelClass() :
 	PivotIdx(0),
 	Type(0),
 	VectorLen(0),
 	PacketSize(0),
-	Data(NULL),
+	Data(nullptr),
 	NumTimeCodes(0),
 	LastTimeCodeIdx(0),	// absolute index to last time code
 	CachedIdx(0)			// Last Index Used
@@ -327,7 +323,7 @@ TimeCodedMotionChannelClass::TimeCodedMotionChannelClass(void) :
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-TimeCodedMotionChannelClass::~TimeCodedMotionChannelClass(void)
+TimeCodedMotionChannelClass::~TimeCodedMotionChannelClass()
 {
 	Free();
 }
@@ -344,12 +340,10 @@ TimeCodedMotionChannelClass::~TimeCodedMotionChannelClass(void)
  * HISTORY:                                                                                    *
  *   08/11/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void TimeCodedMotionChannelClass::Free(void)
+void TimeCodedMotionChannelClass::Free()
 {
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] Data;
+	Data = nullptr;
 }
 
 
@@ -458,7 +452,7 @@ void	TimeCodedMotionChannelClass::Get_Vector(float32 frame,float * setvec)
 
   }
 
-}	// Get_Vector
+}
 
 
 Quaternion TimeCodedMotionChannelClass::Get_QuatVector(float32 frame)
@@ -517,7 +511,7 @@ Quaternion TimeCodedMotionChannelClass::Get_QuatVector(float32 frame)
 
 	return( q );
 
-} // Get_QuatVector
+}
 
 
 
@@ -588,7 +582,7 @@ uint32 TimeCodedMotionChannelClass::binary_search_index(uint32 timecode)
 	assert(0);
 	return(0);
 
-}	// binary_search_index
+}
 
 
 /***********************************************************************************************
@@ -630,7 +624,7 @@ uint32 TimeCodedMotionChannelClass::get_index(uint32 timecode)
 
 	return(CachedIdx);
 
-}	// get_index
+}
 
 /***********************************************************************************************
  * TimeCodedMotionChannelClass::set_identity -- returns an "identity" vector (not really...hmm...)      *
@@ -658,7 +652,7 @@ void TimeCodedMotionChannelClass::set_identity(float * setvec)
 		setvec[0] = 0.0f;
 
 	}
-}	// set_identity
+}
 
 
 /***********************************************************************************************
@@ -672,11 +666,11 @@ void TimeCodedMotionChannelClass::set_identity(float * setvec)
  *                                                                                             *
  * HISTORY:                                                                                    *
  *=============================================================================================*/
-TimeCodedBitChannelClass::TimeCodedBitChannelClass(void) :
+TimeCodedBitChannelClass::TimeCodedBitChannelClass() :
 	PivotIdx(0),
 	Type(0),
 	DefaultVal(0),
-	Bits(NULL),
+	Bits(nullptr),
 	CachedIdx(0)
 {
 }
@@ -694,7 +688,7 @@ TimeCodedBitChannelClass::TimeCodedBitChannelClass(void) :
  * HISTORY:                                                                                    *
  *   1/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-TimeCodedBitChannelClass::~TimeCodedBitChannelClass(void)
+TimeCodedBitChannelClass::~TimeCodedBitChannelClass()
 {
 	Free();
 }
@@ -712,12 +706,10 @@ TimeCodedBitChannelClass::~TimeCodedBitChannelClass(void)
  * HISTORY:                                                                                    *
  *   1/21/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void TimeCodedBitChannelClass::Free(void)
+void TimeCodedBitChannelClass::Free()
 {
-	if (Bits != NULL) {
-		delete[] Bits;
-		Bits = NULL;
-	}
+	delete[] Bits;
+	Bits = nullptr;
 }
 
 
@@ -767,7 +759,7 @@ bool TimeCodedBitChannelClass::Load_W3D(ChunkLoadClass & cload)
 	}
 
 	return true;
-}	 // Load_W3D
+}
 
 
 /***********************************************************************************************
@@ -816,7 +808,7 @@ int TimeCodedBitChannelClass::Get_Bit(int frame)
 
 	return (((Bits[idx] & W3D_TIMECODED_BIT_MASK) == W3D_TIMECODED_BIT_MASK));
 
-}	 // Get_Bit
+}
 
 
 // Begin Adaptive Delta
@@ -834,13 +826,13 @@ int TimeCodedBitChannelClass::Get_Bit(int frame)
  * HISTORY:                                                                                    *
  *   02/18/2000 JGA : Created.                                                                 *
  *=============================================================================================*/
-AdaptiveDeltaMotionChannelClass::AdaptiveDeltaMotionChannelClass(void) :
+AdaptiveDeltaMotionChannelClass::AdaptiveDeltaMotionChannelClass() :
 	PivotIdx(0),
 	Type(0),
 	VectorLen(0),
-	Data(NULL),
+	Data(nullptr),
 	NumFrames(0),
-	CacheData(NULL),
+	CacheData(nullptr),
 	Scale(0.0f)
 {
 
@@ -875,7 +867,7 @@ AdaptiveDeltaMotionChannelClass::AdaptiveDeltaMotionChannelClass(void) :
  * HISTORY:                                                                                    *
  *   02/18/1000 JGA : Created.                                                                 *
  *=============================================================================================*/
-AdaptiveDeltaMotionChannelClass::~AdaptiveDeltaMotionChannelClass(void)
+AdaptiveDeltaMotionChannelClass::~AdaptiveDeltaMotionChannelClass()
 {
 	Free();
 }
@@ -892,19 +884,14 @@ AdaptiveDeltaMotionChannelClass::~AdaptiveDeltaMotionChannelClass(void)
  * HISTORY:                                                                                    *
  *   02/18/2000 JGA  : Created.                                                                 *
  *=============================================================================================*/
-void AdaptiveDeltaMotionChannelClass::Free(void)
+void AdaptiveDeltaMotionChannelClass::Free()
 {
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] Data;
+	Data = nullptr;
 
-	if (CacheData) {
-		delete CacheData;
-		CacheData = NULL;
-	}
-
-}	// Free
+	delete CacheData;
+	CacheData = nullptr;
+}
 
 
 /***********************************************************************************************
@@ -947,7 +934,7 @@ bool AdaptiveDeltaMotionChannelClass::Load_W3D(ChunkLoadClass & cload)
 	}
 	return true;
 
-}	// Load_W3D
+}
 
 
 /***********************************************************************************************
@@ -1021,19 +1008,19 @@ void AdaptiveDeltaMotionChannelClass::decompress(uint32 frame_idx, float *outdat
 				}
 				frame++;
 
-			} // for fi < 16
+			}
 
 			if (done) break;	// we're at the desired frame
 
 			pPacket+= ((PACKET_SIZE * VectorLen) - 1);	// skip to next packet
 
-		} // for frame_idx
+		}
 
       outdata[vi] = last_value;
 
-	} // for vi=0; vi < 4
+	}
 
-} // decompress, from beginning
+}
 
 void AdaptiveDeltaMotionChannelClass::decompress(uint32 src_idx, float *srcdata, uint32 frame_idx, float *outdata)
 {
@@ -1101,20 +1088,20 @@ void AdaptiveDeltaMotionChannelClass::decompress(uint32 src_idx, float *srcdata,
 				}
 				frame++;
 
-			} // for fi < 16
+			}
          fi = 0;
 
 			if (done) break;	// we're at the desired frame
 
 			pPacket+= ((PACKET_SIZE * VectorLen) - 1);	// skip to next packet
 
-		} // for frame_idx
+		}
 
       outdata[vi] = last_value;
 
-	} // for vi=0; vi < 4
+	}
 
-} // decompress, from continuation
+}
 
 
 /***********************************************************************************************
@@ -1191,7 +1178,7 @@ float AdaptiveDeltaMotionChannelClass::getframe(uint32 frame_idx, uint32 vector_
 
    return(CacheData[vector_idx]);
 
-} // getframe
+}
 
 /***********************************************************************************************
  * AdaptiveDeltaMotionChannelClass::Get_Vector -- returns the vector for the specified frame # *
@@ -1218,7 +1205,7 @@ void	AdaptiveDeltaMotionChannelClass::Get_Vector(float32 frame,float * setvec)
    *setvec = WWMath::Lerp(value1,value2,ratio);
 
 
-}	// Get_Vector
+}
 
 
 //
@@ -1251,7 +1238,7 @@ Quaternion AdaptiveDeltaMotionChannelClass::Get_QuatVector(float32 frame)
 
 	return( q );
 
-} // Get_QuatVector
+}
 
 
 // EOF - motchan.cpp

@@ -26,7 +26,7 @@
 // Author: Graham Smallwood, July 2003
 // Desc:	 UpgradeModule that sets a modelcondition flag
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameLogic/Module/ModelConditionUpgrade.h"
 
@@ -48,8 +48,8 @@ void ModelConditionUpgradeModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "ConditionFlag",	ModelConditionFlags::parseSingleBitFromINI,	NULL, offsetof( ModelConditionUpgradeModuleData, m_conditionFlag ) },
-		{ 0, 0, 0, 0 }
+		{ "ConditionFlag",	ModelConditionFlags::parseSingleBitFromINI,	nullptr, offsetof( ModelConditionUpgradeModuleData, m_conditionFlag ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -62,13 +62,13 @@ ModelConditionUpgrade::ModelConditionUpgrade( Thing *thing, const ModuleData* mo
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ModelConditionUpgrade::~ModelConditionUpgrade( void )
+ModelConditionUpgrade::~ModelConditionUpgrade()
 {
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void ModelConditionUpgrade::upgradeImplementation( )
+void ModelConditionUpgrade::upgradeImplementation()
 {
 	const ModelConditionUpgradeModuleData *data = getModelConditionUpgradeModuleData();
 
@@ -87,7 +87,7 @@ void ModelConditionUpgrade::crc( Xfer *xfer )
 	// extend base class
 	UpgradeModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -105,15 +105,15 @@ void ModelConditionUpgrade::xfer( Xfer *xfer )
 	// extend base class
 	UpgradeModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ModelConditionUpgrade::loadPostProcess( void )
+void ModelConditionUpgrade::loadPostProcess()
 {
 
 	// extend base class
 	UpgradeModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

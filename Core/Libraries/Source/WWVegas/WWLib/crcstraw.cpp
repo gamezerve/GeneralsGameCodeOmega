@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/CRCSTRAW.CPP                              $*
+ *                     $Archive:: /Commando/Library/CRCSTRAW.cpp                              $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *
@@ -62,7 +62,7 @@
  *=============================================================================================*/
 int CRCStraw::Get(void * source, int slen)
 {
-	if (source == NULL || slen < 1) {
+	if (source == nullptr || slen < 1) {
 		return(0);
 	}
 
@@ -87,7 +87,7 @@ int CRCStraw::Get(void * source, int slen)
  * HISTORY:                                                                                    *
  *   07/03/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-long CRCStraw::Result(void) const
+long CRCStraw::Result() const
 {
 	return(CRC());
 }

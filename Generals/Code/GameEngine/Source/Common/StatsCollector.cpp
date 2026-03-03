@@ -38,7 +38,7 @@
 //
 //	author:		Chris Huybregts
 //
-//	purpose:	Convinience class to gather player stats
+//	purpose:	Convenience class to gather player stats
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-StatsCollector *TheStatsCollector = NULL;
+StatsCollector *TheStatsCollector = nullptr;
 
 static char statsDir[255] = "Stats\\";
 //-----------------------------------------------------------------------------
@@ -74,15 +74,11 @@ static char statsDir[255] = "Stats\\";
 
 // init all
 //=============================================================================
-StatsCollector::StatsCollector( void )
+StatsCollector::StatsCollector()
 {
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_isScrolling = FALSE;
 	m_scrollBeginTime = 0;
 	m_scrollTime = 0;
-
-	//
 	m_timeCount = 0;
 	m_buildCommands = 0;
 	m_moveCommands = 0;
@@ -90,21 +86,19 @@ StatsCollector::StatsCollector( void )
 	m_scrollMapCommands = 0;
 	m_AIUnits = 0;
 	m_playerUnits = 0;
-
 	m_lastUpdate = 0;
 	m_startFrame = TheGameLogic->getFrame();
-
 }
 //Destructor
 //=============================================================================
-StatsCollector::~StatsCollector( void )
+StatsCollector::~StatsCollector()
 {
 
 }
 
 // Reset and create the file header
 //=============================================================================
-void StatsCollector::reset( void )
+void StatsCollector::reset()
 {
 
 	// make sure we have a stats Dir.
@@ -155,7 +149,7 @@ void StatsCollector::collectMsgStats( const GameMessage *msg )
 
 //Loop through all objects and count up the ones we want. (Very Slow!!!)
 //=============================================================================
-void StatsCollector::collectUnitCountStats( void )
+void StatsCollector::collectUnitCountStats()
 {
 
 	for(Object *obj =	TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject())
@@ -178,7 +172,7 @@ void StatsCollector::collectUnitCountStats( void )
 
 // call every frame and only do stuff when our time is up
 //=============================================================================
-void StatsCollector::update( void )
+void StatsCollector::update()
 {
 	if(m_lastUpdate + (TheGlobalData->m_playStats * LOGICFRAMES_PER_SECOND) > TheGameLogic->getFrame())
 		return;
@@ -200,26 +194,26 @@ void StatsCollector::update( void )
 
 }
 
-void StatsCollector::incrementScrollMoveCount( void )
+void StatsCollector::incrementScrollMoveCount()
 {
 	++m_scrollMapCommands;
 }
 
-void StatsCollector::incrementAttackCount( void )
+void StatsCollector::incrementAttackCount()
 {
 	++m_attackCommands;
 }
 
-void StatsCollector::incrementBuildCount( void )
+void StatsCollector::incrementBuildCount()
 {
 	++m_buildCommands;
 }
-void StatsCollector::incrementMoveCount( void )
+void StatsCollector::incrementMoveCount()
 {
 	++m_moveCommands;
 }
 
-void StatsCollector::writeFileEnd( void )
+void StatsCollector::writeFileEnd()
 {
 	//open the file
 	FILE *f = fopen(m_statsFileName.str(), "a");
@@ -268,14 +262,14 @@ void StatsCollector::writeFileEnd( void )
 
 }
 
-void StatsCollector::startScrollTime( void )
+void StatsCollector::startScrollTime()
 {
 	m_isScrolling = TRUE;
 	m_scrollBeginTime = TheGameLogic->getFrame();
 	++m_scrollMapCommands;
 }
 
-void StatsCollector::endScrollTime( void )
+void StatsCollector::endScrollTime()
 {
 	if(!m_isScrolling)
 		return;
@@ -289,7 +283,7 @@ void StatsCollector::endScrollTime( void )
 // PRIVATE FUNCTIONS //////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
-void StatsCollector::zeroOutStats( void )
+void StatsCollector::zeroOutStats()
 {
 	m_buildCommands = 0;
 	m_moveCommands = 0;
@@ -302,7 +296,7 @@ void StatsCollector::zeroOutStats( void )
 
 // create the filename based off of map time and date
 //=============================================================================
-void StatsCollector::createFileName( void )
+void StatsCollector::createFileName()
 {
 	m_statsFileName.clear();
 	// Date and Time

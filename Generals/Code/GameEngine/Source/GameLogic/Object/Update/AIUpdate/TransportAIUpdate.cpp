@@ -26,7 +26,7 @@
 // Needs to check legality of evacuate, and may move to a place that is better to evacuate at
 // Author: Graham Smallwood, July 2002
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/RandomValue.h"
 #include "GameLogic/Module/TransportAIUpdate.h"
@@ -50,7 +50,7 @@ TransportAIUpdate::TransportAIUpdate( Thing *thing, const ModuleData* moduleData
 }
 
 //-------------------------------------------------------------------------------------------------
-TransportAIUpdate::~TransportAIUpdate( void )
+TransportAIUpdate::~TransportAIUpdate()
 {
 
 }
@@ -62,10 +62,10 @@ TransportAIUpdate::~TransportAIUpdate( void )
 void TransportAIUpdate::privateAttackObject( Object *victim, Int maxShotsToFire, CommandSourceType cmdSource )
 {
 	ContainModuleInterface* contain = getObject()->getContain();
-	if( contain != NULL  &&  contain->isPassengerAllowedToFire() )
+	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();
@@ -106,10 +106,10 @@ void TransportAIUpdate::privateAttackObject( Object *victim, Int maxShotsToFire,
 void TransportAIUpdate::privateForceAttackObject( Object *victim, Int maxShotsToFire, CommandSourceType cmdSource )
 {
 	ContainModuleInterface* contain = getObject()->getContain();
-	if( contain != NULL  &&  contain->isPassengerAllowedToFire() )
+	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();
@@ -150,10 +150,10 @@ void TransportAIUpdate::privateForceAttackObject( Object *victim, Int maxShotsTo
 void TransportAIUpdate::privateAttackPosition( const Coord3D *pos, Int maxShotsToFire, CommandSourceType cmdSource )
 {
 	ContainModuleInterface* contain = getObject()->getContain();
-	if( contain != NULL  &&  contain->isPassengerAllowedToFire() )
+	if( contain != nullptr  &&  contain->isPassengerAllowedToFire() )
 	{
 		// As an extension of the normal attack, I may want to tell my passengers to attack
-		// too, but only if this is a direct command.  (As opposed to a passive aquire)
+		// too, but only if this is a direct command.  (As opposed to a passive acquire)
 		if( cmdSource == CMD_FROM_PLAYER  ||  cmdSource == CMD_FROM_SCRIPT )
 		{
 			const ContainedItemsList *passengerList = contain->getContainedItemsList();
@@ -201,7 +201,7 @@ void TransportAIUpdate::crc( Xfer *xfer )
 {
 	// extend base class
 	AIUpdateInterface::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -217,13 +217,13 @@ void TransportAIUpdate::xfer( Xfer *xfer )
  // extend base class
 	AIUpdateInterface::xfer(xfer);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void TransportAIUpdate::loadPostProcess( void )
+void TransportAIUpdate::loadPostProcess()
 {
  // extend base class
 	AIUpdateInterface::loadPostProcess();
-}  // end loadPostProcess
+}

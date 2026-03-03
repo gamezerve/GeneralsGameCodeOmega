@@ -29,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "GameLogic/Module/SalvageCrateCollide.h"
 
 #include "Common/AudioEventRTS.h"
@@ -53,7 +53,7 @@ SalvageCrateCollide::SalvageCrateCollide( Thing *thing, const ModuleData* module
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-SalvageCrateCollide::~SalvageCrateCollide( void )
+SalvageCrateCollide::~SalvageCrateCollide()
 {
 
 }
@@ -122,7 +122,7 @@ Bool SalvageCrateCollide::executeCrateBehavior( Object *other )
 // ------------------------------------------------------------------------------------------------
 Bool SalvageCrateCollide::eligibleForWeaponSet( Object *other )
 {
-	if( other == NULL )
+	if( other == nullptr )
 		return FALSE;
 
 	// A kindof marks eligibility, and you must not be fully upgraded
@@ -137,7 +137,7 @@ Bool SalvageCrateCollide::eligibleForWeaponSet( Object *other )
 // ------------------------------------------------------------------------------------------------
 Bool SalvageCrateCollide::eligibleForArmorSet( Object *other )
 {
-	if( other == NULL )
+	if( other == nullptr )
 		return FALSE;
 
 	// A kindof marks eligibility, and you must not be fully upgraded
@@ -152,7 +152,7 @@ Bool SalvageCrateCollide::eligibleForArmorSet( Object *other )
 // ------------------------------------------------------------------------------------------------
 Bool SalvageCrateCollide::eligibleForLevel( Object *other )
 {
-	if( other == NULL )
+	if( other == nullptr )
 		return FALSE;
 
 	// Sorry, you are max level
@@ -268,7 +268,7 @@ void SalvageCrateCollide::crc( Xfer *xfer )
 	// extend base class
 	CrateCollide::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -286,15 +286,15 @@ void SalvageCrateCollide::xfer( Xfer *xfer )
 	// extend base class
 	CrateCollide::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SalvageCrateCollide::loadPostProcess( void )
+void SalvageCrateCollide::loadPostProcess()
 {
 
 	// extend base class
 	CrateCollide::loadPostProcess();
 
-}  // end loadPostProcess
+}

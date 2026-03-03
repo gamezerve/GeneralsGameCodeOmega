@@ -29,7 +29,7 @@
 
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
@@ -118,7 +118,7 @@ AutoHealBehavior::AutoHealBehavior( Thing *thing, const ModuleData* moduleData )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-AutoHealBehavior::~AutoHealBehavior( void )
+AutoHealBehavior::~AutoHealBehavior()
 {
 
 	if( m_radiusParticleSystemID != INVALID_PARTICLE_SYSTEM_ID )
@@ -170,7 +170,7 @@ void AutoHealBehavior::onDamage( DamageInfo *damageInfo )
 //-------------------------------------------------------------------------------------------------
 /** The update callback. */
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime AutoHealBehavior::update( void )
+UpdateSleepTime AutoHealBehavior::update()
 {
 	if (m_stopped)
 		return UPDATE_SLEEP_FOREVER;
@@ -235,7 +235,7 @@ UpdateSleepTime AutoHealBehavior::update( void )
 		PartitionFilterRelationship relationship( obj, PartitionFilterRelationship::ALLOW_ALLIES );
 		PartitionFilterSameMapStatus filterMapStatus(obj);
 		PartitionFilterAlive filterAlive;
-		PartitionFilter *filters[] = { &relationship, &filterAlive, &filterMapStatus, NULL };
+		PartitionFilter *filters[] = { &relationship, &filterAlive, &filterMapStatus, nullptr };
 
 		// scan objects in our region
 		ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( obj->getPosition(), d->m_radius, FROM_CENTER_2D, filters );
@@ -268,7 +268,7 @@ UpdateSleepTime AutoHealBehavior::update( void )
 				}
 
 			}
-		}  // end for obj
+		}
 
 		return UPDATE_SLEEP( d->m_singleBurst ? UPDATE_SLEEP_FOREVER : d->m_healingDelay );
 	}
@@ -314,7 +314,7 @@ void AutoHealBehavior::crc( Xfer *xfer )
 	// extend base class
 	UpgradeMux::upgradeMuxCRC( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -344,12 +344,12 @@ void AutoHealBehavior::xfer( Xfer *xfer )
 	// stopped
 	xfer->xferBool( &m_stopped );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AutoHealBehavior::loadPostProcess( void )
+void AutoHealBehavior::loadPostProcess()
 {
 
 	// extend base class
@@ -358,4 +358,4 @@ void AutoHealBehavior::loadPostProcess( void )
 	// extend base class
 	UpgradeMux::upgradeMuxLoadPostProcess();
 
-}  // end loadPostProcess
+}

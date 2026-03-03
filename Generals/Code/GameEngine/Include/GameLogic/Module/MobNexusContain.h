@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __MOBNEXUSCONTAIN_H_
-#define __MOBNEXUSCONTAIN_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
 
@@ -86,10 +83,10 @@ public:
 	virtual void onRemoving( Object *obj );			///< object no longer contains 'obj'
 	virtual UpdateSleepTime update();							///< called once per frame
 
-	virtual Int getContainMax( void ) const;
+	virtual Int getContainMax() const;
 
 	virtual void onObjectCreated();
-	virtual Int getExtraSlotsInUse( void ) { return m_extraSlotsInUse; }
+	virtual Int getExtraSlotsInUse() { return m_extraSlotsInUse; }
 
 	virtual ExitDoorType reserveDoorForExit( const ThingTemplate* objType, Object *specificObject );					///< All types can answer if they are free to exit or not, and you can ask about a specific guy or just exit anything in general
 	virtual void unreserveDoorForExit( ExitDoorType exitDoor );
@@ -103,6 +100,3 @@ private:
 	Int m_extraSlotsInUse;
 
 };
-
-#endif // __MOBNEXUSCONTAIN_H_
-

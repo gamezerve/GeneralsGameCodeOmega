@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/BitFlagsIO.h"
 #include "Common/BuildAssistant.h"
@@ -92,7 +92,7 @@ static const ModelConditionFlagType theWaitingToCloseFlags[DOOR_COUNT_MAX] =
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ProductionUpdateModuleData::ProductionUpdateModuleData( void )
+ProductionUpdateModuleData::ProductionUpdateModuleData()
 {
 	// someday, might need separate times for each door. but not yet.
 	m_numDoorAnimations = 0;
@@ -127,15 +127,15 @@ ProductionUpdateModuleData::ProductionUpdateModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "MaxQueueEntries",	INI::parseInt, NULL, offsetof( ProductionUpdateModuleData, m_maxQueueEntries ) },
-		{ "NumDoorAnimations",	INI::parseInt, NULL, offsetof( ProductionUpdateModuleData, m_numDoorAnimations ) },
-		{ "DoorOpeningTime", INI::parseDurationUnsignedInt, NULL, offsetof( ProductionUpdateModuleData, m_doorOpeningTime ) },
-		{ "DoorWaitOpenTime", INI::parseDurationUnsignedInt, NULL, offsetof( ProductionUpdateModuleData, m_doorWaitOpenTime ) },
-		{ "DoorCloseTime", INI::parseDurationUnsignedInt, NULL, offsetof( ProductionUpdateModuleData, m_doorClosingTime ) },
-		{ "ConstructionCompleteDuration", INI::parseDurationUnsignedInt, NULL, offsetof( ProductionUpdateModuleData, m_constructionCompleteDuration ) },
-		{ "QuantityModifier",	parseAppendQuantityModifier, NULL, offsetof( ProductionUpdateModuleData, m_quantityModifiers ) },
-		{ "DisabledTypesToProcess",	DisabledMaskType::parseFromINI, NULL, offsetof( ProductionUpdateModuleData, m_disabledTypesToProcess ) },
-		{ 0, 0, 0, 0 }
+		{ "MaxQueueEntries",	INI::parseInt, nullptr, offsetof( ProductionUpdateModuleData, m_maxQueueEntries ) },
+		{ "NumDoorAnimations",	INI::parseInt, nullptr, offsetof( ProductionUpdateModuleData, m_numDoorAnimations ) },
+		{ "DoorOpeningTime", INI::parseDurationUnsignedInt, nullptr, offsetof( ProductionUpdateModuleData, m_doorOpeningTime ) },
+		{ "DoorWaitOpenTime", INI::parseDurationUnsignedInt, nullptr, offsetof( ProductionUpdateModuleData, m_doorWaitOpenTime ) },
+		{ "DoorCloseTime", INI::parseDurationUnsignedInt, nullptr, offsetof( ProductionUpdateModuleData, m_doorClosingTime ) },
+		{ "ConstructionCompleteDuration", INI::parseDurationUnsignedInt, nullptr, offsetof( ProductionUpdateModuleData, m_constructionCompleteDuration ) },
+		{ "QuantityModifier",	parseAppendQuantityModifier, nullptr, offsetof( ProductionUpdateModuleData, m_quantityModifiers ) },
+		{ "DisabledTypesToProcess",	DisabledMaskType::parseFromINI, nullptr, offsetof( ProductionUpdateModuleData, m_disabledTypesToProcess ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 
@@ -147,30 +147,27 @@ ProductionUpdateModuleData::ProductionUpdateModuleData( void )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ProductionEntry::ProductionEntry( void )
+ProductionEntry::ProductionEntry()
 {
 
 	m_type = PRODUCTION_INVALID;
-	m_objectToProduce = NULL;
-	m_upgradeToResearch = NULL;
+	m_objectToProduce = nullptr;
+	m_upgradeToResearch = nullptr;
 	m_productionID = (ProductionID)1;
 	m_percentComplete = 0.0f;
 	m_framesUnderConstruction = 0;
-	m_next = NULL;
-	m_prev = NULL;
-	//Added By Sadullah Nader
-	//Initializations inserted
+	m_next = nullptr;
+	m_prev = nullptr;
 	m_productionQuantityProduced = 0;
 	m_productionQuantityTotal = 0;
-	//
-}  // end ProductionEntry
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ProductionEntry::~ProductionEntry( void )
+ProductionEntry::~ProductionEntry()
 {
 
-}  // end ~ProductionEntry
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,8 +179,8 @@ ProductionUpdate::ProductionUpdate( Thing *thing, const ModuleData* moduleData )
 									UpdateModule( thing, moduleData )
 {
 
-	m_productionQueue = NULL;
-	m_productionQueueTail = NULL;
+	m_productionQueue = nullptr;
+	m_productionQueueTail = nullptr;
 	m_productionCount = 0;
 	m_uniqueID = (ProductionID)1;
 	for (Int i = 0; i < DOOR_COUNT_MAX; ++i)
@@ -198,11 +195,11 @@ ProductionUpdate::ProductionUpdate( Thing *thing, const ModuleData* moduleData )
 	m_setFlags.clear();
 	m_flagsDirty = FALSE;
 
-}  // end ProductionUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ProductionUpdate::~ProductionUpdate( void )
+ProductionUpdate::~ProductionUpdate()
 {
 
 	// destroy any queued productions
@@ -215,9 +212,9 @@ ProductionUpdate::~ProductionUpdate( void )
 		// TheSuperHackers @fix Mauller 13/04/2025 Delete instance of production item
 		deleteInstance(production);
 
-	}  // end while
+	}
 
-}  // end ~ProductionUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -236,10 +233,10 @@ CanMakeType ProductionUpdate::canQueueCreateUnit( const ThingTemplate *unitType 
 	/// @todo srj -- this is horrible, but the "right" way to do it is to move
 	// ProductionUpdate to be part of ParkingPlaceBehavior, which I don't currently
 	// have time for...
-	ParkingPlaceBehaviorInterface* pp = NULL;
+	ParkingPlaceBehaviorInterface* pp = nullptr;
 	for (BehaviorModule** i = getObject()->getBehaviorModules(); *i; ++i)
 	{
-		if ((pp = (*i)->getParkingPlaceBehaviorInterface()) != NULL)
+		if ((pp = (*i)->getParkingPlaceBehaviorInterface()) != nullptr)
 		{
 			if (pp->shouldReserveDoorWhenQueued(unitType) && !pp->hasAvailableSpaceFor(unitType))
 				return CANMAKE_PARKING_PLACES_FULL;
@@ -260,7 +257,7 @@ Bool ProductionUpdate::queueUpgrade( const UpgradeTemplate *upgrade )
 {
 
 	// sanity
-	if( upgrade == NULL )
+	if( upgrade == nullptr )
 		return FALSE;
 
 	// get the player
@@ -304,7 +301,7 @@ Bool ProductionUpdate::queueUpgrade( const UpgradeTemplate *upgrade )
 	// allocate a new production entry
 	ProductionEntry *production = newInstance(ProductionEntry);
 
-	// assing production entry data
+	// assign production entry data
 	production->m_type = PRODUCTION_UPGRADE;
 	production->m_upgradeToResearch = upgrade;
 	production->m_productionID = PRODUCTIONID_INVALID;  // not needed for upgrades, you can only have one of
@@ -320,7 +317,7 @@ Bool ProductionUpdate::queueUpgrade( const UpgradeTemplate *upgrade )
 
 	return TRUE;  // queued
 
-}  // end queueUpgrade
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Cancel an upgrade being produced here */
@@ -329,7 +326,7 @@ void ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
 {
 
 	// sanity
-	if( upgrade == NULL )
+	if( upgrade == nullptr )
 		return;
 
 	// get the player
@@ -351,15 +348,15 @@ void ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
 				production->m_upgradeToResearch == upgrade )
 			break;
 
-	}  // end for
+	}
 
 	// sanity, entry not found
-	if( production == NULL )
+	if( production == nullptr )
 		return;
 
 	// refund money back to the player
 	Money *money = player->getMoney();
-	money->deposit( production->m_upgradeToResearch->calcCostToBuild( player ) );
+	money->deposit( production->m_upgradeToResearch->calcCostToBuild( player ), TRUE, FALSE );
 
 	// remove this production from the queue
 	removeFromProductionQueue( production );
@@ -374,10 +371,10 @@ void ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
 	if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER )
 		player->removeUpgrade( upgrade );
 
-}  // end cancelUpgrade
+}
 
 //-------------------------------------------------------------------------------------------------
-/** Queue the prodcution of a unit.  Returns TRUE if unit was added to queue, FALSE if it
+/** Queue the production of a unit.  Returns TRUE if unit was added to queue, FALSE if it
 	* was not */
 //-------------------------------------------------------------------------------------------------
 Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, ProductionID productionID )
@@ -393,17 +390,17 @@ Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, Productio
 	/// @todo srj -- this is horrible, but the "right" way to do it is to move
 	// ProductionUpdate to be part of ParkingPlaceBehavior, which I don't currently
 	// have time for...
-	ParkingPlaceBehaviorInterface* pp = NULL;
+	ParkingPlaceBehaviorInterface* pp = nullptr;
 	for (BehaviorModule** i = getObject()->getBehaviorModules(); *i; ++i)
 	{
-		if ((pp = (*i)->getParkingPlaceBehaviorInterface()) != NULL)
+		if ((pp = (*i)->getParkingPlaceBehaviorInterface()) != nullptr)
 		{
 			if (pp->shouldReserveDoorWhenQueued(unitType))
 			{
 				ExitInterface* exitInterface = getObject()->getObjectExitInterface();
 				if (exitInterface)
 				{
-					exitDoor = exitInterface->reserveDoorForExit(unitType, NULL);
+					exitDoor = exitInterface->reserveDoorForExit(unitType, nullptr);
 				}
 				if (exitDoor == DOOR_NONE_AVAILABLE)
 				{
@@ -444,7 +441,7 @@ Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, Productio
 		}
 	}
 
-	// assing production entry data
+	// assign production entry data
 	production->m_type = PRODUCTION_UNIT;
 	production->m_objectToProduce = unitType;
 	production->m_productionID = productionID;
@@ -455,7 +452,7 @@ Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, Productio
 
 	return TRUE;  // unit queued
 
-}  // end queueMakeUnit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Cancel the construction of the unit with the matching production ID */
@@ -475,7 +472,7 @@ void ProductionUpdate::cancelUnitCreate( ProductionID productionID )
 			// give the player the cost of the object back
 			Player *player = getObject()->getControllingPlayer();
 			Money *money = player->getMoney();
-			money->deposit( production->m_objectToProduce->calcCostToBuild( player ) );
+			money->deposit( production->m_objectToProduce->calcCostToBuild( player ), TRUE, FALSE );
 
 			// remove from queue list
 			removeFromProductionQueue( production );
@@ -485,11 +482,11 @@ void ProductionUpdate::cancelUnitCreate( ProductionID productionID )
 
 			return;
 
-		}  // end if
+		}
 
-	}  // end for
+	}
 
-}  // end cancelUnitCreate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Cancel all production of type unitType */
@@ -514,18 +511,18 @@ void ProductionUpdate::cancelAllUnitsOfType( const ThingTemplate *unitType)
 			// advance
 			production = temp;
 
-		}  // end if
+		}
 		else
 		{
 
 			// advance
 			production = production->m_next;
 
-		}  // end else
+		}
 
-	}  // end for
+	}
 
-}  // end cancelAllUnitsOfType
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update the door behavior */
@@ -559,9 +556,9 @@ void ProductionUpdate::updateDoors()
 				m_setFlags.set( theWaitingOpenFlags[i] );
 				m_flagsDirty = TRUE;
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 		else if( m_doors[i].m_doorWaitOpenFrame )
 		{
 
@@ -579,9 +576,9 @@ void ProductionUpdate::updateDoors()
 				m_setFlags.set( theClosingFlags[i] );
 				m_flagsDirty = TRUE;
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 		else if( m_doors[i].m_doorClosedFrame && !m_doors[i].m_holdOpen )
 		{
 
@@ -596,15 +593,15 @@ void ProductionUpdate::updateDoors()
 				m_setFlags.set( theClosingFlags[i], false );
 				m_flagsDirty = TRUE;
 
-			}  // end if
+			}
 
-		}  // end else if
+		}
 	}
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime ProductionUpdate::update( void )
+UpdateSleepTime ProductionUpdate::update()
 {
 /// @todo srj use SLEEPY_UPDATE here
 	ProductionEntry *production = m_productionQueue;
@@ -634,9 +631,9 @@ UpdateSleepTime ProductionUpdate::update( void )
 			m_setFlags.set( MODELCONDITION_CONSTRUCTION_COMPLETE, false );
 			m_flagsDirty = TRUE;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	// if we have dirty bits that need to be set and cleared, do it here all at once
 	if( m_flagsDirty == TRUE )
@@ -651,10 +648,10 @@ UpdateSleepTime ProductionUpdate::update( void )
 		m_setFlags.clear();
 		m_flagsDirty = FALSE;
 
-	}  // end if
+	}
 
 	// if nothing in the queue get outta here
-	if( production == NULL )
+	if( production == nullptr )
 		return UPDATE_SLEEP_NONE;
 
 	//
@@ -671,7 +668,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 	Player *player = us->getControllingPlayer();
 
 	// sanity
-	if( player == NULL )
+	if( player == nullptr )
 	{
 
 		// remove from queue list
@@ -682,7 +679,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 
 		return UPDATE_SLEEP_NONE;
 
-	}  // end if
+	}
 
 	//
 	// you can disallow types of units on the fly in scripts, so if there is something
@@ -699,9 +696,9 @@ UpdateSleepTime ProductionUpdate::update( void )
 			cancelUnitCreate(production->getProductionID());
 			return UPDATE_SLEEP_NONE;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	// increase the frames we've been under production for
 	production->m_framesUnderConstruction++;
@@ -745,14 +742,14 @@ UpdateSleepTime ProductionUpdate::update( void )
 					ExitDoorType exitDoor = production->getExitDoor();
 					if (exitDoor == DOOR_NONE_AVAILABLE)
 					{
-						exitDoor = exitInterface->reserveDoorForExit(production->m_objectToProduce, NULL);
+						exitDoor = exitInterface->reserveDoorForExit(production->m_objectToProduce, nullptr);
 						production->setExitDoor(exitDoor);
 					}
 
 					if (exitDoor != DOOR_NONE_AVAILABLE)
 					{
 						// note, could be DOOR_NONE_NEEDED! so door could be null. (srj)
-						DoorInfo* door = (exitDoor >= 0 && exitDoor < DOOR_COUNT_MAX) ? &m_doors[exitDoor] : NULL;
+						DoorInfo* door = (exitDoor >= 0 && exitDoor < DOOR_COUNT_MAX) ? &m_doors[exitDoor] : nullptr;
 
 						//
 						// if the producing structure has a door opening animation we will set the condition
@@ -760,7 +757,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 						// that had us previously closing a door)
 						//
 						const ProductionUpdateModuleData *d = getProductionUpdateModuleData();
-						if( d->m_numDoorAnimations > 0 && door != NULL )
+						if( d->m_numDoorAnimations > 0 && door != nullptr )
 						{
 
 							// if the door is closed, open it
@@ -771,14 +768,14 @@ UpdateSleepTime ProductionUpdate::update( void )
 								m_setFlags.set( theOpeningFlags[exitDoor] );
 								m_flagsDirty = TRUE;
 
-							}  // end if
+							}
 							// if the door is waiting-open, keep it there
 							else if( door->m_doorWaitOpenFrame != 0 )
 							{
 
 								door->m_doorWaitOpenFrame = now;
 
-							}  // end else if
+							}
 							// if the door is closing, for now, pop it to waiting open
 							else if( door->m_doorClosedFrame != 0 )
 							{
@@ -793,9 +790,9 @@ UpdateSleepTime ProductionUpdate::update( void )
 								m_setFlags.set( theWaitingOpenFlags[exitDoor] );
 								m_flagsDirty = TRUE;
 
-							}  // end else
+							}
 
-						}  // end if, has door animation
+						}
 
 						// we now go into the construction complete condition for a while
 						if( m_constructionCompleteFrame == 0 )
@@ -805,14 +802,14 @@ UpdateSleepTime ProductionUpdate::update( void )
 							m_setFlags.set( MODELCONDITION_CONSTRUCTION_COMPLETE );
 							m_flagsDirty = TRUE;
 
-						}  // end if
+						}
 
 						//
 						// make a new object, note that for production buildings that have door
 						// animations we will not make the object until the door has been totally
 						// opened
 						//
-						if( d->m_numDoorAnimations == 0 || door == NULL || door->m_doorWaitOpenFrame != 0 )
+						if( d->m_numDoorAnimations == 0 || door == nullptr || door->m_doorWaitOpenFrame != 0 )
 						{
 							Object *newObj = TheThingFactory->newObject( production->m_objectToProduce,
 																	creationBuilding->getControllingPlayer()->getDefaultTeam() );
@@ -856,11 +853,11 @@ UpdateSleepTime ProductionUpdate::update( void )
 							// This is last so the voice check can easily check for "first" guy
 							production->oneProductionSuccessful();
 
-						}  // end if, door open or no door animation ... make the object
+						}
 
-					}  // end, if we got a door reservation
+					}
 
-				} //end of trying to exit all the things we were planning on attempting
+				}
 
 				if( production->getProductionQuantityRemaining() == 0 )
 				{
@@ -871,12 +868,12 @@ UpdateSleepTime ProductionUpdate::update( void )
 					deleteInstance(production);
 				}
 
-			}  // end if we found an exit interface
+			}
 			else
 			{
 
 				// there is no exit interface, this is an error
-				DEBUG_ASSERTCRASH( 0, ("Cannot create '%s', there is no ExitUpdate interface defined for producer object '%s'",
+				DEBUG_CRASH( ("Cannot create '%s', there is no ExitUpdate interface defined for producer object '%s'",
 															production->m_objectToProduce->getName().str(),
 															creationBuilding->getTemplate()->getName().str()) );
 
@@ -886,9 +883,9 @@ UpdateSleepTime ProductionUpdate::update( void )
 				// delete the production entry
 				deleteInstance(production);
 
-			}  // end else
+			}
 
-		}  // end if, production unit
+		}
 		else if( production->m_type == PRODUCTION_UPGRADE )
 		{
 			const UpgradeTemplate *upgrade = production->m_upgradeToResearch;
@@ -903,7 +900,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 				us->getID());
 
 			// print a message to the local player
-			if( us->isLocallyControlled() )
+			if( us->isLocallyViewed() )
 			{
 				UnicodeString msg;
 				UnicodeString format = TheGameText->fetch( "UPGRADE:UpgradeComplete" );
@@ -912,7 +909,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 				msg.format( format.str(), upgradeName.str() );
 				TheInGameUI->message( msg );
 
-				// upgrades are a more rare event, play a nifty radar event thingie
+				// upgrades are a more rare event, play a nifty radar event thingy
 				TheRadar->createEvent( us->getPosition(), RADAR_EVENT_UPGRADE );
 
 				//Play the sound for the upgrade, because we just built it!
@@ -934,7 +931,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 				sound.setObjectID( us->getID() );
 				TheAudio->addAudioEvent( &sound );
 
-			}  // end if
+			}
 
 			// update the upgrade status in the player or give the upgrade to the object
 			if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER )
@@ -948,7 +945,7 @@ UpdateSleepTime ProductionUpdate::update( void )
 
 			//Also mark the UI dirty -- incase object with upgrade cameo is selected.
 			Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
-			Object *selectedObject = draw ? draw->getObject() : NULL;
+			Object *selectedObject = draw ? draw->getObject() : nullptr;
 			if( selectedObject )
 			{
 				const ThingTemplate *thing = selectedObject->getTemplate();
@@ -971,12 +968,12 @@ UpdateSleepTime ProductionUpdate::update( void )
 			// delete the production entry
 			deleteInstance(production);
 
-		}  // end else, production upgrade
+		}
 
-	}  // end if, production is 100% complete
+	}
 
 	return UPDATE_SLEEP_NONE;
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Add the production entry to the *END* of the production queue list */
@@ -985,7 +982,7 @@ void ProductionUpdate::addToProductionQueue( ProductionEntry *production )
 {
 
 	// check for empty list
-	if( m_productionQueue == NULL )
+	if( m_productionQueue == nullptr )
 		m_productionQueue = production;
 
 	// make any existing tail pointer now point to us, and we point back to them
@@ -995,7 +992,7 @@ void ProductionUpdate::addToProductionQueue( ProductionEntry *production )
 		m_productionQueueTail->m_next = production;
 		production->m_prev = m_productionQueueTail;
 
-	}  // end if
+	}
 
 	// this production entry is now the new tail at the end of the list
 	m_productionQueueTail = production;
@@ -1015,11 +1012,11 @@ void ProductionUpdate::addToProductionQueue( ProductionEntry *production )
 			m_setFlags.set( MODELCONDITION_ACTIVELY_CONSTRUCTING );
 			m_flagsDirty = TRUE;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
-}  // end addToProductionQueue
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Remove the production entry from the production queue list */
@@ -1042,7 +1039,7 @@ void ProductionUpdate::removeFromProductionQueue( ProductionEntry *production )
 	else
 		m_productionQueue = production->m_next;
 
-	// detach next pointer, keep tail poitner to the whole queue in tact
+	// detach next pointer, keep tail pointer to the whole queue in tact
 	if( production->m_next )
 		production->m_next->m_prev = production->m_prev;
 	else
@@ -1064,9 +1061,9 @@ void ProductionUpdate::removeFromProductionQueue( ProductionEntry *production )
 			m_setFlags.set( MODELCONDITION_ACTIVELY_CONSTRUCTING, false );
 			m_flagsDirty = TRUE;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 /*
 	// Debugging
@@ -1084,7 +1081,7 @@ void ProductionUpdate::removeFromProductionQueue( ProductionEntry *production )
 	}
 */
 
-}  // end removeFromProductionQueue
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Is the upgrade already in the production queue.  Note that you can only have one
@@ -1101,7 +1098,7 @@ Bool ProductionUpdate::isUpgradeInQueue( const UpgradeTemplate *upgrade ) const
 
 	return FALSE;  // not in queue
 
-}  // end isUpgradeInQueue
+}
 
 // ------------------------------------------------------------------------------------------------
 /** count number of units with matching unit type in the production queue */
@@ -1118,7 +1115,7 @@ UnsignedInt ProductionUpdate::countUnitTypeInQueue( const ThingTemplate *unitTyp
 
 	return count;
 
-}  // end countUnitTypeInQueue
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -1132,7 +1129,7 @@ void ProductionUpdate::onDie( const DamageInfo *damageInfo )
 /** Cancel each of the production items in the queue.  By going through the actual cancel
 	* methods, the cost of each of those items will be refunded to the player */
 // ------------------------------------------------------------------------------------------------
-void ProductionUpdate::cancelAndRefundAllProduction( void )
+void ProductionUpdate::cancelAndRefundAllProduction()
 {
   // Empirically, in release the code can loop forever.  So we limit to 100 passes. jba. [8/31/2003]
   const Int productionLimit = 100;// With luck, we never queue up 100 units. [8/31/2003]
@@ -1152,10 +1149,10 @@ void ProductionUpdate::cancelAndRefundAllProduction( void )
         DEBUG_CRASH(( "ProductionUpdate::cancelAndRefundAllProduction - Unknown production type '%d'",
                       m_productionQueue->getProductionType() ));
         return;
-      }  // end else
-    }  // end if
+      }
+    }
   }
-}  // end cancelAndRefundAllProduction
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -1181,11 +1178,11 @@ void ProductionUpdate::setHoldDoorOpen(ExitDoorType exitDoor, Bool holdIt)
 {
 
 	// sanity
-	if( obj == NULL )
-		return NULL;
+	if( obj == nullptr )
+		return nullptr;
 
 	BehaviorModule **bmi;
-	ProductionUpdateInterface *pui = NULL;
+	ProductionUpdateInterface *pui = nullptr;
 	for( bmi = obj->getBehaviorModules(); *bmi; ++bmi )
 	{
 
@@ -1193,13 +1190,13 @@ void ProductionUpdate::setHoldDoorOpen(ExitDoorType exitDoor, Bool holdIt)
 		if( pui )
 			return pui;
 
-	}  // end for, bmi
+	}
 
 	// interface not found
-	return NULL;
+	return nullptr;
 
 
-}  // end getProductionUpdateInterfaceFromObject
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -1210,7 +1207,7 @@ void ProductionUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -1272,21 +1269,21 @@ void ProductionUpdate::xfer( Xfer *xfer )
 			// exit door
 			xfer->xferInt( (Int*)&production->m_exitDoor );
 
-		}  // end for
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		AsciiString name;
 
-		// the queue should be emtpy now
-		if( m_productionQueue != NULL )
+		// the queue should be empty now
+		if( m_productionQueue != nullptr )
 		{
 
 			DEBUG_CRASH(( "ProductionUpdate::xfer - m_productionQueue is not empty, but should be" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each element
 		for( UnsignedShort i = 0; i < productionCount; ++i )
@@ -1296,7 +1293,7 @@ void ProductionUpdate::xfer( Xfer *xfer )
 			production = newInstance(ProductionEntry);
 
 			// tie to list at end
-			if( m_productionQueue == NULL )
+			if( m_productionQueue == nullptr )
 				m_productionQueue = production;
 
 			// make any existing tail pointer now point to us, and we point back to them
@@ -1306,7 +1303,7 @@ void ProductionUpdate::xfer( Xfer *xfer )
 				m_productionQueueTail->m_next = production;
 				production->m_prev = m_productionQueueTail;
 
-			}  // end if
+			}
 
 			// this production entry is now the new tail at the end of the list
 			m_productionQueueTail = production;
@@ -1320,28 +1317,28 @@ void ProductionUpdate::xfer( Xfer *xfer )
 			{
 
 				production->m_objectToProduce = TheThingFactory->findTemplate( name );
-				if( production->m_objectToProduce == NULL )
+				if( production->m_objectToProduce == nullptr )
 				{
 
 					DEBUG_CRASH(( "ProductionUpdate::xfer - Cannot find template '%s'", name.str() ));
 					throw SC_INVALID_DATA;
 
-				}  // end if
+				}
 
-			}  // end if, unit production
+			}
 			else
 			{
 
 				production->m_upgradeToResearch = TheUpgradeCenter->findUpgrade( name );
-				if( production->m_upgradeToResearch == NULL )
+				if( production->m_upgradeToResearch == nullptr )
 				{
 
 					DEBUG_CRASH(( "ProductionUpdate::xfer - Cannot find upgrade '%s'", name.str() ));
 					throw SC_INVALID_DATA;
 
-				}  // end if
+				}
 
-			}  // end else, upgrade production
+			}
 
 			// production ID
 			xfer->xferUser( &production->m_productionID, sizeof( ProductionID ) );
@@ -1361,9 +1358,9 @@ void ProductionUpdate::xfer( Xfer *xfer )
 			// exit door
 			xfer->xferInt( (Int*)&production->m_exitDoor );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
 	// unique id
 	xfer->xferUser( &m_uniqueID, sizeof( ProductionID ) );
@@ -1386,15 +1383,15 @@ void ProductionUpdate::xfer( Xfer *xfer )
 	// flags dirty
 	xfer->xferBool( &m_flagsDirty );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ProductionUpdate::loadPostProcess( void )
+void ProductionUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

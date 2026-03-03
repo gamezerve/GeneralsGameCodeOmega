@@ -32,7 +32,7 @@
 #include "sortingrenderer.h"
 #include "vp.h"
 #include "Vector3i.h"
-#include "RANDOM.H"
+#include "RANDOM.h"
 #include "v3_rnd.h"
 
 
@@ -54,8 +54,8 @@
 
 
 
-StreakRendererClass::StreakRendererClass(void) :
-		Texture(NULL),
+StreakRendererClass::StreakRendererClass() :
+		Texture(nullptr),
 		Shader(ShaderClass::_PresetAdditiveSpriteShader),
 		Width(0.0f),
 		Color(Vector3(1,1,1)),
@@ -69,13 +69,13 @@ StreakRendererClass::StreakRendererClass(void) :
 		// UVOffsetDeltaPerMS(0.0f, 0.0f),
 		Bits(DEFAULT_BITS),
 		m_vertexBufferSize(0),
-		m_vertexBuffer(NULL)
+		m_vertexBuffer(nullptr)
 {
   // EMPTY
 }
 
 StreakRendererClass::StreakRendererClass(const StreakRendererClass & that) :
-		Texture(NULL),
+		Texture(nullptr),
 		Shader(ShaderClass::_PresetAdditiveSpriteShader),
 		Width(0.0f),
 		Color(Vector3(1,1,1)),
@@ -89,7 +89,7 @@ StreakRendererClass::StreakRendererClass(const StreakRendererClass & that) :
 		// UVOffsetDeltaPerMS(0.0f, 0.0f),
 		Bits(DEFAULT_BITS),
 		m_vertexBufferSize(0),
-		m_vertexBuffer(NULL)
+		m_vertexBuffer(nullptr)
 {
 	*this = that;
 }
@@ -115,7 +115,7 @@ StreakRendererClass & StreakRendererClass::operator = (const StreakRendererClass
 	return *this;
 }
 
-StreakRendererClass::~StreakRendererClass(void)
+StreakRendererClass::~StreakRendererClass()
 {
 	REF_PTR_RELEASE(Texture);
 	delete [] m_vertexBuffer;
@@ -157,9 +157,9 @@ void StreakRendererClass::Set_Texture(TextureClass *texture)
 	REF_PTR_SET(Texture,texture);
 }
 
-TextureClass * StreakRendererClass::Get_Texture(void) const
+TextureClass * StreakRendererClass::Get_Texture() const
 {
-	if (Texture != NULL) {
+	if (Texture != nullptr) {
 		Texture->Add_Ref();
 	}
 	return Texture;
@@ -181,7 +181,7 @@ TextureClass * StreakRendererClass::Get_Texture(void) const
 //	TextureTileFactor = factor;
 //}
 
-// void StreakRendererClass::Reset_Line(void)
+// void StreakRendererClass::Reset_Line()
 // {
 	// LastUsedSyncTime = WW3D::Get_Sync_Time();
 	// CurrentUVOffset.Set(0.0f,0.0f);
@@ -305,10 +305,10 @@ void StreakRendererClass::RenderStreak
 	const Matrix3D & transform,
 	unsigned int num_points,
 	Vector3 * points,
-	Vector4 * colors,								/////////////// DIFFERENT FROM RENDER( )
-	float * widths,									/////////////// DIFFERENT FROM RENDER( )
+	Vector4 * colors,								/////////////// DIFFERENT FROM RENDER()
+	float * widths,									/////////////// DIFFERENT FROM RENDER()
 	const SphereClass & obj_sphere,
-	unsigned int *personalities			/////////////// DIFFERENT FROM RENDER( )
+	unsigned int *personalities			/////////////// DIFFERENT FROM RENDER()
 )
 {
 	Matrix4x4 view;
@@ -863,7 +863,7 @@ void StreakRendererClass::RenderStreak
 				segment[intersectionIndex].StartPlane = -start_pl;
 			}
 
-		}	// for intersectionIndex
+		}
 
 
 		/*
@@ -1038,7 +1038,7 @@ void StreakRendererClass::RenderStreak
 							next_int = &(intersection[intersectionIndex_r + 1][edge]);
 							next_seg = &(segment[next_int->NextSegmentID]);
 
-						}	// while <merging needed>
+						}
 
 						// Copy from "read index" to "write index"
 						write_int->PointCount		= curr_int->PointCount;
@@ -1048,7 +1048,7 @@ void StreakRendererClass::RenderStreak
 						write_int->Direction			= curr_int->Direction;
 						write_int->Fold				= curr_int->Fold;
 
-					}	// for intersectionIndex
+					}
 
 					// If intersectionIndex_r is exactly equal to num_isects (rather than being larger by one) at this
 					// point, this means that the last intersection was not merged with the previous one. In
@@ -1075,9 +1075,9 @@ void StreakRendererClass::RenderStreak
 					assert(total_cnt == point_cnt);
 #endif
 
-				}	// for edge
-			}	// while (merged)
-		}	// if (Is_Merge_Intersections())
+				}
+			}
+		}
 
 		/*
 		** Find vertex positions, generate vertices and triangles:
@@ -1307,7 +1307,7 @@ void StreakRendererClass::RenderStreak
 		DX8Wrapper::Set_Material(mat);
 		REF_PTR_RELEASE(mat);
 
-		// If Texture is non-NULL enable texturing in shader - otherwise disable.
+		// If Texture is non-null enable texturing in shader - otherwise disable.
 		if (Texture)
 		{
 			shader.Set_Texturing(ShaderClass::TEXTURING_ENABLE);
@@ -1356,7 +1356,7 @@ void StreakRendererClass::RenderStreak
 				texture->V = vertexArray[i].v1;
 				vb += vbSize;
 			}
-		} // copy
+		}
 
 		DynamicIBAccessClass ib_access((sorting?BUFFER_TYPE_DYNAMIC_SORTING:BUFFER_TYPE_DYNAMIC_DX8),triangleIndex*3);
 		{
@@ -1387,7 +1387,7 @@ void StreakRendererClass::RenderStreak
 			DX8Wrapper::Draw_Triangles(0,triangleIndex,0,vnum);
 		}
 
-	}	// Chunking loop
+	}
 
 	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
 

@@ -24,9 +24,7 @@
 
 #include "W3DDevice/GameClient/W3DStatusCircle.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assetmgr.h>
 #include <texture.h>
 #include <tri.h>
@@ -72,17 +70,17 @@ static ShaderClass detailOpaqueShader(SC_ALPHA);
 Bool W3DStatusCircle::m_needUpdate;
 Int W3DStatusCircle::m_diffuse=255; // blue.
 
-W3DStatusCircle::~W3DStatusCircle(void)
+W3DStatusCircle::~W3DStatusCircle()
 {
 	freeMapResources();
 }
 
-W3DStatusCircle::W3DStatusCircle(void)
+W3DStatusCircle::W3DStatusCircle()
 {
-	m_indexBuffer=NULL;
-	m_vertexMaterialClass=NULL;
-	m_vertexBufferCircle=NULL;
-	m_vertexBufferScreen=NULL;
+	m_indexBuffer=nullptr;
+	m_vertexMaterialClass=nullptr;
+	m_vertexBufferCircle=nullptr;
+	m_vertexBufferScreen=nullptr;
 }
 
 
@@ -121,18 +119,18 @@ void W3DStatusCircle::Get_Obj_Space_Bounding_Box(AABoxClass & box) const
 	box.Init(minPt,maxPt);
 }
 
-Int W3DStatusCircle::Class_ID(void) const
+Int W3DStatusCircle::Class_ID() const
 {
 	return RenderObjClass::CLASSID_UNKNOWN;
 }
 
-RenderObjClass * W3DStatusCircle::Clone(void) const
+RenderObjClass * W3DStatusCircle::Clone() const
 {
 	return NEW W3DStatusCircle(*this);
 }
 
 
-Int W3DStatusCircle::freeMapResources(void)
+Int W3DStatusCircle::freeMapResources()
 {
 
 	REF_PTR_RELEASE(m_indexBuffer);
@@ -145,7 +143,7 @@ Int W3DStatusCircle::freeMapResources(void)
 #define NUM_TRI 20
 //Allocate a heightmap of x by y vertices.
 //data must be an array matching this size.
-Int W3DStatusCircle::initData(void)
+Int W3DStatusCircle::initData()
 {
 	Int i;
 
@@ -183,7 +181,7 @@ Int W3DStatusCircle::initData(void)
 
 /** updateCircleVB puts a circle with a team color vertex buffer. */
 
-Int W3DStatusCircle::updateCircleVB(void)
+Int W3DStatusCircle::updateCircleVB()
 {
 	Int i, k;
 	Real shade;
@@ -306,10 +304,10 @@ void W3DStatusCircle::Render(RenderInfoClass & rinfo)
 	if (!TheGameLogic->isInGame() || TheGameLogic->getGameMode() == GAME_SHELL)
 		return;
 
-	if (m_indexBuffer == NULL) {
+	if (m_indexBuffer == nullptr) {
 		initData();
 	}
-	if (m_indexBuffer == NULL) {
+	if (m_indexBuffer == nullptr) {
 		return;
 	}
 	Bool setIndex = false;
@@ -322,7 +320,7 @@ void W3DStatusCircle::Render(RenderInfoClass & rinfo)
 		//Apply the shader and material
 		DX8Wrapper::Set_Material(m_vertexMaterialClass);
 		DX8Wrapper::Set_Shader(m_shaderClass);
-		DX8Wrapper::Set_Texture(0, NULL);
+		DX8Wrapper::Set_Texture(0, nullptr);
 		DX8Wrapper::Set_Index_Buffer(m_indexBuffer,0);
 		DX8Wrapper::Set_Vertex_Buffer(m_vertexBufferCircle);
 		setIndex = true;
@@ -345,7 +343,7 @@ void W3DStatusCircle::Render(RenderInfoClass & rinfo)
 	if (!setIndex) {
 		DX8Wrapper::Set_Material(m_vertexMaterialClass);
 		DX8Wrapper::Set_Index_Buffer(m_indexBuffer,0);
-		DX8Wrapper::Set_Texture(0, NULL);
+		DX8Wrapper::Set_Texture(0, nullptr);
 	}
 
 	tm.Make_Identity();

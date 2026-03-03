@@ -61,7 +61,6 @@
 #include "meshbuild.h"
 #include "uarray.h"
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
 
@@ -121,12 +120,12 @@ public:
 		HashVal = (int)(item.VertIdx[0]*12345.6f + item.VertIdx[1]*1714.38484f + item.VertIdx[2]*27561.3f)&1023;
 	}
 
-	virtual int		Num_Hash_Bits(void)
+	virtual int		Num_Hash_Bits()
 	{
 		return 10;
 	}
 
-	virtual int		Num_Hash_Values(void)
+	virtual int		Num_Hash_Values()
 	{
 		return 1;
 	}
@@ -161,7 +160,7 @@ public:
 
 	VertexArrayClass(int maxsize,int match_normals = 0)
 	{
-		Verts = NULL;
+		Verts = nullptr;
 		assert(maxsize > 0);
 		Verts = W3DNEWARRAY MeshBuilderClass::VertClass[maxsize];
 		assert(Verts);
@@ -178,7 +177,7 @@ public:
 		Extent.Set(1.0f,1.0f,1.0f);
 	}
 
-	~VertexArrayClass(void)
+	~VertexArrayClass()
 	{
 		delete[] Verts;
 		delete[] HashTable;
@@ -335,7 +334,7 @@ public:
 		return 0;
 	}
 
-	void Propogate_Shared_Smooth_Groups(void)
+	void Propogate_Shared_Smooth_Groups()
 	{
 		for (int i=0; i<VertCount; i++) {
 			if (Verts[i].ShadeIndex != i) {
@@ -381,7 +380,7 @@ private:
  * HISTORY:                                                                                    *
  *   10/19/98   GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::VertClass::Reset(void)
+void MeshBuilderClass::VertClass::Reset()
 {
 	Position.Set(0,0,0);
 	Normal.Set(0,0,0);
@@ -407,7 +406,7 @@ void MeshBuilderClass::VertClass::Reset(void)
 	Attribute1 = 0;
 	UniqueIndex = 0;
 	ShadeIndex = 0;
-	NextHash = NULL;
+	NextHash = nullptr;
 
 }
 
@@ -424,7 +423,7 @@ void MeshBuilderClass::VertClass::Reset(void)
  * HISTORY:                                                                                    *
  *   10/19/98   GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::FaceClass::Reset(void)
+void MeshBuilderClass::FaceClass::Reset()
 {
 	for (int i=0; i<3; i++) {
 		Verts[i].Reset();
@@ -461,7 +460,7 @@ void MeshBuilderClass::FaceClass::Reset(void)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::FaceClass::Compute_Plane(void)
+void MeshBuilderClass::FaceClass::Compute_Plane()
 {
 #ifdef ALLOW_TEMPORARIES
 	Normal = Vector3::Cross_Product((Verts[1].Position - Verts[0].Position),(Verts[2].Position - Verts[0].Position));
@@ -486,7 +485,7 @@ void MeshBuilderClass::FaceClass::Compute_Plane(void)
  * HISTORY:                                                                                    *
  *   7/7/98     GTH : Created.                                                                 *
  *=============================================================================================*/
-bool MeshBuilderClass::FaceClass::Is_Degenerate(void)
+bool MeshBuilderClass::FaceClass::Is_Degenerate()
 {
 	for (int v0 = 0; v0 < 3; v0++) {
 		for (int v1 = v0+1; v1 < 3; v1++) {
@@ -519,7 +518,7 @@ bool MeshBuilderClass::FaceClass::Is_Degenerate(void)
  * HISTORY:                                                                                    *
  *   10/20/98   GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::MeshStatsStruct::Reset(void)
+void MeshBuilderClass::MeshStatsStruct::Reset()
 {
 	for (int pass = 0; pass < MeshBuilderClass::MAX_PASSES; pass++) {
 		HasPerPolyShader[pass] = false;
@@ -558,16 +557,16 @@ MeshBuilderClass::MeshBuilderClass(int pass_count,int face_count_guess,int face_
 	State(STATE_ACCEPTING_INPUT),
 	PassCount(pass_count),
 	FaceCount(0),
-	Faces(NULL),
+	Faces(nullptr),
 	InputVertCount(0),
 	VertCount(0),
-	Verts(NULL),
+	Verts(nullptr),
 	CurFace(0),
 	AllocFaceCount(0),
 	AllocFaceGrowth(0),
 	PolyOrderPass(0),
 	PolyOrderStage(0),
-	WorldInfo (NULL)
+	WorldInfo (nullptr)
 {
 	Reset(pass_count,face_count_guess,face_count_growth_rate);
 }
@@ -584,10 +583,10 @@ MeshBuilderClass::MeshBuilderClass(int pass_count,int face_count_guess,int face_
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-MeshBuilderClass::~MeshBuilderClass(void)
+MeshBuilderClass::~MeshBuilderClass()
 {
 	Free();
-	Set_World_Info(NULL);
+	Set_World_Info(nullptr);
 }
 
 
@@ -603,17 +602,13 @@ MeshBuilderClass::~MeshBuilderClass(void)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Free(void)
+void MeshBuilderClass::Free()
 {
-	if (Faces != NULL) {
-		delete[] Faces;
-		Faces = NULL;
-	}
+	delete[] Faces;
+	Faces = nullptr;
 
-	if (Verts != NULL) {
-		delete Verts;
-		Verts = NULL;
-	}
+	delete Verts;
+	Verts = nullptr;
 
 	FaceCount = 0;
 	VertCount = 0;
@@ -739,7 +734,7 @@ void MeshBuilderClass::Build_Mesh(bool compute_normals)
  *   7/10/98    GTH : Created.                                                                 *
  *   10/19/98   GTH : Modified to use the FaceClass::Compute_Plane function                    *
  *=============================================================================================*/
-void MeshBuilderClass::Compute_Face_Normals(void)
+void MeshBuilderClass::Compute_Face_Normals()
 {
 	for (int faceidx = 0; faceidx < FaceCount; faceidx++) {
 		Faces[faceidx].Compute_Plane();
@@ -758,7 +753,7 @@ void MeshBuilderClass::Compute_Face_Normals(void)
  * HISTORY:                                                                                    *
  *   7/10/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-bool MeshBuilderClass::Verify_Face_Normals(void)
+bool MeshBuilderClass::Verify_Face_Normals()
 {
 	int faceidx;
 	bool ok = true;
@@ -800,7 +795,7 @@ bool MeshBuilderClass::Verify_Face_Normals(void)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Compute_Vertex_Normals(void)
+void MeshBuilderClass::Compute_Vertex_Normals()
 {
 	int vertidx;
 	int faceidx;
@@ -828,7 +823,7 @@ void MeshBuilderClass::Compute_Vertex_Normals(void)
 	/*
 	** Smooth this mesh with neighboring meshes!
 	*/
-	if (WorldInfo != NULL && WorldInfo->Are_Meshes_Smoothed ()) {
+	if (WorldInfo != nullptr && WorldInfo->Are_Meshes_Smoothed ()) {
 		for (vertidx = 0; vertidx < VertCount; vertidx++) {
 			if (Verts[vertidx].ShadeIndex == vertidx) {
 				Verts[vertidx].Normal += WorldInfo->Get_Shared_Vertex_Normal(Verts[vertidx].Position, Verts[vertidx].SharedSmGroup);
@@ -837,7 +832,7 @@ void MeshBuilderClass::Compute_Vertex_Normals(void)
 	}
 
 	/*
-	** Propogate the accumulated normals to all of the other verts which share them
+	** Propagate the accumulated normals to all of the other verts which share them
 	*/
 	for (vertidx = 0; vertidx < VertCount; vertidx++) {
 		int shadeindex = Verts[vertidx].ShadeIndex;
@@ -858,7 +853,7 @@ void MeshBuilderClass::Compute_Vertex_Normals(void)
  * HISTORY:                                                                                    *
  *   7/10/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Remove_Degenerate_Faces(void)
+void MeshBuilderClass::Remove_Degenerate_Faces()
 {
 	int faceidx;
 	FaceHasherClass facehasher;
@@ -896,7 +891,7 @@ void MeshBuilderClass::Remove_Degenerate_Faces(void)
  * HISTORY:                                                                                    *
  *   10/19/98   GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Compute_Mesh_Stats(void)
+void MeshBuilderClass::Compute_Mesh_Stats()
 {
 	int	pass;
 	int	stage;
@@ -1015,8 +1010,8 @@ void MeshBuilderClass::Compute_Bounding_Box(Vector3 * set_min,Vector3 * set_max)
 {
 	int i;
 
-	assert(set_min != NULL);
-	assert(set_max != NULL);
+	assert(set_min != nullptr);
+	assert(set_max != nullptr);
 
 	// Bounding Box
 	// straightforward, axis-aligned bounding box.
@@ -1326,7 +1321,7 @@ void MeshBuilderClass::Optimize_Mesh(bool compute_normals)
  *   10/20/98   GTH : Modified to strip based on the desired texture channel                   *
  *   2/11/99    GTH : Added strip stats tracking                                               *
  *=============================================================================================*/
-void MeshBuilderClass::Strip_Optimize_Mesh(void)
+void MeshBuilderClass::Strip_Optimize_Mesh()
 {
 	WingedEdgeStruct *		edgehash[512];
 	WingedEdgeStruct *		edgetab			= W3DNEWARRAY WingedEdgeStruct[FaceCount*3];
@@ -1682,7 +1677,7 @@ void MeshBuilderClass::Strip_Optimize_Mesh(void)
  * HISTORY:                                                                                    *
  *   5/15/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Grow_Face_Array(void)
+void MeshBuilderClass::Grow_Face_Array()
 {
 	int oldcount = AllocFaceCount;
 	FaceClass * oldfaces = Faces;
@@ -1711,7 +1706,7 @@ void MeshBuilderClass::Grow_Face_Array(void)
  * HISTORY:                                                                                    *
  *   5/1/2000   gth : Created.                                                                 *
  *=============================================================================================*/
-void MeshBuilderClass::Sort_Vertices(void)
+void MeshBuilderClass::Sort_Vertices()
 {
 	/*
 	** Sort the vertices

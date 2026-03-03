@@ -28,16 +28,10 @@
 
 #pragma once
 
-#ifndef _GAME_DISPLAY_H_
-#define _GAME_DISPLAY_H_
-
-#include <stdio.h>
 #include "Common/SubsystemInterface.h"
-#include "View.h"
 #include "GameClient/Color.h"
 #include "GameClient/GameFont.h"
-
-class View;
+#include "GameClient/View.h"
 
 struct ShroudLevel
 {
@@ -72,25 +66,25 @@ public:
 	Display();
 	virtual ~Display();
 
-	virtual void init( void ) { };																///< Initialize
-	virtual void reset( void );																		///< Reset system
-	virtual void update( void );																	///< Update system
+	virtual void init() { };																///< Initialize
+	virtual void reset();																		///< Reset system
+	virtual void update();																	///< Update system
 
 	//---------------------------------------------------------------------------------------
 	// Display attribute methods
 	virtual void setWidth( UnsignedInt width );										///< Sets the width of the display
 	virtual void setHeight( UnsignedInt height );									///< Sets the height of the display
-	virtual UnsignedInt getWidth( void ) { return m_width; }			///< Returns the width of the display
-	virtual UnsignedInt getHeight( void ) { return m_height; }		///< Returns the height of the display
+	virtual UnsignedInt getWidth() { return m_width; }			///< Returns the width of the display
+	virtual UnsignedInt getHeight() { return m_height; }		///< Returns the height of the display
 	virtual void setBitDepth( UnsignedInt bitDepth ) { m_bitDepth = bitDepth; }
-	virtual UnsignedInt getBitDepth( void ) { return m_bitDepth; }
-	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowd/fullscreen flag
-	virtual Bool getWindowed( void ) { return m_windowed; }				///< return widowed/fullscreen flag
+	virtual UnsignedInt getBitDepth() { return m_bitDepth; }
+	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowed/fullscreen flag
+	virtual Bool getWindowed() { return m_windowed; }				///< return widowed/fullscreen flag
 	virtual Bool setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bitdepth, Bool windowed );	///<sets screen resolution/mode
-	virtual Int getDisplayModeCount(void) {return 0;}	///<return number of display modes/resolutions supported by video card.
+	virtual Int getDisplayModeCount() {return 0;}	///<return number of display modes/resolutions supported by video card.
 	virtual void getDisplayModeDescription(Int modeIndex, Int *xres, Int *yres, Int *bitDepth) {}	///<return description of mode
  	virtual void setGamma(Real gamma, Real bright, Real contrast, Bool calibrate) {};
-	virtual Bool testMinSpecRequirements(Bool *videoPassed, Bool *cpuPassed, Bool *memPassed,StaticGameLODLevel *idealVideoLevel=NULL, Real *cpuTime=NULL) {*videoPassed=*cpuPassed=*memPassed=true; return true;}
+	virtual Bool testMinSpecRequirements(Bool *videoPassed, Bool *cpuPassed, Bool *memPassed,StaticGameLODLevel *idealVideoLevel=nullptr, Real *cpuTime=nullptr) {*videoPassed=*cpuPassed=*memPassed=true; return true;}
 	virtual void doSmartAssetPurgeAndPreload(const char* usageFileName) = 0;
 #if defined(RTS_DEBUG)
 	virtual void dumpAssetUsage(const char* mapname) = 0;
@@ -99,28 +93,28 @@ public:
 	//---------------------------------------------------------------------------------------
 	// View management
 	virtual void attachView( View *view );												///< Attach the given view to the world
-	virtual View *getFirstView( void ) { return m_viewList; }				///< Return the first view of the world
+	virtual View *getFirstView() { return m_viewList; }				///< Return the first view of the world
 	virtual View *getNextView( View *view )
 	{
 		if( view )
 			return view->getNextView();
-		return NULL;
+		return nullptr;
 	}
 
-	virtual void drawViews( void );																///< Render all views of the world
-	virtual void updateViews ( void );															///< Updates state of world views
+	virtual void drawViews();																///< Render all views of the world
+	virtual void updateViews ();															///< Updates state of world views
 	virtual void stepViews(); ///< Update views for every fixed time step
 
-	virtual VideoBuffer*	createVideoBuffer( void ) = 0;							///< Create a video buffer that can be used for this display
+	virtual VideoBuffer*	createVideoBuffer() = 0;							///< Create a video buffer that can be used for this display
 
 	//---------------------------------------------------------------------------------------
 	// Drawing management
 	virtual void setClipRegion( IRegion2D *region ) = 0;	///< Set clip rectangle for 2D draw operations.
-	virtual	Bool isClippingEnabled( void ) = 0;
+	virtual	Bool isClippingEnabled() = 0;
 	virtual	void enableClipping( Bool onoff ) = 0;
 
 	virtual void step() {}; ///< Do one fixed time step
-	virtual void draw( void );																		///< Redraw the entire display
+	virtual void draw();																		///< Redraw the entire display
 	virtual void setTimeOfDay( TimeOfDay tod ) = 0;								///< Set the time of day for this display
 	virtual void createLightPulse( const Coord3D *pos, const RGBColor *color, Real innerRadius,Real attenuationWidth,
 																 UnsignedInt increaseFrameTime, UnsignedInt decayFrameTime//, Bool donut = FALSE
@@ -139,7 +133,7 @@ public:
 	virtual void drawFillRect( Int startX, Int startY, Int width, Int height,
 														 UnsignedInt color ) = 0;
 
-	/// Draw a percentage of a rectange, much like a clock
+	/// Draw a percentage of a rectangle, much like a clock
 	virtual void drawRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color) = 0;
 	virtual void drawRemainingRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color) = 0;
 
@@ -155,11 +149,11 @@ public:
 	/// FullScreen video playback
 	virtual void playLogoMovie( AsciiString movieName, Int minMovieLength, Int minCopyrightLength );
 	virtual void playMovie( AsciiString movieName );
-	virtual void stopMovie( void );
-	virtual Bool isMoviePlaying(void);
+	virtual void stopMovie();
+	virtual Bool isMoviePlaying();
 
 	/// Register debug display callback
-	virtual void setDebugDisplayCallback( DebugDisplayCallback *callback, void *userData = NULL  );
+	virtual void setDebugDisplayCallback( DebugDisplayCallback *callback, void *userData = nullptr  );
 	virtual DebugDisplayCallback *getDebugDisplayCallback();
 
 	virtual void setShroudLevel(Int x, Int y, CellShroudStatus setting ) = 0;	  ///< set shroud
@@ -172,24 +166,24 @@ public:
 	virtual void preloadModelAssets( AsciiString model ) = 0;	///< preload model asset
 	virtual void preloadTextureAssets( AsciiString texture ) = 0;	///< preload texture asset
 
-	virtual void takeScreenShot(void) = 0;										///< saves screenshot to a file
-	virtual void toggleMovieCapture(void) = 0;							///< starts saving frames to an avi or frame sequence
-	virtual void toggleLetterBox(void) = 0;										///< enabled letter-boxed display
+	virtual void takeScreenShot() = 0;										///< saves screenshot to a file
+	virtual void toggleMovieCapture() = 0;							///< starts saving frames to an avi or frame sequence
+	virtual void toggleLetterBox() = 0;										///< enabled letter-boxed display
 	virtual void enableLetterBox(Bool enable) = 0;						///< forces letter-boxed display on/off
-	virtual Bool isLetterBoxFading( void ) { return FALSE; }	///< returns true while letterbox fades in/out
-	virtual Bool isLetterBoxed( void ) { return FALSE; }	//WST 10/2/2002. Added query interface
+	virtual Bool isLetterBoxFading() { return FALSE; }	///< returns true while letterbox fades in/out
+	virtual Bool isLetterBoxed() { return FALSE; }	//WST 10/2/2002. Added query interface
 
 	virtual void setCinematicText( AsciiString string ) { m_cinematicText = string; }
 	virtual void setCinematicFont( GameFont *font ) { m_cinematicFont = font; }
 	virtual void setCinematicTextFrames( Int frames ) { m_cinematicTextFrames = frames; }
 
-	virtual Real getAverageFPS( void ) = 0;	///< returns the average FPS.
-	virtual Real getCurrentFPS( void ) = 0;	///< returns the current FPS.
-	virtual Int getLastFrameDrawCalls( void ) = 0;  ///< returns the number of draw calls issued in the previous frame
+	virtual Real getAverageFPS() = 0;	///< returns the average FPS.
+	virtual Real getCurrentFPS() = 0;	///< returns the current FPS.
+	virtual Int getLastFrameDrawCalls() = 0;  ///< returns the number of draw calls issued in the previous frame
 
 protected:
 
-	virtual void deleteViews( void );   ///< delete all views
+	virtual void deleteViews();   ///< delete all views
 	UnsignedInt m_width, m_height;			///< Dimensions of the display
 	UnsignedInt m_bitDepth;							///< bit depth of the display
 	Bool m_windowed;										///< TRUE when windowed, FALSE when fullscreen
@@ -222,12 +216,10 @@ protected:
 // the singleton
 extern Display *TheDisplay;
 
-extern void StatDebugDisplay( DebugDisplayInterface *dd, void *, FILE *fp = NULL );
+extern void StatDebugDisplay( DebugDisplayInterface *dd, void *, FILE *fp = nullptr );
 
-//Added By Saad
 //Necessary for display resolution confirmation dialog box
 //Holds the previous and current display settings
-
 typedef struct _DisplaySettings
 {
 	Int xRes;  //Resolution width
@@ -235,6 +227,3 @@ typedef struct _DisplaySettings
 	Int bitDepth; //Color Depth
 	Bool windowed; //Window mode TRUE: we're windowed, FALSE: we're not windowed
 } DisplaySettings;
-
-
-#endif // _GAME_DISPLAY_H_

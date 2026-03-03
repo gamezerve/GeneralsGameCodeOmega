@@ -59,15 +59,15 @@ DynamicShroudClearingRangeUpdateModuleData::DynamicShroudClearingRangeUpdateModu
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "ChangeInterval",			INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_changeInterval ) },
-		{ "GrowInterval",			INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growInterval ) },
-		{ "ShrinkDelay",				INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_shrinkDelay ) },
-		{ "ShrinkTime",					INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_shrinkTime ) },
-		{ "GrowDelay",					INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growDelay ) },
-		{ "GrowTime",						INI::parseDurationUnsignedInt,	NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growTime ) },
-		{ "FinalVision",				INI::parseReal,									NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_finalVision ) },
-		{ "GridDecalTemplate", RadiusDecalTemplate::parseRadiusDecalTemplate, NULL, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_gridDecalTemplate ) },
-		{ 0, 0, 0, 0 }
+		{ "ChangeInterval",			INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_changeInterval ) },
+		{ "GrowInterval",			INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growInterval ) },
+		{ "ShrinkDelay",				INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_shrinkDelay ) },
+		{ "ShrinkTime",					INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_shrinkTime ) },
+		{ "GrowDelay",					INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growDelay ) },
+		{ "GrowTime",						INI::parseDurationUnsignedInt,	nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_growTime ) },
+		{ "FinalVision",				INI::parseReal,									nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_finalVision ) },
+		{ "GridDecalTemplate", RadiusDecalTemplate::parseRadiusDecalTemplate, nullptr, offsetof( DynamicShroudClearingRangeUpdateModuleData, m_gridDecalTemplate ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -130,7 +130,7 @@ DynamicShroudClearingRangeUpdate::DynamicShroudClearingRangeUpdate( Thing *thing
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-DynamicShroudClearingRangeUpdate::~DynamicShroudClearingRangeUpdate( void )
+DynamicShroudClearingRangeUpdate::~DynamicShroudClearingRangeUpdate()
 {
 	killGridDecals();// just in case
 
@@ -152,7 +152,7 @@ void DynamicShroudClearingRangeUpdate::createGridDecals( const RadiusDecalTempla
 
 
 //-------------------------------------------------------------------------------------------------
-void DynamicShroudClearingRangeUpdate::animateGridDecals( void )
+void DynamicShroudClearingRangeUpdate::animateGridDecals()
 {
 
 	const Coord3D *ctr = getObject()->getPosition();
@@ -197,7 +197,7 @@ void DynamicShroudClearingRangeUpdate::killGridDecals()
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime DynamicShroudClearingRangeUpdate::update( void )
+UpdateSleepTime DynamicShroudClearingRangeUpdate::update()
 {
 	if (m_state == DSCRU_SLEEPING) {
 		return UPDATE_SLEEP_NONE;
@@ -264,7 +264,7 @@ UpdateSleepTime DynamicShroudClearingRangeUpdate::update( void )
 	}
 
 	if ( m_stateCountDown > 0 ) m_stateCountDown --;// it is important that this gets called every frame without sleeping
-	//beacuse it handles animation and may need to respond to changing vision range from scripts & stuff
+	//because it handles animation and may need to respond to changing vision range from scripts & stuff
 
 
 	if( m_changeIntervalCountdown > 0 )
@@ -337,7 +337,7 @@ void DynamicShroudClearingRangeUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -378,15 +378,15 @@ void DynamicShroudClearingRangeUpdate::xfer( Xfer *xfer )
 	xfer->xferReal( &m_nativeClearingRange );
 	xfer->xferReal( &m_currentClearingRange );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void DynamicShroudClearingRangeUpdate::loadPostProcess( void )
+void DynamicShroudClearingRangeUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

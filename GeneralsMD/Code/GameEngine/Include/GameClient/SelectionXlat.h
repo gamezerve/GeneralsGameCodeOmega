@@ -27,9 +27,6 @@
 
 #pragma once
 
-#ifndef _H_SelectionXlat
-#define _H_SelectionXlat
-
 #include "GameClient/InGameUI.h"
 
 class ThingTemplate;
@@ -67,8 +64,6 @@ public:
 	SelectionTranslator();
 	~SelectionTranslator();
 	virtual GameMessageDisposition translateGameMessage(const GameMessage *msg);
-
-	//Added By Sadullah Nader
 	//added for fix to the drag selection when entering control bar
 	//changes the mode of drag selecting to it's opposite
 	void setDragSelecting(Bool dragSelect);
@@ -76,12 +71,10 @@ public:
 
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
   Bool m_HandOfGodSelectionMode;
-  Bool isHandOfGodSelectionMode( void) { return m_HandOfGodSelectionMode; };
+  Bool isHandOfGodSelectionMode() { return m_HandOfGodSelectionMode; };
 #endif
 
 };
 
 Bool CanSelectDrawable( const Drawable *draw, Bool dragSelecting );
 extern SelectionTranslator *TheSelectionTranslator;
-
-#endif

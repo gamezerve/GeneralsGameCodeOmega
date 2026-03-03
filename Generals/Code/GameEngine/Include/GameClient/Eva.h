@@ -27,8 +27,6 @@
 // DO NOT DISTRIBUTE
 
 #pragma once
-#ifndef __EVA_H__
-#define __EVA_H__
 
 #include "Common/SubsystemInterface.h"
 #include "Common/AudioEventRTS.h"
@@ -39,8 +37,7 @@ class Player;
 // Keep in sync with TheEvaMessageNames AND Eva::s_shouldPlayFuncs
 enum EvaMessage CPP_11(: Int)
 {
-	EVA_FIRST = 0,
-	EVA_LowPower = EVA_FIRST,
+	EVA_LowPower,
 	EVA_InsufficientFunds,
 	EVA_SuperweaponDetected_ParticleCannon,
 	EVA_SuperweaponDetected_Nuke,
@@ -61,9 +58,10 @@ enum EvaMessage CPP_11(: Int)
 	EVA_BuildingBeingStolen,
 
 	EVA_COUNT,
+	EVA_FIRST = 0,
 };
 
-extern const char *TheEvaMessageNames[];
+extern const char *const TheEvaMessageNames[];
 
 //------------------------------------------------------------------------------------ EvaCheckInfo
 struct EvaSideSounds
@@ -72,7 +70,7 @@ struct EvaSideSounds
 	std::vector<AsciiString> m_soundNames;
 
 	static const FieldParse s_evaSideSounds[];		///< the parse table for INI definition
-	const FieldParse *getFieldParse( void ) const { return s_evaSideSounds; }
+	const FieldParse *getFieldParse() const { return s_evaSideSounds; }
 };
 
 //------------------------------------------------------------------------------------ EvaCheckInfo
@@ -90,7 +88,7 @@ public:
 	EvaCheckInfo();
 
 	static const FieldParse s_evaEventInfo[];		///< the parse table for INI definition
-	const FieldParse *getFieldParse( void ) const { return s_evaEventInfo; }
+	const FieldParse *getFieldParse() const { return s_evaEventInfo; }
 };
 EMPTY_DTOR(EvaCheckInfo)
 
@@ -175,5 +173,3 @@ class Eva : public SubsystemInterface
 };
 
 extern Eva *TheEva;
-
-#endif /* __EVA_H__ */

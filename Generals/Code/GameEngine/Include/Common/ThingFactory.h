@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __THINGFACTORY_H_
-#define __THINGFACTORY_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
 
@@ -56,27 +53,27 @@ class ThingFactory : public SubsystemInterface
 {
 public:
 
-	ThingFactory( void );
-	virtual ~ThingFactory( void );
+	ThingFactory();
+	virtual ~ThingFactory();
 
 	// From the subsystem interface =================================================================
-	virtual void init( void );
-	virtual void postProcessLoad( void );
-	virtual void reset( void );
-	virtual void update( void );
+	virtual void init();
+	virtual void postProcessLoad();
+	virtual void reset();
+	virtual void update();
 	//===============================================================================================
 
 	/// create a new template with name 'name' and add to template list
 	ThingTemplate *newTemplate( const AsciiString& name );
 
 	// get the first template in our list
-	const ThingTemplate *firstTemplate( void ) { return m_firstTemplate; }
+	const ThingTemplate *firstTemplate() { return m_firstTemplate; }
 
 	/**
 		get a template given template database name. return null if not found.
 		note, this is now substantially faster (does a hash-table lookup)
 	*/
-	const ThingTemplate *findTemplate( const AsciiString& name ) { return findTemplateInternal(name); }
+	const ThingTemplate *findTemplate( const AsciiString& name, Bool check = TRUE ) { return findTemplateInternal( name, check ); }
 
 	/**
 		get a template given ID. return null if not found.
@@ -92,14 +89,14 @@ public:
 	/** request a new drawable using the given template.
 		this will throw an exception on failure; it will never return null.
 	*/
-	Drawable *newDrawable(const ThingTemplate *tmplate, DrawableStatus statusBits = DRAWABLE_STATUS_NONE );
+	Drawable *newDrawable(const ThingTemplate *tmplate, DrawableStatusBits statusBits = DRAWABLE_STATUS_DEFAULT );
 
 	static void parseObjectDefinition( INI* ini, const AsciiString& name, const AsciiString& reskinFrom );
 
 private:
 
-	/// free all template databse data
-	void freeDatabase( void );
+	/// free all template database data
+	void freeDatabase();
 
 	void addTemplate( ThingTemplate *thing );		///< add the template to the DB
 
@@ -123,7 +120,7 @@ private:
 		NOTE: this is protected since it returns a NON-CONST template, and
 		folks outside of the template system itself shouldn't get access...
 	*/
-	ThingTemplate *findTemplateInternal( const AsciiString& name );
+	ThingTemplate *findTemplateInternal( const AsciiString& name, Bool check = TRUE );
 
 	ThingTemplate					*m_firstTemplate;			///< head of linked list
 	UnsignedShort					m_nextTemplateID;			///< next available ID for templates
@@ -134,7 +131,3 @@ private:
 
 // EXTERN /////////////////////////////////////////////////////////////////////////////////////////
 extern ThingFactory *TheThingFactory;  ///< the template singleton
-
-
-#endif // __THINGFACTORY_H_
-

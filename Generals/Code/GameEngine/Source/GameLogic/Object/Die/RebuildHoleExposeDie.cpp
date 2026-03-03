@@ -29,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDE FILES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -63,15 +63,15 @@ RebuildHoleExposeDieModuleData::RebuildHoleExposeDieModuleData()
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "HoleName", INI::parseAsciiString, NULL, offsetof( RebuildHoleExposeDieModuleData, m_holeName ) },
-		{ "HoleMaxHealth", INI::parseReal, NULL, offsetof( RebuildHoleExposeDieModuleData, m_holeMaxHealth ) },
-		{ "TransferAttackers", INI::parseBool, NULL, offsetof( RebuildHoleExposeDieModuleData, m_transferAttackers ) },
-		{ 0, 0, 0, 0 }
+		{ "HoleName", INI::parseAsciiString, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_holeName ) },
+		{ "HoleMaxHealth", INI::parseReal, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_holeMaxHealth ) },
+		{ "TransferAttackers", INI::parseBool, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_transferAttackers ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 
 	p.add( dataFieldParse );
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,14 +83,14 @@ RebuildHoleExposeDie::RebuildHoleExposeDie( Thing *thing, const ModuleData* modu
 										: DieModule( thing, moduleData )
 {
 
-}  // end RebuildHoleExposeDie
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-RebuildHoleExposeDie::~RebuildHoleExposeDie( void )
+RebuildHoleExposeDie::~RebuildHoleExposeDie()
 {
 
-}  // end ~RebuildHoleExposeDie
+}
 
 //-------------------------------------------------------------------------------------------------
 /** The die callback. */
@@ -163,9 +163,9 @@ void RebuildHoleExposeDie::onDie( const DamageInfo *damageInfo )
 			}
 		}
 
-	}  // end if
+	}
 
-}  // end onDie
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -176,7 +176,7 @@ void RebuildHoleExposeDie::crc( Xfer *xfer )
 	// extend base class
 	DieModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -194,15 +194,15 @@ void RebuildHoleExposeDie::xfer( Xfer *xfer )
 	// extend base class
 	DieModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void RebuildHoleExposeDie::loadPostProcess( void )
+void RebuildHoleExposeDie::loadPostProcess()
 {
 
 	// extend base class
 	DieModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

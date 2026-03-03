@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _MESSAGE_STREAM_H_
-#define _MESSAGE_STREAM_H_
-
 #include "Common/GameCommon.h"	// ensure we get DUMP_PERF_STATS, or not
 #include "Common/SubsystemInterface.h"
 #include "Lib/BaseType.h"
@@ -106,7 +103,7 @@ public:
 
 	/// The various messages which can be sent in a MessageStream
 	/// @todo Replace this hardcoded enum with a generalized system that can be easily changed and updated
-	/** @todo Because the Client will run faster than Logic, we'll need "superceding" messages for events
+	/** @todo Because the Client will run faster than Logic, we'll need "superseding" messages for events
 						such as mouse movements so we only send the latest one over the net */
 	/**	@todo Create two classes of message: raw input messages, and command messages. Raw input messages
 						will be destroyed when they reach the end of the stream, whereas command messages will be
@@ -216,7 +213,7 @@ public:
 		MSG_META_VIEW_TEAM8,												///< center view on given user-defined team (but do not affect selection)
 		MSG_META_VIEW_TEAM9,												///< center view on given user-defined team (but do not affect selection)
 
-		MSG_META_SELECT_MATCHING_UNITS,              ///< selects mathcing units, used for both on screen and across map
+		MSG_META_SELECT_MATCHING_UNITS,              ///< selects matching units, used for both on screen and across map
 		MSG_META_SELECT_NEXT_UNIT,									///< select 'next' unit
 		MSG_META_SELECT_PREV_UNIT,									///< select 'prev' unit
 		MSG_META_SELECT_NEXT_WORKER,                ///< select 'next' worker
@@ -247,6 +244,7 @@ public:
 		MSG_META_DECREASE_LOGIC_TIME_SCALE,					///< TheSuperHackers @feature Decrease the logic time scale
 		MSG_META_TOGGLE_LOWER_DETAILS,							///< toggles graphics options to crappy mode instantly
 		MSG_META_TOGGLE_CONTROL_BAR,								///< show/hide controlbar
+		MSG_META_TOGGLE_PLAYER_OBSERVER,						///< TheSuperHackers @feature Toggle the player observer view in game
 
 		MSG_META_BEGIN_PATH_BUILD,									///< enter path-building mode
 		MSG_META_END_PATH_BUILD,										///< exit path-building mode
@@ -265,16 +263,20 @@ public:
 
 		MSG_META_BEGIN_CAMERA_ROTATE_LEFT,
 		MSG_META_END_CAMERA_ROTATE_LEFT,
+		MSG_META_ALT_CAMERA_ROTATE_LEFT,						///< TheSuperHackers @feature Rotate camera in 45 degree increments
 		MSG_META_BEGIN_CAMERA_ROTATE_RIGHT,
 		MSG_META_END_CAMERA_ROTATE_RIGHT,
+		MSG_META_ALT_CAMERA_ROTATE_RIGHT,						///< TheSuperHackers @feature Rotate camera in 45 degree increments
 		MSG_META_BEGIN_CAMERA_ZOOM_IN,
 		MSG_META_END_CAMERA_ZOOM_IN,
 		MSG_META_BEGIN_CAMERA_ZOOM_OUT,
 		MSG_META_END_CAMERA_ZOOM_OUT,
 		MSG_META_CAMERA_RESET,
 		MSG_META_TOGGLE_FAST_FORWARD_REPLAY,				///< Toggle the fast forward feature
-		MSG_META_TOGGLE_PAUSE,											///< TheSuperHackers @feature Toggle game pause (in replay playbacks)
-		MSG_META_STEP_FRAME,												///< TheSuperHackers @feature Step one frame (in replay playbacks)
+		MSG_META_TOGGLE_PAUSE,											///< TheSuperHackers @feature Toggle game pause
+		MSG_META_TOGGLE_PAUSE_ALT,									///< TheSuperHackers @feature Toggle game pause (alternative mapping)
+		MSG_META_STEP_FRAME,												///< TheSuperHackers @feature Step one frame
+		MSG_META_STEP_FRAME_ALT,										///< TheSuperHackers @feature Step one frame (alternative mapping)
 
 
 		// META items that are really for debug/demo/development use only...
@@ -520,7 +522,7 @@ public:
 																										 selecting what to build, selecting where to
 																										 build it ... this construct message will
 																										 start the actual build process */
-		MSG_DOZER_CONSTRUCT_LINE,										///< Like MSG_CONSTRUCT, but for build procesess that occur in a line (like walls)
+		MSG_DOZER_CONSTRUCT_LINE,										///< Like MSG_CONSTRUCT, but for build processes that occur in a line (like walls)
 		MSG_DOZER_CANCEL_CONSTRUCT,									///< cancel construction of a building
 		MSG_SELL,																		///< sell a structure
 		MSG_EXIT,																		///< WE want to exit from whatever WE are inside of
@@ -596,16 +598,16 @@ public:
 
 	GameMessage( Type type );
 
-	GameMessage *next( void ) { return m_next; }		///< Return next message in the stream
-	GameMessage *prev( void ) { return m_prev; }		///< Return prev message in the stream
+	GameMessage *next() { return m_next; }		///< Return next message in the stream
+	GameMessage *prev() { return m_prev; }		///< Return prev message in the stream
 
-	Type getType( void ) const { return m_type; }					///< Return the message type
-	UnsignedByte getArgumentCount( void ) const { return m_argCount; }	///< Return the number of arguments for this msg
+	Type getType() const { return m_type; }					///< Return the message type
+	UnsignedByte getArgumentCount() const { return m_argCount; }	///< Return the number of arguments for this msg
 
-	const char *getCommandAsString( void ) const; ///< returns a string representation of the command type.
+	const char *getCommandAsString() const; ///< returns a string representation of the command type.
 	static const char *getCommandTypeAsString(GameMessage::Type t);
 
-	Int getPlayerIndex( void ) const { return m_playerIndex; }		///< Return the originating player
+	Int getPlayerIndex() const { return m_playerIndex; }		///< Return the originating player
 
 	// access methods for GameMessageArgumentType enum
 	void appendIntegerArgument( Int arg );
@@ -650,7 +652,7 @@ private:
 	GameMessageArgument *m_argList, *m_argTail;						///< This message's arguments
 
 	/// allocate a new argument, add it to list, return pointer to its data
-	GameMessageArgument *allocArg( void );
+	GameMessageArgument *allocArg();
 
 };
 
@@ -664,14 +666,14 @@ class GameMessageList : public SubsystemInterface
 
 public:
 
-	GameMessageList( void );
+	GameMessageList();
 	virtual ~GameMessageList();
 
-	virtual void init( void ) { };			///< Initialize system
-	virtual void reset( void ) { };			///< Reset system
-	virtual void update( void ) { };		///< Update system
+	virtual void init() { };			///< Initialize system
+	virtual void reset() { };			///< Reset system
+	virtual void update() { };		///< Update system
 
-	GameMessage *getFirstMessage( void ) { return m_firstMessage; }	///< Return the first message
+	GameMessage *getFirstMessage() { return m_firstMessage; }	///< Return the first message
 
 	virtual void appendMessage( GameMessage *msg );			///< Add message to end of the list
 	virtual void insertMessage( GameMessage *msg, GameMessage *messageToInsertAfter );	// Insert message after messageToInsertAfter.
@@ -711,19 +713,19 @@ class MessageStream : public GameMessageList
 
 public:
 
-	MessageStream( void );
+	MessageStream();
 	virtual ~MessageStream();
 
 	// Inherited Methods ----------------------------------------------------------------------------
-	virtual void init( void );
-	virtual void reset( void );
-	virtual void update( void );
+	virtual void init();
+	virtual void reset();
+	virtual void update();
 
 	virtual GameMessage *appendMessage( GameMessage::Type type );		///< Append a message to the end of the stream
 	virtual GameMessage *insertMessage( GameMessage::Type type, GameMessage *messageToInsertAfter );	// Insert message after messageToInsertAfter.
 
 	// Methods NOT Inherited ------------------------------------------------------------------------
-	void propagateMessages( void );													///< Propagate messages through attached translators
+	void propagateMessages();													///< Propagate messages through attached translators
 
 	/**
 		Attach a translator function to the stream at a priority value. Lower priorities are executed first.
@@ -739,7 +741,7 @@ protected:
 	{
 		TranslatorData *m_next, *m_prev;						///< List links for list of translators
 		TranslatorID m_id;													///< The unique ID of this translator
-		GameMessageTranslator *m_translator;					///< The translor's interface function
+		GameMessageTranslator *m_translator;					///< The translator's interface function
 		UnsignedInt m_priority;											///< The priority level of this translator
 
 		TranslatorData() : m_next(0), m_prev(0), m_id(0), m_translator(0), m_priority(0)
@@ -767,18 +769,18 @@ protected:
 class CommandList : public GameMessageList
 {
 public:
-	CommandList( void );
+	CommandList();
 	virtual ~CommandList();
 
-	virtual void init( void );			///< Init command list
-	virtual void reset( void );			///< Destroy all messages and reset list to empty
-	virtual void update( void );		///< Update hook
+	virtual void init();			///< Init command list
+	virtual void reset();			///< Destroy all messages and reset list to empty
+	virtual void update();		///< Update hook
 
 	void appendMessageList( GameMessage *list );			///< Adds messages to the end of the command list
 
 protected:
 
-	void destroyAllMessages( void );		///< The meat of a reset and a shutdown
+	void destroyAllMessages();		///< The meat of a reset and a shutdown
 
 };
 
@@ -804,5 +806,3 @@ extern CommandList *TheCommandList;
  * construct a valid 2D bounding region.
  */
 extern void buildRegion( const ICoord2D *anchor, const ICoord2D *dest, IRegion2D *region );
-
-#endif // _MESSAGE_STREAM_H_

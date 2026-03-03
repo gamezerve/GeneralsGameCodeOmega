@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __LADDERPREFERENCES_H__
-#define __LADDERPREFERENCES_H__
-
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -68,13 +65,11 @@ public:
 	virtual ~LadderPreferences();
 
 	Bool loadProfile( Int profileID );
-	virtual bool write( void );
+	virtual bool write();
 
-	const LadderPrefMap& getRecentLadders( void );
+	const LadderPrefMap& getRecentLadders();
 	void addRecentLadder( LadderPref ladder );
 
 private:
 	LadderPrefMap m_ladders;
 };
-
-#endif // __LADDERPREFERENCES_H__

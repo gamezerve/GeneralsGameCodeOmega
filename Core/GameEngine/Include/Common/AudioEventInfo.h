@@ -27,8 +27,6 @@
 // Author: John K. McDonald, March 2002
 
 #pragma once
-#ifndef _H_AUDIOEVENTINFO_
-#define _H_AUDIOEVENTINFO_
 
 #include "Common/AsciiString.h"
 #include "Common/GameMemory.h"
@@ -48,17 +46,19 @@ enum AudioType CPP_11(: Int)
 	AT_SoundEffect
 };
 
-extern const char *theAudioPriorityNames[];
+extern const char* const theAudioPriorityNames[];
 enum AudioPriority CPP_11(: Int)
 {
 	AP_LOWEST,
 	AP_LOW,
 	AP_NORMAL,
 	AP_HIGH,
-	AP_CRITICAL
+	AP_CRITICAL,
+
+	AP_COUNT
 };
 
-extern const char *theSoundTypeNames[];
+extern const char *const theSoundTypeNames[];
 enum SoundType CPP_11(: Int)
 {
 	ST_UI										= 0x0001,
@@ -72,7 +72,7 @@ enum SoundType CPP_11(: Int)
 	ST_EVERYONE							= 0x0100,
 };
 
-extern const char *theAudioControlNames[];
+extern const char *const theAudioControlNames[];
 enum AudioControl CPP_11(: Int)
 {
 	AC_LOOP									= 0x0001,
@@ -123,15 +123,13 @@ public:
 
   // DynamicAudioEventInfo interfacing functions
   virtual Bool isLevelSpecific() const { return false; } ///< If true, this sound is only defined on the current level and can be deleted when that level ends
-  virtual DynamicAudioEventInfo * getDynamicAudioEventInfo() { return NULL; }  ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
-  virtual const DynamicAudioEventInfo * getDynamicAudioEventInfo() const { return NULL; } ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
+  virtual DynamicAudioEventInfo * getDynamicAudioEventInfo() { return nullptr; }  ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
+  virtual const DynamicAudioEventInfo * getDynamicAudioEventInfo() const { return nullptr; } ///< If this object is REALLY a DynamicAudioEventInfo, return a pointer to the derived class
 
-  /// Is this a permenant sound? That is, if I start this sound up, will it ever end
+  /// Is this a permanent sound? That is, if I start this sound up, will it ever end
   /// "on its own" or only if I explicitly kill it?
   Bool isPermanentSound() const { return BitIsSet( m_control, AC_LOOP ) && (m_loopCount == 0 );  }
 
 	static const FieldParse m_audioEventInfo[];		///< the parse table for INI definition
-	const FieldParse *getFieldParse( void ) const { return m_audioEventInfo; }
+	const FieldParse *getFieldParse() const { return m_audioEventInfo; }
 };
-
-#endif /* _H_AUDIOEVENTINFO_ */

@@ -77,7 +77,7 @@
 #include "statistics.h"
 #include "simplevec.h"
 #include "texture.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "vp.h"
 #include "matrix4.h"
 #include "dx8wrapper.h"
@@ -94,9 +94,9 @@
 // static data members
 Vector3 PointGroupClass::_TriVertexLocationOrientationTable[256][3];
 Vector3 PointGroupClass::_QuadVertexLocationOrientationTable[256][4];
-Vector2 *PointGroupClass::_TriVertexUVFrameTable[5] = { NULL, NULL, NULL, NULL, NULL};
-Vector2 *PointGroupClass::_QuadVertexUVFrameTable[5] = { NULL, NULL, NULL, NULL, NULL};
-VertexMaterialClass *PointGroupClass::PointMaterial=NULL;
+Vector2 *PointGroupClass::_TriVertexUVFrameTable[5] = { nullptr, nullptr, nullptr, nullptr, nullptr};
+Vector2 *PointGroupClass::_QuadVertexUVFrameTable[5] = { nullptr, nullptr, nullptr, nullptr, nullptr};
+VertexMaterialClass *PointGroupClass::PointMaterial=nullptr;
 
 // Static arrays for intermediate calcs (never resized down, just up):
 VectorClass<Vector3>		PointGroupClass::compressed_loc;		// point locations 'compressed' by APT
@@ -148,16 +148,16 @@ SortingIndexBufferClass		*SortingTris, *SortingQuads;	// Sorting index buffers.
  * HISTORY:                                                               *
  *   11/17/1998 NH  : Created.                                            *
  *========================================================================*/
-PointGroupClass::PointGroupClass(void) :
-	PointLoc(NULL),
-	PointDiffuse(NULL),
-	APT(NULL),
-	PointSize(NULL),
-	PointOrientation(NULL),
-	PointFrame(NULL),
+PointGroupClass::PointGroupClass() :
+	PointLoc(nullptr),
+	PointDiffuse(nullptr),
+	APT(nullptr),
+	PointSize(nullptr),
+	PointOrientation(nullptr),
+	PointFrame(nullptr),
 	PointCount(0),
 	FrameRowColumnCountLog2(0),
-	Texture(NULL),
+	Texture(nullptr),
 	Flags(0),
 	Shader(ShaderClass::_PresetAdditiveSpriteShader),
 	PointMode(TRIS),
@@ -185,35 +185,35 @@ PointGroupClass::PointGroupClass(void) :
  * HISTORY:                                                               *
  *   11/17/1998 NH  : Created.                                            *
  *========================================================================*/
-PointGroupClass::~PointGroupClass(void)
+PointGroupClass::~PointGroupClass()
 {
 	if (PointLoc) {
 		PointLoc->Release_Ref();
-		PointLoc = NULL;
+		PointLoc = nullptr;
 	}
 	if (PointDiffuse) {
 		PointDiffuse->Release_Ref();
-		PointDiffuse=NULL;
+		PointDiffuse=nullptr;
 	}
 	if (APT) {
 		APT->Release_Ref();
-		APT = NULL;
+		APT = nullptr;
 	}
 	if (PointSize) {
 		PointSize->Release_Ref();
-		PointSize = NULL;
+		PointSize = nullptr;
 	}
 	if (PointOrientation) {
 		PointOrientation->Release_Ref();
-		PointOrientation = NULL;
+		PointOrientation = nullptr;
 	}
 	if (PointFrame) {
 		PointFrame->Release_Ref();
-		PointFrame = NULL;
+		PointFrame = nullptr;
 	}
 	if (Texture) {
 		REF_PTR_RELEASE(Texture);
-		Texture = NULL;
+		Texture = nullptr;
 	}
 }
 
@@ -248,7 +248,7 @@ PointGroupClass & PointGroupClass::operator = (const PointGroupClass & that)
  * WARNINGS:                                                              *
  *                                                                        *
  * NOTES:	colors, alphas, APT, sizes, orientations and frames are       *
- *          optional. active_point_count can also be used with a NULL apt.*
+ *          optional. active_point_count can also be used with a nullptr apt.*
  *          In this case active_point_count is ignored if it is -1        *
  *          (default value) and otherwise it indicates the first N active *
  *          points in the arrays.                                         *
@@ -334,7 +334,7 @@ void PointGroupClass::Set_Point_Size(float size)
  * HISTORY:                                                               *
  *   11/17/1998 NH  : Created.                                            *
  *========================================================================*/
-float PointGroupClass::Get_Point_Size(void)
+float PointGroupClass::Get_Point_Size()
 {
 	return DefaultPointSize;
 }
@@ -369,7 +369,7 @@ void PointGroupClass::Set_Point_Color(Vector3 color)
  * HISTORY:                                                               *
  *   04/20/1999 NH  : Created.                                            *
  *========================================================================*/
-Vector3 PointGroupClass::Get_Point_Color(void)
+Vector3 PointGroupClass::Get_Point_Color()
 {
 	return DefaultPointColor;
 }
@@ -404,7 +404,7 @@ void PointGroupClass::Set_Point_Alpha(float alpha)
  * HISTORY:                                                               *
  *   08/25/1999 NH  : Created.                                            *
  *========================================================================*/
-float PointGroupClass::Get_Point_Alpha(void)
+float PointGroupClass::Get_Point_Alpha()
 {
 	return DefaultPointAlpha;
 }
@@ -442,7 +442,7 @@ void PointGroupClass::Set_Point_Orientation(unsigned char orientation)
  * HISTORY:                                                               *
  *   06/28/2000 NH  : Created.                                            *
  *========================================================================*/
-unsigned char PointGroupClass::Get_Point_Orientation(void)
+unsigned char PointGroupClass::Get_Point_Orientation()
 {
 	return DefaultPointOrientation;
 }
@@ -480,7 +480,7 @@ void PointGroupClass::Set_Point_Frame(unsigned char frame)
  * HISTORY:                                                               *
  *   06/28/2000 NH  : Created.                                            *
  *========================================================================*/
-unsigned char PointGroupClass::Get_Point_Frame(void)
+unsigned char PointGroupClass::Get_Point_Frame()
 {
 	return DefaultPointFrame;
 }
@@ -516,7 +516,7 @@ void PointGroupClass::Set_Point_Mode(PointModeEnum mode)
  * HISTORY:                                                               *
  *   11/17/1998 NH  : Created.                                            *
  *========================================================================*/
-PointGroupClass::PointModeEnum PointGroupClass::Get_Point_Mode(void)
+PointGroupClass::PointModeEnum PointGroupClass::Get_Point_Mode()
 {
 	return PointMode;
 }
@@ -589,7 +589,7 @@ void PointGroupClass::Set_Texture(TextureClass* texture)
  *   11/17/1998 NH  : Created.                                            *
  *   02/08/2001 HY  : Upgraded to DX8                                     *
  *========================================================================*/
-TextureClass * PointGroupClass::Get_Texture(void)
+TextureClass * PointGroupClass::Get_Texture()
 {
 	if (Texture) Texture->Add_Ref();
 	return Texture;
@@ -611,7 +611,7 @@ TextureClass * PointGroupClass::Get_Texture(void)
  * HISTORY:                                                                                    *
  *   4/12/2001  hy : Created.                                                                  *
  *=============================================================================================*/
-TextureClass * PointGroupClass::Peek_Texture(void)
+TextureClass * PointGroupClass::Peek_Texture()
 {
 	return Texture;
 }
@@ -626,7 +626,7 @@ TextureClass * PointGroupClass::Peek_Texture(void)
  * WARNINGS:	the primary gradient will be set to MODULATE/DISABLE in    *
  * 				the shader depending on whether a color or alpha array was *
  * 				passed in Set_Point_Arrays. also, texturing will be        *
- * 				enabled or disabled dependent on whether a non-NULL        *
+ * 				enabled or disabled dependent on whether a non-null        *
  * 				texture was set.                                           *
  *					these will override the primary gradient/texturing         *
  *					settings in the given shader.                              *
@@ -654,7 +654,7 @@ void PointGroupClass::Set_Shader(ShaderClass shader)
  *   11/17/1998 NH  : Created.                                            *
  *   02/08/2001 HY  : Upgraded to DX8                                     *
  *========================================================================*/
-ShaderClass PointGroupClass::Get_Shader(void)
+ShaderClass PointGroupClass::Get_Shader()
 {
 	return Shader;
 }
@@ -688,7 +688,7 @@ void PointGroupClass::Set_Billboard(bool shouldBillboard)
  * HISTORY:                                                               *
  *   04/25/2002 JM  : Created.                                            *
  *========================================================================*/
-bool PointGroupClass::Get_Billboard(void)
+bool PointGroupClass::Get_Billboard()
 {
 	return Billboard;
 }
@@ -706,7 +706,7 @@ bool PointGroupClass::Get_Billboard(void)
  *   06/28/2000 NH  : Created.                                            *
  *   02/08/2001 HY  : Upgraded to DX8                                     *
  *========================================================================*/
-unsigned char PointGroupClass::Get_Frame_Row_Column_Count_Log2(void)
+unsigned char PointGroupClass::Get_Frame_Row_Column_Count_Log2()
 {
 	return FrameRowColumnCountLog2;
 }
@@ -743,7 +743,7 @@ void PointGroupClass::Set_Frame_Row_Column_Count_Log2(unsigned char frccl2)
  *   11/18/1998 NH  : Created.                                            *
  *   02/08/2001 HY  : Upgraded to DX8                                     *
  *========================================================================*/
-int PointGroupClass::Get_Polygon_Count(void)
+int PointGroupClass::Get_Polygon_Count()
 {
 	switch (PointMode) {
 		case TRIS:
@@ -788,11 +788,11 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 //	if (Texture) Texture->Process_Reduction();
 
 	// Pointers which point into existing buffers (member or static):
-	Vector3 *current_loc = NULL;
-	Vector4 *current_diffuse = NULL;
-	float *current_size = NULL;
-	unsigned char *current_orient = NULL;
-	unsigned char *current_frame = NULL;
+	Vector3 *current_loc = nullptr;
+	Vector4 *current_diffuse = nullptr;
+	float *current_size = nullptr;
+	unsigned char *current_orient = nullptr;
+	unsigned char *current_frame = nullptr;
 
 	// If there is a color or alpha array enable gradient in shader - otherwise disable.
    float value_255 = 0.9961f;	//254 / 255
@@ -809,7 +809,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 		Shader.Set_Primary_Gradient(ShaderClass::GRADIENT_DISABLE);
 	}
 
-	// If Texture is non-NULL enable texturing in shader - otherwise disable.
+	// If Texture is non-null enable texturing in shader - otherwise disable.
 	if (Texture) {
 		Shader.Set_Texturing(ShaderClass::TEXTURING_ENABLE);
 	} else {
@@ -907,7 +907,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 			transformed_loc[i].Z=result.Z;
 		}
 		current_loc = &transformed_loc[0];
-	} // if transform
+	}
 
 	// Update the arrays with the offsets.
 	int vnum, pnum;
@@ -973,7 +973,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 				*(Vector2*)(vb+fvfinfo.Get_Tex_Offset(0))=VertexUV[i];
 				vb+=fvfinfo.Get_FVF_Size();
 			}
-		} // copy
+		}
 
 		DX8Wrapper::Set_Index_Buffer (indexbuffer, 0);
 		DX8Wrapper::Set_Vertex_Buffer (PointVerts);
@@ -988,7 +988,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 		}
 
 		current+=delta;
-	} // loop while (current<vnum)
+	}
 
 	// restore the matrices
 	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
@@ -1041,9 +1041,9 @@ void PointGroupClass::Update_Arrays(
 
 	if (VertexLoc.Length() < total_vnum) {
 		// Resize arrays (2x guardband to prevent frequent reallocations).
-		VertexLoc.Resize(total_vnum * 2, NULL);
-		VertexUV.Resize(total_vnum * 2, NULL);
-		VertexDiffuse.Resize(total_vnum * 2, NULL);
+		VertexLoc.Resize(total_vnum * 2, nullptr);
+		VertexUV.Resize(total_vnum * 2, nullptr);
+		VertexDiffuse.Resize(total_vnum * 2, nullptr);
 	}
 
 	int vert, i, j;
@@ -1435,7 +1435,7 @@ void PointGroupClass::Update_Arrays(
  * HISTORY:                                                               *
  *   06/28/2000 NH  : Created.                                            *
  *========================================================================*/
-void PointGroupClass::_Init(void)
+void PointGroupClass::_Init()
 {
 	int i, j;
 
@@ -1599,7 +1599,7 @@ void PointGroupClass::_Init(void)
  * HISTORY:                                                               *
  *   06/28/2000 NH  : Created.                                            *
  *========================================================================*/
-void PointGroupClass::_Shutdown(void)
+void PointGroupClass::_Shutdown()
 {
 	for (int i = 0; i < 5; i++) {
 		delete [] _TriVertexUVFrameTable[i];
@@ -1660,11 +1660,11 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 	WWASSERT(PointLoc && PointLoc->Get_Array());
 
 	// Pointers which point into existing buffers (member or static):
-	Vector3 *current_loc = NULL;
-	Vector4 *current_diffuse = NULL;
-	float *current_size = NULL;
-	unsigned char *current_orient = NULL;
-	unsigned char *current_frame = NULL;
+	Vector3 *current_loc = nullptr;
+	Vector4 *current_diffuse = nullptr;
+	float *current_size = nullptr;
+	unsigned char *current_orient = nullptr;
+	unsigned char *current_frame = nullptr;
 
 	// If there is a color or alpha array enable gradient in shader - otherwise disable.
   float value_255 = 0.9961f;	//254 / 255
@@ -1681,7 +1681,7 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 		Shader.Set_Primary_Gradient(ShaderClass::GRADIENT_DISABLE);
 	}
 
-	// If Texture is non-NULL enable texturing in shader - otherwise disable.
+	// If Texture is non-null enable texturing in shader - otherwise disable.
 	if (Texture) {
 		Shader.Set_Texturing(ShaderClass::TEXTURING_ENABLE);
 	} else {
@@ -1810,7 +1810,7 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 				transformed_loc[i].Z=result.Z;
 			}
 			current_loc = &transformed_loc[0];
-		} // if transform
+		}
 
 		// Update the arrays with the offsets.
 		int vnum, pnum;
@@ -1887,7 +1887,7 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 					*(Vector2*)(vb+fvfinfo.Get_Tex_Offset(0))=VertexUV[i];
 					vb+=fvfinfo.Get_FVF_Size();
 				}
-			} // copy
+			}
 
 			DX8Wrapper::Set_Index_Buffer (indexbuffer, 0);
 			DX8Wrapper::Set_Vertex_Buffer (PointVerts);
@@ -1902,11 +1902,11 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 
 
 			current+=delta;
-		} // loop while (current<vnum)
+		}
 
 
 
-	}// next volume layer
+	}
 
 
 

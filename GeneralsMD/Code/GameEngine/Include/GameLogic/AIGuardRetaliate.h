@@ -36,8 +36,6 @@
 /*---------------------------------------------------------------------------*/
 
 #pragma once
-#ifndef __AI_GUARD_RETALIATION_H
-#define __AI_GUARD_RETALIATION_H
 
 // INCLUDES ///////////////////////////////////////////////////////////////////
 #include "Common/GameMemory.h"
@@ -78,8 +76,6 @@ public:
 
 	GuardRetaliateExitConditions() : m_attackGiveUpFrame(0), m_conditionsToConsider(0), m_radiusSqr(0.0f)
 	{
-		//Added By Sadullah Nader
-		// Initializations missing and needed
 		m_center.zero();
 	}
 
@@ -113,13 +109,13 @@ public:
 
 	virtual Bool isIdle() const;
 
-	const Coord3D *getPositionToGuard( void ) const { return &m_positionToGuard; }
+	const Coord3D *getPositionToGuard() const { return &m_positionToGuard; }
 	void setTargetPositionToGuard( const Coord3D *pos) { m_positionToGuard = *pos; }
 
 	void setNemesisID(ObjectID id) { m_nemesisToAttack = id; }
 	ObjectID getNemesisID() const { return m_nemesisToAttack; }
 
-	Bool lookForInnerTarget(void);
+	Bool lookForInnerTarget();
 
 	static Real getStdGuardRange(const Object* obj);
 };
@@ -134,8 +130,8 @@ public:
 		m_attackState = 0;
 		m_enterState = 0;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -156,8 +152,8 @@ class AIGuardRetaliateIdleState : public State
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardRetaliateIdleState, "AIGuardRetaliateIdleState")
 public:
 	AIGuardRetaliateIdleState( StateMachine *machine ) : State( machine, "AIGuardRetaliateIdleState" ) { }
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -179,10 +175,10 @@ class AIGuardRetaliateOuterState : public State
 public:
 	AIGuardRetaliateOuterState( StateMachine *machine ) : State( machine, "AIGuardRetaliateOuter" )
 	{
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -207,8 +203,8 @@ public:
 	{
 		m_nextReturnScanTime = 0;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -227,8 +223,8 @@ class AIGuardRetaliatePickUpCrateState : public AIPickUpCrateState
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardRetaliatePickUpCrateState, "AIGuardRetaliatePickUpCrateState")
 public:
 	AIGuardRetaliatePickUpCrateState( StateMachine *machine );
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 };
 EMPTY_DTOR(AIGuardRetaliatePickUpCrateState)
@@ -239,8 +235,8 @@ class AIGuardRetaliateAttackAggressorState : public State
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardRetaliateAttackAggressorState, "AIGuardRetaliateAttackAggressorState")
 public:
 	AIGuardRetaliateAttackAggressorState( StateMachine *machine );
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 #ifdef STATE_MACHINE_DEBUG
 	virtual AsciiString getName() const ;
@@ -257,5 +253,3 @@ private:
 };
 
 //--------------------------------------------------------------------------------------
-
-#endif

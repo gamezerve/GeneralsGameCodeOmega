@@ -38,8 +38,6 @@
 /*---------------------------------------------------------------------------*/
 
 #pragma once
-#ifndef _H_PARTITIONSOLVER_
-#define _H_PARTITIONSOLVER_
 
 // INCLUDES ///////////////////////////////////////////////////////////////////
 
@@ -80,8 +78,6 @@ class PartitionSolver
 		PartitionSolver(const EntriesVec& elements, const SpacesVec& spaces, SolutionType solveHow);
 
 		// Solve could potentially take a LONG TIME (as in NEVER complete). This problem is NP-complete.
-		void solve(void);
-		const SolutionVec& getSolution( void ) const;
+		void solve();
+		const SolutionVec& getSolution() const;
 };
-
-#endif /* _H_PARTITIONSOLVER_ */

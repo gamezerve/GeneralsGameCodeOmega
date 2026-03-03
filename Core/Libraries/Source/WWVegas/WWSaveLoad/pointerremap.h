@@ -34,21 +34,14 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-
-#ifndef POINTERREMAP_H
-#define POINTERREMAP_H
 
 #ifdef _UNIX
 #include "osdep/osdep.h"
 #endif
 
 #include "always.h"
-#include "Vector.H"
+#include "Vector.h"
 
 class RefCountClass;
 
@@ -57,11 +50,11 @@ class PointerRemapClass
 {
 	public:
 
-		PointerRemapClass(void);
-		~PointerRemapClass(void);
+		PointerRemapClass();
+		~PointerRemapClass();
 
-		void		Reset(void);
-		void		Process(void);
+		void		Reset();
+		void		Process();
 
 		void		Register_Pointer (void *old_pointer, void *new_pointer);
 
@@ -77,7 +70,7 @@ class PointerRemapClass
 
 		struct PtrPairStruct
 		{
-			PtrPairStruct(void) {}
+			PtrPairStruct() {}
 			PtrPairStruct(void * oldptr,void * newptr) : OldPointer(oldptr),NewPointer(newptr) {}
 			bool operator == (const PtrPairStruct & that) { return ((OldPointer == that.OldPointer) && (NewPointer == that.NewPointer)); }
 			bool operator != (const PtrPairStruct & that) { return !(*this == that); }
@@ -88,7 +81,7 @@ class PointerRemapClass
 
 		struct PtrRemapStruct
 		{
-			PtrRemapStruct(void) {}
+			PtrRemapStruct() {}
 			bool operator == (const PtrRemapStruct & that) { return (PointerToRemap == that.PointerToRemap); }
 			bool operator != (const PtrRemapStruct & that) { return !(*this == that); }
 
@@ -110,6 +103,3 @@ class PointerRemapClass
 		DynamicVectorClass<PtrRemapStruct>	PointerRequestTable;
 		DynamicVectorClass<PtrRemapStruct>	RefCountRequestTable;
 };
-
-
-#endif

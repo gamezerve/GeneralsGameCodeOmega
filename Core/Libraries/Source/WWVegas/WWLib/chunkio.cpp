@@ -63,7 +63,6 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "chunkio.h"
-#include <string.h>
 #include <assert.h>
 
 
@@ -145,7 +144,7 @@ bool ChunkSaveClass::Begin_Chunk(uint32 id)
  * HISTORY:                                                                                    *
  *   07/17/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-bool ChunkSaveClass::End_Chunk(void)
+bool ChunkSaveClass::End_Chunk()
 {
 	// If the user didn't close his micro chunks bad things are gonna happen
 	assert(!InMicroChunk);
@@ -230,7 +229,7 @@ bool ChunkSaveClass::Begin_Micro_Chunk(uint32 id)
  * HISTORY:                                                                                    *
  *   9/3/99     GTH : Created.                                                                 *
  *=============================================================================================*/
-bool ChunkSaveClass::End_Micro_Chunk(void)
+bool ChunkSaveClass::End_Micro_Chunk()
 {
 	assert(InMicroChunk);
 
@@ -367,7 +366,7 @@ uint32 ChunkSaveClass::Write(const IOQuaternionStruct & q)
  * HISTORY:                                                                                    *
  *   07/17/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-int ChunkSaveClass::Cur_Chunk_Depth(void)
+int ChunkSaveClass::Cur_Chunk_Depth()
 {
 	return StackIndex;
 }
@@ -733,7 +732,7 @@ uint32 ChunkLoadClass::Read(void * buf,uint32 nbytes)
  *=============================================================================================*/
 uint32 ChunkLoadClass::Read(IOVector2Struct * v)
 {
-	assert(v != NULL);
+	assert(v != nullptr);
 	return Read(v,sizeof(v));
 }
 
@@ -752,7 +751,7 @@ uint32 ChunkLoadClass::Read(IOVector2Struct * v)
  *=============================================================================================*/
 uint32 ChunkLoadClass::Read(IOVector3Struct * v)
 {
-	assert(v != NULL);
+	assert(v != nullptr);
 	return Read(v,sizeof(v));
 }
 
@@ -771,7 +770,7 @@ uint32 ChunkLoadClass::Read(IOVector3Struct * v)
  *=============================================================================================*/
 uint32 ChunkLoadClass::Read(IOVector4Struct * v)
 {
-	assert(v != NULL);
+	assert(v != nullptr);
 	return Read(v,sizeof(v));
 }
 
@@ -790,7 +789,7 @@ uint32 ChunkLoadClass::Read(IOVector4Struct * v)
  *=============================================================================================*/
 uint32 ChunkLoadClass::Read(IOQuaternionStruct * q)
 {
-	assert(q != NULL);
+	assert(q != nullptr);
 	return Read(q,sizeof(q));
 }
 

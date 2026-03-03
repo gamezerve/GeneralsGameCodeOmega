@@ -43,7 +43,7 @@
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/ThingFactory.h"
@@ -52,7 +52,7 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/Module/BaikonurLaunchPower.h"
 
-BaikonurLaunchPowerModuleData::BaikonurLaunchPowerModuleData( void )
+BaikonurLaunchPowerModuleData::BaikonurLaunchPowerModuleData()
 {
 }
 
@@ -64,12 +64,12 @@ BaikonurLaunchPowerModuleData::BaikonurLaunchPowerModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "DetonationObject", INI::parseAsciiString, NULL, offsetof( BaikonurLaunchPowerModuleData, m_detonationObject ) },
-		{ 0, 0, 0, 0 }
+		{ "DetonationObject", INI::parseAsciiString, nullptr, offsetof( BaikonurLaunchPowerModuleData, m_detonationObject ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 
 // ------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ BaikonurLaunchPower::BaikonurLaunchPower( Thing *thing, const ModuleData *module
 }
 
 // ------------------------------------------------------------------------------------------------
-BaikonurLaunchPower::~BaikonurLaunchPower( void )
+BaikonurLaunchPower::~BaikonurLaunchPower()
 {
 
 }
@@ -130,7 +130,7 @@ void BaikonurLaunchPower::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -148,15 +148,15 @@ void BaikonurLaunchPower::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void BaikonurLaunchPower::loadPostProcess( void )
+void BaikonurLaunchPower::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

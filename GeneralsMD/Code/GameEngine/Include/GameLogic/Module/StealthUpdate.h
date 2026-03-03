@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __STEALTH_UPDATE_H_
-#define __STEALTH_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 
@@ -51,12 +48,13 @@ enum
 	STEALTH_NOT_WHILE_FIRING_TERTIARY		= 0x00000020,
 	STEALTH_ONLY_WITH_BLACK_MARKET			= 0x00000040,
 	STEALTH_NOT_WHILE_TAKING_DAMAGE			= 0x00000080,
-	STEALTH_NOT_WHILE_FIRING_WEAPON			= (STEALTH_NOT_WHILE_FIRING_PRIMARY | STEALTH_NOT_WHILE_FIRING_SECONDARY | STEALTH_NOT_WHILE_FIRING_TERTIARY),
   STEALTH_NOT_WHILE_RIDERS_ATTACKING  = 0x00000100,
+
+	STEALTH_NOT_WHILE_FIRING_WEAPON			= (STEALTH_NOT_WHILE_FIRING_PRIMARY | STEALTH_NOT_WHILE_FIRING_SECONDARY | STEALTH_NOT_WHILE_FIRING_TERTIARY),
 };
 
 #ifdef DEFINE_STEALTHLEVEL_NAMES
-static const char *TheStealthLevelNames[] =
+static const char *const TheStealthLevelNames[] =
 {
 	"ATTACKING",
 	"MOVING",
@@ -67,7 +65,7 @@ static const char *TheStealthLevelNames[] =
 	"NO_BLACK_MARKET",
 	"TAKING_DAMAGE",
   "RIDERS_ATTACKING",
-	NULL
+	nullptr
 };
 #endif
 
@@ -127,7 +125,7 @@ public:
 	virtual DisabledMaskType getDisabledTypesToProcess() const { return MAKE_DISABLED_MASK( DISABLED_HELD ); }
 
 	// ??? ugh
-	Bool isDisguised() const { return m_disguiseAsTemplate != NULL; }
+	Bool isDisguised() const { return m_disguiseAsTemplate != nullptr; }
 	Int getDisguisedPlayerIndex() const { return m_disguiseAsPlayerIndex; }
 	const ThingTemplate *getDisguisedTemplate() { return m_disguiseAsTemplate; }
 	void markAsDetected( UnsignedInt numFrames = 0 );
@@ -142,7 +140,7 @@ public:
 	Bool allowedToStealth( Object *stealthOwner ) const;
   void receiveGrant( Bool active = TRUE, UnsignedInt frames = 0 );
 
-  Bool isGrantedBySpecialPower( void ) { return getStealthUpdateModuleData()->m_grantedBySpecialPower; }
+  Bool isGrantedBySpecialPower() { return getStealthUpdateModuleData()->m_grantedBySpecialPower; }
 	Bool isTemporaryGrant() { return m_framesGranted > 0; }
 
 protected:
@@ -150,7 +148,7 @@ protected:
 	StealthLookType calcStealthedStatusForPlayer(const Object* obj, const Player* player);
 	Bool canDisguise() const { return getStealthUpdateModuleData()->m_teamDisguised; }
 	Real getRevealDistanceFromTarget() const { return getStealthUpdateModuleData()->m_revealDistanceFromTarget; }
-	void hintDetectableWhileUnstealthed( void ) ;
+	void hintDetectableWhileUnstealthed() ;
 
 	void changeVisualDisguise();
 
@@ -179,7 +177,3 @@ private:
 	WeaponSetType					m_requiresWeaponSetType;
 
 };
-
-
-#endif
-

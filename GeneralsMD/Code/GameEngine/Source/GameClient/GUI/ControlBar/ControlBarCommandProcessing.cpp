@@ -29,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/BuildAssistant.h"
 #include "Common/Money.h"
@@ -101,17 +101,17 @@ CBCommandStatus ControlBar::processCommandTransitionUI( GameWindow *control, Gad
 {
 	// sanity, we won't process messages if we have no source object
 	if( m_currContext != CB_CONTEXT_MULTI_SELECT &&
-			(m_currentSelectedDrawable == NULL ||
-			 m_currentSelectedDrawable->getObject() == NULL) )
+			(m_currentSelectedDrawable == nullptr ||
+			 m_currentSelectedDrawable->getObject() == nullptr) )
 	{
 
 		if( m_currContext != CB_CONTEXT_NONE &&
 				m_currContext != CB_CONTEXT_OBSERVER_INFO &&
 				m_currContext != CB_CONTEXT_OBSERVER_LIST)
-			switchToContext( CB_CONTEXT_NONE, NULL );
+			switchToContext( CB_CONTEXT_NONE, nullptr );
 		return CBC_COMMAND_NOT_USED;
 
-	}  // end if
+	}
 
 	return CBC_COMMAND_USED;
 
@@ -139,17 +139,17 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			commandButton->getCommandType() != GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT &&
 			commandButton->getCommandType() != GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT &&
 			commandButton->getCommandType() != GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE &&
-			(m_currentSelectedDrawable == NULL || m_currentSelectedDrawable->getObject() == NULL) )
+			(m_currentSelectedDrawable == nullptr || m_currentSelectedDrawable->getObject() == nullptr) )
 	{
 
 		if( m_currContext != CB_CONTEXT_NONE )
-			switchToContext( CB_CONTEXT_NONE, NULL );
+			switchToContext( CB_CONTEXT_NONE, nullptr );
 		return CBC_COMMAND_NOT_USED;
 
-	}  // end if
+	}
 
 	// sanity
-	if( control == NULL )
+	if( control == nullptr )
 		return CBC_COMMAND_NOT_USED;
 
 	// the context sensitive gui only is only made of buttons ... sanity
@@ -157,12 +157,12 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		return CBC_COMMAND_NOT_USED;
 
 
-	if( commandButton == NULL )
+	if( commandButton == nullptr )
 		return CBC_COMMAND_NOT_USED;
 
 	// if the button is flashing, tell it to stop flashing
 	commandButton->setFlashCount(0);
-	TheControlBar->setFlash( FALSE );
+	setFlash( FALSE );
 
 	if( commandButton->getCommandType() != GUI_COMMAND_EXIT_CONTAINER )
 	{
@@ -173,7 +173,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 	// get the object that is driving the context sensitive UI if we're not in a multi
 	// select context
 	//
-	Object *obj = NULL;
+	Object *obj = nullptr;
 	if( m_currContext != CB_CONTEXT_MULTI_SELECT &&
 			commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE &&
 			commandButton->getCommandType() != GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT &&
@@ -197,7 +197,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		obj->markSingleUseCommandUsed(); //Yeah, an object can only use one single use command...
 	}
 
-	TheInGameUI->placeBuildAvailable( NULL, NULL );
+	TheInGameUI->placeBuildAvailable( nullptr, nullptr );
 
 	//Play any available unit specific sound for button
 	Player *player = ThePlayerList->getLocalPlayer();
@@ -235,7 +235,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		{
 
 			// sanity
-			if( m_currentSelectedDrawable == NULL )
+			if( m_currentSelectedDrawable == nullptr )
 				break;
 
 			//Kris: September 27, 2002
@@ -270,7 +270,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end dozer construct
+		}
 
 
 		case GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT:
@@ -322,7 +322,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		case GUI_COMMAND_SPECIAL_POWER_CONSTRUCT:
 		{
 			// sanity
-			if( m_currentSelectedDrawable == NULL )
+			if( m_currentSelectedDrawable == nullptr )
 				break;
 
 			const ThingTemplate *whatToBuild = commandButton->getThingTemplate();
@@ -361,7 +361,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end dozer construct
+		}
 
 
 
@@ -371,7 +371,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			// get the object we have selected
 			Object *building = obj;
-			if( building == NULL )
+			if( building == nullptr )
 				break;
 
 			// sanity check, the building must be under our control to cancel construction
@@ -383,7 +383,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end cancel dozer construction
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_UNIT_BUILD:
@@ -393,7 +393,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			// get the "factory" object that is going to make the thing
 			Object *factory = obj;
-			if( factory == NULL )
+			if( factory == nullptr )
 				break;
 
 			// sanity, we must have something to build
@@ -425,7 +425,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			}
 			else if (cmt != CANMAKE_OK)
 			{
-				DEBUG_ASSERTCRASH( 0, ("Cannot create '%s' because the factory object '%s' returns false for canMakeUnit",
+				DEBUG_CRASH( ("Cannot create '%s' because the factory object '%s' returns false for canMakeUnit",
 																whatToBuild->getName().str(),
 																factory->getTemplate()->getName().str()) );
 				break;
@@ -435,15 +435,15 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			ProductionUpdateInterface *pu = factory->getProductionUpdateInterface();
 
 			// sanity, we can't build things if we can't produce units
-			if( pu == NULL )
+			if( pu == nullptr )
 			{
 
-				DEBUG_ASSERTCRASH( 0, ("Cannot create '%s' because the factory object '%s' is not capable of producting units",
+				DEBUG_CRASH( ("Cannot create '%s' because the factory object '%s' is not capable of producing units",
 																whatToBuild->getName().str(),
 																factory->getTemplate()->getName().str()) );
 				break;
 
-			}  // end if
+			}
 
 			// get a new production id to assign to this
 			ProductionID productionID = pu->requestUniqueUnitID();
@@ -456,7 +456,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end build unit
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_CANCEL_UNIT_BUILD:
@@ -472,10 +472,10 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			if( i == MAX_BUILD_QUEUE_BUTTONS )
 			{
 
-				DEBUG_ASSERTCRASH( 0, ("Control not found in build queue data") );
+				DEBUG_CRASH( ("Control not found in build queue data") );
 				break;
 
-			}  // end if
+			}
 
 			// sanity
 			if( m_queueData[ i ].type != PRODUCTION_UNIT )
@@ -486,7 +486,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			// get the object that is the producer
 			Object *producer = obj;
-			if( producer == NULL )
+			if( producer == nullptr )
 				break;
 
 			// sanity, we must control the producer ... if this isn't true they might be hacking the game
@@ -499,7 +499,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end cancel unit build
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_PLAYER_UPGRADE:
@@ -508,7 +508,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			DEBUG_ASSERTCRASH( upgradeT, ("Undefined upgrade '%s' in player upgrade command", "UNKNOWN") );
 
 			// sanity
-			if( obj == NULL || upgradeT == NULL )
+			if( obj == nullptr || upgradeT == nullptr )
 				break;
 
 			// make sure the player can really make this
@@ -517,8 +517,8 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 				break;
 			}
 
-			ProductionUpdateInterface* pu = obj ? obj->getProductionUpdateInterface() : NULL;
-			if (pu != NULL)
+			ProductionUpdateInterface* pu = obj ? obj->getProductionUpdateInterface() : nullptr;
+			if (pu != nullptr)
 			{
 				CanMakeType cmt = pu->canQueueUpgrade(upgradeT);
 				if (cmt == CANMAKE_QUEUE_FULL)
@@ -535,7 +535,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // command player upgrade
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_OBJECT_UPGRADE:
@@ -543,7 +543,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			const UpgradeTemplate *upgradeT = commandButton->getUpgradeTemplate();
 			DEBUG_ASSERTCRASH( upgradeT, ("Undefined upgrade '%s' in object upgrade command", "UNKNOWN") );
 			// sanity
-			if( upgradeT == NULL )
+			if( upgradeT == nullptr )
 				break;
 
 			//Make sure the player can really make this
@@ -554,8 +554,8 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 				break;
 			}
 
-			ProductionUpdateInterface* pu = obj ? obj->getProductionUpdateInterface() : NULL;
-			if (pu != NULL)
+			ProductionUpdateInterface* pu = obj ? obj->getProductionUpdateInterface() : nullptr;
+			if (pu != nullptr)
 			{
 				CanMakeType cmt = pu->canQueueUpgrade(upgradeT);
 				if (cmt == CANMAKE_QUEUE_FULL)
@@ -580,7 +580,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end object upgrade
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_CANCEL_UPGRADE:
@@ -596,10 +596,10 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			if( i == MAX_BUILD_QUEUE_BUTTONS )
 			{
 
-				DEBUG_ASSERTCRASH( 0, ("Control not found in build queue data") );
+				DEBUG_CRASH( ("Control not found in build queue data") );
 				break;
 
-			}  // end if
+			}
 
 			// sanity
 			if( m_queueData[ i ].type != PRODUCTION_UPGRADE )
@@ -612,7 +612,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			Object *producer = obj;
 
 			// sanity
-			if( upgradeT == NULL || producer == NULL )
+			if( upgradeT == nullptr || producer == nullptr )
 				break;
 
 			// send the message
@@ -621,7 +621,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end cancel upgrade
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_ATTACK_MOVE:
@@ -699,7 +699,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			Object *objWantingExit = TheGameLogic->findObjectByID( objID );
 
 			// if the control container returns an object ID but the object is not found, remove the control entry and exit
-			if( objWantingExit == NULL )
+			if( objWantingExit == nullptr )
 			{
 
 				//
@@ -707,11 +707,11 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 				// cycle of the UI will repopulate any buttons as the contents of objects
 				// change so this is only an edge case that will be visually corrected next frame
 				//
-				m_containData[ i ].control = NULL;
+				m_containData[ i ].control = nullptr;
 				m_containData[ i ].objectID = INVALID_ID;
 				break;  // exit case
 
-			}  // end if
+			}
 
       //what if container is subdued... assert a logic failure, perhaps?
 
@@ -721,13 +721,13 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end transport exit
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_EVACUATE:
 		{
 			// Cancel GUI command mode.
-			TheInGameUI->setGUICommand( NULL );
+			TheInGameUI->setGUICommand( nullptr );
 
 			if (BitIsSet(commandButton->getOptions(), NEED_TARGET_POS) == FALSE) {
 				pickAndPlayUnitVoiceResponse( TheInGameUI->getAllSelectedDrawables(), GameMessage::MSG_EVACUATE );
@@ -735,14 +735,14 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			}
 
 			break;
-		}  // end evacuate
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GUI_COMMAND_EXECUTE_RAILED_TRANSPORT:
 		{
 			TheMessageStream->appendMessage( GameMessage::MSG_EXECUTE_RAILED_TRANSPORT );
 			break;
-		}  // end execute railed transport
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GUI_COMMAND_HACK_INTERNET:
@@ -757,7 +757,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		{
 			break;
 
-		}  // end set rally point
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_SELL:
@@ -767,7 +767,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			TheMessageStream->appendMessage( GameMessage::MSG_SELL );
 			break;
 
-		}  // end sell
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GUI_COMMAND_TOGGLE_OVERCHARGE:
@@ -776,7 +776,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			TheMessageStream->appendMessage( GameMessage::MSG_TOGGLE_OVERCHARGE );
 			break;
 
-		}  // end overcharge
+		}
 
 #ifdef ALLOW_SURRENDER
 		// ------------------------------------------------------------------------------------------------
@@ -786,7 +786,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			TheMessageStream->appendMessage( GameMessage::MSG_RETURN_TO_PRISON );
 			break;
 
-		}  // end return to prison
+		}
 #endif
 
 		//---------------------------------------------------------------------------------------------
@@ -795,7 +795,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end delete beacon
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_GUARD:
@@ -833,7 +833,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end fire weapon
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT:
@@ -852,7 +852,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			msg->appendObjectIDArgument( obj->getID() );
 			break;
 
-		}  // end special weapon
+		}
 
 		case GUI_COMMAND_SPECIAL_POWER:
 		{
@@ -863,7 +863,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			msg->appendObjectIDArgument( INVALID_ID );	// no specific source
 			break;
 
-		}  // end special weapon
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_PURCHASE_SCIENCE:
@@ -884,7 +884,7 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			if( st == SCIENCE_INVALID)
 			{
-				switchToContext( CB_CONTEXT_NONE, NULL );
+				switchToContext( CB_CONTEXT_NONE, nullptr );
 				break;
 			}
 
@@ -896,17 +896,17 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			break;
 
-		}  // end pick specialized science
+		}
 
 		//---------------------------------------------------------------------------------------------
 		default:
 
-			DEBUG_ASSERTCRASH( 0, ("Unknown command '%d'", commandButton->getCommandType()) );
+			DEBUG_CRASH( ("Unknown command '%d'", commandButton->getCommandType()) );
 			return CBC_COMMAND_NOT_USED;
 
-	}  // end switch
+	}
 
 	return CBC_COMMAND_USED;
 
-}  // end processCommandUI
+}
 

@@ -27,7 +27,7 @@
 // Author: Michael S. Booth, 2001-2002
 // Subsequently : John Ahlquist 2002 and a cast of thousands.
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #define DEFINE_LOCOMOTORSET_NAMES					// for TheLocomotorSetNames[]
 #define DEFINE_AUTOACQUIRE_NAMES
@@ -79,7 +79,7 @@ AIUpdateModuleData::AIUpdateModuleData()
 {
 	//m_locomotorTemplates	-- nothing to do
 	for (int i = 0; i < MAX_TURRETS; i++)
-		m_turretData[i] = NULL;
+		m_turretData[i] = nullptr;
 	m_autoAcquireEnemiesWhenIdle = 0;
 	m_moodAttackCheckRate = LOGICFRAMES_PER_SECOND * 2;
 #ifdef ALLOW_SURRENDER
@@ -98,8 +98,7 @@ AIUpdateModuleData::~AIUpdateModuleData()
 		if (m_turretData[i])
 		{
 			TurretAIData* td = const_cast<TurretAIData*>(m_turretData[i]);
-			if (td)
-				deleteInstance(td);
+			deleteInstance(td);
 		}
 	}
 }
@@ -108,12 +107,12 @@ AIUpdateModuleData::~AIUpdateModuleData()
 const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(LocomotorSetType t) const
 {
 	if (m_locomotorTemplates.empty())
-		return NULL;
+		return nullptr;
 
   LocomotorTemplateMap::const_iterator it = m_locomotorTemplates.find(t);
   if (it == m_locomotorTemplates.end())
 	{
-		return NULL;
+		return nullptr;
 	}
 	else
 	{
@@ -128,16 +127,16 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Turret",											AIUpdateModuleData::parseTurret,	NULL, offsetof(AIUpdateModuleData, m_turretData[0]) },
-		{ "AltTurret",									AIUpdateModuleData::parseTurret,	NULL, offsetof(AIUpdateModuleData, m_turretData[1]) },
+		{ "Turret",											AIUpdateModuleData::parseTurret,	nullptr, offsetof(AIUpdateModuleData, m_turretData[0]) },
+		{ "AltTurret",									AIUpdateModuleData::parseTurret,	nullptr, offsetof(AIUpdateModuleData, m_turretData[1]) },
 		{ "AutoAcquireEnemiesWhenIdle", INI::parseBitString32, TheAutoAcquireEnemiesNames, offsetof(AIUpdateModuleData, m_autoAcquireEnemiesWhenIdle) },
-		{ "MoodAttackCheckRate",				INI::parseDurationUnsignedInt,		NULL, offsetof(AIUpdateModuleData, m_moodAttackCheckRate) },
+		{ "MoodAttackCheckRate",				INI::parseDurationUnsignedInt,		nullptr, offsetof(AIUpdateModuleData, m_moodAttackCheckRate) },
 #ifdef ALLOW_SURRENDER
-		{ "SurrenderDuration",					INI::parseDurationUnsignedInt,		NULL, offsetof(AIUpdateModuleData, m_surrenderDuration) },
+		{ "SurrenderDuration",					INI::parseDurationUnsignedInt,		nullptr, offsetof(AIUpdateModuleData, m_surrenderDuration) },
 #endif
-    { "ForbidPlayerCommands",				INI::parseBool,										NULL, offsetof(AIUpdateModuleData, m_forbidPlayerCommands) },
-    { "TurretsLinked",							INI::parseBool,										NULL, offsetof( AIUpdateModuleData, m_turretsLinked ) },
-		{ 0, 0, 0, 0 }
+    { "ForbidPlayerCommands",				INI::parseBool,										nullptr, offsetof(AIUpdateModuleData, m_forbidPlayerCommands) },
+    { "TurretsLinked",							INI::parseBool,										nullptr, offsetof( AIUpdateModuleData, m_turretsLinked ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -180,7 +179,7 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 	self->m_locomotorTemplates[set].clear();
 	for (const char* locoName = ini->getNextToken(); locoName; locoName = ini->getNextTokenOrNull())
 	{
-		if (!*locoName || !stricmp(locoName, "None"))
+		if (!*locoName || stricmp(locoName, "None") == 0)
 			continue;
 
 		NameKeyType locoKey = NAMEKEY(locoName);
@@ -211,7 +210,7 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 
 	m_priorWaypointID = 0xfacade;
 	m_currentWaypointID	= 0xfacade;
-	m_stateMachine = NULL;
+	m_stateMachine = nullptr;
 	m_nextEnemyScanTime = 0;
 	m_currentVictimID = INVALID_ID;
 	m_desiredSpeed = FAST_AS_POSSIBLE;
@@ -220,12 +219,12 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 	m_guardTargetType[0] = m_guardTargetType[1] = GUARDTARGET_NONE;
 	m_locationToGuard.zero();
 	m_objectToGuard = INVALID_ID;
-	m_areaToGuard = NULL;
-	m_attackInfo = NULL;
+	m_areaToGuard = nullptr;
+	m_attackInfo = nullptr;
 	m_waypointCount = 0;
 	m_waypointIndex = 0;
-	m_completedWaypoint = NULL;
-	m_path = NULL;
+	m_completedWaypoint = nullptr;
+	m_path = nullptr;
 	m_requestedVictimID = INVALID_ID;
 	m_requestedDestination.zero();
 	m_requestedDestination2.zero();
@@ -246,12 +245,12 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 	m_moveOutOfWay1 = INVALID_ID;
 	m_moveOutOfWay2 = INVALID_ID;
 	m_locomotorSet.clear();
-	m_curLocomotor = NULL;
+	m_curLocomotor = nullptr;
 	m_curLocomotorSet = LOCOMOTORSET_INVALID;
 	m_locomotorGoalType = NONE;
 	m_locomotorGoalData.zero();
 	for (i = 0; i < MAX_TURRETS; i++)
-		m_turretAI[i] = NULL;
+		m_turretAI[i] = nullptr;
 	m_turretSyncFlag = TURRET_INVALID;
 	m_attitude = ATTITUDE_NORMAL;
 	m_nextMoodCheckTime = 0;
@@ -316,7 +315,7 @@ void AIUpdateInterface::setSurrendered( const Object *objWeSurrenderedTo, Bool s
 		if (m_surrenderedFramesLeft < d->m_surrenderDuration)
 			m_surrenderedFramesLeft = d->m_surrenderDuration;
 
-		const Player* playerWeSurrenderedTo = objWeSurrenderedTo ? objWeSurrenderedTo->getControllingPlayer() : NULL;
+		const Player* playerWeSurrenderedTo = objWeSurrenderedTo ? objWeSurrenderedTo->getControllingPlayer() : nullptr;
 		m_surrenderedPlayerIndex = playerWeSurrenderedTo ? playerWeSurrenderedTo->getPlayerIndex() : -1;
 
 		if (!wasSurrendered)
@@ -357,7 +356,7 @@ void AIUpdateInterface::setGoalPositionClipped(const Coord3D* in, CommandSourceT
 		if (cmdSource == CMD_FROM_PLAYER)
 		{
 			Real fudge = TheGlobalData->m_partitionCellSize * 0.5f;
-			if (getObject()->isKindOf(KINDOF_AIRCRAFT) && getObject()->isSignificantlyAboveTerrain() && m_curLocomotor != NULL)
+			if (getObject()->isKindOf(KINDOF_AIRCRAFT) && getObject()->isSignificantlyAboveTerrain() && m_curLocomotor != nullptr)
 			{
 				// aircraft must stay further away from the map edges, to prevent getting "lost"
 				fudge = max(fudge, m_curLocomotor->getPreferredHeight());
@@ -385,7 +384,7 @@ void AIUpdateInterface::setGoalPositionClipped(const Coord3D* in, CommandSourceT
 	}
 	else
 	{
-		getStateMachine()->setGoalPosition(NULL);
+		getStateMachine()->setGoalPosition(nullptr);
 	}
 }
 
@@ -434,7 +433,7 @@ void AIUpdateInterface::doPathfind( PathfindServicesInterface *pathfinder )
 		return;
 	}
 	if (m_isAttackPath) {
-		Object *victim = NULL;
+		Object *victim = nullptr;
 		if (m_requestedVictimID != INVALID_ID) {
 			victim = TheGameLogic->findObjectByID(m_requestedVictimID);
 		}
@@ -602,7 +601,7 @@ void AIUpdateInterface::setPathFromWaypoint(const Waypoint *way, const Coord2D *
 		Coord3D wayPos = *way->getLocation();
 		wayPos.x += offset->x;
 		wayPos.y += offset->y;
-		if (way->getLink(0) == NULL) {
+		if (way->getLink(0) == nullptr) {
 			TheAI->pathfinder()->snapPosition(getObject(), &wayPos);
 		}
 		m_path->appendNode( &wayPos, LAYER_GROUND );
@@ -624,7 +623,7 @@ void AIUpdateInterface::onObjectCreated()
 	// create the behavior state machine.
 	// can't do this in the ctor because makeStateMachine is a protected virtual func,
 	// and overrides to virtual funcs don't exist in our ctor. (look it up.)
-	if (m_stateMachine == NULL)
+	if (m_stateMachine == nullptr)
 	{
 		m_stateMachine = makeStateMachine();
 		m_stateMachine->initDefaultState();
@@ -632,10 +631,10 @@ void AIUpdateInterface::onObjectCreated()
 }
 
 //-------------------------------------------------------------------------------------------------
-AIUpdateInterface::~AIUpdateInterface( void )
+AIUpdateInterface::~AIUpdateInterface()
 {
 	m_locomotorSet.clear();
-	m_curLocomotor = NULL;
+	m_curLocomotor = nullptr;
 
 	if( m_stateMachine ) {
 		m_stateMachine->halt();
@@ -644,13 +643,12 @@ AIUpdateInterface::~AIUpdateInterface( void )
 
 	for (int i = 0; i < MAX_TURRETS; i++)
 	{
-		if (m_turretAI[i])
-			deleteInstance(m_turretAI[i]);
-		m_turretAI[i] = NULL;
+		deleteInstance(m_turretAI[i]);
+		m_turretAI[i] = nullptr;
 	}
-	m_stateMachine = NULL;
+	m_stateMachine = nullptr;
 
-	// destroy the current path. (destroyPath is NULL savvy)
+	// destroy the current path. (destroyPath is nullptr savvy)
 	destroyPath();
 
 }
@@ -676,7 +674,7 @@ Object* AIUpdateInterface::getTurretTargetObject( WhichTurretType tur, Bool clea
 			return obj;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //=============================================================================
@@ -756,7 +754,7 @@ Bool AIUpdateInterface::getTurretRotAndPitch(WhichTurretType tur, Real* turretAn
 //=============================================================================
 Real AIUpdateInterface::getTurretTurnRate(WhichTurretType tur) const
 {
-	return (tur != TURRET_INVALID && m_turretAI[tur] != NULL) ?
+	return (tur != TURRET_INVALID && m_turretAI[tur] != nullptr) ?
 					m_turretAI[tur]->getTurnRate() :
 					0.0f;
 }
@@ -792,7 +790,7 @@ WhichTurretType AIUpdateInterface::getWhichTurretForWeaponSlot(WeaponSlotType ws
 //=============================================================================
 Real AIUpdateInterface::getCurLocomotorSpeed() const
 {
-	if (m_curLocomotor != NULL)
+	if (m_curLocomotor != nullptr)
 		return m_curLocomotor->getMaxSpeedForCondition(getObject()->getBodyModule()->getDamageState());
 
 	DEBUG_LOG(("no current locomotor!"));
@@ -835,7 +833,7 @@ Bool AIUpdateInterface::chooseLocomotorSetExplicit(LocomotorSetType wst)
 	if (set)
 	{
 		m_locomotorSet.clear();
-		m_curLocomotor = NULL;
+		m_curLocomotor = nullptr;
 		for (size_t i = 0; i < set->size(); ++i)
 		{
 			const LocomotorTemplate* lt = set->at(i);
@@ -849,15 +847,15 @@ Bool AIUpdateInterface::chooseLocomotorSetExplicit(LocomotorSetType wst)
 }
 
 //-------------------------------------------------------------------------------------------------
-void AIUpdateInterface::chooseGoodLocomotorFromCurrentSet( void )
+void AIUpdateInterface::chooseGoodLocomotorFromCurrentSet()
 {
 	Locomotor* prevLoco = m_curLocomotor;
 
 	Locomotor* newLoco = TheAI->pathfinder()->chooseBestLocomotorForPosition(getObject()->getLayer(), &m_locomotorSet, getObject()->getPosition());
 
-	if (newLoco == NULL)
+	if (newLoco == nullptr)
 	{
-		if (prevLoco != NULL)
+		if (prevLoco != nullptr)
 		{
 		/* due to physics, we might slight into a cell for which we have no loco
 			(eg, cliff) and get stuck. this is bad. as a solution, we do this.
@@ -913,7 +911,7 @@ Object* AIUpdateInterface::checkForCrateToPickup()
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 #ifdef ALLOW_SURRENDER
@@ -1001,7 +999,7 @@ void AIUpdateInterface::friend_notifyStateMachineChanged()
  * The "main loop" of the AI subsystem
  */
 DECLARE_PERF_TIMER(AIUpdateInterface_update)
-UpdateSleepTime AIUpdateInterface::update( void )
+UpdateSleepTime AIUpdateInterface::update()
 {
 	//DEBUG_LOG(("AIUpdateInterface frame %d: %08lx",TheGameLogic->getFrame(),getObject()));
 
@@ -1009,7 +1007,7 @@ UpdateSleepTime AIUpdateInterface::update( void )
 
 	m_isInUpdate = TRUE;
 
-	m_completedWaypoint = NULL; // Reset so state machine update can set it if we just completed the path.
+	m_completedWaypoint = nullptr; // Reset so state machine update can set it if we just completed the path.
 
 	// assume we can sleep forever, unless the state machine (or turret, etc) demand otherwise
 	UpdateSleepTime subMachineSleep = UPDATE_SLEEP_FOREVER;
@@ -1060,7 +1058,7 @@ UpdateSleepTime AIUpdateInterface::update( void )
 			TheAI->pathfinder()->updateGoal(getObject(), &goalPos, getObject()->getLayer());
 		}
 		m_movementComplete = FALSE;
-		ignoreObstacle(NULL);
+		ignoreObstacle(nullptr);
 	}
 
 	UnsignedInt now = TheGameLogic->getFrame();
@@ -1103,7 +1101,7 @@ UpdateSleepTime AIUpdateInterface::update( void )
 	// must do death check outside of the state machine update, to avoid corruption
 	if (isAiInDeadState() && !(getStateMachine()->getCurrentStateID() == AI_DEAD) )
 	{
-		/// @todo Yikes! If we are not interruptable, and we die, what do we do? (MSB)
+		/// @todo Yikes! If we are not interruptible, and we die, what do we do? (MSB)
 		getStateMachine()->clear();
 		getStateMachine()->setState( AI_DEAD );
 		getStateMachine()->lock("AIUpdateInterface::update");
@@ -1133,7 +1131,7 @@ UpdateSleepTime AIUpdateInterface::update( void )
 
 	m_isInUpdate = FALSE;
 
-	if (m_completedWaypoint != NULL)
+	if (m_completedWaypoint != nullptr)
 	{
 		// sleep NONE here so that it will get reset next frame.
 		// this happen infrequently, so it shouldn't be an issue.
@@ -1169,7 +1167,7 @@ Bool AIUpdateInterface::queueWaypoint( const Coord3D *pos )
 /**
  * Start moving along the waypoint path in the queue
  */
-void AIUpdateInterface::executeWaypointQueue( void )
+void AIUpdateInterface::executeWaypointQueue()
 {
 	// the dead don't listen very well
 	if (isAiInDeadState())
@@ -1185,7 +1183,7 @@ void AIUpdateInterface::executeWaypointQueue( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-void AIUpdateInterface::clearWaypointQueue( void )
+void AIUpdateInterface::clearWaypointQueue()
 {
 	m_waypointCount = 0;
 	m_executingWaypointQueue = FALSE;
@@ -1396,8 +1394,8 @@ Bool AIUpdateInterface::blockedBy(Object *other)
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool AIUpdateInterface::needToRotate(void)
-/* Returns TRUE if we need to rotate to point in our path's direcion.*/
+Bool AIUpdateInterface::needToRotate()
+/* Returns TRUE if we need to rotate to point in our path's direction.*/
 {
 	if (isWaitingForPath())
 		return TRUE; // new path will probably require rotation.
@@ -1440,7 +1438,7 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 		return FALSE;
 
 	AIUpdateInterface* aiOther = other->getAI();
-	if (aiOther == NULL)
+	if (aiOther == nullptr)
 		return FALSE;
 
 	Bool selfMoving = isMoving();
@@ -1478,7 +1476,7 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 				{
 					//Kris: Patch 1.01 -- November 5, 2003
 					//Prevent busy units from being told to move out of the way!
-					if( other->testStatus( OBJECT_STATUS_IS_USING_ABILITY ) || other->getAI() && other->getAI()->isBusy() )
+					if( other->testStatus( OBJECT_STATUS_IS_USING_ABILITY ) || (other->getAI() && other->getAI()->isBusy()) )
 					{
 						return FALSE;
 					}
@@ -1487,7 +1485,7 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 				}
 #define dont_MOVE_AROUND // It just causes more problems than it fixes. jba.
 #ifdef MOVE_AROUND
-				if (m_curLocomotor!=NULL && (other->isKindOf(KINDOF_INFANTRY)==getObject()->isKindOf(KINDOF_INFANTRY))) {
+				if (m_curLocomotor!= nullptr && (other->isKindOf(KINDOF_INFANTRY)==getObject()->isKindOf(KINDOF_INFANTRY))) {
 					Real myMaxSpeed = m_curLocomotor->getMaxSpeedForCondition(getObject()->getBodyModule()->getDamageState());
 					Locomotor *hisLoco = aiOther->getCurLocomotor();
 					if (hisLoco) {
@@ -1587,7 +1585,7 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 /**
  * See if we can do a quick path without pathfinding.
  */
-Bool AIUpdateInterface::canComputeQuickPath( void )
+Bool AIUpdateInterface::canComputeQuickPath()
 {
 	/* Basically, if a unit is moving through the air, we can quick path.  jba. */
 	Bool landBound = FALSE;
@@ -1622,9 +1620,9 @@ Bool AIUpdateInterface::computeQuickPath( const Coord3D *destination )
 
 	// First, see if our path already goes to the destination.
 	if (m_path) {
-		PathNode *closeNode = NULL;
+		PathNode *closeNode = nullptr;
 		closeNode = m_path->getLastNode();
-		if (closeNode && closeNode->getNextOptimized()==NULL) {
+		if (closeNode && closeNode->getNextOptimized()==nullptr) {
 			Real dxSqr = destination->x - closeNode->getPosition()->x;
 			dxSqr *= dxSqr;
 			Real dySqr = destination->y - closeNode->getPosition()->y;
@@ -1701,7 +1699,7 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 		}
 	}
 
-	Path *theNewPath = NULL;
+	Path *theNewPath = nullptr;
 	TheAI->pathfinder()->setIgnoreObstacleID( getIgnoredObstacleID() );
 
 	Coord3D originalDestination = *destination;
@@ -1716,7 +1714,7 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 	PathfindLayerEnum destinationLayer = TheTerrainLogic->getLayerForDestination(destination);
 	if (TheAI->pathfinder()->validMovementPosition( getObject()->getCrusherLevel()>0, destinationLayer, m_locomotorSet, destination ) == FALSE)
 	{
-		theNewPath = NULL;
+		theNewPath = nullptr;
 	}
 	else
 	{
@@ -1729,7 +1727,7 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 				destination);
 		}
 	}
-	if (theNewPath==NULL && m_path==NULL) {
+	if (theNewPath==nullptr && m_path==nullptr) {
 		Real pathCostFactor = 0.0f;
 		theNewPath = pathServices->findClosestPath( getObject(), m_locomotorSet, getObject()->getPosition(),
 			destination, m_isBlockedAndStuck, pathCostFactor, FALSE );
@@ -1809,7 +1807,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 	Object* source = getObject();
 	if (!victim && !victimPos)
 	{
-		//CRCDEBUG_LOG(("AIUpdateInterface::computeAttackPath() - victim is NULL"));
+		//CRCDEBUG_LOG(("AIUpdateInterface::computeAttackPath() - victim is null"));
 		return FALSE;
 	}
 
@@ -1827,7 +1825,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 
 	// is our weapon within attack range?
 	// if so, just return TRUE with no path.
-	if (victim != NULL)
+	if (victim != nullptr)
 	{
 		if (weapon->isWithinAttackRange(source, victim))
 		{
@@ -1845,14 +1843,14 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 
 		}
 	}
-	else if (victimPos != NULL)
+	else if (victimPos != nullptr)
 	{
 		if (weapon->isWithinAttackRange(source, victimPos))
 		{
 			Bool viewBlocked = FALSE;
 			if (isDoingGroundMovement())
 			{
-				viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(source, *source->getPosition(), NULL, *victimPos);
+				viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(source, *source->getPosition(), nullptr, *victimPos);
 			}
 			if (!viewBlocked) {
 				destroyPath();
@@ -1874,7 +1872,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 			getCurLocomotor()->setNoSlowDownAsApproachingDest(TRUE);
 		}
 		Bool ok = computePath(pathServices, &tmp);
-		if (m_path==NULL) return false;
+		if (m_path==nullptr) return false;
 		Real dx, dy;
 		dx = victimPos->x - m_path->getLastNode()->getPosition()->x;
 		dy = victimPos->y - m_path->getLastNode()->getPosition()->y;
@@ -1897,7 +1895,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 
 
 	Coord3D localVictimPos;
-	if (victim != NULL)
+	if (victim != nullptr)
 	{
 		if (victim->isKindOf(KINDOF_BRIDGE))
 		{
@@ -1929,16 +1927,16 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 		// build a trivial one-node path containing destination
 
 		weapon->computeApproachTarget(getObject(), victim, &localVictimPos, 0, localVictimPos);
-		//DEBUG_ASSERTCRASH(weapon->isGoalPosWithinAttackRange(getObject(), &localVictimPos, victim, victimPos, NULL),
+		//DEBUG_ASSERTCRASH(weapon->isGoalPosWithinAttackRange(getObject(), &localVictimPos, victim, victimPos, nullptr),
 		//	("position we just calced is not acceptable"));
 
 		// First, see if our path already goes to the destination.
 		if (m_path)
 		{
-			PathNode *startNode, *closeNode = NULL;
+			PathNode *startNode, *closeNode = nullptr;
 			startNode = m_path->getFirstNode();
 			closeNode = startNode->getNextOptimized();
-			if (closeNode && closeNode->getNextOptimized()==NULL) {
+			if (closeNode && closeNode->getNextOptimized()==nullptr) {
 				Real dxSqr = localVictimPos.x - closeNode->getPosition()->x;
 				dxSqr *= dxSqr;
 				Real dySqr = localVictimPos.y - closeNode->getPosition()->y;
@@ -1986,7 +1984,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 					m_path = pathServices->findClosestPath(getObject(), m_locomotorSet, getObject()->getPosition(),
 								&objPos, false, 0.2f, true );
 				}
-				if (m_path==NULL) {
+				if (m_path==nullptr) {
 					return false;
 				}
 			}
@@ -2015,15 +2013,14 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 
 //-------------------------------------------------------------------------------------------------
 /**
- * Destroy the current path, and set it to NULL
+ * Destroy the current path, and set it to null
  */
-void AIUpdateInterface::destroyPath( void )
+void AIUpdateInterface::destroyPath()
 {
 	// destroy previous path
-	if (m_path)
-		deleteInstance(m_path);
+	deleteInstance(m_path);
+	m_path = nullptr;
 
-	m_path = NULL;
 	m_waitingForPath = FALSE; // we no longer need it.
 	//CRCDEBUG_LOG(("AIUpdateInterface::destroyPath() - m_isAttackPath = FALSE for object %d", getObject()->getID()));
 	m_isAttackPath = FALSE;
@@ -2034,7 +2031,7 @@ void AIUpdateInterface::destroyPath( void )
 /**
  * This is used by the internal move to state to indicate that a move started.
  */
-void AIUpdateInterface::friend_startingMove(void)
+void AIUpdateInterface::friend_startingMove()
 {
 	m_movementComplete = FALSE; // we aren't finished moving.
 	m_isMoving = TRUE;
@@ -2083,14 +2080,14 @@ Bool AIUpdateInterface::isPathAvailable( const Coord3D *destination ) const
 {
 
 	// sanity
-	if( destination == NULL )
+	if( destination == nullptr )
 		return FALSE;
 
 	const Coord3D *myPos = getObject()->getPosition();
 
 	return TheAI->pathfinder()->clientSafeQuickDoesPathExist( m_locomotorSet, myPos, destination );
 
-}  // end isPathAvailable
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Is there a path (computed using the less accurate but quick method )
@@ -2100,14 +2097,14 @@ Bool AIUpdateInterface::isQuickPathAvailable( const Coord3D *destination ) const
 {
 
 	// sanity
-	if( destination == NULL )
+	if( destination == nullptr )
 		return FALSE;
 
 	const Coord3D *myPos = getObject()->getPosition();
 
 	return TheAI->pathfinder()->clientSafeQuickDoesPathExistForUI( m_locomotorSet, myPos, destination );
 
-}  // end isQuickPathAvailable
+}
 
 
 
@@ -2123,7 +2120,7 @@ DECLARE_PERF_TIMER(doLocomotor)
 /**
  * Compute drive forces
  */
-UpdateSleepTime AIUpdateInterface::doLocomotor( void )
+UpdateSleepTime AIUpdateInterface::doLocomotor()
 {
 	USE_PERF_TIMER(doLocomotor)
 
@@ -2300,7 +2297,7 @@ UpdateSleepTime AIUpdateInterface::doLocomotor( void )
 		m_curMaxBlockedSpeed = FAST_AS_POSSIBLE;
 	}
 
-	if (m_curLocomotor != NULL
+	if (m_curLocomotor != nullptr
 			&& m_locomotorGoalType == NONE
 			&& m_doFinalPosition == FALSE
 			&& m_isBlocked == FALSE
@@ -2355,7 +2352,7 @@ void AIUpdateInterface::setLocomotorGoalNone()
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool AIUpdateInterface::isDoingGroundMovement(void) const
+Bool AIUpdateInterface::isDoingGroundMovement() const
 {
 
   if (getObject()->isDisabledByType( DISABLED_UNMANNED )
@@ -2369,7 +2366,7 @@ Bool AIUpdateInterface::isDoingGroundMovement(void) const
 		return FALSE;  // air only loco.
 	}
 
-	if (m_curLocomotor == NULL)
+	if (m_curLocomotor == nullptr)
 	{
 		return FALSE;	// No loco, so we aren't moving.
 	}
@@ -2389,7 +2386,7 @@ Bool AIUpdateInterface::isDoingGroundMovement(void) const
 	// if we're airborne and "allowed to fall", we are probably deliberately in midair
 	// due to rappel or accident...
 	const PhysicsBehavior* physics = getObject()->getPhysics();
-	if (getObject()->isAboveTerrain() && physics != NULL && physics->getAllowToFall())
+	if (getObject()->isAboveTerrain() && physics != nullptr && physics->getAllowToFall())
 	{
 		return FALSE;
 	}
@@ -2404,9 +2401,9 @@ Bool AIUpdateInterface::isDoingGroundMovement(void) const
 Others, like missles, should stack destinations.  AdjustDestination in pathfinder unstacks
 destinations, and this routine identifies non-ground units that should unstack. */
 
-Bool AIUpdateInterface::isAircraftThatAdjustsDestination(void) const
+Bool AIUpdateInterface::isAircraftThatAdjustsDestination() const
 {
-	if (m_curLocomotor == NULL)
+	if (m_curLocomotor == nullptr)
 	{
 		return FALSE;	// No loco, so we aren't moving.
 	}
@@ -2532,7 +2529,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 /**
  * Catch up with the rest of the team.
  */
-void AIUpdateInterface::joinTeam( void )
+void AIUpdateInterface::joinTeam()
 {
 	// the dead don't listen very well
 	if (isAiInDeadState())
@@ -2543,9 +2540,9 @@ void AIUpdateInterface::joinTeam( void )
 
 	chooseLocomotorSet(LOCOMOTORSET_NORMAL);
 	getStateMachine()->clear();
-	getStateMachine()->setGoalWaypoint(NULL);
+	getStateMachine()->setGoalWaypoint(nullptr);
 	Object *obj = getObject();
-	Object *other = NULL;
+	Object *other = nullptr;
 	Team *team = obj->getTeam();
 	for (DLINK_ITERATOR<Object> iter = team->iterate_TeamMemberList(); !iter.done(); iter.advance())
 	{
@@ -2585,7 +2582,7 @@ void AIUpdateInterface::joinTeam( void )
 		getStateMachine()->setState( state );
 	}
 
-}  // end joinTeam
+}
 
 //-------------------------------------------------------------------------------------------------
 Bool AIUpdateInterface::isAllowedToRespondToAiCommands(const AICommandParms* parms) const
@@ -2684,14 +2681,20 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
 			privateFollowWaypointPathAsTeamExact(parms->m_waypoint, parms->m_cmdSource);
 			break;
 		case AICMD_FOLLOW_PATH:
-			privateFollowPath(&parms->m_coords, parms->m_obj, parms->m_cmdSource, FALSE);
+		{
+			std::vector<Coord3D> coords = parms->m_coords;
+			privateFollowPath(&coords, parms->m_obj, parms->m_cmdSource, FALSE);
 			break;
+		}
 		case AICMD_FOLLOW_PATH_APPEND:
 			privateFollowPathAppend(&parms->m_pos, parms->m_cmdSource);
 			break;
 		case AICMD_FOLLOW_EXITPRODUCTION_PATH:
-			privateFollowPath(&parms->m_coords, parms->m_obj, parms->m_cmdSource, TRUE);
+		{
+			std::vector<Coord3D> coords = parms->m_coords;
+			privateFollowPath(&coords, parms->m_obj, parms->m_cmdSource, TRUE);
 			break;
+		}
 		case AICMD_ATTACK_OBJECT:
 			privateAttackObject(parms->m_obj, parms->m_intValue, parms->m_cmdSource);
 			break;
@@ -2777,7 +2780,6 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
 			{
 				state->clear();
 			}
-			//end
 
 			privateGuardPosition(&parms->m_pos, (GuardMode)parms->m_intValue, parms->m_cmdSource);
 			break;
@@ -2793,7 +2795,6 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
 			{
 				state->clear();
 			}
-			//end
 
 			privateGuardObject(parms->m_obj, (GuardMode)parms->m_intValue, parms->m_cmdSource);
 			break;
@@ -2809,7 +2810,6 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
 			{
 				state->clear();
 			}
-			//end
 
 			privateGuardTunnelNetwork((GuardMode)parms->m_intValue, parms->m_cmdSource);
 			break;
@@ -2825,7 +2825,6 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
 			{
 				state->clear();
 			}
-			//end
 
 			privateGuardArea(parms->m_polygon, (GuardMode)parms->m_intValue, parms->m_cmdSource);
 			break;
@@ -3104,7 +3103,7 @@ void AIUpdateInterface::privateIdle(CommandSourceType cmdSource)
 			for (ContainedItemsList::const_iterator it = items->begin(); it != items->end(); ++it)
 			{
 				Object* obj = *it;
-				AIUpdateInterface* ai = obj ? obj->getAI() : NULL;
+				AIUpdateInterface* ai = obj ? obj->getAI() : nullptr;
 				if (ai)
 					ai->aiIdle(cmdSource);
 			}
@@ -3166,7 +3165,7 @@ void AIUpdateInterface::privateTightenToPosition( const Coord3D *pos, CommandSou
 	if (getObject()->isMobile() == FALSE)
 		return;
 	getStateMachine()->clear();
-	getStateMachine()->setGoalObject( NULL );
+	getStateMachine()->setGoalObject( nullptr );
 	setGoalPositionClipped(pos, cmdSource);
 	setLastCommandSource( cmdSource );
 	getStateMachine()->setState( AI_MOVE_AND_TIGHTEN );
@@ -3237,18 +3236,18 @@ void AIUpdateInterface::privateMoveAwayFromUnit( Object *unit, CommandSourceType
 	m_moveOutOfWay2 = m_moveOutOfWay1;
 	m_moveOutOfWay1 = id;
 	Object *obj2 = TheGameLogic->findObjectByID(m_moveOutOfWay2);
-	Path *path2 = NULL;
+	Path *path2 = nullptr;
 	if (obj2 && obj2->getAI()) {
 		path2 = obj2->getAI()->getPath();
 	}
 
-	Path* unitPath = NULL;
+	Path* unitPath = nullptr;
 	if (unit && unit->getAI()) {
 		unitPath = unit->getAI()->getPath();
 	}
-	if (unitPath == NULL) return;
+	if (unitPath == nullptr) return;
 	Path *newPath = TheAI->pathfinder()->getMoveAwayFromPath(getObject(), unit, unitPath, obj2, path2);
-	if (newPath==NULL && !canPathThroughUnits())	{
+	if (newPath==nullptr && !canPathThroughUnits())	{
 		setCanPathThroughUnits(TRUE);
 		newPath = TheAI->pathfinder()->getMoveAwayFromPath(getObject(), unit, unitPath, obj2, path2);
 	}
@@ -3369,14 +3368,14 @@ void AIUpdateInterface::privateFollowPathAppend( const Coord3D *pos, CommandSour
 		std::vector<Coord3D> path;
 		path.push_back( *getGoalPosition() );
 		path.push_back( *pos );
-		privateFollowPath( &path, NULL, cmdSource, false );
+		privateFollowPath( &path, nullptr, cmdSource, false );
 	}
 	else
 	{
 		//Hopefully we're idle or doing something that doesn't require movement.
 		std::vector<Coord3D> path;
 		path.push_back( *pos );
-		privateFollowPath( &path, NULL, cmdSource, false );
+		privateFollowPath( &path, nullptr, cmdSource, false );
 	}
 }
 
@@ -3384,7 +3383,7 @@ void AIUpdateInterface::privateFollowPathAppend( const Coord3D *pos, CommandSour
 /**
  * Follow the path defined by the given array of points
  */
-void AIUpdateInterface::privateFollowPath( const std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction )
+void AIUpdateInterface::privateFollowPath( std::vector<Coord3D>* path, Object *ignoreObject, CommandSourceType cmdSource, Bool exitProduction )
 {
 	if (getObject()->isMobile() == FALSE)
 		return;
@@ -3398,7 +3397,7 @@ void AIUpdateInterface::privateFollowPath( const std::vector<Coord3D>* path, Obj
 	// clear current state machine
 	getStateMachine()->clear();
 
-	if (path->size()>0) {
+	if (!path->empty()) {
 		const Coord3D goal = (*path)[path->size()-1];
 		getStateMachine()->setGoalPosition(&goal);
 	}
@@ -3518,7 +3517,7 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	//chooseLocomotorSet(LOCOMOTORSET_NORMAL);
 
 	Coord3D localPos = *pos;
-	pos = NULL;
+	pos = nullptr;
 
 	// ick... rather grody hack for disarming stuff. if we attack a position,
 	// but have a "continue range" for the weapon, try to find a suitable object
@@ -3531,7 +3530,7 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 		getObject()->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_IGNORING_STEALTH ) );
 		PartitionFilterPossibleToAttack filterAttack(ATTACK_NEW_TARGET, getObject(), cmdSource);
 		PartitionFilterSameMapStatus filterMapStatus(getObject());
-		PartitionFilter *filters[] = { &filterAttack, &filterMapStatus, NULL };
+		PartitionFilter *filters[] = { &filterAttack, &filterMapStatus, nullptr };
 		Object* victim = ThePartitionManager->getClosestObject(&localPos, continueRange, FROM_CENTER_2D, filters);
 		getObject()->clearStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_IGNORING_STEALTH ) );
 
@@ -3550,7 +3549,7 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	// if it's a contact weapon, we must be able to path to the target pos. if not, find a spot close by.
 	// this fixes an obscure bug with mine-clearing: if you tell someone to clear mines and put the centerpoint
 	// inside a building, the dozer/worker will just go thru the building to that spot. ick. so if you find that
-	// this clause (below) is problematic, you'll probbaly have to find another way to fix this mine-clearing bug. (srj)
+	// this clause (below) is problematic, you'll probably have to find another way to fix this mine-clearing bug. (srj)
 	if (weapon && weapon->isContactWeapon() && !isPathAvailable(&localPos))
 	{
 		FindPositionOptions fpOptions;
@@ -3569,9 +3568,9 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	getStateMachine()->setState( AI_ATTACK_POSITION );
 
 
-	//Set the goal object to NULL because if we are attacking a location, we need to be able to move up to it properly.
+	//Set the goal object to nullptr because if we are attacking a location, we need to be able to move up to it properly.
 	//When this isn't set, the move aborts before getting into firing range, thus deadlocks.
-	getStateMachine()->setGoalObject( NULL );
+	getStateMachine()->setGoalObject( nullptr );
 
 	// do this after setting it as the current state, as the max-shots-to-fire is reset in AttackState::onEnter()
 	weapon = getObject()->getCurrentWeapon();
@@ -3876,7 +3875,7 @@ void AIUpdateInterface::privateExitInstantly( Object *objectToExit, CommandSourc
 /**
  * Get out of whatever it is inside of
  */
-void AIUpdateInterface::doQuickExit( const std::vector<Coord3D>* path )
+void AIUpdateInterface::doQuickExit( std::vector<Coord3D>* path )
 {
 
 	Bool locked = getStateMachine()->isLocked();
@@ -4199,14 +4198,14 @@ void AIUpdateInterface::transferAttack(ObjectID fromID, ObjectID toID)
  */
 void AIUpdateInterface::setCurrentVictim( const Object *victim )
 {
-	if (victim == NULL)
+	if (victim == nullptr)
 	{
 		// be paranoid, in case we are called from dtors, etc.
 		if (m_currentVictimID != INVALID_ID)
 		{
 			Object* self = getObject();
 			Object* target = TheGameLogic->findObjectByID(m_currentVictimID);
-			if (self != NULL && target != NULL)
+			if (self != nullptr && target != nullptr)
 			{
 				AIUpdateInterface* targetAI = target->getAI();
 				if (targetAI)
@@ -4230,16 +4229,16 @@ void AIUpdateInterface::setCurrentVictim( const Object *victim )
 /**
  * Who is our current victim?
  */
-Object *AIUpdateInterface::getCurrentVictim( void ) const
+Object *AIUpdateInterface::getCurrentVictim() const
 {
 	if (m_currentVictimID != INVALID_ID)
 		return TheGameLogic->findObjectByID( m_currentVictimID );
 
-	return NULL;
+	return nullptr;
 }
 
 // if we are attacking a position (and NOT an object), return it. otherwise return null.
-const Coord3D *AIUpdateInterface::getCurrentVictimPos( void ) const
+const Coord3D *AIUpdateInterface::getCurrentVictimPos() const
 {
 	if (getObject()->testStatus(OBJECT_STATUS_IS_ATTACKING))
 	{
@@ -4249,7 +4248,7 @@ const Coord3D *AIUpdateInterface::getCurrentVictimPos( void ) const
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -4264,7 +4263,7 @@ void AIUpdateInterface::setAttitude( AttitudeType tude )
 /**
  * Get the current behavior modifier state
  */
-AttitudeType AIUpdateInterface::getAttitude( void ) const
+AttitudeType AIUpdateInterface::getAttitude() const
 {
 	return m_attitude;
 }
@@ -4290,7 +4289,7 @@ void AIUpdateInterface::ignoreObstacleID( ObjectID id )
 }
 
 //-------------------------------------------------------------------------------------------------
-ObjectID AIUpdateInterface::getIgnoredObstacleID( void ) const
+ObjectID AIUpdateInterface::getIgnoredObstacleID() const
 {
 	return m_ignoreObstacleID;
 }
@@ -4303,7 +4302,7 @@ Object* AIUpdateInterface::getEnterTarget()
 	if( stateType != AI_ENTER &&
 			stateType != AI_GUARD_TUNNEL_NETWORK &&
 			stateType != AI_GET_REPAIRED )
-		return NULL;
+		return nullptr;
 
 	return getStateMachine()->getGoalObject();
 }
@@ -4315,7 +4314,7 @@ void AIUpdateInterface::setLastCommandSource( CommandSourceType source )
 }
 
 //-------------------------------------------------------------------------------------------------
-UnsignedInt AIUpdateInterface::getMoodMatrixValue( void ) const
+UnsignedInt AIUpdateInterface::getMoodMatrixValue() const
 {
 	UnsignedInt returnVal = 0;
 	// seems like a weird way to get my controlling object, but I don't see another
@@ -4361,7 +4360,7 @@ UnsignedInt AIUpdateInterface::getMoodMatrixValue( void ) const
 	}
 	else
 	{
-		if (m_turretAI[0] != NULL)
+		if (m_turretAI[0] != nullptr)
 		{
 			returnVal |= MM_UnitType_Turreted;
 		}
@@ -4379,7 +4378,7 @@ UnsignedInt AIUpdateInterface::getMoodMatrixActionAdjustment( MoodMatrixAction a
 {
 	// Angry Mob Members (but not Nexi) are never subject to moods. In particular,
 	// they must never, ever, ever convert a move into an attack move, or Bad Things
-	// will happend, since MobMemberSlavedUpdate expects a moveto to remain a moveto.
+	// will happen, since MobMemberSlavedUpdate expects a moveto to remain a moveto.
 	// Mark L sez that members do not, in fact, need any mood adjustment whatsoever,
 	// since the mood of the nexus wants to control all this anyway. Unfortunately, there
 	// is no KINDOF_MOB_MEMBER, and we don't want to add one at the eleventh hour...
@@ -4456,7 +4455,7 @@ UnsignedInt AIUpdateInterface::getMoodMatrixActionAdjustment( MoodMatrixAction a
 }
 
 //----------------------------------------------------------------------------------------------
-void AIUpdateInterface::wakeUpAndAttemptToTarget( void )
+void AIUpdateInterface::wakeUpAndAttemptToTarget()
 {
 	if (!isIdle()) {
 		return;
@@ -4505,10 +4504,10 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 
 	// if we're dead, we can't attack
 	if (obj->isEffectivelyDead())
-		return NULL;
+		return nullptr;
 
 	if (obj->testStatus(OBJECT_STATUS_IS_USING_ABILITY)) {
-		return NULL;  // we are doing a special ability.  Shouldn't auto-acquire a target at this time.  jba.
+		return nullptr;  // we are doing a special ability.  Shouldn't auto-acquire a target at this time.  jba.
 	}
 
 	const AIUpdateModuleData* d = getAIUpdateModuleData();
@@ -4517,14 +4516,14 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 	{
 		if ((d->m_autoAcquireEnemiesWhenIdle & AAS_Idle) == 0)
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
 // srj sez: this should ignore calledDuringIdle, despite what the name of the bit implies.
 	if (isAttacking() && BitIsSet(d->m_autoAcquireEnemiesWhenIdle, AAS_Idle_Not_While_Attacking))
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	//Check if unit is stealthed... is so we won't acquire targets unless he has
@@ -4540,7 +4539,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
   			{
 					// Sorry, stealthed and not allowed to idle fire when stealthed.
 					// Being in a firing container is an exception to this veto.
-  				return NULL;
+  				return nullptr;
   			}
 			}
 		}
@@ -4549,7 +4548,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 	UnsignedInt now = TheGameLogic->getFrame();
 
 	// Check if team auto targets same victim.
-	Object *teamVictim = NULL;
+	Object *teamVictim = nullptr;
 	if (calledByAI && obj->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 	{
 		teamVictim = obj->getTeam()->getTeamTargetObject();
@@ -4558,7 +4557,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 			// like toxin tractors shouldn't acquire aircraft. jba. [8/27/2003]
 			CanAttackResult result = obj->getAbleToAttackSpecificObject( ATTACK_NEW_TARGET, teamVictim, CMD_FROM_AI );
 			if( result != ATTACKRESULT_POSSIBLE && result != ATTACKRESULT_POSSIBLE_AFTER_MOVING ) {
-				teamVictim = NULL; // Can't attack him. jba [8/27/2003]
+				teamVictim = nullptr; // Can't attack him. jba [8/27/2003]
 			}
 		}
 
@@ -4572,7 +4571,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 	{
 		// make sure it's time to check again.
 		if (now < m_nextMoodCheckTime)
-			return NULL;
+			return nullptr;
 
 		Int checkRate = d->m_moodAttackCheckRate;
 		m_nextMoodCheckTime = now + checkRate;
@@ -4588,7 +4587,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 	Real rangeToFindWithin = TheAI->getAdjustedVisionRangeForObject(obj, AI_VISIONFACTOR_OWNERTYPE | AI_VISIONFACTOR_MOOD);
 
 	if (rangeToFindWithin <= 0.0f)
-		return NULL;
+		return nullptr;
 
 	//If we are contained by an object, add it's bounding radius so that large buildings can auto acquire everything in
 	//outer ranges. Calculating this from the center is bad... although this code makes it possible to acquire a target
@@ -4604,7 +4603,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 	{
 		BodyModuleInterface *bmi = obj->getBodyModule();
 		if (!bmi)
-			return NULL;
+			return nullptr;
 
 		//Kris: August 26, 2003
 		//Do not allow units that healed me to get acquired! They are our friends!!!
@@ -4658,7 +4657,7 @@ DEBUG_LOG(("GNMT frame %d: %s %08lx (con %s %08lx) uses range %f, flags %08lx, %
 	container,
 	rangeToFindWithin,
 	flags,
-	getAttackInfo() != NULL && getAttackInfo() != TheScriptEngine->getDefaultAttackInfo() ? "ATTACKINFO," : "",
+	getAttackInfo() != nullptr && getAttackInfo() != TheScriptEngine->getDefaultAttackInfo() ? "ATTACKINFO," : "",
 	newVictim ? newVictim->getTemplate()->getName().str() : "",
 	newVictim
 ));
@@ -4681,122 +4680,156 @@ setTmpValue(now);
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void AIUpdateInterface::evaluateMoraleBonus( void )
+Bool AIUpdateInterface::hasNationalism() const
 {
-	Object *us = getObject();
-#ifdef ALLOW_DEMORALIZE
-	Bool demoralized = isDemoralized();
-#endif
-	Bool horde = FALSE;
-	Bool nationalism = FALSE;
-	Bool fanaticism = FALSE;
-
-	// do we have nationalism
-	///@todo Find a better way to represent nationalism without hardcoding here (CBD)
-	static const UpgradeTemplate *nationalismTemplate = TheUpgradeCenter->findUpgrade( "Upgrade_Nationalism" );
-	DEBUG_ASSERTCRASH( nationalismTemplate != NULL, ("AIUpdateInterface::evaluateMoraleBonus - Nationalism upgrade not found") );
-	Player *player = us->getControllingPlayer();
-	if( player && player->hasUpgradeComplete( nationalismTemplate ) )
-		nationalism = TRUE;
-
-	// do we have fanaticism
-	///@todo Find a better way to represent fanaticism without hardcoding here (MAL)
-	static const UpgradeTemplate *fanaticismTemplate = TheUpgradeCenter->findUpgrade( "Upgrade_Fanaticism" );
-	DEBUG_ASSERTCRASH( fanaticismTemplate != NULL, ("AIUpdateInterface::evaluateMoraleBonus - Fanaticism upgrade not found") );
-	if( player && player->hasUpgradeComplete( fanaticismTemplate ) )
-		fanaticism = TRUE;
-
-	// are we in a horde
-	HordeUpdateInterface *hui;
-	for( BehaviorModule** u = us->getBehaviorModules(); *u; ++u )
+	if (const Player *player = getObject()->getControllingPlayer())
 	{
-
-		hui = (*u)->getHordeUpdateInterface();
-		if( hui && hui->isInHorde() )
+		///@todo Find a better way to represent nationalism without hard coding here (CBD)
+		static const UpgradeTemplate *nationalismTemplate = TheUpgradeCenter->findUpgrade( "Upgrade_Nationalism" );
+		if (nationalismTemplate != nullptr)
 		{
-			horde = TRUE;
-
-			if( !hui->isAllowedNationalism() )
-			{
-				// Sorry CBD and MAL, but the cancer has spread to the lymph nodes.  After Alpha, just pump full of painkillers.
-				nationalism = FALSE;
-				fanaticism = FALSE;
-			}
+			return player->hasUpgradeComplete( nationalismTemplate );
 		}
+	}
+	return false;
+}
 
-	}  // end for
-
-#ifdef ALLOW_DEMORALIZE
-	// if we are are not demoralized we can have horde and nationalism effects
-	if( demoralized == FALSE )
-#endif
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+Bool AIUpdateInterface::hasFanaticism() const
+{
+	if (const Player *player = getObject()->getControllingPlayer())
 	{
-
-#ifdef ALLOW_DEMORALIZE
-		// demoralized
-		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_DEMORALIZED );
-#endif
-
-		//Lorenzen temporarily disabled, since it fights with the horde buff
-		//Drawable *draw = us->getDrawable();
-		//if ( draw && !us->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
-		//	draw->setTerrainDecal(TERRAIN_DECAL_NONE);
-
-		// horde
-		if( horde )
+		///@todo Find a better way to represent fanaticism without hard coding here (MAL)
+		static const UpgradeTemplate *fanaticismTemplate = TheUpgradeCenter->findUpgrade( "Upgrade_Fanaticism" );
+		if (fanaticismTemplate != nullptr)
 		{
-			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+			return player->hasUpgradeComplete( fanaticismTemplate );
+		}
+	}
+	return false;
+}
 
-		}  // end if
-		else
-			us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
-
-		// nationalism
-		if( nationalism )
-    {
-			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
-      // fanaticism
-      if ( fanaticism )
-        us->setWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );// FOR THE NEW GC INFANTRY GENERAL
-      else
-        us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
-    }
-		else
-			us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
-
-
-
-	}  // end if
+// ------------------------------------------------------------------------------------------------
+// TheSuperHackers @refactor The implementation has been improved and simplified.
+// ------------------------------------------------------------------------------------------------
+void AIUpdateInterface::evaluateMoraleBonus( Bool inHorde, Bool allowNationalism, HordeActionType type )
+{
 #ifdef ALLOW_DEMORALIZE
-	else
+
+	// if we are demoralized, then we can not have horde and nationalism effects
+	if( isDemoralized() )
 	{
+		Object *us = getObject();
 
 		// demoralized
 		us->setWeaponBonusCondition( WEAPONBONUSCONDITION_DEMORALIZED );
 
-		// we cannot have horde bonus condition
+		// we cannot have horde bonuses
 		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+
 		Drawable *draw = us->getDrawable();
 		if( draw && !us->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
 		{
 			draw->setTerrainDecal(TERRAIN_DECAL_DEMORALIZED);
 		}
 
-		// we cannot have nationalism bonus condition
-		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
-    us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+		return;
+	}
 
-	}  // end else
+	// demoralized
+	us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_DEMORALIZED );
+
+#endif // ALLOW_DEMORALIZE
+
+	//Lorenzen temporarily disabled, since it fights with the horde buff
+	//Object *us = getObject();
+	//Drawable *draw = us->getDrawable();
+	//if ( draw && !us->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
+	//	draw->setTerrainDecal(TERRAIN_DECAL_NONE);
+
+	switch (type)
+	{
+	case HORDEACTION_HORDE:
+		evaluateNationalismBonusClassic(inHorde, allowNationalism);
+		break;
+
+#if !RETAIL_COMPATIBLE_CRC
+	case HORDEACTION_HORDE_FIXED:
+		evaluateNationalismBonus(inHorde, allowNationalism);
+		break;
 #endif
+	}
+}
 
-/*
-	UnicodeString msg;
-	msg.format( L"'%S' Horde=%d,Nationalism=%d,Demoralized=%d",
-							us->getTemplate()->getName().str(), horde, nationalism, demoralized );
-	TheInGameUI->message( msg );
-*/
+// ------------------------------------------------------------------------------------------------
+// TheSuperHackers @info The classic Nationalism Bonus implementation.
+// Is not great, because Nationalism and Fanaticism bonuses are not disabled when leaving the horde.
+// ------------------------------------------------------------------------------------------------
+void AIUpdateInterface::evaluateNationalismBonusClassic( Bool inHorde, Bool allowNationalism )
+{
+	Object *us = getObject();
 
-}  // end evaluateMoraleBonus
+	if( inHorde )
+	{
+		us->setWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+	}
+	else
+	{
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+	}
+
+	if( allowNationalism && hasNationalism() )
+	{
+		us->setWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
+
+		if ( hasFanaticism() )
+		{
+			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+		}
+		else
+		{
+			us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+		}
+	}
+	else
+	{
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
+	}
+}
+
+// ------------------------------------------------------------------------------------------------
+// TheSuperHackers @bugfix The fixed Nationalism Bonus implementation.
+// Nationalism and Fanaticism are now tied to the horde status.
+// And Fanaticism is no longer dependent on Nationalism.
+// ------------------------------------------------------------------------------------------------
+void AIUpdateInterface::evaluateNationalismBonus( Bool inHorde, Bool allowNationalism )
+{
+	Object *us = getObject();
+
+	if( inHorde )
+	{
+		us->setWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+
+		if( allowNationalism && hasNationalism() )
+		{
+			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
+		}
+
+		if( allowNationalism && hasFanaticism() )
+		{
+			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+		}
+	}
+	else
+	{
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
+		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_FANATICISM );
+	}
+}
 
 #ifdef ALLOW_DEMORALIZE
 // ------------------------------------------------------------------------------------------------
@@ -4812,12 +4845,16 @@ void AIUpdateInterface::setDemoralized( UnsignedInt durationInFrames )
 	if( (prevDemoralizedFrames == 0 && m_demoralizedFramesLeft > 0) ||
 			(prevDemoralizedFrames > 0 && m_demoralizedFramesLeft == 0) )
 	{
-
 		// evaluate demoralization, nationalism, and horde effect as they are all intertwined
-		evaluateMoraleBonus();
-
-	}  // end if
-
+		Object *us = getObject();
+		for( BehaviorModule** u = us->getBehaviorModules(); *u; ++u )
+		{
+			if ( HordeUpdateInterface *hui = (*u)->getHordeUpdateInterface() )
+			{
+				evaluateMoraleBonus( hui->isInHorde(), hui->isAllowedNationalism(), hui->getHordeActionType() );
+			}
+		}
+	}
 }
 #endif
 
@@ -4860,12 +4897,12 @@ void AIUpdateInterface::privateCommandButton( const CommandButton *commandButton
 							default:
 								if( owner->getName().isNotEmpty() )
 								{
-									DEBUG_ASSERTCRASH( 0, ("AIUpdate::privateCommandButton() -- unit %s ('%s'), command %s not implemented.",
+									DEBUG_CRASH( ("AIUpdate::privateCommandButton() -- unit %s ('%s'), command %s not implemented.",
 										owner->getTemplate()->getName().str(), owner->getName().str(), commandButton->getTextLabel().str() ) );
 								}
 								else
 								{
-									DEBUG_ASSERTCRASH( 0, ("AIUpdate::privateCommandButton() -- unit %s, command %s not implemented.",
+									DEBUG_CRASH( ("AIUpdate::privateCommandButton() -- unit %s, command %s not implemented.",
 										owner->getTemplate()->getName().str(), commandButton->getTextLabel().str() ) );
 								}
 						}
@@ -4913,12 +4950,12 @@ void AIUpdateInterface::privateCommandButtonPosition( const CommandButton *comma
 							default:
 								if( owner->getName().isNotEmpty() )
 								{
-									DEBUG_ASSERTCRASH( 0, ("AIUpdate::privateCommandButtonPosition() -- unit %s ('%s'), command %s not implemented.",
+									DEBUG_CRASH( ("AIUpdate::privateCommandButtonPosition() -- unit %s ('%s'), command %s not implemented.",
 										owner->getTemplate()->getName().str(), owner->getName().str(), commandButton->getTextLabel().str() ) );
 								}
 								else
 								{
-									DEBUG_ASSERTCRASH( 0, ("AIUpdate::privateCommandButtonPosition() -- unit %s, command %s not implemented.",
+									DEBUG_CRASH( ("AIUpdate::privateCommandButtonPosition() -- unit %s, command %s not implemented.",
 										owner->getTemplate()->getName().str(), commandButton->getTextLabel().str() ) );
 								}
 								break;
@@ -4980,7 +5017,7 @@ void AIUpdateInterface::privateCommandButtonObject( const CommandButton *command
 								targetNickname.format( "('%s')", obj->getName().str() );
 							}
 
-							DEBUG_ASSERTCRASH( 0, ("AIUpdate::privateCommandButtonPosition() -- unit %s %s, command %s at unit %s %s not implemented.",
+							DEBUG_CRASH( ("AIUpdate::privateCommandButtonPosition() -- unit %s %s, command %s at unit %s %s not implemented.",
 								myName.str(), myNickname.str(), commandButton->getTextLabel().str(), targetName.str(), targetNickname.str() ) );
 						}
 					}
@@ -4991,7 +5028,7 @@ void AIUpdateInterface::privateCommandButtonObject( const CommandButton *command
 }
 
 // ------------------------------------------------------------------------------------------------
-AIGroup *AIUpdateInterface::getGroup(void)
+AIGroup *AIUpdateInterface::getGroup()
 {
 	return getObject()->getGroup();
 }
@@ -5014,7 +5051,7 @@ void AIUpdateInterface::crc( Xfer *x )
 
 	CRCGEN_LOG(("AIUpdateInterface::crc() end - %8.8X", ((XferCRC *)x)->getCRC()));
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -5090,7 +5127,7 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 	}
 
 	xfer->xferBool(&m_waitingForPath);
-	Bool gotPath = (m_path != NULL);
+	Bool gotPath = (m_path != nullptr);
 	xfer->xferBool(&gotPath);
 	if (xfer->getXferMode() == XFER_LOAD)	{
 		if (gotPath) {
@@ -5169,7 +5206,7 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 			// xferSelfAndCurLocoPtr() to continue to require a pristine,
 			// empty set. (srj)
 			m_locomotorSet.clear();
-			m_curLocomotor = NULL;
+			m_curLocomotor = nullptr;
 		}
 		m_locomotorSet.xferSelfAndCurLocoPtr(xfer, &m_curLocomotor);
 		xfer->xferUser(&m_curLocomotorSet, sizeof(m_curLocomotorSet));
@@ -5238,12 +5275,12 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 	}
 
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIUpdateInterface::loadPostProcess( void )
+void AIUpdateInterface::loadPostProcess()
 {
 	UpdateModule::loadPostProcess();
 
@@ -5275,7 +5312,7 @@ void AIUpdateInterface::loadPostProcess( void )
 		}
 	}
 
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------

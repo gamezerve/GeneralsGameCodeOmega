@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/NameKeyGenerator.h"
 #include "Common/ThingTemplate.h"
@@ -49,9 +49,9 @@ void ControlBar::updateConstructionTextDisplay( Object *obj )
 {
 	UnicodeString text;
 	static UnsignedInt descID = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:UnderConstructionDesc" );
-	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( NULL, descID );
+	GameWindow *descWindow = TheWindowManager->winGetWindowFromId( nullptr, descID );
 
-	// santiy
+	// sanity
 	DEBUG_ASSERTCRASH( descWindow, ("Under construction window not found") );
 
 	// format the message
@@ -62,7 +62,7 @@ void ControlBar::updateConstructionTextDisplay( Object *obj )
 	// record this as the last percentage displayed
 	m_displayedConstructPercent = obj->getConstructionPercent();
 
-}  // end updateConstructionTextDisplay
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Populate the interface for an under construction context. */
@@ -71,7 +71,7 @@ void ControlBar::populateUnderConstruction( Object *objectUnderConstruction )
 {
 
 	// sanity
-	if( objectUnderConstruction == NULL )
+	if( objectUnderConstruction == nullptr )
 		return;
 
 	// get our parent window
@@ -99,11 +99,11 @@ void ControlBar::populateUnderConstruction( Object *objectUnderConstruction )
 		showRallyPoint( exit->getRallyPoint() );
 
 
-}  // end populateUnderConstruction
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void ControlBar::updateContextUnderConstruction( void )
+void ControlBar::updateContextUnderConstruction()
 {
 	Object *obj = m_currentSelectedDrawable->getObject();
 
@@ -114,10 +114,10 @@ void ControlBar::updateContextUnderConstruction( void )
 		evaluateContextUI();
 		return;
 
-	}  // end if
+	}
 
 	// if the construction percent has changed since what was last shown to the user update the text
 	if( m_displayedConstructPercent != obj->getConstructionPercent() )
 		updateConstructionTextDisplay( obj );
 
-}  // end updatecontextUnderConstruction
+}

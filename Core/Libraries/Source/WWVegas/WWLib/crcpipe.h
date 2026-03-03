@@ -34,11 +34,10 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef CRCPIPE_H
-#define CRCPIPE_H
+#pragma once
 
-#include	"CRC.H"
-#include	"PIPE.H"
+#include "CRC.h"
+#include "PIPE.h"
 
 /*
 **	This class doesn't modify the data being piped through, but it does examine it and build
@@ -47,11 +46,11 @@
 class CRCPipe : public Pipe
 {
 	public:
-		CRCPipe(void) {}
+		CRCPipe() {}
 		virtual int Put(void const * source, int slen);
 
 		// Fetch the CRC value.
-		long Result(void) const;
+		long Result() const;
 
 	protected:
 		CRCEngine CRC;
@@ -60,5 +59,3 @@ class CRCPipe : public Pipe
 		CRCPipe(CRCPipe & rvalue);
 		CRCPipe & operator = (CRCPipe const & pipe);
 };
-
-#endif

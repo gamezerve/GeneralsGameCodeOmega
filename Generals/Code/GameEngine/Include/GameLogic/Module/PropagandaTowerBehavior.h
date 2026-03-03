@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __PROPAGANDA_TOWER_BEHAVIOR_H_
-#define __PROPAGANDA_TOWER_BEHAVIOR_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Module/PropagandaTowerBehavior.h"
@@ -50,7 +47,7 @@ class PropagandaTowerBehaviorModuleData: public UpdateModuleData
 
 public:
 
-	PropagandaTowerBehaviorModuleData( void );
+	PropagandaTowerBehaviorModuleData();
 
 	static void buildFieldParse( MultiIniFieldParse &p );
 
@@ -80,14 +77,14 @@ public:
 
 	// module methods
 	static Int getInterfaceMask() { return UpdateModule::getInterfaceMask() | (MODULEINTERFACE_DIE); }
-	virtual void onDelete( void );
-	void onObjectCreated( void );
+	virtual void onDelete();
+	void onObjectCreated();
 
 	// update module methods
-	virtual UpdateSleepTime update( void );
+	virtual UpdateSleepTime update();
 
 	// die module methods
-	virtual DieModuleInterface *getDie( void ) { return this; }
+	virtual DieModuleInterface *getDie() { return this; }
 	virtual void onDie( const DamageInfo *damageInfo );
 	virtual void onCapture( Player *oldOwner, Player *newOwner );
 
@@ -100,8 +97,8 @@ public:
 
 protected:
 
-	virtual void removeAllInfluence( void );			///< remove any influence we had on all objects we've affected
-	virtual void doScan( void );									///< do a scan
+	virtual void removeAllInfluence();			///< remove any influence we had on all objects we've affected
+	virtual void doScan();									///< do a scan
 	virtual void effectLogic( Object *obj, Bool giving,
 														const PropagandaTowerBehaviorModuleData *modData);///< give/remove effect on object
 
@@ -111,6 +108,3 @@ protected:
 	const UpgradeTemplate *m_upgradeRequired;			///< Upgrade required to use the upgraded pulse FX
 
 };
-
-#endif  // end __PROPAGANDA_TOWER_BEHAVIOR_H_
-

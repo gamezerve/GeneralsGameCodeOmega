@@ -69,14 +69,14 @@ CriticalSectionClass	SoundSceneObjClass::m_IDListMutex;
 
 
 //////////////////////////////////////////////////////////////////////////////////
-//	Mutex managment
+//	Mutex management
 //////////////////////////////////////////////////////////////////////////////////
 /*
 class HandleMgrClass
 {
 public:
-	HandleMgrClass (void)	{ SoundSceneObjClass::m_IDListMutex = ::CreateMutex (NULL, FALSE, NULL); }
-	~HandleMgrClass (void)	{ ::CloseHandle (SoundSceneObjClass::m_IDListMutex); }
+	HandleMgrClass ()	{ SoundSceneObjClass::m_IDListMutex = ::CreateMutex (nullptr, FALSE, nullptr); }
+	~HandleMgrClass ()	{ ::CloseHandle (SoundSceneObjClass::m_IDListMutex); }
 
 };
 
@@ -88,13 +88,13 @@ HandleMgrClass _GlobalMutexHandleMgr;
 //	SoundSceneObjClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-SoundSceneObjClass::SoundSceneObjClass (void)
-	:	m_Scene (NULL),
-		m_PhysWrapper (NULL),
-		m_pCallback (NULL),
-		m_AttachedObject (NULL),
+SoundSceneObjClass::SoundSceneObjClass ()
+	:	m_Scene (nullptr),
+		m_PhysWrapper (nullptr),
+		m_pCallback (nullptr),
+		m_AttachedObject (nullptr),
 		m_UserData (0),
-		m_UserObj (NULL),
+		m_UserObj (nullptr),
 		m_ID (SOUND_OBJ_DEFAULT_ID),
 		m_RegisteredEvents (AudioCallbackClass::EVENT_NONE)
 {
@@ -111,12 +111,12 @@ SoundSceneObjClass::SoundSceneObjClass (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 SoundSceneObjClass::SoundSceneObjClass (const SoundSceneObjClass &src)
-	:	m_Scene (NULL),
-		m_PhysWrapper (NULL),
-		m_pCallback (NULL),
-		m_AttachedObject (NULL),
+	:	m_Scene (nullptr),
+		m_PhysWrapper (nullptr),
+		m_pCallback (nullptr),
+		m_AttachedObject (nullptr),
 		m_UserData (0),
-		m_UserObj (NULL),
+		m_UserObj (nullptr),
 		m_ID (SOUND_OBJ_DEFAULT_ID),
 		m_RegisteredEvents (AudioCallbackClass::EVENT_NONE)
 {
@@ -133,7 +133,7 @@ SoundSceneObjClass::SoundSceneObjClass (const SoundSceneObjClass &src)
 //	~SoundSceneObjClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-SoundSceneObjClass::~SoundSceneObjClass (void)
+SoundSceneObjClass::~SoundSceneObjClass ()
 {
 	REF_PTR_RELEASE (m_UserObj);
 	REF_PTR_RELEASE (m_AttachedObject);
@@ -175,7 +175,7 @@ SoundSceneObjClass::Attach_To_Object
 {
 	REF_PTR_SET (m_AttachedObject, render_obj);
 
-	if (m_AttachedObject != NULL && bone_name != NULL) {
+	if (m_AttachedObject != nullptr && bone_name != nullptr) {
 		m_AttachedBone = m_AttachedObject->Get_Bone_Index (bone_name);
 	} else {
 		m_AttachedBone = -1;
@@ -221,11 +221,11 @@ SoundSceneObjClass::Attach_To_Object
 //
 //////////////////////////////////////////////////////////////////////////////
 void
-SoundSceneObjClass::Apply_Auto_Position (void)
+SoundSceneObjClass::Apply_Auto_Position ()
 {
 	// If the sound is attached to an object, then update its transform
 	// based on this link.
-	if (m_AttachedObject != NULL) {
+	if (m_AttachedObject != nullptr) {
 
 		// Determine which transform to use
 		Matrix3D transform (1);
@@ -336,7 +336,7 @@ SoundSceneObjClass::Load (ChunkLoadClass &cload)
 	//	We need to 'swizzle' the attached object pointer.  We saved the pointer's
 	// value, and need to map it (hopefully) to the new value.
 	//
-	if (m_AttachedObject != NULL) {
+	if (m_AttachedObject != nullptr) {
 		SaveLoadSystemClass::Request_Ref_Counted_Pointer_Remap ((RefCountClass **)&m_AttachedObject);
 	}
 

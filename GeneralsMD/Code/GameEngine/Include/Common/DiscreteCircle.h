@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __DISCRETECIRCLE_H__
-#define __DISCRETECIRCLE_H__
-
 //-------------------------------------------------------------------------------------------------
 /**
 	One horizontal line of the circle we are going to generate, the points drawn should be from
@@ -66,14 +63,11 @@ class DiscreteCircle
 
 	public:
 		DiscreteCircle(Int xCenter, Int yCenter, Int radius);
-		__inline const VecHorzLine &getEdges(void) const { return m_edges; }
-		__inline Int getEdgeCount(void) const { return m_edges.size(); }
+		__inline const VecHorzLine &getEdges() const { return m_edges; }
+		__inline Int getEdgeCount() const { return m_edges.size(); }
 		void drawCircle(ScanlineDrawFunc functionToDrawWith, void *parmToPass);
 
 	protected:
 		void generateEdgePairs(Int xCenter, Int yCenter, Int radius);
 		void removeDuplicates();
 };
-
-#endif /* __DISCRETECIRCLE_H__ */
-

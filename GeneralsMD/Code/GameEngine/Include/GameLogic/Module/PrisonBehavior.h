@@ -27,8 +27,7 @@
 // Desc:   Prison Behaviors
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __PRISON_BEHAVIOR_H_
-#define __PRISON_BEHAVIOR_H_
+#pragma once
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
@@ -45,7 +44,7 @@ class PrisonBehaviorModuleData : public OpenContainModuleData
 
 public:
 
-	PrisonBehaviorModuleData( void );
+	PrisonBehaviorModuleData();
 
 	static void buildFieldParse( MultiIniFieldParse &p );
 
@@ -68,7 +67,7 @@ public:
 	// virtual destructor prototype provided by memory pool object
 
 	// module methods
-	virtual void onDelete( void );
+	virtual void onDelete();
 
 	// contain methods
 	virtual void onContaining( Object *obj, Bool wasSelected );
@@ -85,5 +84,3 @@ protected:
 };
 
 #endif
-
-#endif  // end __PRISON_BEHAVIOR_H_

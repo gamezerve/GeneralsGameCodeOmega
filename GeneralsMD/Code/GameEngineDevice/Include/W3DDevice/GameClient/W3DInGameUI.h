@@ -33,9 +33,6 @@
 
 #pragma once
 
-#ifndef __W3DINGAMEUI_H_
-#define __W3DINGAMEUI_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -62,19 +59,19 @@ public:
 	virtual ~W3DInGameUI();
 
 	// Inherited from subsystem interface -----------------------------------------------------------
-	virtual	void init( void );		///< Initialize the in-game user interface
-	virtual void update( void );	//< Update the UI by calling preDraw(), draw(), and postDraw()
-	virtual void reset( void );		///< Reset
+	virtual	void init();		///< Initialize the in-game user interface
+	virtual void update();	//< Update the UI by calling preDraw(), draw(), and postDraw()
+	virtual void reset();		///< Reset
 	//-----------------------------------------------------------------------------------------------
 
-	virtual void draw( void ); ///< Render the in-game user interface
+	virtual void draw(); ///< Render the in-game user interface
 
 protected:
 
 	/// factory for views
-	virtual View *createView( void ) { return NEW W3DView; }
+	virtual View *createView() { return NEW W3DView; }
 
-	virtual void drawSelectionRegion( void );			///< draw the selection region on screen
+	virtual void drawSelectionRegion();			///< draw the selection region on screen
 	virtual void drawMoveHints( View *view );			///< draw move hint visual feedback
 	virtual void drawAttackHints( View *view );		///< draw attack hint visual feedback
 	virtual void drawPlaceAngle( View *view ); 		///< draw place building angle if needed
@@ -84,6 +81,4 @@ protected:
 	RenderObjClass *m_buildingPlacementAnchor;
 	RenderObjClass *m_buildingPlacementArrow;
 
-};  // end class W3DInGameUI
-
-#endif  // end __W3DINGAMEUI_H_
+};

@@ -64,13 +64,13 @@ static DWORD WINAPI		_logdata_thread_function(LPVOID log_obj_ptr);
  *   02/09/2000 JGA  : Created.                                                                *
  *=============================================================================================*/
 LogDataDialogClass::LogDataDialogClass(HWND parent):
- Hwnd(NULL),
+ Hwnd(nullptr),
  ParentHwnd(parent),
  buffer_index(0),
  last_buffer_index(0),
  status(0)
 {
-	ThreadHandle = CreateThread(NULL, 0, _logdata_thread_function, (LPVOID)this, 0, &ThreadID);
+	ThreadHandle = CreateThread(nullptr, 0, _logdata_thread_function, (LPVOID)this, 0, &ThreadID);
 
 	if (ThreadHandle) {
 		while (status == 0) {
@@ -104,7 +104,7 @@ void LogDataDialogClass::printf(const char *text, ...)
 {
 	va_list arguments;
 	va_start(arguments, text);
-}	// printf
+}
 
 void LogDataDialogClass::printf(const char * text, va_list args)
 {
@@ -169,7 +169,7 @@ void LogDataDialogClass::rprintf(const char *text, va_list args)
 
 	//SendMessage(GetDlgItem(Hwnd,IDC_ANIM_LOG_RICHEDIT), EM_SCROLLCARET, 0, 0);
 
-}	// rprintf
+}
 
 
 /***********************************************************************************************
@@ -194,7 +194,7 @@ void	LogDataDialogClass::updatebar(float position, float total)
 
 	SendMessage(ctrlHwnd, PBM_SETPOS, pos, 0 );
 
-}	// updatebar
+}
 
 
 /***********************************************************************************************
@@ -218,7 +218,7 @@ void LogDataDialogClass::Wait_OK()
 		// wait for the OK
 	}
 
-} // Wait_OK
+}
 
 
 
@@ -272,7 +272,7 @@ bool LogDataDialogClass::Dialog_Proc
 					status = 2;
 
 					EndDialog(Hwnd, 1);
-					Hwnd = NULL;
+					Hwnd = nullptr;
 					return TRUE;
 					break;
 
@@ -287,7 +287,7 @@ bool LogDataDialogClass::Dialog_Proc
 
 			if (status >= 2) {
 				EndDialog(Hwnd, 1);
-				Hwnd = NULL;
+				Hwnd = nullptr;
 			}
 
 			return TRUE;
@@ -296,12 +296,12 @@ bool LogDataDialogClass::Dialog_Proc
 	}
 	return FALSE;
 
-}	// Dialog_Proc
+}
 
 void LogDataDialogClass::Dialog_Init()
 {
 
-	SetCursor(LoadCursor (NULL, IDC_ARROW));
+	SetCursor(LoadCursor (nullptr, IDC_ARROW));
 
 	RECT desktop;
 	RECT ourwin;
@@ -325,7 +325,7 @@ void LogDataDialogClass::Dialog_Init()
 	status = 1;	// signal init
 
 
-}	// Dialog_Init
+}
 
 
 
@@ -367,7 +367,7 @@ BOOL CALLBACK _logdata_dialog_proc
 		return FALSE;
 	}
 
-} // _logdata_dialog_proc
+}
 
 
 DWORD WINAPI _logdata_thread_function(LPVOID log_obj_ptr)

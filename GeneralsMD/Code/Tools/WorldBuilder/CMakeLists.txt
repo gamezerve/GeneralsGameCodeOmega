@@ -22,7 +22,6 @@ set(WORLDBUILDER_SRC
     "src/EditGroup.cpp"
     "src/EditObjectParameter.cpp"
     "src/EditParameter.cpp"
-    "src/EulaDialog.cpp"
     "src/ExportScriptsOptions.cpp"
     "src/EyedropperTool.cpp"
     "src/FeatherOptions.cpp"
@@ -122,7 +121,6 @@ set(WORLDBUILDER_SRC
     "include/EditGroup.h"
     "include/EditObjectParameter.h"
     "include/EditParameter.h"
-    "include/euladialog.h"
     "include/ExportScriptsOptions.h"
     "include/EyedropperTool.h"
     "include/FeatherOptions.h"
@@ -209,11 +207,18 @@ target_include_directories(z_worldbuilder PRIVATE
     res
 )
 
+target_precompile_headers(z_worldbuilder PRIVATE
+    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+    [["always.h"]]
+    [["Common/STLTypedefs.h"]]
+    [["StdAfx.h"]]
+    [["WWCommon.h"]]
+)
+
 target_link_libraries(z_worldbuilder PRIVATE
     core_debug
     core_profile
     d3d8lib
-    dbghelplib
     imm32
     vfw32
     winmm

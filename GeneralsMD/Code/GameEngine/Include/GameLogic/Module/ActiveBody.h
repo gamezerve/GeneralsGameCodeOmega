@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __ACTIVEBODY_H_
-#define __ACTIVEBODY_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/DamageFX.h"
 #include "GameLogic/Module/BodyModule.h"
@@ -75,7 +72,7 @@ public:
 	ActiveBody( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 
-	virtual void onDelete( void );
+	virtual void onDelete();
 
 	virtual void attemptDamage( DamageInfo *damageInfo );		///< try to damage this object
 	virtual Real estimateDamage( DamageInfoInput& damageInfo ) const;
@@ -101,8 +98,8 @@ public:
 	virtual void clearArmorSetFlag(ArmorSetType ast) { m_curArmorSetFlags.set(ast, 0); }
 	virtual Bool testArmorSetFlag(ArmorSetType ast) { return m_curArmorSetFlags.test(ast); }
 
-	virtual void setInitialHealth(Int initialPercent); ///< Sets the inital load health %.
-	virtual void setMaxHealth( Real maxHealth, MaxHealthChangeType healthChangeType = SAME_CURRENTHEALTH ); ///< Sets the inital max health
+	virtual void setInitialHealth(Int initialPercent); ///< Sets the initial load health %.
+	virtual void setMaxHealth( Real maxHealth, MaxHealthChangeType healthChangeType = SAME_CURRENTHEALTH ); ///< Sets the initial max health
 
 	virtual Bool getFrontCrushed() const { return m_frontCrushed; }
 	virtual Bool getBackCrushed() const { return m_backCrushed; }
@@ -116,12 +113,12 @@ public:
 	virtual Real getPreviousHealth() const { return m_prevHealth; }
 
 	virtual void setIndestructible( Bool indestructible );
-	virtual Bool isIndestructible( void ) const { return m_indestructible; }
+	virtual Bool isIndestructible() const { return m_indestructible; }
 
 	virtual void internalChangeHealth( Real delta );								///< change health
 
 	virtual void evaluateVisualCondition();
-	virtual void updateBodyParticleSystems( void );// made public for topple anf building collapse updates -ML
+	virtual void updateBodyParticleSystems();// made public for topple anf building collapse updates -ML
 
 	// Subdual Damage
 	virtual Bool isSubdued() const;
@@ -136,7 +133,7 @@ protected:
 	void createParticleSystems( const AsciiString &boneBaseName,
 															const ParticleSystemTemplate *systemTemplate,
 															Int maxSystems );
-	void deleteAllParticleSystems( void );
+	void deleteAllParticleSystems();
 	void setCorrectDamageState();
 
 	Bool shouldRetaliate(Object *obj);
@@ -174,6 +171,3 @@ private:
 	mutable const DamageFX*						m_curDamageFX;
 
 };
-
-#endif // __ACTIVEBODY_H_
-

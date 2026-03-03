@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef __IGNORE_PREFERENCES_H_
-#define __IGNORE_PREFERENCES_H_
-
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -71,7 +68,7 @@ public:
 	IgnorePreferences();
 	virtual ~IgnorePreferences();
 	void setIgnore(const AsciiString& userName, Int profileID, Bool ignore);
-	IgnorePrefMap getIgnores(void);
+	IgnorePrefMap getIgnores();
 
 };
 
@@ -82,5 +79,3 @@ public:
 //-----------------------------------------------------------------------------
 // EXTERNALS //////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-
-#endif // __IGNORE_PREFERENCES_H_

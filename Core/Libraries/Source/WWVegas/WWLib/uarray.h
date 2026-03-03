@@ -36,21 +36,11 @@
  *   UniqueArrayClass<T>::~UniqueArrayClass -- destructor                                      *
  *   UniqueArrayClass<T>::Add -- Add an item to the array                                      *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
+
 #pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef UARRAY_H
-#define UARRAY_H
-
-#ifndef HASHCALC_H
 #include "hashcalc.h"
-#endif
-
-#ifndef VECTOR_H
-#include "Vector.H"
-#endif
-
+#include "Vector.h"
 
 /*
 ** UniqueArrayClass
@@ -68,12 +58,12 @@ template <class T> class UniqueArrayClass
 public:
 
 	UniqueArrayClass(int initialsize,int growthrate,HashCalculatorClass<T> * hasher);
-	~UniqueArrayClass(void);
+	~UniqueArrayClass();
 
 	int				Add(const T & new_item);
 
-	int				Count(void) const								{ return Get_Unique_Count(); }
-	int				Get_Unique_Count(void) const				{ return UniqueItems.Count(); }
+	int				Count() const								{ return Get_Unique_Count(); }
+	int				Get_Unique_Count() const				{ return UniqueItems.Count(); }
 	const T &		Get(int index) const							{ return UniqueItems[index].Item; }
 	const T &		operator [] (int index) const				{ return Get(index); }
 
@@ -153,12 +143,10 @@ UniqueArrayClass<T>::UniqueArrayClass(int initial_size,int growth_rate,HashCalcu
  *   5/29/98    GTH : Created.                                                                 *
  *=============================================================================================*/
 template <class T>
-UniqueArrayClass<T>::~UniqueArrayClass(void)
+UniqueArrayClass<T>::~UniqueArrayClass()
 {
-	if (HashTable != NULL) {
-		delete[] HashTable;
-		HashTable = NULL;
-	}
+	delete[] HashTable;
+	HashTable = nullptr;
 }
 
 
@@ -222,7 +210,3 @@ inline int UniqueArrayClass<T>::Add(const T & new_item)
 
 	return index;
 }
-
-
-#endif // UARRAY_H
-

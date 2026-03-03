@@ -26,11 +26,8 @@
 //
 // main Debug object (singleton)
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef DEBUG_DEBUG_H // Include guard
-#define DEBUG_DEBUG_H
+
+#pragma once
 
 /**
   \class Debug debug.h <rts/debug.h>
@@ -340,7 +337,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     For the main thread this is already done, but for any additional
     threads being created this function must be called.
   */
-  static void InstallExceptionHandler(void);
+  static void InstallExceptionHandler();
 
   /** \internal
 
@@ -355,7 +352,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     \return true if next assert/log should be skipped, false otherwise
   */
-  static bool SkipNext(void);
+  static bool SkipNext();
 
   /** \internal
 
@@ -368,7 +365,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     \param file file that contains DASSERT or DASSERT_MSG macro
     \param line line where assert macro can be found
-    \param expr expression that triggered the assertion, NULL for 'general failure' (\ref DFAIL)
+    \param expr expression that triggered the assertion, nullptr for 'general failure' (\ref DFAIL)
     \return reference to Debug instance
   */
   static Debug &AssertBegin(const char *file, int line, const char *expr);
@@ -383,7 +380,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     \return false (always)
   */
-  bool AssertDone(void);
+  bool AssertDone();
 
   /** \internal
 
@@ -409,7 +406,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     \return false (always)
   */
-  bool CheckDone(void);
+  bool CheckDone();
 
   /** \internal
 
@@ -433,7 +430,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     \return false (always)
   */
-  bool LogDone(void);
+  bool LogDone();
 
   /** \internal
 
@@ -442,7 +439,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     Starts building the crash string which will then be send to the active
     output destinations.
 
-    \param file file that contains DCRASH or DCRASH_RELEASE macro, if NULL
+    \param file file that contains DCRASH or DCRASH_RELEASE macro, if nullptr
                 then no file info is given (used by DCRASH_RELEASE in release
                 builds)
     \param line line where crash macro can be found, 0 if no line info should
@@ -660,7 +657,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \return true (so function can be used in static initializers)
   */
   static bool AddIOFactory(const char *io_id, const char *descr,
-                           DebugIOInterface* (*func)(void));
+                           DebugIOInterface* (*func)());
 
   /**
     \brief Adds a new command group.
@@ -703,7 +700,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
 
     Scans I/O classes for new command input and processes it.
   */
-  static void Update(void);
+  static void Update();
 
   /** \internal
 
@@ -731,9 +728,15 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
   /**
     \brief Write build information into log.
   */
-  void WriteBuildInfo(void);
+  void WriteBuildInfo();
 
 private:
+#if defined(__GNUC__) && defined(_WIN32)
+  // For GCC/MinGW-w64 targeting Windows, allow constructor functions to call init methods
+  friend void GccPreStaticInit();
+  friend void GccPostStaticInit();
+#endif
+
   // no assignment, no copy constructor
   Debug(const Debug&);
   Debug& operator=(const Debug&);
@@ -741,12 +744,12 @@ private:
   /** \internal
 
     Undocumented default constructor. Initializes debugging library.
-    We can make this private as well so nobody accidently tries to create
+    We can make this private as well so nobody accidentally tries to create
     a Debug instance. Actually this function does not do anything -
     initialization is rather performed by PreStaticInit() and
     PostStaticInit().
   */
-  Debug(void);
+  Debug();
 
   /** \internal
 
@@ -754,14 +757,14 @@ private:
     initialized. Code herein must be extremely careful because all
     global C++ instances are not initialized yet.
   */
-  static void PreStaticInit(void);
+  static void PreStaticInit();
 
   /** \internal
 
     This function gets called after all static C++ symbols have
     been initialized.
   */
-  static void PostStaticInit(void);
+  static void PostStaticInit();
 
   /** \internal
 
@@ -769,7 +772,7 @@ private:
     function for any cleanup purposes (not the destructor, it
     might get called too early).
   */
-  static void StaticExit(void);
+  static void StaticExit();
 
   /** \internal
 
@@ -824,9 +827,9 @@ private:
     const char *descr;
 
     /// factory function
-    DebugIOInterface* (*factory)(void);
+    DebugIOInterface* (*factory)();
 
-    /// I/O interface (may be NULL)
+    /// I/O interface (may be null)
     DebugIOInterface *io;
 
     /// input buffer
@@ -1043,7 +1046,7 @@ private:
     Returns translated group name.
 
     \param fileOrGroup file or log group
-    \param descr description, may be NULL
+    \param descr description, may be nullptr
     \return translated log group name
   */
   const char *AddLogGroup(const char *fileOrGroup, const char *descr);
@@ -1158,7 +1161,7 @@ private:
 
     \return true if windowed, false if full screen
   */
-  bool IsWindowed(void);
+  bool IsWindowed();
 
   /// \internal name of current command group
   char curCommandGroup[100];
@@ -1225,8 +1228,6 @@ private:
   \return list of commands, separated by \\n
   \note This function is executed after all static variables have been initialized.
 */
-const char *DebugGetDefaultCommands(void);
+const char *DebugGetDefaultCommands();
 
 ///@} end of debug_fn group
-
-#endif // DEBUG_DEBUG_H

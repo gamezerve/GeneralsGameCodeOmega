@@ -31,9 +31,6 @@
 
 #pragma once
 
-#ifndef __MODULE_H_
-#define __MODULE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/INI.h"
 #include "Common/GameMemory.h"
@@ -69,7 +66,7 @@ enum ModuleType CPP_11(: Int)
 	MODULETYPE_CLIENT_UPDATE = 2,
 	// put new drawable module types here
 
-	NUM_MODULE_TYPES,  // keep this last!
+	NUM_MODULE_TYPES,
 
 	FIRST_DRAWABLE_MODULE_TYPE = MODULETYPE_DRAW,
 	LAST_DRAWABLE_MODULE_TYPE = MODULETYPE_CLIENT_UPDATE,
@@ -111,7 +108,7 @@ public:
 	virtual Bool isAiModuleData() const { return false; }
 
 	// ugh, hack
-	virtual const W3DModelDrawModuleData* getAsW3DModelDrawModuleData() const { return NULL; }
+	virtual const W3DModelDrawModuleData* getAsW3DModelDrawModuleData() const { return nullptr; }
 	virtual StaticGameLODLevel getMinimumRequiredGameLOD() const { return (StaticGameLODLevel)0;}
 
 	static void buildFieldParse(MultiIniFieldParse& p)
@@ -122,7 +119,7 @@ public:
 public:
 	virtual void crc( Xfer *xfer ) {}
 	virtual void xfer( Xfer *xfer ) {}
-	virtual void loadPostProcess( void ) {}
+	virtual void loadPostProcess() {}
 
 private:
 	NameKeyType m_moduleTagNameKey;		///< module tag key, unique among all modules for an object instance
@@ -140,7 +137,7 @@ public: \
 protected: \
 	virtual void crc( Xfer *xfer ); \
 	virtual void xfer( Xfer *xfer ); \
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 // ------------------------------------------------------------------------------------------------
 // For the creation of abstract module classes
@@ -149,7 +146,7 @@ protected: \
 protected: \
 	virtual void crc( Xfer *xfer ); \
 	virtual void xfer( Xfer *xfer ); \
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 //-------------------------------------------------------------------------------------------------
 // only use this macro for an ABC. for a real class, use MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA.
@@ -192,7 +189,7 @@ public:
 
 	virtual NameKeyType getModuleNameKey() const = 0;
 
-	inline NameKeyType getModuleTagNameKey() const { return getModuleData()->getModuleTagNameKey(); }
+	NameKeyType getModuleTagNameKey() const { return getModuleData()->getModuleTagNameKey(); }
 
 	/** this is called after all the Modules for a given Thing are created; it
 		allows Modules to resolve any inter-Module dependencies.
@@ -210,20 +207,20 @@ public:
 
 	/** onDelete() will be called on all modules contained by an object or drawable before
 	the actual deletion of each of those modules happens */
-	virtual void onDelete( void ) { }
+	virtual void onDelete() { }
 
 protected:
 
-	inline const ModuleData* getModuleData() const { return m_moduleData; }
+	const ModuleData* getModuleData() const { return m_moduleData; }
 
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 private:
 	const ModuleData* m_moduleData;
 
-};  // end Module
+};
 //-------------------------------------------------------------------------------------------------
 
 
@@ -251,12 +248,12 @@ public:
 
 protected:
 
-	inline Object *getObject() { return m_object; }
-	inline const Object *getObject() const { return m_object; }
+	Object *getObject() { return m_object; }
+	const Object *getObject() const { return m_object; }
 
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 private:
 
@@ -278,7 +275,7 @@ private:
 //=================================================================================================
 
 //-------------------------------------------------------------------------------------------------
-/** Module interface specific for Drawbles, this is really just to make a clear distinction
+/** Module interface specific for Drawables, this is really just to make a clear distinction
 	* between modules intended for use in objects and modules intended for use
 	* in drawables */
 //-------------------------------------------------------------------------------------------------
@@ -294,12 +291,12 @@ public:
 
 protected:
 
-	inline Drawable *getDrawable() { return m_drawable; }
-	inline const Drawable *getDrawable() const { return m_drawable; }
+	Drawable *getDrawable() { return m_drawable; }
+	const Drawable *getDrawable() const { return m_drawable; }
 
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 private:
 
@@ -314,7 +311,3 @@ private:
 //-------------------------------------------------------------------------------------------------
 /** VARIOUS MODULE INTERFACES */
 //-------------------------------------------------------------------------------------------------
-
-
-#endif // __MODULE_H_
-

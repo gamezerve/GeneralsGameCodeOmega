@@ -27,7 +27,7 @@
 // Desc:   Update will change model state conditions based on special power state
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameAudio.h"
 #include "Common/GlobalData.h"
@@ -53,7 +53,7 @@ MissileLauncherBuildingUpdate::MissileLauncherBuildingUpdate( Thing *thing, cons
 }
 
 //-------------------------------------------------------------------------------------------------
-MissileLauncherBuildingUpdate::~MissileLauncherBuildingUpdate( void )
+MissileLauncherBuildingUpdate::~MissileLauncherBuildingUpdate()
 {
 	if (m_openIdleAudio.isCurrentlyPlaying())
 	{
@@ -218,7 +218,7 @@ Bool MissileLauncherBuildingUpdate::isPowerCurrentlyInUse( const CommandButton *
 }
 
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime MissileLauncherBuildingUpdate::update( void )
+UpdateSleepTime MissileLauncherBuildingUpdate::update()
 {
 	const MissileLauncherBuildingUpdateModuleData* d = getMissileLauncherBuildingUpdateModuleData();
 
@@ -279,7 +279,7 @@ void MissileLauncherBuildingUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -309,15 +309,15 @@ void MissileLauncherBuildingUpdate::xfer( Xfer *xfer )
 	// timeout frame
 	xfer->xferUnsignedInt( &m_timeoutFrame );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void MissileLauncherBuildingUpdate::loadPostProcess( void )
+void MissileLauncherBuildingUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

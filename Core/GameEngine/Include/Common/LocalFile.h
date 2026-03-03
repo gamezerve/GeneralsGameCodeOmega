@@ -43,11 +43,6 @@
 
 #pragma once
 
-#ifndef __LOCALFILE_H
-#define __LOCALFILE_H
-
-
-
 //----------------------------------------------------------------------------
 //           Includes
 //----------------------------------------------------------------------------
@@ -97,7 +92,7 @@ class LocalFile : public File
 
 
 		virtual Bool	open( const Char *filename, Int access = NONE, size_t bufferSize = BUFFERSIZE ); ///< Open a file for access
-		virtual void	close( void );																			///< Close the file
+		virtual void	close();																			///< Close the file
 		virtual Int		read( void *buffer, Int bytes );										///< Read the specified number of bytes in to buffer: See File::read
 		virtual Int		readChar();																///< Read a character from the file
 		virtual Int		readWideChar();															///< Read a wide character from the file
@@ -108,7 +103,7 @@ class LocalFile : public File
 		virtual Int		writeChar( const WideChar* character );							///< Write a wide character to the file
 		virtual Int		seek( Int new_pos, seekMode mode = CURRENT );				///< Set file position: See File::seek
 		virtual Bool	flush();													///< flush data to disk
-		virtual void	nextLine(Char *buf = NULL, Int bufSize = 0);				///< moves file position to after the next new-line
+		virtual void	nextLine(Char *buf = nullptr, Int bufSize = 0);				///< moves file position to after the next new-line
 		virtual Bool	scanInt(Int &newInt);																///< return what gets read in as an integer at the current file position.
 		virtual Bool	scanReal(Real &newReal);														///< return what gets read in as a float at the current file position.
 		virtual	Bool	scanString(AsciiString &newString);									///< return what gets read in as a string at the current file position.
@@ -134,6 +129,3 @@ class LocalFile : public File
 //----------------------------------------------------------------------------
 //           Inlining
 //----------------------------------------------------------------------------
-
-
-#endif // __LOCALFILE_H

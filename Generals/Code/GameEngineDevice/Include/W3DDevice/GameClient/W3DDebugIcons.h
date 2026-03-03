@@ -22,11 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-#ifndef __W3D_DEBUG_ICONS_H_
-#define __W3D_DEBUG_ICONS_H_
 
 #include "always.h"
 #include "rendobj.h"
@@ -44,16 +40,16 @@ class W3DDebugIcons : public RenderObjClass
 
 public:
 
-	W3DDebugIcons(void);
+	W3DDebugIcons(Int mapWidth, Int mapHeight);
 	W3DDebugIcons(const W3DDebugIcons & src);
 	W3DDebugIcons & operator = (const W3DDebugIcons &);
-	~W3DDebugIcons(void);
+	~W3DDebugIcons();
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Render Object Interface
 	/////////////////////////////////////////////////////////////////////////////
-	virtual RenderObjClass *	Clone(void) const;
-	virtual int						Class_ID(void) const;
+	virtual RenderObjClass *	Clone() const;
+	virtual int						Class_ID() const;
 	virtual void					Render(RenderInfoClass & rinfo);
 
 	virtual bool					Cast_Ray(RayCollisionTestClass & raytest);
@@ -65,17 +61,15 @@ protected:
 	VertexMaterialClass	  	*m_vertexMaterialClass;
 
 protected:
-	static DebugIcon				*m_debugIcons;
-	static Int							m_numDebugIcons;
+	static DebugIcon        *m_debugIcons;
+	static Int              m_numDebugIcons;
+	static Int              m_maxDebugIcons;
 
 protected:
-	enum {MAX_ICONS = 100000};
-	void allocateIconsArray(void);
-	void compressIconsArray(void);
+	void allocateIconsArray();
+	void compressIconsArray();
 
 public:
 	static void addIcon(const Coord3D *pos, Real width, Int numFramesDuration, RGBColor color);
 };
 #endif // RTS_DEBUG
-
-#endif  // end __W3D_DEBUG_ICONS_H_

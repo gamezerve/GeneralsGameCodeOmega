@@ -42,7 +42,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Energy.h"
 #include "Common/Player.h"
@@ -57,7 +57,7 @@ Energy::Energy()
 {
 	m_energyProduction = 0;
 	m_energyConsumption = 0;
-	m_owner = NULL;
+	m_owner = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ Real Energy::getEnergySupplyRatio() const
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool Energy::hasSufficientPower(void) const
+Bool Energy::hasSufficientPower() const
 {
 	return m_energyProduction >= m_energyConsumption;
 }
@@ -113,7 +113,7 @@ void Energy::objectEnteringInfluence( Object *obj )
 {
 
 	// sanity
-	if( obj == NULL )
+	if( obj == nullptr )
 		return;
 
 	// get the amount of energy this object produces or consumes
@@ -130,7 +130,7 @@ void Energy::objectEnteringInfluence( Object *obj )
 										 ("Energy - Negative Energy numbers, Produce=%d Consume=%d\n",
 										 m_energyProduction, m_energyConsumption) );
 
-}  // end objectEnteringInfluence
+}
 
 //-------------------------------------------------------------------------------------------------
 /** 'obj' will now no longer add/subtrack from this energy construct */
@@ -139,7 +139,7 @@ void Energy::objectLeavingInfluence( Object *obj )
 {
 
 	// sanity
-	if( obj == NULL )
+	if( obj == nullptr )
 		return;
 
 	// get the amount of energy this object produces or consumes
@@ -166,7 +166,7 @@ void Energy::addPowerBonus( Object *obj )
 {
 
 	// sanity
-	if( obj == NULL )
+	if( obj == nullptr )
 		return;
 
 	addProduction(obj->getTemplate()->getEnergyBonus());
@@ -185,8 +185,14 @@ void Energy::removePowerBonus( Object *obj )
 {
 
 	// sanity
-	if( obj == NULL )
+	if( obj == nullptr )
 		return;
+
+	// TheSuperHackers @bugfix Caball009 14/11/2025 Don't remove power bonus for disabled power plants.
+#if !RETAIL_COMPATIBLE_CRC
+	if ( obj->isDisabled() )
+		return;
+#endif
 
 	addProduction( -obj->getTemplate()->getEnergyBonus() );
 
@@ -195,7 +201,7 @@ void Energy::removePowerBonus( Object *obj )
 										 ("Energy - Negative Energy numbers, Produce=%d Consume=%d\n",
 										 m_energyProduction, m_energyConsumption) );
 
-}  // end removePowerBonus
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -205,7 +211,7 @@ void Energy::addProduction(Int amt)
 {
 	m_energyProduction += amt;
 
-	if( m_owner == NULL )
+	if( m_owner == nullptr )
 		return;
 
 	// A repeated Brownout signal does nothing bad, and we need to handle more than just edge cases.
@@ -218,7 +224,7 @@ void Energy::addConsumption(Int amt)
 {
 	m_energyConsumption += amt;
 
-	if( m_owner == NULL )
+	if( m_owner == nullptr )
 		return;
 
 	m_owner->onPowerBrownOutChange( !hasSufficientPower() );
@@ -230,7 +236,7 @@ void Energy::addConsumption(Int amt)
 void Energy::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -263,12 +269,12 @@ void Energy::xfer( Xfer *xfer )
 	xfer->xferInt( &owningPlayerIndex );
 	m_owner = ThePlayerList->getNthPlayer( owningPlayerIndex );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void Energy::loadPostProcess( void )
+void Energy::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}

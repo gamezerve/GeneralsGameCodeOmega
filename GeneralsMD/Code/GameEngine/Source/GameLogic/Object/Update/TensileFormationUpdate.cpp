@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Xfer.h"
 #include "Common/AudioEventRTS.h"
@@ -76,19 +76,19 @@ public:
 #endif
 	virtual Bool allow( Object *objOther )
 	{
-		return ( getTFU( objOther ) != NULL );
+		return ( getTFU( objOther ) != nullptr );
 	}
 };
 
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-TensileFormationUpdateModuleData::TensileFormationUpdateModuleData( void )
+TensileFormationUpdateModuleData::TensileFormationUpdateModuleData()
 {
 
 	m_enabled = FALSE;
 
-}  // end TensileFormationUpdateModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -99,13 +99,13 @@ TensileFormationUpdateModuleData::TensileFormationUpdateModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Enabled",	    INI::parseBool,	NULL, offsetof( TensileFormationUpdateModuleData, m_enabled ) },
-		{ "CrackSound",	INI::parseAudioEventRTS,	NULL,	offsetof( TensileFormationUpdateModuleData, m_crackSound) },
-		{ 0, 0, 0, 0 }
+		{ "Enabled",	    INI::parseBool,	nullptr, offsetof( TensileFormationUpdateModuleData, m_enabled ) },
+		{ "CrackSound",	INI::parseAudioEventRTS,	nullptr,	offsetof( TensileFormationUpdateModuleData, m_crackSound) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,18 +149,18 @@ TensileFormationUpdate::TensileFormationUpdate( Thing *thing, const ModuleData *
 
 
 
-}  // end TensileFormationUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-TensileFormationUpdate::~TensileFormationUpdate( void )
+TensileFormationUpdate::~TensileFormationUpdate()
 {
 
-}  // end ~TensileFormationUpdate
+}
 
 
 
-void TensileFormationUpdate::initLinks( void )
+void TensileFormationUpdate::initLinks()
 {
 
 	m_linksInited = TRUE;
@@ -170,8 +170,8 @@ void TensileFormationUpdate::initLinks( void )
 		return;
 
 	PartitionFilterTensileFormationMember tfmFilter( getObject() );
-	PartitionFilter *filters[] = { &tfmFilter, NULL };
-	SimpleObjectIterator *iter = NULL;
+	PartitionFilter *filters[] = { &tfmFilter, nullptr };
+	SimpleObjectIterator *iter = nullptr;
 	iter = ThePartitionManager->iterateObjectsInRange(getObject(), 1000.0f, FROM_BOUNDINGSPHERE_3D, filters);
 	MemoryPoolObjectHolder hold(iter);
 
@@ -214,7 +214,7 @@ void TensileFormationUpdate::initLinks( void )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-UpdateSleepTime TensileFormationUpdate::update( void )
+UpdateSleepTime TensileFormationUpdate::update()
 {
 
 	if ( ! m_linksInited )
@@ -374,7 +374,7 @@ UpdateSleepTime TensileFormationUpdate::update( void )
 
 
 	return UPDATE_SLEEP_NONE;
-}  // end update
+}
 
 
 
@@ -386,8 +386,8 @@ UpdateSleepTime TensileFormationUpdate::update( void )
 void TensileFormationUpdate::propagateDislodgement ( Bool enabled )
 {
 	PartitionFilterTensileFormationMember tfmFilter( getObject() );
-	PartitionFilter *filters[] = { &tfmFilter, NULL };
-	SimpleObjectIterator *iter = NULL;
+	PartitionFilter *filters[] = { &tfmFilter, nullptr };
+	SimpleObjectIterator *iter = nullptr;
 	iter = ThePartitionManager->iterateObjectsInRange(getObject(), 100.0f, FROM_BOUNDINGSPHERE_3D, filters);
 	MemoryPoolObjectHolder hold(iter);
 	for (Object* other = iter->first(); other; other = iter->next())
@@ -405,7 +405,7 @@ void TensileFormationUpdate::propagateDislodgement ( Bool enabled )
 
 
 		//TensileFormationUpdate* tfu = getTFU(other);
-		//if ( tfu != NULL )
+		//if ( tfu != nullptr )
 		//{
 		//	tfu->setEnabled( enabled );
 		//}
@@ -440,7 +440,7 @@ void TensileFormationUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -461,15 +461,15 @@ void TensileFormationUpdate::xfer( Xfer *xfer )
 	// enabled
 	xfer->xferBool( &m_enabled );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void TensileFormationUpdate::loadPostProcess( void )
+void TensileFormationUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

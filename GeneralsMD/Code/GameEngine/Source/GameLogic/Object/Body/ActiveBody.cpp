@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/BitFlagsIO.h"
 #include "Common/CRCDebug.h"
 #include "Common/DamageFX.h"
@@ -86,10 +86,10 @@ public:
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-BodyParticleSystem::~BodyParticleSystem( void )
+BodyParticleSystem::~BodyParticleSystem()
 {
 
-}  // end ~BodyParticleSystem
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
@@ -141,13 +141,13 @@ void ActiveBodyModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "MaxHealth",						INI::parseReal,						NULL,		offsetof( ActiveBodyModuleData, m_maxHealth ) },
-		{ "InitialHealth",				INI::parseReal,						NULL,		offsetof( ActiveBodyModuleData, m_initialHealth ) },
+		{ "MaxHealth",						INI::parseReal,						nullptr,		offsetof( ActiveBodyModuleData, m_maxHealth ) },
+		{ "InitialHealth",				INI::parseReal,						nullptr,		offsetof( ActiveBodyModuleData, m_initialHealth ) },
 
-		{ "SubdualDamageCap",					INI::parseReal,									NULL,		offsetof( ActiveBodyModuleData, m_subdualDamageCap ) },
-		{ "SubdualDamageHealRate",		INI::parseDurationUnsignedInt,	NULL,		offsetof( ActiveBodyModuleData, m_subdualDamageHealRate ) },
-		{ "SubdualDamageHealAmount",	INI::parseReal,									NULL,		offsetof( ActiveBodyModuleData, m_subdualDamageHealAmount ) },
-		{ 0, 0, 0, 0 }
+		{ "SubdualDamageCap",					INI::parseReal,									nullptr,		offsetof( ActiveBodyModuleData, m_subdualDamageCap ) },
+		{ "SubdualDamageHealRate",		INI::parseDurationUnsignedInt,	nullptr,		offsetof( ActiveBodyModuleData, m_subdualDamageHealRate ) },
+		{ "SubdualDamageHealAmount",	INI::parseReal,									nullptr,		offsetof( ActiveBodyModuleData, m_subdualDamageHealAmount ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -156,8 +156,8 @@ void ActiveBodyModuleData::buildFieldParse(MultiIniFieldParse& p)
 //-------------------------------------------------------------------------------------------------
 ActiveBody::ActiveBody( Thing *thing, const ModuleData* moduleData ) :
 	BodyModule(thing, moduleData),
-	m_curDamageFX(NULL),
-	m_curArmorSet(NULL),
+	m_curDamageFX(nullptr),
+	m_curArmorSet(nullptr),
 	m_frontCrushed(false),
 	m_backCrushed(false),
 	m_lastDamageTimestamp(0xffffffff),// So we don't think we just got damaged on the first frame
@@ -166,7 +166,7 @@ ActiveBody::ActiveBody( Thing *thing, const ModuleData* moduleData ) :
 	m_nextDamageFXTime(0),
 	m_lastDamageFXDone((DamageType)-1),
 	m_lastDamageCleared(false),
-	m_particleSystems(NULL),
+	m_particleSystems(nullptr),
 	m_currentSubdualDamage(0),
 	m_indestructible(false)
 {
@@ -184,19 +184,19 @@ ActiveBody::ActiveBody( Thing *thing, const ModuleData* moduleData ) :
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ActiveBody::~ActiveBody( void )
+ActiveBody::~ActiveBody()
 {
 }
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void ActiveBody::onDelete( void )
+void ActiveBody::onDelete()
 {
 
 	// delete all particle systems
 	deleteAllParticleSystems();
 
-}  // end onDelete
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 	validateArmorAndDamageFX();
 
 	// sanity
-	if( damageInfo == NULL )
+	if( damageInfo == nullptr )
 		return;
 
 	if ( m_indestructible )
@@ -405,14 +405,19 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 					}
 					else
 					{
-						//Removing the rider will scuttle the bike.
-						Object *rider = *(contain->getContainedItemsList()->begin());
-						ai->aiEvacuateInstantly( TRUE, CMD_FROM_AI );
+						// TheSuperHackers @bugfix Caball009 04/09/2025 Check whether a bike still has a rider.
+						// A rider may dismount or be sniped off a bike when it's disabled, resulting in a bike object with an empty contain list.
+						if ( !contain->getContainedItemsList()->empty() )
+						{
+							//Removing the rider will scuttle the bike.
+							Object* rider = *(contain->getContainedItemsList()->begin());
+							ai->aiEvacuateInstantly(TRUE, CMD_FROM_AI);
 
-						//Kill the rider.
-						if (damager)
-							damager->scoreTheKill( rider );
-						rider->kill();
+							//Kill the rider.
+							if (damager)
+								damager->scoreTheKill(rider);
+							rider->kill();
+						}
 					}
 				}
 				else
@@ -467,10 +472,10 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 							++numKilled;
 							thingToKill->getControllingPlayer()->getAcademyStats()->recordClearedGarrisonedBuilding();
 						}
-					} // next contained item
+					}
 
-				} // if items
-			}	// if a garrisonable thing
+				}
+			}
 			alreadyHandled = TRUE;
 			allowModifier = FALSE;
 			break;
@@ -492,9 +497,11 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 		if( !canBeSubdued() )
 			return;
 
+		// TheSuperHackers @bugfix Stubbjax 20/09/2025 The isSubdued() function now directly checks status instead
+		// of health to prevent indefinite subdue status when internally shifting health across the threshold.
 		Bool wasSubdued = isSubdued();
 		internalAddSubdualDamage(amount);
-		Bool nowSubdued = isSubdued();
+		Bool nowSubdued = m_maxHealth <= m_currentSubdualDamage;
 		alreadyHandled = TRUE;
 		allowModifier = FALSE;
 
@@ -690,7 +697,7 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 		{
 			PartitionFilterPlayerAffiliation f1( controllingPlayer, ALLOW_ALLIES, true );
 			PartitionFilterOnMap filterMapStatus;
-			PartitionFilter *filters[] = { &f1, &filterMapStatus, 0 };
+			PartitionFilter *filters[] = { &f1, &filterMapStatus, nullptr };
 
 
 			Real distance = TheAI->getAiData()->m_retaliateFriendsRadius + obj->getGeometryInfo().getBoundingCircleRadius();
@@ -702,7 +709,7 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 					continue;
 				}
 				AIUpdateInterface *ai = them->getAI();
-				if (ai==NULL) {
+				if (ai==nullptr) {
 					continue;
 				}
 				//If we have AI and we're mobile, then assist!
@@ -727,7 +734,7 @@ Bool ActiveBody::shouldRetaliateAgainstAggressor(Object *obj, Object *damager)
 	/* This considers whether obj should invoke his friends to retaliate against damager.
 		 Note that obj could be a structure, so we don't actually check whether obj will
 		 retaliate, as in many cases he wouldn't. */
-	if (damager==NULL) {
+	if (damager==nullptr) {
 		return false;
 	}
 	if (damager->isAirborneTarget()) {
@@ -793,7 +800,7 @@ void ActiveBody::attemptHealing( DamageInfo *damageInfo )
 	validateArmorAndDamageFX();
 
 	// sanity
-	if( damageInfo == NULL )
+	if( damageInfo == nullptr )
 		return;
 
 	if( damageInfo->in.m_damageType != DAMAGE_HEALING )
@@ -835,7 +842,9 @@ void ActiveBody::attemptHealing( DamageInfo *damageInfo )
 		//(object pointer loses scope as soon as atteptdamage's caller ends)
 		m_lastDamageInfo = *damageInfo;
 		m_lastDamageCleared = false;
+#if PRESERVE_RETAIL_BEHAVIOR
 		m_lastDamageTimestamp = TheGameLogic->getFrame();
+#endif
 		m_lastHealingTimestamp = TheGameLogic->getFrame();
 
 		// if our health has gone UP then do run the damage module callback
@@ -975,7 +984,7 @@ void ActiveBody::createParticleSystems( const AsciiString &boneBaseName,
 	Object *us = getObject();
 
 	// sanity
-	if( systemTemplate == NULL )
+	if( systemTemplate == nullptr )
 		return;
 
 	// get the bones
@@ -984,7 +993,7 @@ void ActiveBody::createParticleSystems( const AsciiString &boneBaseName,
 	Int numBones = us->getMultiLogicalBonePosition( boneBaseName.str(),
 																									MAX_BONES,
 																									bonePositions,
-																									NULL,
+																									nullptr,
 																									FALSE );
 
 	// if no bones found nothing else to do
@@ -1034,16 +1043,16 @@ void ActiveBody::createParticleSystems( const AsciiString &boneBaseName,
 				usedBoneIndices[ j ] = TRUE;
 				break;  // exit for j
 
-			}  // end if
+			}
 			else
 			{
 
 				// we won't use this index, increment count until we find a suitable index to use
 				++count;
 
-			}  // end else
+			}
 
-		}  // end for, j
+		}
 
 		// sanity
 		DEBUG_ASSERTCRASH( j != numBones,
@@ -1066,16 +1075,16 @@ void ActiveBody::createParticleSystems( const AsciiString &boneBaseName,
 			newEntry->m_next = m_particleSystems;
 			m_particleSystems = newEntry;
 
-		}  // end if
+		}
 
-	}  // end for, i
+	}
 
-}  // end createParticleSystems
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Delete all the body particle systems */
 // ------------------------------------------------------------------------------------------------
-void ActiveBody::deleteAllParticleSystems( void )
+void ActiveBody::deleteAllParticleSystems()
 {
 	BodyParticleSystem *nextBodySystem;
 	ParticleSystem *particleSystem;
@@ -1097,14 +1106,14 @@ void ActiveBody::deleteAllParticleSystems( void )
 		// set the body systems head to the next
 		m_particleSystems = nextBodySystem;
 
-	}  // end while
+	}
 
-}  // end deleteAllParticleSystems
+}
 
 // ------------------------------------------------------------------------------------------------
 /* 	This function is called on state changes only.  Body Type or Aflameness. */
 // ------------------------------------------------------------------------------------------------
-void ActiveBody::updateBodyParticleSystems( void )
+void ActiveBody::updateBodyParticleSystems()
 {
 	static const ParticleSystemTemplate *fireSmallTemplate   = TheParticleSystemManager->findTemplate( TheGlobalData->m_autoFireParticleSmallSystem );
 	static const ParticleSystemTemplate *fireMediumTemplate  = TheParticleSystemManager->findTemplate( TheGlobalData->m_autoFireParticleMediumSystem );
@@ -1138,7 +1147,7 @@ void ActiveBody::updateBodyParticleSystems( void )
 		// we get to make more of them all too
 		countModifier = 2;
 
-	}  // end if
+	}
 	else
 	{
 
@@ -1153,7 +1162,7 @@ void ActiveBody::updateBodyParticleSystems( void )
 		// we make just the normal amount of these
 		countModifier = 1;
 
-	}  // end else
+	}
 
 	//
 	// remove any particle systems we have currently in the list in favor of any new ones
@@ -1194,7 +1203,7 @@ void ActiveBody::updateBodyParticleSystems( void )
 		createParticleSystems( TheGlobalData->m_autoAflameParticlePrefix,
 													 aflameTemplate, TheGlobalData->m_autoAflameParticleMax * countModifier );
 
-}  // end updatebodyParticleSystems
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Simple changing of the health value, it does *NOT* track any transition
@@ -1239,7 +1248,7 @@ void ActiveBody::internalChangeHealth( Real delta )
 		if( !getObject()->getStatusBits().test( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
 			evaluateVisualCondition();
 
-	}  // end if
+	}
 
 	// mark the bit according to our health. (if our AI is dead but our health improves, it will
 	// still re-flag this bit in the AIDeadState every frame.)
@@ -1254,7 +1263,13 @@ void ActiveBody::internalAddSubdualDamage( Real delta )
 	const ActiveBodyModuleData *data = getActiveBodyModuleData();
 
 	m_currentSubdualDamage += delta;
+#if RETAIL_COMPATIBLE_CRC
 	m_currentSubdualDamage = min(m_currentSubdualDamage, data->m_subdualDamageCap);
+#else
+	// TheSuperHackers @bugfix Stubbjax 25/01/2026 Subdual damage can no longer go negative, which
+	// stops weak subdual damage + rapid healing from negatively stacking subdual damage over time.
+	m_currentSubdualDamage = clamp(0.0f, m_currentSubdualDamage, data->m_subdualDamageCap);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1311,7 +1326,16 @@ void ActiveBody::onSubdualChange( Bool isNowSubdued )
 //-------------------------------------------------------------------------------------------------
 Bool ActiveBody::isSubdued() const
 {
+#if RETAIL_COMPATIBLE_CRC
 	return m_maxHealth <= m_currentSubdualDamage;
+#else
+  // TheSuperHackers @info Projectiles don't receive the DISABLED_SUBDUED flag (or any flag for
+	// that matter) when jammed, so we have to check their subdual damage directly.
+	if (getObject()->isKindOf(KINDOF_PROJECTILE))
+		return m_maxHealth <= m_currentSubdualDamage;
+
+	return getObject()->isDisabledByType(DISABLED_SUBDUED);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1333,7 +1357,7 @@ BodyDamageType ActiveBody::getDamageState() const
 Real ActiveBody::getMaxHealth() const
 {
 	return m_maxHealth;
-}  ///< return max health
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -1361,7 +1385,7 @@ Bool ActiveBody::hasAnySubdualDamage() const
 Real ActiveBody::getInitialHealth() const
 {
 	return m_initialHealth;
-}  // return initial health
+}
 
 
 // ------------------------------------------------------------------------------------------------
@@ -1393,15 +1417,15 @@ void ActiveBody::setIndestructible( Bool indestructible )
 					if( body )
 						body->setIndestructible( indestructible );
 
-				}  // end if
+				}
 
-			}  // end for, i
+			}
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
-}  // end setIndestructible
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -1519,7 +1543,7 @@ void ActiveBody::crc( Xfer *xfer )
   // extend base class
 	BodyModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -1599,21 +1623,21 @@ void ActiveBody::xfer( Xfer *xfer )
 			// write particle system ID
 			xfer->xferUser( &system->m_particleSystemID, sizeof( ParticleSystemID ) );
 
-		}  // end for, system
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		ParticleSystemID particleSystemID;
 
 		// the list should be empty at this time
-		if( m_particleSystems != NULL )
+		if( m_particleSystems != nullptr )
 		{
 
 			DEBUG_CRASH(( "ActiveBody::xfer - m_particleSystems should be empty, but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read all data elements
 		BodyParticleSystem *newEntry;
@@ -1629,22 +1653,22 @@ void ActiveBody::xfer( Xfer *xfer )
 			newEntry->m_next = m_particleSystems;  // the list will be reversed, but we don't care
 			m_particleSystems = newEntry;
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
 	// armor set flags
 	m_curArmorSetFlags.xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ActiveBody::loadPostProcess( void )
+void ActiveBody::loadPostProcess()
 {
 
 	// extend base class
 	BodyModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

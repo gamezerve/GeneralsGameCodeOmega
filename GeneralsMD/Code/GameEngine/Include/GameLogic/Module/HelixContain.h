@@ -33,9 +33,6 @@
 
 #pragma once
 
-#ifndef __HELIX_CONTAIN_H_
-#define __HELIX_CONTAIN_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/TransportContain.h"
 
@@ -79,7 +76,7 @@ public:
   virtual Bool isSpecialOverlordStyleContainer() const {return TRUE;}
 
 	virtual void onDie( const DamageInfo *damageInfo );  ///< the die callback
-	virtual void onDelete( void );	///< Last possible moment cleanup
+	virtual void onDelete();	///< Last possible moment cleanup
 	virtual void onCapture( Player *oldOwner, Player *newOwner );
 	virtual void onObjectCreated();
   virtual void onContaining( Object *obj, Bool wasSelected  );
@@ -125,10 +122,7 @@ public:
 
 private:
   void parseInitialPayload( INI* ini, void *instance, void *store, const void* /*userData*/ );
-  Object *getPortableStructure( void );
+  Object *getPortableStructure();
   ObjectID  m_portableStructureID;
 
 };
-
-#endif
-

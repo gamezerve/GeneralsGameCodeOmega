@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __KINDOF_H_
-#define __KINDOF_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
 #include "Common/BitFlags.h"
@@ -43,8 +40,8 @@
 enum KindOfType CPP_11(: Int)
 {
 	KINDOF_INVALID = -1,
-	KINDOF_FIRST = 0,
-	KINDOF_OBSTACLE = KINDOF_FIRST,	///< an obstacle to land-based pathfinders
+
+	KINDOF_OBSTACLE,								///< an obstacle to land-based pathfinders
 	KINDOF_SELECTABLE,							///< Selectable
 	KINDOF_IMMOBILE,								///< fixed in location
 	KINDOF_CAN_ATTACK,							///< can attack
@@ -96,12 +93,12 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_CAN_SURRENDER,						///< object that can surrender
 #endif
 	KINDOF_CAN_BE_REPULSED,					///< object that runs away from a repulsor object.
-	KINDOF_MOB_NEXUS,					      ///< object that cooyrdinates the members of a mob (i.e. GLAInfantryAngryMob)
+	KINDOF_MOB_NEXUS,					      ///< object that coordinates the members of a mob (i.e. GLAInfantryAngryMob)
 	KINDOF_IGNORED_IN_GUI,					///< object that is the members of a mob (i.e. GLAInfantryAngryMob)
 	KINDOF_CRATE,										///< a bonus crate
 	KINDOF_CAPTURABLE,							///< is "capturable" even if not an enemy (should generally be used only for structures, eg, Tech bldgs)
 	KINDOF_CLEARED_BY_BUILD,				///< is auto-cleared from the map when built over via construction
-	KINDOF_SMALL_MISSILE,						///< Missile object: ONLY USED FOR ANTI-MISSILE TARGETTING PURPOSES! Keep using PROJECTILE!
+	KINDOF_SMALL_MISSILE,						///< Missile object: ONLY USED FOR ANTI-MISSILE TARGETING PURPOSES! Keep using PROJECTILE!
 	KINDOF_ALWAYS_VISIBLE,					///< is never obscured by fog of war or shroud.  mostly for UI feedback objects.
 	KINDOF_UNATTACKABLE,						///< You cannot target this thing, it probably doesn't really exist
 	KINDOF_MINE,										///< a landmine. (possibly also extend to Col. Burton timed charges?)
@@ -143,8 +140,8 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_IGNORES_SELECT_ALL,			///< Too late to figure out intelligently if something should respond to a Select All command
 	KINDOF_DONT_AUTO_CRUSH_INFANTRY,					///< These units don't try to crush the infantry if ai.
 
-	KINDOF_COUNT										// total number of kindofs
-
+	KINDOF_COUNT,										// total number of kindofs
+	KINDOF_FIRST = 0,
 };
 
 typedef BitFlags<KINDOF_COUNT>	KindOfMaskType;
@@ -189,6 +186,3 @@ inline void FLIP_KINDOFMASK(KindOfMaskType& m)
 
 // defined in Common/System/Kindof.cpp
 extern KindOfMaskType KINDOFMASK_NONE;	// inits to all zeroes
-
-#endif	// __KINDOF_H_
-

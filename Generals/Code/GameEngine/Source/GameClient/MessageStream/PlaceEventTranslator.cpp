@@ -25,7 +25,7 @@
 // FILE: PlaceEventTranslator.cpp ///////////////////////////////////////////////////////////
 // Author: Steven Johnson, Dec 2001
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameAudio.h"
 #include "Common/Player.h"
@@ -62,6 +62,8 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 	{
 
 		//---------------------------------------------------------------------------------------------
+		// TheSuperHackers @bugfix Prevent double-clicks from falling through to other translators during building placement
+		case GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK:
 		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
 		{
 			// if we're in a building placement mode, do the place and send to all players
@@ -81,13 +83,13 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 				Object *builderObject = TheGameLogic->findObjectByID( TheInGameUI->getPendingPlaceSourceObjectID() );
 
 				// if our source object is gone cancel this whole placement process
-				if( builderObject == NULL )
+				if( builderObject == nullptr )
 				{
 
-					TheInGameUI->placeBuildAvailable( NULL, NULL );
+					TheInGameUI->placeBuildAvailable( nullptr, nullptr );
 					break;
 
-				}  // end if
+				}
 
 				// set this location as the placement anchor
 				TheInGameUI->setPlacementStart( &mouse );
@@ -124,14 +126,14 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 					// display a message to the user as to why you can't build there
 					TheInGameUI->displayCantBuildMessage( lbc );
 
-				}  // end if
+				}
 				else
 				{
 
 					// start placement anchor
 					TheInGameUI->setPlacementStart(&mouse);
 
-				}  // end else
+				}
 */
 
 				// used the input
@@ -201,11 +203,11 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 						break;
 					}
 					// get out of pending placement mode, this will also clear the arrow anchor status
-					TheInGameUI->placeBuildAvailable( NULL, NULL );
+					TheInGameUI->placeBuildAvailable( nullptr, nullptr );
 					break;
 				}
 
-				DEBUG_ASSERTCRASH(builderObj != NULL, ("builderObj is NULL"));
+				DEBUG_ASSERTCRASH(builderObj != nullptr, ("builderObj is null"));
 
 				// check to see if this is a legal location to build something at
 				LegalBuildCode lbc;
@@ -217,7 +219,7 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 																												 BuildAssistant::CLEAR_PATH |
 																												 BuildAssistant::NO_OBJECT_OVERLAP |
 																												 BuildAssistant::SHROUD_REVEALED,
-																												 builderObj, NULL );
+																												 builderObj, nullptr );
 				if( lbc == LBC_OK )
 				{
 
@@ -240,14 +242,14 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 						TheTacticalView->screenToTerrain( &anchorEnd, &worldEnd );
 						placeMsg->appendLocationArgument( worldEnd );
 
-					}  // end if
+					}
 
 					pickAndPlayUnitVoiceResponse( TheInGameUI->getAllSelectedDrawables(), placeMsg->getType() );
 
 					// get out of pending placement mode, this will also clear the arrow anchor status
-					TheInGameUI->placeBuildAvailable( NULL, NULL );
+					TheInGameUI->placeBuildAvailable( nullptr, nullptr );
 
-				}  // end if, location legal to build at
+				}
 				else
 				{
 					// can't place, display why
@@ -263,9 +265,9 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 					TheAudio->addAudioEvent( &noCanDoSound );
 
 					// unhook the anchor so they can try again
-					TheInGameUI->setPlacementStart( NULL );
+					TheInGameUI->setPlacementStart( nullptr );
 
-				}  // end else
+				}
 
 				// used the input
 				disp = DESTROY_MESSAGE;
@@ -294,7 +296,7 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 				// if we have moved far enough away from the start point
 				//
 				ICoord2D start;
-				TheInGameUI->getPlacementPoints( &start, NULL );
+				TheInGameUI->getPlacementPoints( &start, nullptr );
 
 				Int x, y;
 				x = mouse.x - start.x;
@@ -305,7 +307,7 @@ GameMessageDisposition PlaceEventTranslator::translateGameMessage(const GameMess
 					TheInGameUI->setPlacementEnd(&mouse);
 					disp = DESTROY_MESSAGE;
 
-				}  // end if
+				}
 
 			}
 			break;

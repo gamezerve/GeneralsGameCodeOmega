@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __DEFINITION_FACTORY_MGR_H
-#define __DEFINITION_FACTORY_MGR_H
 
 #include "always.h"
 #include "bittype.h"
@@ -69,7 +64,7 @@ public:
 	static DefinitionFactoryClass *	Get_Next (DefinitionFactoryClass *current, uint32 superclass_id);
 
 	// Factory enumeration
-	static DefinitionFactoryClass *	Get_First (void);
+	static DefinitionFactoryClass *	Get_First ();
 	static DefinitionFactoryClass *	Get_Next (DefinitionFactoryClass *current);
 
 private:
@@ -85,6 +80,3 @@ private:
 	/////////////////////////////////////////////////////////////////////
 	static DefinitionFactoryClass *	_FactoryListHead;
 };
-
-
-#endif //__DEFINITION_FACTORY_MGR_H

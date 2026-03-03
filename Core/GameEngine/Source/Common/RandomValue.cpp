@@ -26,7 +26,7 @@
 // Pseudo-random number generators
 // Author: Michael S. Booth, January 1998
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
 #include "Lib/BaseType.h"
@@ -136,19 +136,19 @@ static void seedRandom(UnsignedInt SEED, UnsignedInt *seed)
 // of the effects displayed on the GameClient.
 //
 
-UnsignedInt GetGameLogicRandomSeed( void )
+UnsignedInt GetGameLogicRandomSeed()
 {
 	return theGameLogicBaseSeed;
 }
 
-UnsignedInt GetGameLogicRandomSeedCRC( void )
+UnsignedInt GetGameLogicRandomSeedCRC()
 {
 	CRC c;
 	c.computeCRC(theGameLogicSeed, 6*sizeof(UnsignedInt));
 	return c.get();
 }
 
-void InitRandom( void )
+void InitRandom()
 {
 #ifdef DETERMINISTIC
 	// needs to be the same every time
@@ -157,7 +157,7 @@ void InitRandom( void )
 	seedRandom(0, theGameLogicSeed);
 	theGameLogicBaseSeed = 0;
 #else
-	time_t seconds = time( NULL );
+	time_t seconds = time( nullptr );
 
 	seedRandom(seconds, theGameAudioSeed);
 	seedRandom(seconds, theGameClientSeed);
@@ -174,21 +174,6 @@ void InitRandom( UnsignedInt seed )
 	theGameLogicBaseSeed = seed;
 #ifdef DEBUG_RANDOM_LOGIC
 DEBUG_LOG(( "InitRandom %08lx",seed));
-#endif
-}
-
-void InitGameLogicRandom( UnsignedInt seed )
-{
-#ifdef DETERMINISTIC
-	// needs to be the same every time
-	seedRandom(0, theGameLogicSeed);
-	theGameLogicBaseSeed = 0;
-#else
-	seedRandom(seed, theGameLogicSeed);
-	theGameLogicBaseSeed = seed;
-#endif
-#ifdef DEBUG_RANDOM_LOGIC
-DEBUG_LOG(( "InitRandom Logic %08lx",seed));
 #endif
 }
 
@@ -224,6 +209,37 @@ DEBUG_LOG(( "%d: GetGameLogicRandomValue = %d (%d - %d), %s line %d",
 				 TheGameLogic->getFrame(), rval, lo, hi, file, line ));
 #endif
 /**/
+
+	return rval;
+}
+
+//
+// TheSuperHackers @info This function does not change the seed values with retail compatibility disabled.
+// Consecutive calls always return the same value for the same combination of min / max values, assuming the seed values haven't changed in between.
+// The intended use case for this function are randomized values that are desirable to be synchronized across clients,
+// but should not result in a mismatch if they aren't synchronized; e.g. for scripted audio events.
+//
+Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line )
+{
+#if RETAIL_COMPATIBLE_CRC
+	return GetGameLogicRandomValue(lo, hi, file, line);
+#endif
+
+	const UnsignedInt delta = hi - lo + 1;
+	if (delta == 0)
+		return hi;
+
+	UnsignedInt seed[ARRAY_SIZE(theGameLogicSeed)];
+	memcpy(&seed[0], &theGameLogicSeed[0], sizeof(seed));
+
+	const Int rval = ((Int)(randomValue(seed) % delta)) + lo;
+
+	DEBUG_ASSERTCRASH(rval >= lo && rval <= hi, ("Bad random val"));
+
+#ifdef DEBUG_RANDOM_LOGIC
+	DEBUG_LOG(( "%d: GetGameLogicRandomValueUnchanged = %d (%d - %d), %s line %d",
+		TheGameLogic->getFrame(), rval, lo, hi, file, line ));
+#endif
 
 	return rval;
 }
@@ -299,6 +315,37 @@ DEBUG_LOG(( "%d: GetGameLogicRandomValueReal = %f, %s line %d",
 }
 
 //
+// TheSuperHackers @info This function does not change the seed values with retail compatibility disabled.
+// Consecutive calls always return the same value for the same combination of min / max values, assuming the seed values haven't changed in between.
+// The intended use case for this function are randomized values that are desirable to be synchronized across clients,
+// but should not result in a mismatch if they aren't synchronized; e.g. for scripted audio events.
+//
+Real GetGameLogicRandomValueRealUnchanged( Real lo, Real hi, const char *file, int line )
+{
+#if RETAIL_COMPATIBLE_CRC
+	return GetGameLogicRandomValueReal(lo, hi, file, line);
+#endif
+
+	const Real delta = hi - lo;
+	if (delta <= 0.0f)
+		return hi;
+
+	UnsignedInt seed[ARRAY_SIZE(theGameLogicSeed)];
+	memcpy(&seed[0], &theGameLogicSeed[0], sizeof(seed));
+
+	const Real rval = ((Real)(randomValue(seed)) * theMultFactor) * delta + lo;
+
+	DEBUG_ASSERTCRASH(rval >= lo && rval <= hi, ("Bad random val"));
+
+#ifdef DEBUG_RANDOM_LOGIC
+	DEBUG_LOG(( "%d: GetGameLogicRandomValueRealUnchanged = %f, %s line %d",
+		TheGameLogic->getFrame(), rval, file, line ));
+#endif
+
+	return rval;
+}
+
+//
 // Real valued random value
 //
 Real GetGameClientRandomValueReal( Real lo, Real hi, const char *file, int line )
@@ -350,10 +397,11 @@ DEBUG_LOG(( "%d: GetGameAudioRandomValueReal = %f, %s line %d",
 // GameClientRandomVariable
 //
 
-/*static*/ const char *GameClientRandomVariable::DistributionTypeNames[] =
+const char *const GameClientRandomVariable::DistributionTypeNames[] =
 {
-	"CONSTANT", "UNIFORM", "GAUSSIAN", "TRIANGULAR", "LOW_BIAS", "HIGH_BIAS"
+	"CONSTANT", "UNIFORM", "GAUSSIAN", "TRIANGULAR", "LOW_BIAS", "HIGH_BIAS", nullptr
 };
+static_assert(ARRAY_SIZE(GameClientRandomVariable::DistributionTypeNames) == GameClientRandomVariable::DISTRIBUTION_COUNT + 1, "Incorrect array size");
 
 /**
 	define the range of random values, and the distribution of values
@@ -369,7 +417,7 @@ void GameClientRandomVariable::setRange( Real low, Real high, DistributionType t
 /**
  * Return a value from the random distribution
  */
-Real GameClientRandomVariable::getValue( void ) const
+Real GameClientRandomVariable::getValue() const
 {
 	switch( m_type )
 	{
@@ -377,7 +425,7 @@ Real GameClientRandomVariable::getValue( void ) const
 			DEBUG_ASSERTLOG(m_low == m_high, ("m_low != m_high for a CONSTANT GameClientRandomVariable"));
 			if (m_low == m_high) {
 				return m_low;
-			} // else return as though a UNIFORM.
+			}
 			FALLTHROUGH;
 
 		case UNIFORM:
@@ -395,10 +443,11 @@ Real GameClientRandomVariable::getValue( void ) const
 // GameLogicRandomVariable
 //
 
-/*static*/ const char *GameLogicRandomVariable::DistributionTypeNames[] =
+const char *const GameLogicRandomVariable::DistributionTypeNames[] =
 {
-	"CONSTANT", "UNIFORM", "GAUSSIAN", "TRIANGULAR", "LOW_BIAS", "HIGH_BIAS"
+	"CONSTANT", "UNIFORM", "GAUSSIAN", "TRIANGULAR", "LOW_BIAS", "HIGH_BIAS", nullptr
 };
+static_assert(ARRAY_SIZE(GameLogicRandomVariable::DistributionTypeNames) == GameLogicRandomVariable::DISTRIBUTION_COUNT + 1, "Incorrect array size");
 
 /**
 	define the range of random values, and the distribution of values
@@ -414,7 +463,7 @@ void GameLogicRandomVariable::setRange( Real low, Real high, DistributionType ty
 /**
  * Return a value from the random distribution
  */
-Real GameLogicRandomVariable::getValue( void ) const
+Real GameLogicRandomVariable::getValue() const
 {
 	switch( m_type )
 	{
@@ -422,7 +471,7 @@ Real GameLogicRandomVariable::getValue( void ) const
 			DEBUG_ASSERTLOG(m_low == m_high, ("m_low != m_high for a CONSTANT GameLogicRandomVariable"));
 			if (m_low == m_high) {
 				return m_low;
-			} // else return as though a UNIFORM.
+			}
 			FALLTHROUGH;
 
 		case UNIFORM:

@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/NameKeyGenerator.h"
 #include "Common/ThingTemplate.h"
@@ -154,7 +154,7 @@ void ControlBar::populateStructureInventory( Object *building )
 		setControlCommand( m_commandWindows[ i ], exitCommand );
 
 		// Clear any veterancy icon incase the unit leaves!
-		GadgetButtonDrawOverlayImage( m_commandWindows[ i ], NULL );
+		GadgetButtonDrawOverlayImage( m_commandWindows[ i ], nullptr );
 		//
 		// if the structure can hold a lesser amount inside it than what the GUI displays
 		// we will completely hide the buttons that can't contain anything
@@ -163,7 +163,7 @@ void ControlBar::populateStructureInventory( Object *building )
 			m_commandWindows[ i ]->winHide( TRUE );
 
 
-	}  // end for i
+	}
 
 	// show the window
 	m_commandWindows[ EVACUATE_ID ]->winHide( FALSE );
@@ -193,11 +193,11 @@ void ControlBar::populateStructureInventory( Object *building )
 	//
 	m_lastRecordedInventoryCount = contain->getContainCount();
 
-}  // end populateStructureInventory
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void ControlBar::updateContextStructureInventory( void )
+void ControlBar::updateContextStructureInventory()
 {
 	Object *source = m_currentSelectedDrawable->getObject();
 
@@ -216,19 +216,19 @@ void ControlBar::updateContextStructureInventory( void )
 			TheInGameUI->deselectDrawable( draw );
 		return;
 
-	}  // end if
+	}
 
 	//
 	// if the object being displayed in the interface has a different count than we last knew
 	// about we need to repopulate the buttons of the interface
 	//
 	ContainModuleInterface *contain = source->getContain();
-	DEBUG_ASSERTCRASH( contain, ("No contain module defined for object in the iventory bar") );
+	DEBUG_ASSERTCRASH( contain, ("No contain module defined for object in the inventory bar") );
 	if (!contain)
 		return;
 
 	if( m_lastRecordedInventoryCount != contain->getContainCount() )
 		populateStructureInventory( source );
 
-}  // end updateContextStructureInventory
+}
 

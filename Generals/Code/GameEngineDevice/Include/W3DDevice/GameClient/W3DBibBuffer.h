@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __W3DBIB_BUFFER_H_
-#define __W3DBIB_BUFFER_H_
-
 //-----------------------------------------------------------------------------
 //           Includes
 //-----------------------------------------------------------------------------
@@ -86,11 +83,11 @@ typedef struct {
 //
 class W3DBibBuffer
 {
-friend class HeightMapRenderObjClass;
+friend class BaseHeightMapRenderObjClass;
 public:
 
-	W3DBibBuffer(void);
-	~W3DBibBuffer(void);
+	W3DBibBuffer();
+	~W3DBibBuffer();
 	/// Add a bib at location.  Name is the w3d model name.
 	void addBib(Vector3 corners[4], ObjectID id, Bool highlight);
 	void addBibDrawable(Vector3 corners[4], DrawableID id, Bool highlight);
@@ -98,9 +95,9 @@ public:
 	void removeBib(ObjectID id);
 	void removeBibDrawable(DrawableID id);
 	/// Empties the bib buffer.
-	void clearAllBibs(void);
+	void clearAllBibs();
 	/// Removes highlighting.
-	void removeHighlighting(void);
+	void removeHighlighting();
 	/// Draws the bibs.
 	void renderBibs();
 	/// Called when the view changes, and sort key needs to be recalculated.
@@ -127,9 +124,7 @@ protected:
 	Bool		m_initialized;		///< True if the subsystem initialized.
 	Bool		m_isTerrainPass;  ///< True if the terrain was drawn in this W3D scene render pass.
 
-	void loadBibsInVertexAndIndexBuffers(void); ///< Fills the index and vertex buffers for drawing.
-	void allocateBibBuffers(void);							 ///< Allocates the buffers.
-	void freeBibBuffers(void);									 ///< Frees the index and vertex buffers.
+	void loadBibsInVertexAndIndexBuffers(); ///< Fills the index and vertex buffers for drawing.
+	void allocateBibBuffers();							 ///< Allocates the buffers.
+	void freeBibBuffers();									 ///< Frees the index and vertex buffers.
 };
-
-#endif  // end __W3DBIB_BUFFER_H_

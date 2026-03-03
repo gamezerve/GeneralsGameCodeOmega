@@ -39,12 +39,7 @@
  * Color_to_Vector4 - converts a color in the format described in format to a Vector4          *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef WW3DFORMAT_H
-#define WW3DFORMAT_H
 
 #include "always.h"
 #include "wwstring.h"
@@ -200,10 +195,10 @@ WW3DFormat Get_Valid_Texture_Format(WW3DFormat format,bool is_compression_allowe
 
 unsigned Get_Bytes_Per_Pixel(WW3DFormat format);
 
+unsigned ARGB_Color_To_WW3D_Color(WW3DFormat format, unsigned argb);
+
 void Get_WW3D_Format_Name(WW3DFormat format, StringClass& name);
 void Get_WW3D_ZFormat_Name(WW3DZFormat format, StringClass& name);
 
 unsigned Get_Num_Depth_Bits(WW3DZFormat zformat);
 unsigned Get_Num_Stencil_Bits(WW3DZFormat zformat);
-
-#endif

@@ -28,7 +28,7 @@
 
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "GameLogic/Module/NeutronBlastBehavior.h"
 
 #include "Common/Player.h"
@@ -72,7 +72,7 @@ void NeutronBlastBehavior::onDie( const DamageInfo *damageInfo )
 	// setup scan filters
 	PartitionFilterSameMapStatus filterMapStatus( self );
 	PartitionFilterAlive filterAlive;
-	PartitionFilter *filters[] = { &filterAlive, &filterMapStatus, NULL };
+	PartitionFilter *filters[] = { &filterAlive, &filterMapStatus, nullptr };
 
 	// scan objects in our region
 	ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( self->getPosition(), blastRadius, FROM_CENTER_2D, filters );
@@ -93,7 +93,7 @@ void NeutronBlastBehavior::onDie( const DamageInfo *damageInfo )
 //-------------------------------------------------------------------------------------------------
 /** The update callback. */
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime NeutronBlastBehavior::update( void )
+UpdateSleepTime NeutronBlastBehavior::update()
 {
 	return UPDATE_SLEEP_FOREVER;
 }
@@ -166,7 +166,7 @@ void NeutronBlastBehavior::crc( Xfer *xfer )
 	UpdateModule::crc( xfer );
 
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -184,16 +184,16 @@ void NeutronBlastBehavior::xfer( Xfer *xfer )
 	// extend base class
 	UpdateModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void NeutronBlastBehavior::loadPostProcess( void )
+void NeutronBlastBehavior::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
 
-}  // end loadPostProcess
+}

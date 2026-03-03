@@ -145,7 +145,7 @@ struct BTCollisionStruct
 		Reset();
 	}
 
-	void Reset(void)
+	void Reset()
 	{
 		StartBad = true;				// true until an axis clears it
 		MaxFrac = -1.0f;				// maximum move allowed so far (accept slightly negative but clamp to zero at end)
@@ -167,7 +167,7 @@ struct BTCollisionStruct
 		Vector3::Cross_Product(E[0],E[1],&N);
 	}
 
-	bool						StartBad;			// Inital configuration is intersecting?
+	bool						StartBad;			// Initial configuration is intersecting?
 	float						MaxFrac;				// Longest move allowed so far
 	int						AxisId;				// Last separating axis
 	int						Point;				// Index of the "closest" triangle point (or one of them)

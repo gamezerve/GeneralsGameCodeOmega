@@ -151,7 +151,7 @@ static LRESULT CALLBACK textEntryPropertiesCallback( HWND hWndDialog,
 						// text entry props
 						EntryData *entryData = (EntryData *)window->winGetUserData();
 
-						entryData->maxTextLen = GetDlgItemInt( hWndDialog, EDIT_MAX_CHARS, NULL, TRUE );
+						entryData->maxTextLen = GetDlgItemInt( hWndDialog, EDIT_MAX_CHARS, nullptr, TRUE );
 						entryData->secretText = IsDlgButtonChecked( hWndDialog, CHECK_SECRET_TEXT );
 						entryData->aSCIIOnly = IsDlgButtonChecked( hWndDialog, CHECK_ASCII_TEXT );
 						if( IsDlgButtonChecked( hWndDialog, RADIO_LETTERS_AND_NUMBERS ) )
@@ -160,28 +160,28 @@ static LRESULT CALLBACK textEntryPropertiesCallback( HWND hWndDialog,
 							entryData->alphaNumericalOnly = TRUE;
 							entryData->numericalOnly = FALSE;
 
-						}  // end if
+						}
 						else if( IsDlgButtonChecked( hWndDialog, RADIO_NUMBERS ) )
 						{
 
 							entryData->alphaNumericalOnly = FALSE;
 							entryData->numericalOnly = TRUE;
 
-						}  // end else if
+						}
 						else
 						{
 
 							entryData->alphaNumericalOnly = FALSE;
 							entryData->numericalOnly = FALSE;
 
-						}  // end else
+						}
 
-					}  // end if
+					}
 
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end OK
+				}
 
 				// --------------------------------------------------------------------
         case IDCANCEL:
@@ -190,13 +190,13 @@ static LRESULT CALLBACK textEntryPropertiesCallback( HWND hWndDialog,
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end cancel
+				}
 
-      }  // end switch( LOWORD( wParam ) )
+      }
 
       return 0;
 
-    } // end of WM_COMMAND
+    }
 
 		// ------------------------------------------------------------------------
     case WM_CLOSE:
@@ -205,15 +205,15 @@ static LRESULT CALLBACK textEntryPropertiesCallback( HWND hWndDialog,
       DestroyWindow( hWndDialog );
       return 0;
 
-		}  // end close
+		}
 
 		// ------------------------------------------------------------------------
 		default:
 			return 0;
 
-  }  // end of switch
+  }
 
-}  // end textEntryPropertiesCallback
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,8 +232,8 @@ HWND InitTextEntryPropertiesDialog( GameWindow *window )
 												 (LPCTSTR)TEXT_ENTRY_PROPERTIES_DIALOG,
 												 TheEditor->getWindowHandle(),
 												 (DLGPROC)textEntryPropertiesCallback );
-	if( dialog == NULL )
-		return NULL;
+	if( dialog == nullptr )
+		return nullptr;
 
 	// do the common initialization
 	CommonDialogInitialize( window, dialog );
@@ -304,7 +304,7 @@ HWND InitTextEntryPropertiesDialog( GameWindow *window )
 
 	return dialog;
 
-}  // end InitTextEntryPropertiesDialog
+}
 
 
 

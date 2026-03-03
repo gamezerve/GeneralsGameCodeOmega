@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef _MISSIONSTATS_H_
-#define _MISSIONSTATS_H_
-
 #include "Lib/BaseType.h"
 #include "Common/GameCommon.h"
 #include "Common/Snapshot.h"
@@ -75,7 +72,7 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 private:
 
@@ -85,6 +82,3 @@ private:
 	Int m_buildingsLost;													///< how many of our buildings were destroyed?
 	//Int	m_whoLastHurtMe;													///< last Player to destroy one of my units
 };
-
-#endif // _MISSIONSTATS_H_
-

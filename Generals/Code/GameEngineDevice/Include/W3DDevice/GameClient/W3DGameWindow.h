@@ -38,15 +38,12 @@
 //
 // Created:    Colin Day, June 2001
 //
-// Desc:       W3D implemenations for the game windowing system
+// Desc:       W3D implementations for the game windowing system
 //
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#ifndef __W3DGAMEWINDOW_H_
-#define __W3DGAMEWINDOW_H_
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
@@ -59,7 +56,7 @@
 // TYPE DEFINES ///////////////////////////////////////////////////////////////
 
 // W3DGameWindow --------------------------------------------------------------
-/** W3D implemenation for a game window */
+/** W3D implementation for a game window */
 // ----------------------------------------------------------------------------
 class W3DGameWindow : public GameWindow
 {
@@ -67,12 +64,12 @@ class W3DGameWindow : public GameWindow
 
 public:
 
-	W3DGameWindow( void );
+	W3DGameWindow();
 	// already defined by MPO.
-	//~W3DGameWindow( void );
+	//~W3DGameWindow();
 
 	/// draw borders for this window only, NO child windows or anything else
-	void winDrawBorder( void );
+	void winDrawBorder();
 
 	Int winSetPosition( Int x, Int y );  ///< set window position
 	Int winSetText( UnicodeString newText );  ///< set text string
@@ -93,13 +90,10 @@ protected:
 	Bool m_needPolyDraw;  ///< TRUE need to redo the text polys
 	Bool m_newTextPos;  ///< TRUE when our window has moved and we need a new text pos
 
-};  // end class W3DGameWindow
+};
 
 // INLINING ///////////////////////////////////////////////////////////////////
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
 extern void W3DGameWinDefaultDraw( GameWindow *window,
 																	 WinInstanceData *instData );
-
-#endif // __W3DGAMEWINDOW_H_
-

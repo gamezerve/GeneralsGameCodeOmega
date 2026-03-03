@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/CRCPIPE.CPP                               $*
+ *                     $Archive:: /Commando/Library/CRCPIPE.cpp                               $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *
@@ -82,7 +82,7 @@ int CRCPipe::Put(void const * source, int slen)
  * HISTORY:                                                                                    *
  *   07/03/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-long CRCPipe::Result(void) const
+long CRCPipe::Result() const
 {
 	return(CRC());
 }

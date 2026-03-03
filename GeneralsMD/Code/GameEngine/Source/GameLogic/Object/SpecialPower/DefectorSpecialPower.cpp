@@ -31,7 +31,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/SpecialPower.h"
@@ -43,12 +43,12 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-DefectorSpecialPowerModuleData::DefectorSpecialPowerModuleData( void )
+DefectorSpecialPowerModuleData::DefectorSpecialPowerModuleData()
 {
 
 	m_fatCursorRadius = 0.0f;
 
-}  // end DefectorSpecialPowerModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -61,12 +61,12 @@ DefectorSpecialPowerModuleData::DefectorSpecialPowerModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "FatCursorRadius", INI::parseReal, NULL, offsetof( DefectorSpecialPowerModuleData, m_fatCursorRadius ) },
-		{ 0, 0, 0, 0 }
+		{ "FatCursorRadius", INI::parseReal, nullptr, offsetof( DefectorSpecialPowerModuleData, m_fatCursorRadius ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,14 +78,14 @@ DefectorSpecialPower::DefectorSpecialPower( Thing *thing, const ModuleData *modu
 												: SpecialPowerModule( thing, moduleData )
 {
 
-}  // end DefectorSpecialPower
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-DefectorSpecialPower::~DefectorSpecialPower( void )
+DefectorSpecialPower::~DefectorSpecialPower()
 {
 
-}  // end ~DefectorSpecialPower
+}
 
 
 // ------------------------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ void DefectorSpecialPower::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -161,15 +161,15 @@ void DefectorSpecialPower::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void DefectorSpecialPower::loadPostProcess( void )
+void DefectorSpecialPower::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/ThingTemplate.h"
 #include "Common/GameState.h"
@@ -42,10 +42,10 @@ static const Int INVALID_PATH = -1;
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-RailedTransportAIUpdateModuleData::RailedTransportAIUpdateModuleData( void )
+RailedTransportAIUpdateModuleData::RailedTransportAIUpdateModuleData()
 {
 
-}  // end RailedTransportAIUpdateModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -55,13 +55,13 @@ void RailedTransportAIUpdateModuleData::buildFieldParse( MultiIniFieldParse &p )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "PathPrefixName",		INI::parseAsciiString, NULL,	offsetof( RailedTransportAIUpdateModuleData, m_pathPrefixName ) },
-		{ 0, 0, 0, 0 }
+		{ "PathPrefixName",		INI::parseAsciiString, nullptr,	offsetof( RailedTransportAIUpdateModuleData, m_pathPrefixName ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 
   p.add( dataFieldParse );
 
-}  // end buildFieldParse
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -76,23 +76,23 @@ RailedTransportAIUpdate::RailedTransportAIUpdate( Thing *thing, const ModuleData
 		m_path[ i ].startWaypointID = 0;
 		m_path[ i ].endWaypointID = 0;
 
-	}  // end for i
+	}
 	m_numPaths = 0;
 	m_currentPath = INVALID_PATH;
 	m_waypointDataLoaded = FALSE;
 
-}  // end RailedTransportAIUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-RailedTransportAIUpdate::~RailedTransportAIUpdate( void )
+RailedTransportAIUpdate::~RailedTransportAIUpdate()
 {
 
-}  // end ~RailedTransportAIUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void RailedTransportAIUpdate::loadWaypointData( void )
+void RailedTransportAIUpdate::loadWaypointData()
 {
 	const RailedTransportAIUpdateModuleData *modData = getRailedTransportAIUpdateModuleData();
 
@@ -118,24 +118,24 @@ void RailedTransportAIUpdate::loadWaypointData( void )
 			m_path[ i ].endWaypointID = end->getID();
 			m_numPaths++;
 
-		}  // end if
+		}
 
-	}  // end for i
+	}
 
 	// waypoint data is loaded
 	m_waypointDataLoaded = TRUE;
 
-}  // end loadWaypointData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-void RailedTransportAIUpdate::pickAndMoveToInitialLocation( void )
+void RailedTransportAIUpdate::pickAndMoveToInitialLocation()
 {
 	Object *us = getObject();
 	const Coord3D *ourPos = us->getPosition();
 
 	// select the path with the closest ending waypoint to our location
-	Waypoint *waypoint, *closestEndWaypoint = NULL;
+	Waypoint *waypoint, *closestEndWaypoint = nullptr;
 	Int closestPath = INVALID_PATH;
 	Real closestDist = 99999999.9f;
 	for( Int i = 0; i < m_numPaths; ++i )
@@ -163,11 +163,11 @@ void RailedTransportAIUpdate::pickAndMoveToInitialLocation( void )
 				closestPath = i;
 				closestEndWaypoint = waypoint;
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 
-	}  // end for i
+	}
 
 	// a path must have been found
 	DEBUG_ASSERTCRASH( closestPath != INVALID_PATH,
@@ -183,11 +183,11 @@ void RailedTransportAIUpdate::pickAndMoveToInitialLocation( void )
 	// we are now "in transit"
 	setInTransit( TRUE );
 
-}  // end pickAndMoveToInitialLocation
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-UpdateSleepTime RailedTransportAIUpdate::update( void )
+UpdateSleepTime RailedTransportAIUpdate::update()
 {
 	Object *us = getObject();
 
@@ -245,18 +245,18 @@ UpdateSleepTime RailedTransportAIUpdate::update( void )
 				// we are no longer in transit
 				setInTransit( FALSE );
 
-			}  // end if
+			}
 		}
 		else
 		{
 			setInTransit( FALSE );
 		}
 
-	}  // end if
+	}
 
 	return UPDATE_SLEEP_NONE;
 
-}  // end update
+}
 
 // ------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ void RailedTransportAIUpdate::aiDoCommand( const AICommandParms *parms )
 	// call the default do command
 	AIUpdateInterface::aiDoCommand( parms );
 
-}  // end aiDoCommand
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE ////////////////////////////////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ void RailedTransportAIUpdate::setInTransit( Bool inTransit )
 	// no longer in transit
 	m_inTransit = inTransit;
 
-}  // end setInTransit
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -309,13 +309,13 @@ void RailedTransportAIUpdate::privateExecuteRailedTransport( CommandSourceType c
 	// if we just call the method getReailedTransportDockUpdateInterface, it will execute
 	// the method for *THIS AI UPDATE MODULE* which of course is not our dock update
 	//
-	RailedTransportDockUpdateInterface *rtdui = NULL;
+	RailedTransportDockUpdateInterface *rtdui = nullptr;
 	for( BehaviorModule **u = us->getBehaviorModules(); *u; ++u )
-		if( (rtdui = (*u)->getRailedTransportDockUpdateInterface()) != NULL )
+		if( (rtdui = (*u)->getRailedTransportDockUpdateInterface()) != nullptr )
 			break;
 
 	// if we've in the process of loading or unloading anything we can't do a transport sequence
-	if( rtdui == NULL || rtdui->isLoadingOrUnloading() )
+	if( rtdui == nullptr || rtdui->isLoadingOrUnloading() )
 		return;
 
 	// pick the next path
@@ -332,7 +332,7 @@ void RailedTransportAIUpdate::privateExecuteRailedTransport( CommandSourceType c
 	// we are now in transit
 	setInTransit( TRUE );
 
-}  // end privateExecuteRailedTransport
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -345,13 +345,13 @@ void RailedTransportAIUpdate::privateEvacuate( Int exposeStealthUnits, CommandSo
 	// if we just call the method getReailedTransportDockUpdateInterface, it will execute
 	// the method for *THIS AI UPDATE MODULE* which of course is not our dock update
 	//
-	RailedTransportDockUpdateInterface *rtdui = NULL;
+	RailedTransportDockUpdateInterface *rtdui = nullptr;
 	for( BehaviorModule **u = us->getBehaviorModules(); *u; ++u )
-		if( (rtdui = (*u)->getRailedTransportDockUpdateInterface()) != NULL )
+		if( (rtdui = (*u)->getRailedTransportDockUpdateInterface()) != nullptr )
 			break;
 
 	// sanity
-	if( rtdui == NULL )
+	if( rtdui == nullptr )
 		return;
 
 	// can't unload when in transit
@@ -365,7 +365,7 @@ void RailedTransportAIUpdate::privateEvacuate( Int exposeStealthUnits, CommandSo
 	// start the manual undocking process
 	rtdui->unloadAll();
 
-}  // end privateEvacuate
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -374,7 +374,7 @@ void RailedTransportAIUpdate::crc( Xfer *xfer )
 {
 	// extend base class
 	AIUpdateInterface::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -404,13 +404,13 @@ void RailedTransportAIUpdate::xfer( Xfer *xfer )
 	xfer->xferInt(&m_currentPath);
 	xfer->xferBool(&m_waypointDataLoaded);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void RailedTransportAIUpdate::loadPostProcess( void )
+void RailedTransportAIUpdate::loadPostProcess()
 {
  // extend base class
 	AIUpdateInterface::loadPostProcess();
-}  // end loadPostProcess
+}

@@ -34,8 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef NOINIT_H
-#define NOINIT_H
+#pragma once
 
 /**********************************************************************
 **	This class is solely used as a parameter to a constructor that does
@@ -49,9 +48,6 @@
 #ifndef NoInitClass
 class NoInitClass {
 	public:
-		void operator () (void) const {};
+		void operator () () const {};
 };
-#endif
-
-
 #endif

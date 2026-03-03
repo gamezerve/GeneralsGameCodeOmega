@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Player.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
@@ -86,15 +86,15 @@ void MobNexusContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Slots",	INI::parseInt,		NULL, offsetof( MobNexusContainModuleData, m_slotCapacity ) },
-		{ "ScatterNearbyOnExit",	INI::parseBool,		NULL, offsetof( MobNexusContainModuleData, m_scatterNearbyOnExit ) },
-		{ "OrientLikeContainerOnExit",	INI::parseBool,		NULL, offsetof( MobNexusContainModuleData, m_orientLikeContainerOnExit ) },
-		{ "KeepContainerVelocityOnExit",	INI::parseBool,		NULL, offsetof( MobNexusContainModuleData, m_keepContainerVelocityOnExit ) },
-		{ "ExitBone",	INI::parseAsciiString,		NULL, offsetof( MobNexusContainModuleData, m_exitBone ) },
-		{ "ExitPitchRate",	INI::parseAngularVelocityReal,		NULL, offsetof( MobNexusContainModuleData, m_exitPitchRate ) },
-		{ "InitialPayload", parseInitialPayload, NULL, 0 },
-		{ "HealthRegen%PerSec", INI::parseReal, NULL, offsetof( MobNexusContainModuleData, m_healthRegen ) },
-		{ 0, 0, 0, 0 }
+		{ "Slots",	INI::parseInt,		nullptr, offsetof( MobNexusContainModuleData, m_slotCapacity ) },
+		{ "ScatterNearbyOnExit",	INI::parseBool,		nullptr, offsetof( MobNexusContainModuleData, m_scatterNearbyOnExit ) },
+		{ "OrientLikeContainerOnExit",	INI::parseBool,		nullptr, offsetof( MobNexusContainModuleData, m_orientLikeContainerOnExit ) },
+		{ "KeepContainerVelocityOnExit",	INI::parseBool,		nullptr, offsetof( MobNexusContainModuleData, m_keepContainerVelocityOnExit ) },
+		{ "ExitBone",	INI::parseAsciiString,		nullptr, offsetof( MobNexusContainModuleData, m_exitBone ) },
+		{ "ExitPitchRate",	INI::parseAngularVelocityReal,		nullptr, offsetof( MobNexusContainModuleData, m_exitPitchRate ) },
+		{ "InitialPayload", parseInitialPayload, nullptr, 0 },
+		{ "HealthRegen%PerSec", INI::parseReal, nullptr, offsetof( MobNexusContainModuleData, m_healthRegen ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -105,7 +105,7 @@ void MobNexusContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Int MobNexusContain::getContainMax( void ) const
+Int MobNexusContain::getContainMax() const
 {
 	if (getMobNexusContainModuleData())
 		return getMobNexusContainModuleData()->m_slotCapacity;
@@ -124,7 +124,7 @@ MobNexusContain::MobNexusContain( Thing *thing, const ModuleData *moduleData ) :
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-MobNexusContain::~MobNexusContain( void )
+MobNexusContain::~MobNexusContain()
 {
 
 }
@@ -221,7 +221,7 @@ void MobNexusContain::onContaining( Object *rider )
 		if( draw )
 			draw->setModelConditionState( MODELCONDITION_LOADED );
 
-	}  // end if
+	}
 
 }
 
@@ -242,9 +242,9 @@ void MobNexusContain::onRemoving( Object *rider )
 		if (draw)
 		{
 			Coord3D bonePos, worldPos;
-			if (draw->getPristineBonePositions(d->m_exitBone.str(), 0, &bonePos, NULL, 1) == 1)
+			if (draw->getPristineBonePositions(d->m_exitBone.str(), 0, &bonePos, nullptr, 1) == 1)
 			{
-				getObject()->convertBonePosToWorldPos(&bonePos, NULL, &worldPos, NULL);
+				getObject()->convertBonePosToWorldPos(&bonePos, nullptr, &worldPos, nullptr);
 				rider->setPosition(&worldPos);
 			}
 		}
@@ -289,7 +289,7 @@ void MobNexusContain::onRemoving( Object *rider )
 		if( draw )
 			draw->clearModelConditionState( MODELCONDITION_LOADED );
 
-	}  // end if
+	}
 
 	if (getObject()->isAboveTerrain())
 	{
@@ -383,7 +383,7 @@ UpdateSleepTime MobNexusContain::update()
 // ------------------------------------------------------------------------------------------------
 ExitDoorType MobNexusContain::reserveDoorForExit( const ThingTemplate* objType, Object *specificObject )
 {
-	if( specificObject == NULL )
+	if( specificObject == nullptr )
 		return DOOR_1;// I can, in general, exit people.
 
 	// This is an override, not an extend.  I will check for game legality for
@@ -462,7 +462,7 @@ void MobNexusContain::crc( Xfer *xfer )
 	// extend base class
 	OpenContain::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -483,15 +483,15 @@ void MobNexusContain::xfer( Xfer *xfer )
 	// extra slots in use
 	xfer->xferInt( &m_extraSlotsInUse );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void MobNexusContain::loadPostProcess( void )
+void MobNexusContain::loadPostProcess()
 {
 
 	// extend base class
 	OpenContain::loadPostProcess();
 
-}  // end loadPostProcess
+}

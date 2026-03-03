@@ -34,16 +34,16 @@
 #include "Common/WellKnownKeys.h"
 #include "LayersList.h"
 
-WaterOptions *WaterOptions::m_staticThis = NULL;
+WaterOptions *WaterOptions::m_staticThis = nullptr;
 Int WaterOptions::m_waterHeight = 7;
 Int WaterOptions::m_waterPointSpacing = MAP_XY_FACTOR;
 Bool WaterOptions::m_creatingWaterAreas = false;
 /////////////////////////////////////////////////////////////////////////////
-/// WaterOptions dialog trivial construstor - Create does the real work.
+/// WaterOptions dialog trivial constructor - Create does the real work.
 
 
-WaterOptions::WaterOptions(CWnd* pParent /*=NULL*/):
-m_moveUndoable(NULL)
+WaterOptions::WaterOptions(CWnd* pParent /*=nullptr*/):
+m_moveUndoable(nullptr)
 {
 	//{{AFX_DATA_INIT(WaterOptions)
 		// NOTE: the ClassWizard will add member initialization here
@@ -61,8 +61,8 @@ void WaterOptions::DoDataExchange(CDataExchange* pDX)
 
 void WaterOptions::setHeight(Int height)
 {
-	char buffer[50];
-	sprintf(buffer, "%d", height);
+	char buffer[12];
+	snprintf(buffer, ARRAY_SIZE(buffer), "%d", height);
 	m_waterHeight = height;
 	if (m_staticThis && !m_staticThis->m_updating) {
 		CWnd *pEdit = m_staticThis->GetDlgItem(IDC_HEIGHT_EDIT);
@@ -88,12 +88,12 @@ void WaterOptions::updateTheUI(void)
 	}
 	pButton = (CButton*)GetDlgItem(IDC_MAKE_RIVER);
 	pButton->SetCheck(isRiver ? 1:0);
-	pButton->EnableWindow(theTrigger!=NULL);
+	pButton->EnableWindow(theTrigger!=nullptr);
 
 	pWnd = m_staticThis->GetDlgItem(IDC_SPACING);
-	char buffer[_MAX_PATH];
+	char buffer[12];
 	if (pWnd) {
-		sprintf(buffer, "%d", m_waterPointSpacing);
+		snprintf(buffer, ARRAY_SIZE(buffer), "%d", m_waterPointSpacing);
 		pWnd->SetWindowText(buffer);
 	}
 }
@@ -360,7 +360,7 @@ void WaterOptions::GetPopSliderInfo(const long sliderID, long *pMin, long *pMax,
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 }
 
 void WaterOptions::PopSliderChanged(const long sliderID, long theVal)
@@ -386,7 +386,7 @@ void WaterOptions::PopSliderChanged(const long sliderID, long theVal)
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 }
 
 void WaterOptions::PopSliderFinished(const long sliderID, long theVal)
@@ -401,7 +401,7 @@ void WaterOptions::PopSliderFinished(const long sliderID, long theVal)
 			// uh-oh!
 			DEBUG_CRASH(("Slider message from unknown control"));
 			break;
-	}	// switch
+	}
 
 }
 
@@ -492,7 +492,7 @@ void WaterOptions::OnChangeSpacingEdit()
 {
 	if (m_updating) return;
 	CWnd *pEdit = m_staticThis->GetDlgItem(IDC_SPACING);
-	char buffer[_MAX_PATH];
+	char buffer[12];
 	if (pEdit) {
 		pEdit->GetWindowText(buffer, sizeof(buffer));
 		Int height;
@@ -500,7 +500,7 @@ void WaterOptions::OnChangeSpacingEdit()
 		if (1==sscanf(buffer, "%d", &height)) {
 			m_waterPointSpacing = height;
 		}	else {
-			sprintf(buffer, "%d", m_waterPointSpacing);
+			snprintf(buffer, ARRAY_SIZE(buffer), "%d", m_waterPointSpacing);
 			pEdit->SetWindowText(buffer);
 		}
 		m_updating = false;

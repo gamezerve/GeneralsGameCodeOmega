@@ -46,7 +46,7 @@
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
 //-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@
 static NameKeyType parentMainMenuID = NAMEKEY_INVALID;
 
 // window pointers --------------------------------------------------------------------------------
-static GameWindow *parentMainMenu = NULL;
+static GameWindow *parentMainMenu = nullptr;
 
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
@@ -80,14 +80,14 @@ static GameWindow *parentMainMenu = NULL;
 void CreditsMenuInit( WindowLayout *layout, void *userData )
 {
 	TheShell->showShellMap(FALSE);
-	if(TheCredits)
-		delete TheCredits;
+
+	delete TheCredits;
 	TheCredits = new CreditsManager;
 	TheCredits->load();
 	TheCredits->init();
 
-	parentMainMenuID = TheNameKeyGenerator->nameToKey( AsciiString("CreditsMenu.wnd:ParentCreditsWindow") );
-	parentMainMenu = TheWindowManager->winGetWindowFromId( NULL, parentMainMenuID );
+	parentMainMenuID = TheNameKeyGenerator->nameToKey( "CreditsMenu.wnd:ParentCreditsWindow" );
+	parentMainMenu = TheWindowManager->winGetWindowFromId( nullptr, parentMainMenuID );
 
 
 	// show menu
@@ -99,12 +99,12 @@ void CreditsMenuInit( WindowLayout *layout, void *userData )
 
 
 	TheAudio->removeAudioEvent( AHSV_StopTheMusicFade );
-	AudioEventRTS event( AsciiString( "Credits" ) );
+	AudioEventRTS event( "Credits" );
 	event.setShouldFade( TRUE );
 	TheAudio->addAudioEvent( &event );
 
 
-}  // end CreditsMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** single player menu shutdown method */
@@ -113,7 +113,7 @@ void CreditsMenuShutdown( WindowLayout *layout, void *userData )
 {
 	TheCredits->reset();
 	delete TheCredits;
-	TheCredits = NULL;
+	TheCredits = nullptr;
 	TheShell->showShellMap(TRUE);
 
 	// hide menu
@@ -124,7 +124,7 @@ void CreditsMenuShutdown( WindowLayout *layout, void *userData )
 
 	TheAudio->removeAudioEvent( AHSV_StopTheMusicFade );
 
-}  // end CreditsMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** single player menu update method */
@@ -142,7 +142,7 @@ void CreditsMenuUpdate( WindowLayout *layout, void *userData )
 	else
 		TheShell->pop();
 
-}  // end CreditsMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Replay menu input callback */
@@ -176,22 +176,22 @@ WindowMsgHandledType CreditsMenuInput( GameWindow *window, UnsignedInt msg,
 
 						TheShell->pop();
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end CreditsMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** single player menu window system callback */
@@ -210,7 +210,7 @@ WindowMsgHandledType CreditsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end create
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
@@ -218,7 +218,7 @@ WindowMsgHandledType CreditsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end case
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -230,20 +230,20 @@ WindowMsgHandledType CreditsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			return MSG_HANDLED;
 
-		}  // end input
+		}
 		//---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 		{
 
 			break;
-		}  // end selected
+		}
 
 		default:
 			return MSG_IGNORED;
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
-}  // end CreditsMenuSystem
+}
 
 //-----------------------------------------------------------------------------
 // PRIVATE FUNCTIONS //////////////////////////////////////////////////////////

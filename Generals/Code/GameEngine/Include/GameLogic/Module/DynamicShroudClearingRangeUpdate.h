@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __DYNAMIC_SHROUD_RANGE_UPDATE_H_
-#define __DYNAMIC_SHROUD_RANGE_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 #include "GameClient/RadiusDecal.h"///< For the pseudo-wireframe decal effect
@@ -79,8 +76,8 @@ public:
 	virtual UpdateSleepTime update();
 
 	void createGridDecals( const RadiusDecalTemplate& tmpl, Real radius, const Coord3D& pos );
-	void killGridDecals( void );
-	void animateGridDecals( void );
+	void killGridDecals();
+	void animateGridDecals();
 
 
 protected:
@@ -114,7 +111,7 @@ protected:
 	UnsignedInt m_sustainDeadline;
 	UnsignedInt m_shrinkStartDeadline;
 	UnsignedInt m_doneForeverFrame; ///< Just in case interval and state timing goes awry
-																	///< This supercedes and makes us quit
+																	///< This supersedes and makes us quit
 
 
 	UnsignedInt m_changeIntervalCountdown;///< How long till I change my vision range again
@@ -129,6 +126,3 @@ protected:
 	RadiusDecal m_gridDecal[GRID_FX_DECAL_COUNT];///< For the pseudo-wireframe decal effect
 
 };
-
-#endif
-

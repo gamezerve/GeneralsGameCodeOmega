@@ -26,7 +26,7 @@
 // Author: Graham Smallwood, September 2002
 // Desc:	 UpgradeModule that sets a new override string for Command Set look ups
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Xfer.h"
 #include "GameClient/ControlBar.h"
@@ -41,8 +41,8 @@ void CommandSetUpgradeModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "CommandSet",	INI::parseAsciiString,	NULL, offsetof( CommandSetUpgradeModuleData, m_newCommandSet ) },
-		{ 0, 0, 0, 0 }
+		{ "CommandSet",	INI::parseAsciiString,	nullptr, offsetof( CommandSetUpgradeModuleData, m_newCommandSet ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -55,13 +55,13 @@ CommandSetUpgrade::CommandSetUpgrade( Thing *thing, const ModuleData* moduleData
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-CommandSetUpgrade::~CommandSetUpgrade( void )
+CommandSetUpgrade::~CommandSetUpgrade()
 {
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void CommandSetUpgrade::upgradeImplementation( )
+void CommandSetUpgrade::upgradeImplementation()
 {
 	Object *obj = getObject();
 	obj->setCommandSetStringOverride( getCommandSetUpgradeModuleData()->m_newCommandSet );
@@ -78,7 +78,7 @@ void CommandSetUpgrade::crc( Xfer *xfer )
 	// extend base class
 	UpgradeModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -96,15 +96,15 @@ void CommandSetUpgrade::xfer( Xfer *xfer )
 	// extend base class
 	UpgradeModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void CommandSetUpgrade::loadPostProcess( void )
+void CommandSetUpgrade::loadPostProcess()
 {
 
 	// extend base class
 	UpgradeModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

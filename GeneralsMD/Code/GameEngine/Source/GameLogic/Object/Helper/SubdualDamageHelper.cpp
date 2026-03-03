@@ -46,7 +46,7 @@ SubdualDamageHelper::SubdualDamageHelper( Thing *thing, const ModuleData *modDat
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-SubdualDamageHelper::~SubdualDamageHelper( void )
+SubdualDamageHelper::~SubdualDamageHelper()
 {
 
 }
@@ -94,7 +94,7 @@ void SubdualDamageHelper::crc( Xfer *xfer )
 	// object helper crc
 	ObjectHelper::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -114,16 +114,16 @@ void SubdualDamageHelper::xfer( Xfer *xfer )
 
 	xfer->xferUnsignedInt( &m_healingStepCountdown );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SubdualDamageHelper::loadPostProcess( void )
+void SubdualDamageHelper::loadPostProcess()
 {
 
 	// object helper base class
 	ObjectHelper::loadPostProcess();
 
-}  // end loadPostProcess
+}
 

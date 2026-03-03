@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _DOCK_UPDATE_H_
-#define _DOCK_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/INI.h"
 #include "Common/GameMemory.h"
@@ -78,7 +75,7 @@ public:
 	virtual Bool isClearToApproach( Object const* docker ) const;
 
 	/** Give me a Queue point to drive to, and record that that point is taken.
-			Returning NULL means there are none free
+			Returning null means there are none free
 	*/
 	virtual Bool reserveApproachPosition( Object* docker, Coord3D *position, Int *index );
 
@@ -98,7 +95,7 @@ public:
 	virtual Bool isClearToAdvance( Object const* docker, Int dockerIndex ) const;
 
 	/** Give me the point that is the start of your docking path
-			Returning NULL means there is none free
+			Returning null means there is none free
 			All functions take docker as arg so we could have multiple docks on a building.
 			Docker is not assumed, it is recorded and checked.
 	*/
@@ -120,7 +117,7 @@ public:
 
 	virtual void cancelDock( Object* docker );	///< Clear me from any reserved points, and if I was the reason you were Busy, you aren't anymore.
 
-	virtual Bool isDockOpen( void ) { return m_dockOpen; }				///< Is the dock open to accepting dockers
+	virtual Bool isDockOpen() { return m_dockOpen; }				///< Is the dock open to accepting dockers
 	virtual void setDockOpen( Bool open ) { m_dockOpen = open; }	///< Open/Close the dock
 
 	virtual Bool isAllowPassthroughType();	///< Not all docks allow you to path through them in your AIDock machine
@@ -156,5 +153,3 @@ protected:
 	void loadDockPositions();  ///< load all the dock positions
 	Coord3D computeApproachPosition( Int positionIndex, Object *forWhom ); ///< Do a smart lookup of this bone position
 };
-
-#endif

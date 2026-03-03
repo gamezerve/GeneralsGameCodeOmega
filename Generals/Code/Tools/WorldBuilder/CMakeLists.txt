@@ -22,7 +22,6 @@ set(WORLDBUILDER_SRC
     "src/EditGroup.cpp"
     "src/EditObjectParameter.cpp"
     "src/EditParameter.cpp"
-    "src/EulaDialog.cpp"
     "src/ExportScriptsOptions.cpp"
     "src/EyedropperTool.cpp"
     "src/FeatherOptions.cpp"
@@ -119,7 +118,6 @@ set(WORLDBUILDER_SRC
     "include/EditGroup.h"
     "include/EditObjectParameter.h"
     "include/EditParameter.h"
-    "include/euladialog.h"
     "include/ExportScriptsOptions.h"
     "include/EyedropperTool.h"
     "include/FeatherOptions.h"
@@ -204,9 +202,16 @@ target_include_directories(g_worldbuilder PRIVATE
 
 target_compile_definitions(g_worldbuilder PRIVATE _AFXDLL)
 
+target_precompile_headers(g_worldbuilder PRIVATE
+    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+    [["always.h"]]
+    [["Common/STLTypedefs.h"]]
+    [["StdAfx.h"]]
+    [["WWCommon.h"]]
+)
+
 target_link_libraries(g_worldbuilder PRIVATE
     d3d8lib
-    dbghelplib
     core_browserdispatch
     g_gameengine
     g_gameenginedevice

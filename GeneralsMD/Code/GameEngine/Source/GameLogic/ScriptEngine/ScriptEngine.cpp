@@ -26,12 +26,12 @@
 // The game scripting engine.  Interprets scripts.
 // Author: John Ahlquist, Nov. 2001
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/DataChunk.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
-#include "Common/GameEngine.h"
+#include "Common/FramePacer.h"
 #include "Common/GameState.h"
 #include "Common/LatchRestore.h"
 #include "Common/MessageStream.h"
@@ -65,7 +65,7 @@ static Bool st_CanAppCont;
 static Bool st_AppIsFast = false;
 static void _appendMessage(const AsciiString& str, Bool isTrueMessage = true, Bool shouldPause = false);
 static void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause = false);
-static void _updateFrameNumber( void );
+static void _updateFrameNumber();
 static HMODULE st_DebugDLL;
 // That's it for debugger window
 
@@ -76,21 +76,21 @@ static HMODULE st_DebugDLL;
 #include "../../GameEngineDevice/Include/W3DDevice/GameClient/W3DAssetManagerExposed.h"
 
 static void _addUpdatedParticleSystem( AsciiString particleSystemName );
-static void _appendAllParticleSystems( void );
-static void _appendAllThingTemplates( void );
-static int _getEditorBehavior( void );
-static int _getNewCurrentParticleCap( void );
-static AsciiString _getParticleSystemName( void );
+static void _appendAllParticleSystems();
+static void _appendAllThingTemplates();
+static int _getEditorBehavior();
+static int _getNewCurrentParticleCap();
+static AsciiString _getParticleSystemName();
 static void _reloadParticleSystemFromINI( AsciiString particleSystemName );
-static void _updateAndSetCurrentSystem( void );
+static void _updateAndSetCurrentSystem();
 extern void _updateAsciiStringParmsFromSystem( ParticleSystemTemplate *particleTemplate );
 extern void _updateAsciiStringParmsToSystem( ParticleSystemTemplate *particleTemplate );
-static void _updateCurrentParticleCap( void );
-static void _updateCurrentParticleCount( void );
+static void _updateCurrentParticleCap();
+static void _updateCurrentParticleCount();
 static void _updatePanelParameters( ParticleSystemTemplate *particleTemplate );
-static void _writeOutINI( void );
+static void _writeOutINI();
 extern void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *particleTemplate );
-static void _reloadTextures( void );
+static void _reloadTextures();
 
 static HMODULE st_ParticleDLL;
 ParticleSystem *st_particleSystem;
@@ -110,13 +110,13 @@ Bool st_particleSystemNeedsStopping = FALSE; ///< Set along with st_particleSyst
 	typedef void (*VTProc)();
 
 	static Bool						st_EnableVTune = false;
-	static HMODULE				st_vTuneDLL = NULL;
-	static VTProc VTPause = NULL;
-	static VTProc VTResume = NULL;
+	static HMODULE				st_vTuneDLL = nullptr;
+	static VTProc VTPause = nullptr;
+	static VTProc VTResume = nullptr;
 
-	static void _initVTune( void );
-	static void _updateVTune ( void );
-	static void _cleanUpVTune( void );
+	static void _initVTune();
+	static void _updateVTune ();
+	static void _cleanUpVTune();
 
 #endif
 
@@ -135,7 +135,7 @@ static const Int FRAMES_TO_FADE_IN_AT_START = 33;
 //#include "Common/PerfTimer.h"
 
 // GLOBALS ////////////////////////////////////////////////////////////////////////////////////////
-ScriptEngine *TheScriptEngine = NULL;
+ScriptEngine *TheScriptEngine = nullptr;
 
 /// Local classes
 /// AttackPriorityInfo class
@@ -144,7 +144,7 @@ static const Int ATTACK_PRIORITY_DEFAULT = 1;
 //-------------------------------------------------------------------------------------------------
 /** Ctor */
 //-------------------------------------------------------------------------------------------------
-AttackPriorityInfo::AttackPriorityInfo() :m_defaultPriority(ATTACK_PRIORITY_DEFAULT), m_priorityMap(NULL)
+AttackPriorityInfo::AttackPriorityInfo() :m_defaultPriority(ATTACK_PRIORITY_DEFAULT), m_priorityMap(nullptr)
 {
 	m_name.clear();
 }
@@ -154,8 +154,8 @@ AttackPriorityInfo::AttackPriorityInfo() :m_defaultPriority(ATTACK_PRIORITY_DEFA
 //-------------------------------------------------------------------------------------------------
 AttackPriorityInfo::~AttackPriorityInfo()
 {
-	if (m_priorityMap) delete m_priorityMap;
-	m_priorityMap = NULL;
+	delete m_priorityMap;
+	m_priorityMap = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -163,8 +163,8 @@ AttackPriorityInfo::~AttackPriorityInfo()
 //-------------------------------------------------------------------------------------------------
 void AttackPriorityInfo::setPriority(const ThingTemplate *tThing, Int priority)
 {
-	if (tThing==NULL) return;
-	if (m_priorityMap==NULL) {
+	if (tThing==nullptr) return;
+	if (m_priorityMap==nullptr) {
 		m_priorityMap = NEW AttackPriorityMap;	// STL type, so impractical to use memorypool
 	}
 	tThing = (const ThingTemplate *)tThing->getFinalOverride();
@@ -177,7 +177,7 @@ void AttackPriorityInfo::setPriority(const ThingTemplate *tThing, Int priority)
 Int AttackPriorityInfo::getPriority(const ThingTemplate *tThing) const
 {
 	Int priority = m_defaultPriority;
-	if (tThing==NULL) return priority;
+	if (tThing==nullptr) return priority;
 	tThing = (const ThingTemplate *)tThing->getFinalOverride();
 	if (m_priorityMap && !m_priorityMap->empty()) {
 		AttackPriorityMap::const_iterator it = m_priorityMap->find(tThing);
@@ -192,11 +192,11 @@ Int AttackPriorityInfo::getPriority(const ThingTemplate *tThing) const
 #ifdef RTS_DEBUG
 /** Dump the info. */
 //-------------------------------------------------------------------------------------------------
-void AttackPriorityInfo::dumpPriorityInfo(void)
+void AttackPriorityInfo::dumpPriorityInfo()
 {
 #ifdef DEBUG_LOGGING
 	DEBUG_LOG(("Attack priority '%s', default %d", m_name.str(), m_defaultPriority));
-	if (m_priorityMap==NULL) return;
+	if (m_priorityMap==nullptr) return;
 	for (AttackPriorityMap::const_iterator it = m_priorityMap->begin(); it != m_priorityMap->end(); ++it)
     {
 		const ThingTemplate *tThing = (*it).first;
@@ -210,7 +210,7 @@ void AttackPriorityInfo::dumpPriorityInfo(void)
 // ------------------------------------------------------------------------------------------------
 /** Reset to default state */
 // ------------------------------------------------------------------------------------------------
-void AttackPriorityInfo::reset( void )
+void AttackPriorityInfo::reset()
 {
 
 	// clear name just to be clean
@@ -219,16 +219,10 @@ void AttackPriorityInfo::reset( void )
 	// go back to default priority
 	m_defaultPriority = ATTACK_PRIORITY_DEFAULT;
 
-	// delete the priority map if present
-	if( m_priorityMap )
-	{
+	delete m_priorityMap;
+	m_priorityMap = nullptr;
 
-		delete m_priorityMap;
-		m_priorityMap = NULL;
-
-	}  // end if
-
-}  // end reset
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -236,7 +230,7 @@ void AttackPriorityInfo::reset( void )
 void AttackPriorityInfo::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -273,7 +267,7 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 		for( it = m_priorityMap->begin(); it != m_priorityMap->end(); ++it )
 			++priorityMapCount;
 
-	}  // end if
+	}
 	xfer->xferUnsignedShort( &priorityMapCount );
 
 	// priority map
@@ -306,16 +300,16 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 				priority = (*it).second;
 				xfer->xferInt( &priority );
 
-			}  // end for i
+			}
 
 			// sanity
 			DEBUG_ASSERTCRASH( count == priorityMapCount,
 												("AttackPriorityInfo::xfer - Mismatch in priority map size.  Size() method returned '%d' but actual iteration count was '%d'",
 												 priorityMapCount, count) );
 
-		}  // end if
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -326,14 +320,14 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 			// read thing template name, and get template
 			xfer->xferAsciiString( &thingTemplateName );
 			thingTemplate = TheThingFactory->findTemplate( thingTemplateName );
-			if( thingTemplate == NULL )
+			if( thingTemplate == nullptr )
 			{
 
 				DEBUG_CRASH(( "AttackPriorityInfo::xfer - Unable to find thing template '%s'",
 											thingTemplateName.str() ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read priority
 			xfer->xferInt( &priority );
@@ -341,28 +335,28 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 			// set priority (this will allocate the map on the first call as well)
 			setPriority( thingTemplate, priority );
 
-		}  // end for
+		}
 
-	}  // end else, load
+	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AttackPriorityInfo::loadPostProcess( void )
+void AttackPriorityInfo::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 
 // ScriptEngine class
 static const FieldParse TheTemplateFieldParseTable[] =
 {
-	{ "InternalName",	INI::parseAsciiString,NULL,		offsetof( Template, m_internalName ) },
-	{ "UIName",				INI::parseAsciiString,NULL,		offsetof( Template, m_uiName ) },
-	{ "UIName2",			INI::parseAsciiString,NULL,		offsetof( Template, m_uiName2 ) },
-	{ "HelpText",			INI::parseAsciiString,NULL,		offsetof( Template, m_helpText ) },
-	{ NULL,						NULL,									NULL, 0 }  // keep this last
+	{ "InternalName",	INI::parseAsciiString,nullptr,		offsetof( Template, m_internalName ) },
+	{ "UIName",				INI::parseAsciiString,nullptr,		offsetof( Template, m_uiName ) },
+	{ "UIName2",			INI::parseAsciiString,nullptr,		offsetof( Template, m_uiName2 ) },
+	{ "HelpText",			INI::parseAsciiString,nullptr,		offsetof( Template, m_helpText ) },
+	{ nullptr,						nullptr,									nullptr, 0 }
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -442,17 +436,15 @@ void ScriptEngine::addConditionTemplateInfo( Template *actionTemplate)
 ScriptEngine::ScriptEngine():
 m_numCounters(0),
 m_numFlags(0),
-m_callingTeam(NULL),
-m_callingObject(NULL),
-m_conditionTeam(NULL),
-m_conditionObject(NULL),
-m_currentPlayer(NULL),
-m_skirmishHumanPlayer(NULL),
+m_callingTeam(nullptr),
+m_callingObject(nullptr),
+m_conditionTeam(nullptr),
+m_conditionObject(nullptr),
+m_currentPlayer(nullptr),
+m_skirmishHumanPlayer(nullptr),
 m_fade(FADE_NONE),
 m_freezeByScript(FALSE),
 m_frameObjectCountChanged(0),
-//Added By Sadullah Nader
-//Initializations inserted
 m_closeWindowTimer(0),
 m_curFadeFrame(0),
 m_curFadeValue(0.0f),
@@ -467,14 +459,13 @@ m_numAttackInfo(0),
 m_shownMPLocalDefeatWindow(FALSE),
 m_objectsShouldReceiveDifficultyBonus(TRUE),
 m_ChooseVictimAlwaysUsesNormal(false)
-//
 {
 	st_CanAppCont = true;
 	st_LastCurrentFrame = st_CurrentFrame = 0;
 	// By default, difficulty should be normal.
 	setGlobalDifficulty(DIFFICULTY_NORMAL);
 
-}  // end ScriptEngine
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -487,7 +478,7 @@ ScriptEngine::~ScriptEngine()
 		}
 
 		FreeLibrary(st_DebugDLL);
-		st_DebugDLL = NULL;
+		st_DebugDLL = nullptr;
 	}
 
 	if (st_ParticleDLL) {
@@ -497,7 +488,7 @@ ScriptEngine::~ScriptEngine()
 		}
 
 		FreeLibrary(st_ParticleDLL);
-		st_ParticleDLL = NULL;
+		st_ParticleDLL = nullptr;
 	}
 
 #ifdef DO_VTUNE_STUFF
@@ -519,24 +510,24 @@ ScriptEngine::~ScriptEngine()
 	}
 #endif
 
-}  // end ~ScriptEngine
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Init */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::init( void )
+void ScriptEngine::init()
 {
 	if (TheGlobalData->m_windowed)
 		if (TheGlobalData->m_scriptDebug) {
 			st_DebugDLL = LoadLibrary("DebugWindow.dll");
 		} else {
-			st_DebugDLL = NULL;
+			st_DebugDLL = nullptr;
 		}
 
 		if (TheGlobalData->m_particleEdit) {
 			st_ParticleDLL = LoadLibrary("ParticleEditor.dll");
 		} else {
-			st_ParticleDLL = NULL;
+			st_ParticleDLL = nullptr;
 		}
 
 		if (st_DebugDLL) {
@@ -673,10 +664,10 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::DEFEAT];
 	curTemplate->m_internalName = "DEFEAT";
-	curTemplate->m_uiName = "User_/ Announce lose";
+	curTemplate->m_uiName = "User_/ Announce loss";
 	curTemplate->m_numParameters = 0;
 	curTemplate->m_numUiStrings = 1;
-	curTemplate->m_uiStrings[0] = "Announce lose.";
+	curTemplate->m_uiStrings[0] = "Announce loss.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::NO_OP];
 	curTemplate->m_internalName = "NO_OP";
@@ -825,7 +816,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Have ";
-	curTemplate->m_uiStrings[1] = " wander around it's current location.";
+	curTemplate->m_uiStrings[1] = " wander around its current location.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_INCREASE_PRIORITY];
 	curTemplate->m_internalName = "TEAM_INCREASE_PRIORITY";
@@ -834,7 +825,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Increase the AI priority for";
-	curTemplate->m_uiStrings[1] = "  by its Success Priority Increase amount.";
+	curTemplate->m_uiStrings[1] = " by its Success Priority Increase amount.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_DECREASE_PRIORITY];
 	curTemplate->m_internalName = "TEAM_DECREASE_PRIORITY";
@@ -843,7 +834,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_numUiStrings = 2;
 	curTemplate->m_uiStrings[0] = "Reduce the AI priority for";
-	curTemplate->m_uiStrings[1] = "  by its Failure Priority Decrease amount.";
+	curTemplate->m_uiStrings[1] = " by its Failure Priority Decrease amount.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_WANDER];
 	curTemplate->m_internalName = "TEAM_WANDER";
@@ -917,7 +908,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 4;
 	curTemplate->m_uiStrings[0] = "Have AI ";
 	curTemplate->m_uiStrings[1] = " build a ";
-	curTemplate->m_uiStrings[2] = " near a supply src with at least ";
+	curTemplate->m_uiStrings[2] = " near a supply source with at least ";
 	curTemplate->m_uiStrings[3] = " available resources.";
 
   curTemplate = &m_actionTemplates[ScriptAction::AI_PLAYER_BUILD_TYPE_NEAREST_TEAM];
@@ -941,7 +932,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::INT;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = "Have Team ";
-	curTemplate->m_uiStrings[1] = " guard attacked or closest supply src with at least ";
+	curTemplate->m_uiStrings[1] = " guard attacked or closest supply source with at least ";
 	curTemplate->m_uiStrings[2] = " available resources";
 
   curTemplate = &m_actionTemplates[ScriptAction::AI_PLAYER_BUILD_UPGRADE];
@@ -1066,7 +1057,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " adding toward white. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_SUBTRACT];
@@ -1083,7 +1074,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " subtracting toward black. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_MULTIPLY];
@@ -1100,7 +1091,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " multiplying toward black. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_FADE_SATURATE];
@@ -1117,7 +1108,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[1] = " to ";
 	curTemplate->m_uiStrings[2] = " increasing saturation. Take ";
 	curTemplate->m_uiStrings[3] = " frames to increase, hold for ";
-	curTemplate->m_uiStrings[4] = " fames, and decrease ";
+	curTemplate->m_uiStrings[4] = " frames, and decrease ";
 	curTemplate->m_uiStrings[5] = " frames.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::PITCH_CAMERA];
@@ -1591,7 +1582,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " will delay ";
-	curTemplate->m_uiStrings[1] = " seconds between building teams.";
+	curTemplate->m_uiStrings[2] = " seconds between building teams.";
 
 	curTemplate = &m_actionTemplates[ScriptAction::NAMED_SET_ATTITUDE];
 	curTemplate->m_internalName = "NAMED_SET_ATTITUDE";
@@ -1684,7 +1675,7 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::NAMED_ENTER_NAMED];
 	curTemplate->m_internalName = "NAMED_ENTER_NAMED";
-	curTemplate->m_uiName = "Unit_/Transport/Transport -- load unit into specific.";
+	curTemplate->m_uiName = "Unit_/Transport/Transport -- load unit into specific transport.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::UNIT;
 	curTemplate->m_parameters[1] = Parameter::UNIT;
@@ -1694,7 +1685,7 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ENTER_NAMED];
 	curTemplate->m_internalName = "TEAM_ENTER_NAMED";
-	curTemplate->m_uiName = "Team_/Transport/Transport -- load team into specific.";
+	curTemplate->m_uiName = "Team_/Transport/Transport -- load team into specific transport.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_parameters[1] = Parameter::UNIT;
@@ -1704,7 +1695,7 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::NAMED_EXIT_ALL];
 	curTemplate->m_internalName = "NAMED_EXIT_ALL";
-	curTemplate->m_uiName = "Unit_/Transport/Transport -- unload units from specific.";
+	curTemplate->m_uiName = "Unit_/Transport/Transport -- unload units from specific transport.";
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::UNIT;
 	curTemplate->m_numUiStrings = 2;
@@ -2191,7 +2182,7 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::OBJECT_CREATE_RADAR_EVENT];
 	curTemplate->m_internalName = "OBJECT_CREATE_RADAR_EVENT";
-	curTemplate->m_uiName = "Radar_/Create Event/Create  a radar event at a specific object.";
+	curTemplate->m_uiName = "Radar_/Create Event/Create a radar event at a specific object.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::UNIT;
 	curTemplate->m_parameters[1] = Parameter::RADAR_EVENT_TYPE;
@@ -2201,7 +2192,7 @@ void ScriptEngine::init( void )
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_CREATE_RADAR_EVENT];
 	curTemplate->m_internalName = "TEAM_CREATE_RADAR_EVENT";
-	curTemplate->m_uiName = "Radar_/Create Event/Create  a radar event at a specific team.";
+	curTemplate->m_uiName = "Radar_/Create Event/Create a radar event at a specific team.";
 	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::TEAM;
 	curTemplate->m_parameters[1] = Parameter::RADAR_EVENT_TYPE;
@@ -2944,7 +2935,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_REMOVE_OVERRIDE_RELATION_TO_TEAM];
 	curTemplate->m_internalName = "TEAM_REMOVE_OVERRIDE_RELATION_TO_TEAM";
@@ -3064,7 +3055,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::TEAM_REMOVE_OVERRIDE_RELATION_TO_PLAYER];
 	curTemplate->m_internalName = "TEAM_REMOVE_OVERRIDE_RELATION_TO_PLAYER";
@@ -3087,7 +3078,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " considers ";
 	curTemplate->m_uiStrings[2] = " to be ";
-	curTemplate->m_uiStrings[3] = " (rather than using the the player relationship).";
+	curTemplate->m_uiStrings[3] = " (rather than using the player relationship).";
 
 	curTemplate = &m_actionTemplates[ScriptAction::PLAYER_REMOVE_OVERRIDE_RELATION_TO_TEAM];
 	curTemplate->m_internalName = "PLAYER_REMOVE_OVERRIDE_RELATION_TO_TEAM";
@@ -3608,7 +3599,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on ";
+	curTemplate->m_uiStrings[2] = " on ";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_UNIT];
 	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_UNIT";
@@ -3619,7 +3610,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy unit.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy unit.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_GARRISONED_BUILDING];
 	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_GARRISONED_BUILDING";
@@ -3630,7 +3621,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy garrisoned building.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy garrisoned building.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_KINDOF];
 	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_KINDOF";
@@ -3642,7 +3633,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 4;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy with ";
+	curTemplate->m_uiStrings[2] = " on nearest enemy with ";
 	curTemplate->m_uiStrings[4] = ".";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING];
@@ -3654,7 +3645,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy building.";
+	curTemplate->m_uiStrings[2] = " on nearest enemy building.";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING_CLASS];
 	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING_CLASS";
@@ -3666,7 +3657,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
 	curTemplate->m_uiStrings[1] = " use ";
-	curTemplate->m_uiStrings[2] = "  on nearest enemy building with ";
+	curTemplate->m_uiStrings[2] = " on nearest enemy building with ";
 
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE];
 	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE";
@@ -4194,7 +4185,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::SIDE;
 	curTemplate->m_numUiStrings = 2;
-	curTemplate->m_uiStrings[0] = "Everything belonging to  ";
+	curTemplate->m_uiStrings[0] = "Everything belonging to ";
 	curTemplate->m_uiStrings[1] = " has been destroyed.";
 
 	curTemplate = &m_conditionTemplates[Condition::PLAYER_ALL_BUILDFACILITIES_DESTROYED];
@@ -4203,7 +4194,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_numParameters = 1;
 	curTemplate->m_parameters[0] = Parameter::SIDE;
 	curTemplate->m_numUiStrings = 2;
-	curTemplate->m_uiStrings[0] = "All factories belonging to  ";
+	curTemplate->m_uiStrings[0] = "All factories belonging to ";
 	curTemplate->m_uiStrings[1] = " have been destroyed.";
 
 
@@ -5169,7 +5160,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::TRIGGER_AREA;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
-	curTemplate->m_uiStrings[1] = " has doesn't have units in ";
+	curTemplate->m_uiStrings[1] = " doesn't have units in ";
 	curTemplate->m_uiStrings[2] = ".";
 
 	curTemplate = &m_conditionTemplates[Condition::SKIRMISH_PLAYER_HAS_DISCOVERED_PLAYER];
@@ -5203,7 +5194,7 @@ void ScriptEngine::init( void )
 	curTemplate->m_parameters[1] = Parameter::INT;
 	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
-	curTemplate->m_uiStrings[1] = " closest supply src with at least ";
+	curTemplate->m_uiStrings[1] = " closest supply source with at least ";
 	curTemplate->m_uiStrings[2] = " available resources is SAFE from enemy influence.";
 
 	curTemplate = &m_conditionTemplates[Condition::SUPPLY_SOURCE_ATTACKED];
@@ -5263,16 +5254,16 @@ void ScriptEngine::init( void )
 
 	reset();
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reset */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::reset( void )
+void ScriptEngine::reset()
 {
 	// setting FPS limit in case a script had changed it
-	if (TheGameEngine && TheGlobalData)
-		TheGameEngine->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+	if (TheFramePacer && TheGlobalData)
+		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
 	if (TheScriptActions) {
 		TheScriptActions->reset();
@@ -5286,12 +5277,12 @@ void ScriptEngine::reset( void )
 	m_endGameTimer = -1;
 	m_closeWindowTimer = -1;
 
-	m_callingTeam = NULL;
-	m_callingObject = NULL;
-	m_conditionTeam = NULL;
-	m_conditionObject = NULL;
-	m_currentPlayer = NULL;
-	m_skirmishHumanPlayer = NULL;
+	m_callingTeam = nullptr;
+	m_callingObject = nullptr;
+	m_conditionTeam = nullptr;
+	m_conditionObject = nullptr;
+	m_currentPlayer = nullptr;
+	m_skirmishHumanPlayer = nullptr;
 	m_frameObjectCountChanged = 0;
 
 	m_shownMPLocalDefeatWindow = FALSE;
@@ -5325,8 +5316,8 @@ void ScriptEngine::reset( void )
 	if (m_numFrames > 1) {
 		DEBUG_LOG_RAW(("\n"));
 		DEBUG_LOG(("***SCRIPT ENGINE STATS %.0f frames:", m_numFrames));
-		DEBUG_LOG(("Avg time to update %.3f milisec", 1000*m_totalUpdateTime/m_numFrames));
-		DEBUG_LOG(("  Max time to update %.3f miliseconds.", m_maxUpdateTime*1000));
+		DEBUG_LOG(("Avg time to update %.3f milliseconds", 1000*m_totalUpdateTime/m_numFrames));
+		DEBUG_LOG(("  Max time to update %.3f milliseconds.", m_maxUpdateTime*1000));
 	}
 	m_numFrames=0;
 	m_totalUpdateTime=0;
@@ -5336,12 +5327,12 @@ void ScriptEngine::reset( void )
 	if (TheSidesList) {
 		for (numToDump=0; numToDump<10; numToDump++) {
 			Real maxTime = 0;
-			Script *maxScript = NULL;
+			Script *maxScript = nullptr;
 			/* Run through scripts & set condition team names. */
 			for (i=0; i<TheSidesList->getNumSides(); i++) {
 				ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();
 				if (!pSL) continue;
-				if (pSL == NULL) continue;
+				if (pSL == nullptr) continue;
 				Script *pScr;
 				for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
 					if (pScr->getConditionTime()>maxTime) {
@@ -5378,7 +5369,7 @@ void ScriptEngine::reset( void )
 	VecSequentialScriptPtrIt seqScriptIt = m_sequentialScripts.begin();
 	while (seqScriptIt != m_sequentialScripts.end()) {
 		SequentialScript* seqScript = *seqScriptIt;
-		while (seqScript != NULL) {
+		while (seqScript != nullptr) {
 			SequentialScript* scriptToDelete = seqScript;
 			seqScript = seqScript->m_nextScriptInSequence;
 			deleteInstance(scriptToDelete);
@@ -5429,12 +5420,12 @@ void ScriptEngine::reset( void )
 	// clear topple directions
 	m_toppleDirections.clear();
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 /** newMap */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::newMap( void )
+void ScriptEngine::newMap()
 {
 	m_numCounters = 1;
 	Int i;
@@ -5475,7 +5466,7 @@ void ScriptEngine::newMap( void )
 	for (i=0; i<TheSidesList->getNumSides(); i++) {
 		ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();
 		if (!pSL) continue;
-		if (pSL == NULL) continue;
+		if (pSL == nullptr) continue;
 		Script *pScr;
 		for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
 			checkConditionsForTeamNames(pScr);
@@ -5498,13 +5489,13 @@ void ScriptEngine::newMap( void )
 	m_fadeFramesDecrease = FRAMES_TO_FADE_IN_AT_START;
 	m_curFadeValue = 0.0f;
 
-}  // end newMap
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update */
 //-------------------------------------------------------------------------------------------------
 DECLARE_PERF_TIMER(ScriptEngine)
-void ScriptEngine::update( void )
+void ScriptEngine::update()
 {
 	USE_PERF_TIMER(ScriptEngine)
 #ifdef SPECIAL_SCRIPT_PROFILING
@@ -5542,8 +5533,7 @@ void ScriptEngine::update( void )
 	if (m_endGameTimer>0) {
 		m_endGameTimer--;
 		if (m_endGameTimer < 1) {
-			// clear out all the game data
-			/*GameMessage *msg =*/ TheMessageStream->appendMessage( GameMessage::MSG_CLEAR_GAME_DATA );
+			TheGameLogic->exitGame();
 			//TheScriptActions->closeWindows(FALSE); // Close victory or defeat windows.
 		}
 	}
@@ -5595,7 +5585,7 @@ void ScriptEngine::update( void )
 			}
 			executeScripts(pGroup->getScript());
 		}
-		m_currentPlayer = NULL;
+		m_currentPlayer = nullptr;
 	}
 
 	// Reset the entered/exited flag in teams, so the next update sets them
@@ -5642,7 +5632,7 @@ void ScriptEngine::update( void )
 	_updateVTune();
 #endif
 
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getStats */
@@ -5662,12 +5652,12 @@ AsciiString ScriptEngine::getStats(Real *curTimePtr, Real *script1Time, Real *sc
 	if (TheSidesList) {
 		for (numToDump=0; numToDump<2; numToDump++) {
 			Real maxTime = 0;
-			Script *maxScript = NULL;
+			Script *maxScript = nullptr;
 			/* Run through scripts & set condition team names. */
 			for (i=0; i<TheSidesList->getNumSides(); i++) {
 				ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();
 				if (!pSL) continue;
-				if (pSL == NULL) continue;
+				if (pSL == nullptr) continue;
 				Script *pScr;
 				for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
 					if (pScr->getCurTime()>maxTime) {
@@ -5700,36 +5690,36 @@ AsciiString ScriptEngine::getStats(Real *curTimePtr, Real *script1Time, Real *sc
 #endif
 #endif
 	return msg;
-}  // end getStats
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startQuickEndGameTimer */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::startQuickEndGameTimer( void )
+void ScriptEngine::startQuickEndGameTimer()
 {
 	m_endGameTimer = 1;
-}  // end startQuickEndGameTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startEndGameTimer */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::startEndGameTimer( void )
+void ScriptEngine::startEndGameTimer()
 {
 	m_endGameTimer = FRAMES_TO_SHOW_WIN_LOSE_MESSAGE;
-}  // end startEndGameTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startCloseWindowTimer */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::startCloseWindowTimer( void )
+void ScriptEngine::startCloseWindowTimer()
 {
 	m_closeWindowTimer = FRAMES_TO_SHOW_WIN_LOSE_MESSAGE;
-}  // end startCloseWindowTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** updateFades */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::updateFades( void )
+void ScriptEngine::updateFades()
 {
 	m_curFadeFrame++;
 	Int fade = m_curFadeFrame;
@@ -5754,17 +5744,17 @@ void ScriptEngine::updateFades( void )
 	}
 	// time is up.
 	m_fade = FADE_NONE;
-}  // end updateFades
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getCurrentPlayer */
 //-------------------------------------------------------------------------------------------------
-Player *ScriptEngine::getCurrentPlayer(void)
+Player *ScriptEngine::getCurrentPlayer()
 {
-	if (m_currentPlayer==NULL)
-		AppendDebugMessage("***Unexpected NULL player:***", false);
+	if (m_currentPlayer==nullptr)
+		AppendDebugMessage("***Unexpected null player:***", false);
 	return m_currentPlayer;
-}  // end getCurrentPlayer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** clearFlag */
@@ -5783,12 +5773,12 @@ void ScriptEngine::clearFlag(const AsciiString &name)
 			}
 		}
 	}
-}  // end clearFlag
+}
 
 //-------------------------------------------------------------------------------------------------
 /** clearTeamFlags */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::clearTeamFlags(void)
+void ScriptEngine::clearTeamFlags()
 {
 	clearFlag("USA Team is Building");
 	clearFlag("USA Air Team Is Building");
@@ -5799,17 +5789,17 @@ void ScriptEngine::clearTeamFlags(void)
 	clearFlag("GLA Team is Building");
 	clearFlag("GLA Inf Team is Building");
 
-}  // end clearTeamFlags
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getSkirmishEnemyPlayer */
 //-------------------------------------------------------------------------------------------------
-Player *ScriptEngine::getSkirmishEnemyPlayer(void)
+Player *ScriptEngine::getSkirmishEnemyPlayer()
 {
 	Bool is_GeneralsChallengeContext = TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->m_isChallengeCampaign;
 	if (m_currentPlayer) {
 		Player *enemy = m_currentPlayer->getCurrentEnemy();
-		if (enemy==NULL) {
+		if (enemy==nullptr) {
 			// get the human player.
 			Int i;
 			for (i=0; i<ThePlayerList->getPlayerCount(); i++) {
@@ -5821,13 +5811,13 @@ Player *ScriptEngine::getSkirmishEnemyPlayer(void)
 
 					return enemy;
 				}
-				enemy = NULL;
+				enemy = nullptr;
 			}
 		}
 		return enemy;
 	}
 	DEBUG_CRASH(("No enemy found.  Unexpected but not fatal. jba."));
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -5848,14 +5838,14 @@ Player *ScriptEngine::getPlayerFromAsciiString(const AsciiString& playerString)
 	else {
 		NameKeyType key = NAMEKEY(playerString);
 		Player *pPlayer = ThePlayerList->findPlayerWithNameKey(key);
-		if (pPlayer!=NULL) {
+		if (pPlayer!=nullptr) {
 			return pPlayer;
 		}
 	}
 
 	AppendDebugMessage("***Invalid Player name:***", false);
 
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -5866,8 +5856,8 @@ ObjectTypes *ScriptEngine::getObjectTypes(const AsciiString& objectTypeList)
 	AllObjectTypesIt it;
 
 	for (it = m_allObjectTypeLists.begin(); it != m_allObjectTypeLists.end(); ++it) {
-		if ((*it) == NULL) {
-			DEBUG_CRASH(("NULL object type list was unexpected. jkmcd"));
+		if ((*it) == nullptr) {
+			DEBUG_CRASH(("null object type list was unexpected. jkmcd"));
 			continue;
 		}
 
@@ -5876,7 +5866,7 @@ ObjectTypes *ScriptEngine::getObjectTypes(const AsciiString& objectTypeList)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -5905,12 +5895,12 @@ void ScriptEngine::doObjectTypeListMaintenance(const AsciiString& objectTypeList
 		removeObjectTypes(currentObjectTypeVec);
 
 		// Semantic emphasis
-		currentObjectTypeVec = NULL;
+		currentObjectTypeVec = nullptr;
 	}
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Given a name, return the associated trigger area, or NULL if one doesn't exist.
+/** Given a name, return the associated trigger area, or null if one doesn't exist.
 Handles skirmish name qualification.  */
 //-------------------------------------------------------------------------------------------------
 PolygonTrigger *ScriptEngine::getQualifiedTriggerAreaByName( AsciiString name )
@@ -5924,7 +5914,7 @@ PolygonTrigger *ScriptEngine::getQualifiedTriggerAreaByName( AsciiString name )
 				name.format("%s%d", OUTER_PERIMETER, ndx);
 			}
 		}	else {
-			return NULL;
+			return nullptr;
 		}
 	} else if (name == ENEMY_INNER_PERIMETER || name == ENEMY_OUTER_PERIMETER) {
 
@@ -5943,7 +5933,7 @@ PolygonTrigger *ScriptEngine::getQualifiedTriggerAreaByName( AsciiString name )
 		}
 	}
 	PolygonTrigger *trig = TheTerrainLogic->getTriggerAreaByName(name);
-	if (trig==NULL) {
+	if (trig==nullptr) {
 		AsciiString msg = "!!!WARNING!!! Trigger area '";
 		msg.concat(name);
 		msg.concat("' not found.");
@@ -5977,13 +5967,13 @@ Team * ScriptEngine::getTeamNamed(const AsciiString& teamName)
 		return m_conditionTeam;
 	}
 	TeamPrototype *theTeamProto = TheTeamFactory->findTeamPrototype( teamName );
-	if (theTeamProto == NULL) return NULL;
+	if (theTeamProto == nullptr) return nullptr;
 	if (theTeamProto->getIsSingleton()) {
 		Team *theTeam = theTeamProto->getFirstItemIn_TeamInstanceList();
 		if (theTeam && theTeam->isActive()) {
 			return theTeam;
 		}
-		return NULL; // team wasn't active.
+		return nullptr; // team wasn't active.
 	}
 
 	static int warnCount = 0;
@@ -5995,7 +5985,7 @@ Team * ScriptEngine::getTeamNamed(const AsciiString& teamName)
 		}
 	}
 	return theTeamProto->getFirstItemIn_TeamInstanceList();
-}  // end getTeamNamed
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getUnitNamed */
@@ -6014,7 +6004,7 @@ Object * ScriptEngine::getUnitNamed(const AsciiString& unitName)
 			return it->second;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6024,7 +6014,7 @@ Bool ScriptEngine::didUnitExist(const AsciiString& unitName)
 {
 	for (VecNamedRequestsIt it = m_namedObjects.begin(); it != m_namedObjects.end(); ++it) {
 		if (unitName == (it->first)) {
-			return (it->second == NULL);
+			return (it->second == nullptr);
 		}
 	}
 	return false;
@@ -6047,12 +6037,12 @@ void ScriptEngine::runScript(const AsciiString& scriptName, Team *pThisTeam)
 //	Team *pSavConditionTeam = m_conditionTeam;
 	LatchRestore<Team *> latch(m_callingTeam, pThisTeam);
 
-	m_conditionTeam = NULL;
-	m_currentPlayer = NULL;
+	m_conditionTeam = nullptr;
+	m_currentPlayer = nullptr;
 	if (m_callingTeam) {
 		m_currentPlayer = m_callingTeam->getControllingPlayer();
 	}
-	Script  *pScript = NULL;
+	Script  *pScript = nullptr;
 	ScriptGroup *pGroup = findGroup(scriptName);
 	if (pGroup) {
 		if (pGroup->isSubroutine()) {
@@ -6066,7 +6056,7 @@ void ScriptEngine::runScript(const AsciiString& scriptName, Team *pThisTeam)
 		}
 	}	else {
 		pScript = findScript(scriptName);
-		if (pScript != NULL) {
+		if (pScript != nullptr) {
 			if (pScript->isSubroutine()) {
 				executeScript(pScript);
 			} else {
@@ -6083,7 +6073,7 @@ void ScriptEngine::runScript(const AsciiString& scriptName, Team *pThisTeam)
 	// m_callingTeam is restored automatically via LatchRestore
 	m_conditionTeam = m_conditionTeam;
 	m_currentPlayer = savPlayer;
-}  // end runScript
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -6099,7 +6089,7 @@ void ScriptEngine::runObjectScript(const AsciiString& scriptName, Object *pThisO
 	}
 	Object *pSavCallingObject = m_callingObject;
 	m_callingObject = pThisObject;
-	Script  *pScript = NULL;
+	Script  *pScript = nullptr;
 	ScriptGroup *pGroup = findGroup(scriptName);
 	if (pGroup) {
 		if (pGroup->isSubroutine()) {
@@ -6113,7 +6103,7 @@ void ScriptEngine::runObjectScript(const AsciiString& scriptName, Object *pThisO
 		}
 	}	else {
 		pScript = findScript(scriptName);
-		if (pScript != NULL) {
+		if (pScript != nullptr) {
 			if (pScript->isSubroutine()) {
 				executeScript(pScript);
 			} else {
@@ -6128,7 +6118,7 @@ void ScriptEngine::runObjectScript(const AsciiString& scriptName, Object *pThisO
 		}
 	}
 	m_callingObject = pSavCallingObject;
-}  // end runScript
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -6166,7 +6156,7 @@ const TCounter *ScriptEngine::getCounter(const AsciiString& counterName)
 			return &(m_counters[i]);
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6195,7 +6185,7 @@ void ScriptEngine::doNamedMapReveal(const AsciiString& revealName)
 {
 	VecNamedRevealIt it;
 
-	NamedReveal *reveal = NULL;
+	NamedReveal *reveal = nullptr;
 	for (it = m_namedReveals.begin(); it != m_namedReveals.end(); ++it) {
 		if (it->m_revealName == revealName) {
 			reveal = &(*it);
@@ -6228,7 +6218,7 @@ void ScriptEngine::undoNamedMapReveal(const AsciiString& revealName)
 {
 	VecNamedRevealIt it;
 
-	NamedReveal *reveal = NULL;
+	NamedReveal *reveal = nullptr;
 	for (it = m_namedReveals.begin(); it != m_namedReveals.end(); ++it) {
 		if (it->m_revealName == revealName) {
 			reveal = &(*it);
@@ -6299,7 +6289,7 @@ ScriptGroup  *ScriptEngine::findGroup(const AsciiString& name)
 	Int i;
 	for (i=0; i<TheSidesList->getNumSides(); i++) {
 		ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();
-		if (pSL==NULL) continue;
+		if (pSL==nullptr) continue;
 		ScriptGroup *pGroup;
 		for (pGroup = pSL->getScriptGroup(); pGroup; pGroup=pGroup->getNext()) {
 			if (pGroup->getName() == name) {
@@ -6307,7 +6297,7 @@ ScriptGroup  *ScriptEngine::findGroup(const AsciiString& name)
 			}
 		}
 	}
-	return 0; // Shouldn't ever happen.
+	return nullptr; // Shouldn't ever happen.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6318,7 +6308,7 @@ Script  *ScriptEngine::findScript(const AsciiString& name)
 	Int i;
 	for (i=0; i<TheSidesList->getNumSides(); i++) {
 		ScriptList *pSL = TheSidesList->getSideInfo(i)->getScriptList();
-		if (pSL==NULL) continue;
+		if (pSL==nullptr) continue;
 		Script *pScr;
 		for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
 			if ((name==pScr->getName())) {
@@ -6334,7 +6324,7 @@ Script  *ScriptEngine::findScript(const AsciiString& name)
 			}
 		}
 	}
-	return 0; // Shouldn't ever happen.
+	return nullptr; // Shouldn't ever happen.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6522,14 +6512,14 @@ AttackPriorityInfo * ScriptEngine::findAttackInfo(const AsciiString& name, Bool 
 		m_numAttackInfo++;
 		return &m_attackPriorityInfo[m_numAttackInfo-1];
 	}
-	return NULL;
+	return nullptr;
 }
 
 /// Attack priority stuff.
 //-------------------------------------------------------------------------------------------------
 /** Returns the default attack priority info.  Never returns null. */
 //-------------------------------------------------------------------------------------------------
-const AttackPriorityInfo *ScriptEngine::getDefaultAttackInfo(void)
+const AttackPriorityInfo *ScriptEngine::getDefaultAttackInfo()
 {
 	// Note - m_attackPriorityInfo[0] is the default info, with an empty name.
 	return &m_attackPriorityInfo[0];
@@ -6561,7 +6551,7 @@ void ScriptEngine::setPriorityThing( ScriptAction *pAction )
 	AsciiString typeArgument = pAction->getParameter(1)->getString();
 
 	// Our argument could be an individual type, or a list name.
-	const ObjectTypes *types = TheScriptEngine->getObjectTypes(typeArgument);
+	const ObjectTypes *types = getObjectTypes(typeArgument);
 	if( !types )
 	{
 		// Lookup failed, so it is just a single type
@@ -6569,13 +6559,13 @@ void ScriptEngine::setPriorityThing( ScriptAction *pAction )
 		const ThingTemplate *thingTemplate;
 		// get thing template based from map object name
 		thingTemplate = TheThingFactory->findTemplate(typeArgument);
-		if (thingTemplate==NULL) {
+		if (thingTemplate==nullptr) {
 			AppendDebugMessage("***Attempting to set attack priority on an invalid thing:***", false);
 			AppendDebugMessage(pAction->getParameter(0)->getString(), false);
 			return;
 		}
 		AttackPriorityInfo *info = findAttackInfo(pAction->getParameter(0)->getString(), true);
-		if (info==NULL) {
+		if (info==nullptr) {
 			AppendDebugMessage("***Error allocating attack priority set - fix or raise limit. ***", false);
 			return;
 		}
@@ -6600,13 +6590,13 @@ void ScriptEngine::setPriorityThing( ScriptAction *pAction )
 		{
 			AsciiString thisTypeName = types->getNthInList(typeIndex);
 			const ThingTemplate *thisType = TheThingFactory->findTemplate(thisTypeName);
-			if (thisType==NULL) {
+			if (thisType==nullptr) {
 				AppendDebugMessage("***Attempting to set attack priority on an invalid thing:***", false);
 				AppendDebugMessage(pAction->getParameter(0)->getString(), false);
 				return;
 			}
 			AttackPriorityInfo *info = findAttackInfo(pAction->getParameter(0)->getString(), true);
-			if (info==NULL) {
+			if (info==nullptr) {
 				AppendDebugMessage("***Error allocating attack priority set - fix or raise limit. ***", false);
 				return;
 			}
@@ -6634,7 +6624,7 @@ void ScriptEngine::setPriorityKind( ScriptAction *pAction )
 {
 	DEBUG_ASSERTCRASH(pAction->getNumParameters() >= 3, ("Not enough parameters."));
 	AttackPriorityInfo *info = findAttackInfo(pAction->getParameter(0)->getString(), true);
-	if (info==NULL) {
+	if (info==nullptr) {
 		AppendDebugMessage("***Error allocating attack priority set - fix or raise limit. ***", false);
 		return;
 	}
@@ -6658,7 +6648,7 @@ void ScriptEngine::setPriorityDefault( ScriptAction *pAction )
 {
 	DEBUG_ASSERTCRASH(pAction->getNumParameters() >= 2, ("Not enough parameters."));
 	AttackPriorityInfo *info = findAttackInfo(pAction->getParameter(0)->getString(), true);
-	if (info==NULL) {
+	if (info==nullptr) {
 		AppendDebugMessage("***Error allocating attack priority set - fix or raise limit. ***", false);
 		return;
 	}
@@ -6698,7 +6688,7 @@ void ScriptEngine::setObjectCount(Int playerIndex, const AsciiString& objectType
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::removeObjectTypes(ObjectTypes *typesToRemove)
 {
-	if (typesToRemove == NULL) {
+	if (typesToRemove == nullptr) {
 		return;
 	}
 
@@ -6872,7 +6862,7 @@ void ScriptEngine::callSubroutine( ScriptAction *pAction )
 		}
 	}	else {
 		pScript = findScript(scriptName);
-		if (pScript != NULL) {
+		if (pScript != nullptr) {
 			if (pScript->isSubroutine()) {
 				executeScript(pScript);
 			} else {
@@ -6914,7 +6904,7 @@ void ScriptEngine::checkConditionsForTeamNames(Script *pScript)
 				if (Parameter::TEAM == pCondition->getParameter(i)->getParameterType()) {
 					AsciiString teamName = pCondition->getParameter(i)->getString();
 					TeamPrototype *proto = TheTeamFactory->findTeamPrototype(teamName);
-					if (proto==NULL) continue; // Undefined team - don't bother.
+					if (proto==nullptr) continue; // Undefined team - don't bother.
 					Bool singleton = proto->getIsSingleton();
 					if (proto->getTemplateInfo()->m_maxInstances < 2) {
 						singleton = true;
@@ -6923,14 +6913,14 @@ void ScriptEngine::checkConditionsForTeamNames(Script *pScript)
 						singletonTeamName = teamName;		// Singleton team - use if it is the only one, but can have multiple of these.
 					} else {
 						if (multiTeamName.isEmpty()) {
-							multiTeamName = teamName;		// Use one multiply defined team.  Good.
+							multiTeamName = teamName;		// Use one team defined multiple times.  Good.
 						} else if (multiTeamName!=teamName) {
-							// More than one multiply defined team - bad.
-							AppendDebugMessage("***WARNING: Script contains multiple non-singleton team conditions::***", false);
+							// More than one team defined multiple times - bad.
+							AppendDebugMessage("***WARNING: Script contains multiple conditions for teams defined multiple times::***", false);
 							AppendDebugMessage(scriptName, false);
 							AppendDebugMessage(multiTeamName, false);
 							AppendDebugMessage(teamName, false);
-							DEBUG_LOG(("WARNING: Script '%s' contains multiple non-singleton team conditions: %s & %s.", scriptName.str(),
+							DEBUG_LOG(("WARNING: Script '%s' contains multiple conditions for teams defined multiple times: %s & %s.", scriptName.str(),
 								multiTeamName.str(), teamName.str()));
 						}
 					}
@@ -6969,7 +6959,7 @@ void ScriptEngine::executeScript( Script *pScript )
 		case DIFFICULTY_NORMAL : if (!pScript->isNormal()) return;  break;
 		case DIFFICULTY_HARD : if (!pScript->isHard()) return;  break;
 	}
-	// If we are doing peridic evaluation, check the frame.
+	// If we are doing periodic evaluation, check the frame.
 	if (TheGameLogic->getFrame()<pScript->getFrameToEvaluate()) {
 		return;
 	}
@@ -6989,7 +6979,7 @@ void ScriptEngine::executeScript( Script *pScript )
 #endif
 
 	Team *pSavConditionTeam = m_conditionTeam;
-	TeamPrototype *pProto = NULL;
+	TeamPrototype *pProto = nullptr;
 
 	if (!pScript->getConditionTeamName().isEmpty()) {
 		pProto = TheTeamFactory->findTeamPrototype(pScript->getConditionTeamName());
@@ -7016,13 +7006,13 @@ void ScriptEngine::executeScript( Script *pScript )
 				// Script Debug window
 				_appendMessage(pScript->getName(), false);
 
-				// Only do this is there are actually false actions.
+				// Only do this if there are actually false actions.
 				executeActions(pScript->getFalseAction());
       }
 		}
 
 	} else {
-		m_conditionTeam = NULL;
+		m_conditionTeam = nullptr;
 		// If conditions evaluate to true, execute actions.
 		if (evaluateConditions(pScript)) {
 			if (pScript->getAction()) {
@@ -7039,7 +7029,7 @@ void ScriptEngine::executeScript( Script *pScript )
 			// Script Debug window
 			_appendMessage(pScript->getName(), false);
 
-			// Only do this is there are actually false actions.
+			// Only do this if there are actually false actions.
 			executeActions(pScript->getFalseAction());
 			if (pScript->isOneShot()) {
 				pScript->setActive(false);
@@ -7081,7 +7071,7 @@ void ScriptEngine::friend_executeAction( ScriptAction *pActionHead, Team *pThisT
 	Team *pSavCallingTeam = m_callingTeam;
 	Player *pSavPlayer = m_currentPlayer;
 	m_callingTeam = pThisTeam;
-	m_currentPlayer = NULL;
+	m_currentPlayer = nullptr;
 	if (pThisTeam) {
 		m_currentPlayer = pThisTeam->getControllingPlayer();
 	}
@@ -7107,10 +7097,10 @@ void ScriptEngine::addObjectToCache(Object* pNewObject)
 
 	for (VecNamedRequestsIt it = m_namedObjects.begin(); it != m_namedObjects.end(); ++it) {
 		if (it->first == objName) {
-			if (it->second == NULL) {
+			if (it->second == nullptr) {
 				AsciiString newNameForDead;
 				newNameForDead.format("Reassigning dead object's name '%s' to object (%d) of type '%s'", objName.str(), pNewObject->getID(), pNewObject->getTemplate()->getName().str());
-				TheScriptEngine->AppendDebugMessage(newNameForDead, FALSE);
+				AppendDebugMessage(newNameForDead, FALSE);
 				DEBUG_LOG((newNameForDead.str()));
 				it->second = pNewObject;
 				return;
@@ -7143,7 +7133,7 @@ void ScriptEngine::removeObjectFromCache( Object* pDeadObject )
 {
 	for (VecNamedRequestsIt it = m_namedObjects.begin(); it != m_namedObjects.end(); ++it) {
 		if (pDeadObject == (it->second)) {
-			it->second = NULL;	// Don't remove it, cause we want to check whether we ever knew a name later
+			it->second = nullptr;	// Don't remove it, cause we want to check whether we ever knew a name later
 			break;
 		}
 	}
@@ -7172,7 +7162,7 @@ void ScriptEngine::transferObjectName( const AsciiString& unitName, Object *pNew
 		removeObjectFromCache(pNewObject);
 	}
 
-	pNewObject->setName(unitName); // make sure it's named the name.
+	pNewObject->setName(unitName); // make sure it has the correct name.
 
 	//Loop through the cached list and find the string entry. If found, change the object
 	//so it's pointing to the new one.
@@ -7208,11 +7198,11 @@ void ScriptEngine::notifyOfObjectDestruction( Object *pDeadObject )
 	}
 
 	if (m_conditionObject == pDeadObject) {
-		m_conditionObject = NULL;
+		m_conditionObject = nullptr;
 	}
 
 	if (m_callingObject == pDeadObject) {
-		m_callingObject = NULL;
+		m_callingObject = nullptr;
 	}
 }
 
@@ -7587,7 +7577,7 @@ Bool ScriptEngine::evaluateConditions( Script *pScript, Team *thisTeam, Player *
 {
 	LatchRestore<Team*> latch(m_callingTeam, thisTeam);
 	if (thisTeam) player = thisTeam->getControllingPlayer();
-	if (player==NULL) player=m_currentPlayer;
+	if (player==nullptr) player=m_currentPlayer;
 	LatchRestore<Player*> latch2(m_currentPlayer, player);
 	OrCondition *pConditionHead = pScript->getOrCondition();
 	Bool testValue = false;
@@ -7689,7 +7679,7 @@ void ScriptEngine::executeScripts( Script *pScriptHead )
 		}
 		executeScript(pCurScript);
 	}
-}  // end update
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -7702,7 +7692,7 @@ const ActionTemplate * ScriptEngine::getActionTemplate( Int ndx )
 	DEBUG_ASSERTCRASH (!m_actionTemplates[ndx].getName().isEmpty(), ("Need to initialize action enum=%d.", ndx));
 
 	return &m_actionTemplates[ndx];
-}  // end getActionTemplate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Gets the ui and parameter template for a script condition */
@@ -7713,12 +7703,12 @@ const ConditionTemplate * ScriptEngine::getConditionTemplate( Int ndx )
 	if (ndx <0 || ndx >= Condition::NUM_ITEMS) ndx = 0;
 	DEBUG_ASSERTCRASH (!m_conditionTemplates[ndx].getName().isEmpty(), ("Need to initialize Condition enum=%d.", ndx));
 	return &m_conditionTemplates[ndx];
-}  // end getConditionTemplate
+}
 
 //-------------------------------------------------------------------------------------------------
-/** Fills the named object cache initally. */
+/** Fills the named object cache initially. */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::createNamedCache( void )
+void ScriptEngine::createNamedCache()
 {
 	m_namedObjects.clear();
 
@@ -7744,8 +7734,8 @@ void ScriptEngine::appendSequentialScript(const SequentialScript *scriptToSequen
 	SequentialScript *newSequentialScript = newInstance( SequentialScript );
 	(*newSequentialScript) = (*scriptToSequence);
 
-	// Must set this to NULL, as we don't want an infinite loop.
-	newSequentialScript->m_nextScriptInSequence = NULL;
+	// Must set this to nullptr, as we don't want an infinite loop.
+	newSequentialScript->m_nextScriptInSequence = nullptr;
 
 	// reset the instruction pointer
 	newSequentialScript->m_currentInstruction = -1;
@@ -7810,7 +7800,7 @@ void ScriptEngine::removeAllSequentialScripts(Team *team)
 	notifyOfTeamDestruction(team);
 }
 
-void ScriptEngine::notifyOfObjectCreationOrDestruction(void)
+void ScriptEngine::notifyOfObjectCreationOrDestruction()
 {
 	m_frameObjectCountChanged = TheGameLogic->getFrame();
 }
@@ -7836,9 +7826,9 @@ void ScriptEngine::notifyOfTeamDestruction(Team *teamDestroyed)
 	}
 
 	if (m_callingTeam == teamDestroyed)
-		m_callingTeam = NULL;
+		m_callingTeam = nullptr;
 	if (m_conditionTeam == teamDestroyed)
-		m_conditionTeam = NULL;
+		m_conditionTeam = nullptr;
 }
 
 void ScriptEngine::setSequentialTimer(Object *obj, Int frameCount)
@@ -7885,15 +7875,16 @@ void ScriptEngine::setSequentialTimer(Team *team, Int frameCount)
 }
 
 
-void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
+void ScriptEngine::evaluateAndProgressAllSequentialScripts()
 {
 	VecSequentialScriptPtrIt it;
-	SequentialScript* lastScript = NULL;
+	size_t currIndex = 0;
+	size_t prevIndex = ~0u;
 	Bool itAdvanced = false;
 
 	Int spinCount = 0;
 	for (it = m_sequentialScripts.begin(); it != m_sequentialScripts.end(); /* empty */) {
-		if ((*it) == lastScript) {
+		if (currIndex == prevIndex) {
 			++spinCount;
 		} else {
 			spinCount = 0;
@@ -7906,15 +7897,15 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 					seqScript->m_scriptToExecuteSequentially->getName().str()));
 			}
 			++it;
+			++currIndex;
 			continue;
 		}
 
-		lastScript = (*it);
-
+		prevIndex = currIndex;
 		itAdvanced = false;
 
 		SequentialScript *seqScript = (*it);
-		if (seqScript == NULL) {
+		if (seqScript == nullptr) {
 			it = cleanupSequentialScript(it, false);
 			continue;
 		}
@@ -7926,18 +7917,18 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 			itAdvanced = true;
 			continue;
 		}
-		m_currentPlayer = NULL;
+		m_currentPlayer = nullptr;
 		if (obj) {
 			m_currentPlayer = obj->getControllingPlayer();
 		} else if (team) {
 			m_currentPlayer = team->getControllingPlayer();
 		}
 		if (m_currentPlayer && !m_currentPlayer->isSkirmishAIPlayer()) {
-			m_currentPlayer = NULL;
+			m_currentPlayer = nullptr;
 		}
 
-		AIUpdateInterface *ai = obj ? obj->getAIUpdateInterface() : NULL;
-		AIGroupPtr aigroup = (team ? TheAI->createGroup() : NULL);
+		AIUpdateInterface *ai = obj ? obj->getAIUpdateInterface() : nullptr;
+		AIGroupPtr aigroup = (team ? TheAI->createGroup() : nullptr);
 		if (aigroup) {
 #if RETAIL_COMPATIBLE_AIGROUP
 			team->getTeamAsAIGroup(aigroup);
@@ -7946,11 +7937,11 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 #endif
 		}
 
-		if( ai || aigroup ) {
-			if (((ai && (ai->isIdle()) || (aigroup && aigroup->isIdle())) &&
-				seqScript->m_framesToWait < 1) || (seqScript->m_framesToWait == 0)) {
+		if (ai || aigroup) {
+			if (seqScript->m_framesToWait == 0 ||
+				(seqScript->m_framesToWait < 0 && ((ai && ai->isIdle()) || (aigroup && aigroup->isIdle())))) {
 
-				// We want to supress messages if we're repeatedly waiting for an event to occur, cause
+				// We want to suppress messages if we're repeatedly waiting for an event to occur, cause
 				// it KILLS our debug framerate.
 				Bool displayMessage = TRUE;
 
@@ -7985,13 +7976,13 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 
 					// Save off the next action
 					ScriptAction *nextAction = action->getNext();
-					action->setNextAction(NULL);
+					action->setNextAction(nullptr);
 					if (action->getActionType() == ScriptAction::SKIRMISH_WAIT_FOR_COMMANDBUTTON_AVAILABLE_ALL) {
-						if (!TheScriptConditions->evaluateSkirmishCommandButtonIsReady(NULL, action->getParameter(1), action->getParameter(2), true)) {
+						if (!TheScriptConditions->evaluateSkirmishCommandButtonIsReady(nullptr, action->getParameter(1), action->getParameter(2), true)) {
 							seqScript->m_dontAdvanceInstruction = TRUE;
 						}
 					} else if (action->getActionType() == ScriptAction::SKIRMISH_WAIT_FOR_COMMANDBUTTON_AVAILABLE_PARTIAL) {
-						if (!TheScriptConditions->evaluateSkirmishCommandButtonIsReady(NULL, action->getParameter(1), action->getParameter(2), false)) {
+						if (!TheScriptConditions->evaluateSkirmishCommandButtonIsReady(nullptr, action->getParameter(1), action->getParameter(2), false)) {
 							seqScript->m_dontAdvanceInstruction = TRUE;
 						}
 					} else if (action->getActionType() == ScriptAction::TEAM_WAIT_FOR_NOT_CONTAINED_ALL) {
@@ -8018,6 +8009,7 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 					// Check to see if executing our action told us to wait. If so, skip to the next Sequential script
 					if (seqScript->m_dontAdvanceInstruction) {
 						++it;
+						++currIndex;
 						itAdvanced = true;
 						continue;
 					}
@@ -8027,7 +8019,7 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 						itAdvanced = true;
 					} else if (team) {
 						// attempt to rebuild the aigroup, as it probably expired during the action execution
-						aigroup = (team ? TheAI->createGroup() : NULL);
+						aigroup = (team ? TheAI->createGroup() : nullptr);
 #if RETAIL_COMPATIBLE_AIGROUP
 						team->getTeamAsAIGroup(aigroup);
 #else
@@ -8071,9 +8063,10 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts( void )
 
 		if (!itAdvanced) {
 			++it;
+			++currIndex;
 		}
 	}
-	m_currentPlayer = NULL;
+	m_currentPlayer = nullptr;
 }
 
 ScriptEngine::VecSequentialScriptPtrIt ScriptEngine::cleanupSequentialScript(VecSequentialScriptPtrIt it, Bool cleanDanglers)
@@ -8090,18 +8083,18 @@ ScriptEngine::VecSequentialScriptPtrIt ScriptEngine::cleanupSequentialScript(Vec
 			scriptToDelete = seqScript;
 			seqScript = seqScript->m_nextScriptInSequence;
 			deleteInstance(scriptToDelete);
-			scriptToDelete = NULL;
+			scriptToDelete = nullptr;
 		}
-		(*it) = NULL;
+		(*it) = nullptr;
 	} else {
 		// we want to make sure to not delete any dangling scripts.
 		(*it) = scriptToDelete->m_nextScriptInSequence;
 		deleteInstance(scriptToDelete);
-		scriptToDelete = NULL;
+		scriptToDelete = nullptr;
 	}
 
 
-	if ((*it) == NULL) {
+	if ((*it) == nullptr) {
 		return m_sequentialScripts.erase(it);
 	}
 
@@ -8137,14 +8130,14 @@ void ScriptEngine::setEnableVTune(Bool value)
 }
 
 //----SequentialScript-----------------------------------------------------------------------------
-SequentialScript::SequentialScript() : m_teamToExecOn(NULL),
+SequentialScript::SequentialScript() : m_teamToExecOn(nullptr),
 																			 m_objectID(INVALID_ID),
-																			 m_scriptToExecuteSequentially(NULL),
+																			 m_scriptToExecuteSequentially(nullptr),
 																			 m_currentInstruction(START_INSTRUCTION),
 																			 m_timesToLoop(0),
 																			 m_framesToWait(-1),
 																			 m_dontAdvanceInstruction(FALSE),
-																			 m_nextScriptInSequence(NULL)
+																			 m_nextScriptInSequence(nullptr)
 {
 }
 
@@ -8154,7 +8147,7 @@ SequentialScript::SequentialScript() : m_teamToExecOn(NULL),
 void SequentialScript::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
@@ -8179,16 +8172,16 @@ void SequentialScript::xfer( Xfer *xfer )
 		m_teamToExecOn = TheTeamFactory->findTeamByID( teamID );
 
 		// sanity
-		if( teamID != TEAM_ID_INVALID && m_teamToExecOn == NULL )
+		if( teamID != TEAM_ID_INVALID && m_teamToExecOn == nullptr )
 		{
 
 			DEBUG_CRASH(( "SequentialScript::xfer - Unable to find team by ID (#%d) for m_teamToExecOn",
 										teamID ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	// object id
 	xfer->xferObjectID( &m_objectID );
@@ -8202,7 +8195,7 @@ void SequentialScript::xfer( Xfer *xfer )
 		scriptName = m_scriptToExecuteSequentially->getName();
 		xfer->xferAsciiString( &scriptName );
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -8210,16 +8203,16 @@ void SequentialScript::xfer( Xfer *xfer )
 		xfer->xferAsciiString( &scriptName );
 
 		// script pointer
-		DEBUG_ASSERTCRASH( m_scriptToExecuteSequentially == NULL, ("SequentialScript::xfer - m_scripttoExecuteSequentially") );
+		DEBUG_ASSERTCRASH( m_scriptToExecuteSequentially == nullptr, ("SequentialScript::xfer - m_scripttoExecuteSequentially") );
 
 		// find script
 		m_scriptToExecuteSequentially = const_cast<Script*>(TheScriptEngine->findScriptByName(scriptName));
 
 		// sanity
-		DEBUG_ASSERTCRASH( m_scriptToExecuteSequentially != NULL,
-											 ("SequentialScript::xfer - m_scriptToExecuteSequentially is NULL but should not be") );
+		DEBUG_ASSERTCRASH( m_scriptToExecuteSequentially != nullptr,
+											 ("SequentialScript::xfer - m_scriptToExecuteSequentially is null but should not be") );
 
-	}  // end else, load
+	}
 
 	// current instruction
 	xfer->xferInt( &m_currentInstruction );
@@ -8230,18 +8223,18 @@ void SequentialScript::xfer( Xfer *xfer )
 	// frames to wait
 	xfer->xferInt( &m_framesToWait );
 
-	// dont advance instruction
+	// don't advance instruction
 	xfer->xferBool( &m_dontAdvanceInstruction );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SequentialScript::loadPostProcess( void )
+void SequentialScript::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 
 #ifdef NOT_IN_USE
 //----SequentialScriptStatus Stuff ----------------------------------------------------------------
@@ -8251,7 +8244,7 @@ void SequentialScript::loadPostProcess( void )
 void SequentialScriptStatus::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
@@ -8275,22 +8268,22 @@ void SequentialScriptStatus::xfer( Xfer *xfer )
 	// is executing sequentially
 	xfer->xferBool( &m_isExecutingSequentially );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 // Load post process */
 // ------------------------------------------------------------------------------------------------
-void SequentialScriptStatus::loadPostProcess( void )
+void SequentialScriptStatus::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 #endif
 
 //----Particle Editor Stuff------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 /** Updates the particle editor if its present */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::particleEditorUpdate( void )
+void ScriptEngine::particleEditorUpdate()
 {
 	if (!st_ParticleDLL) {
 		return;
@@ -8415,7 +8408,7 @@ void ScriptEngine::particleEditorUpdate( void )
 //-------------------------------------------------------------------------------------------------
 /** Is time frozen by a script? */
 //-------------------------------------------------------------------------------------------------
-Bool ScriptEngine::isTimeFrozenScript( void )
+Bool ScriptEngine::isTimeFrozenScript()
 {
 	return m_freezeByScript;
 }
@@ -8423,7 +8416,7 @@ Bool ScriptEngine::isTimeFrozenScript( void )
 //-------------------------------------------------------------------------------------------------
 /** Freeze time */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::doFreezeTime( void )
+void ScriptEngine::doFreezeTime()
 {
 	m_freezeByScript = TRUE;
 }
@@ -8431,7 +8424,7 @@ void ScriptEngine::doFreezeTime( void )
 //-------------------------------------------------------------------------------------------------
 /** Unfreeze time */
 //-------------------------------------------------------------------------------------------------
-void ScriptEngine::doUnfreezeTime( void )
+void ScriptEngine::doUnfreezeTime()
 {
 	m_freezeByScript = FALSE;
 }
@@ -8439,9 +8432,9 @@ void ScriptEngine::doUnfreezeTime( void )
 //-------------------------------------------------------------------------------------------------
 /** For Debug and Internal builds, returns whether to continue (!pause), for release, returns false */
 //-------------------------------------------------------------------------------------------------
-Bool ScriptEngine::isTimeFrozenDebug(void)
+Bool ScriptEngine::isTimeFrozenDebug()
 {
-	typedef Bool (*funcptr)(void);
+	typedef Bool (*funcptr)();
 
 	if (st_DebugDLL) {
 		if (st_LastCurrentFrame != st_CurrentFrame) {
@@ -8463,9 +8456,9 @@ Bool ScriptEngine::isTimeFrozenDebug(void)
 //-------------------------------------------------------------------------------------------------
 /** For Debug and Internal builds, returns whether we are running fast (skipping draw) */
 //-------------------------------------------------------------------------------------------------
-Bool ScriptEngine::isTimeFast(void)
+Bool ScriptEngine::isTimeFast()
 {
-	typedef Bool (*funcptr)(void);
+	typedef Bool (*funcptr)();
 
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "CanAppContinue");
@@ -8489,9 +8482,9 @@ Bool ScriptEngine::isTimeFast(void)
 	return false;
 }
 
-void ScriptEngine::forceUnfreezeTime(void)
+void ScriptEngine::forceUnfreezeTime()
 {
-	typedef void (*funcptr)(void);
+	typedef void (*funcptr)();
 
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "ForceAppContinue");
@@ -8538,7 +8531,7 @@ void ScriptEngine::AdjustDebugVariableData(const AsciiString& variableName, Int 
 void ScriptEngine::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -8548,7 +8541,7 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 {
 
 	// sanity
-	DEBUG_ASSERTCRASH( list != NULL, ("xferListAsciiString - Invalid parameters") );
+	DEBUG_ASSERTCRASH( list != nullptr, ("xferListAsciiString - Invalid parameters") );
 
 	// version
 	XferVersion currentVersion = 1;
@@ -8572,9 +8565,9 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			string = *it;
 			xfer->xferAsciiString( &string );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -8585,7 +8578,7 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			DEBUG_CRASH(( "xferListAsciiString - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8597,11 +8590,11 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			// put on list
 			list->push_back( string );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiString
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -8611,7 +8604,7 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 {
 
 	// sanity
-	DEBUG_ASSERTCRASH( list != NULL, ("xferListAsciiStringUINT - Invalid parameters") );
+	DEBUG_ASSERTCRASH( list != nullptr, ("xferListAsciiStringUINT - Invalid parameters") );
 
 	// version
 	XferVersion currentVersion = 1;
@@ -8641,9 +8634,9 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			unsignedIntData = it->second;
 			xfer->xferUnsignedInt( &unsignedIntData );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		PairAsciiStringUINT newPair;
@@ -8655,7 +8648,7 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			DEBUG_CRASH(( "xferListAsciiStringUINT - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8672,11 +8665,11 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			newPair.second = unsignedIntData;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiStringUINT
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -8686,7 +8679,7 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 {
 
 	// sanity
-	DEBUG_ASSERTCRASH( list != NULL, ("xferListAsciiStringObjectID - Invalid parameters") );
+	DEBUG_ASSERTCRASH( list != nullptr, ("xferListAsciiStringObjectID - Invalid parameters") );
 
 	// version
 	XferVersion currentVersion = 1;
@@ -8716,9 +8709,9 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			objectID = it->second;
 			xfer->xferObjectID( &objectID );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		AsciiStringObjectIDPair newPair;
@@ -8730,7 +8723,7 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			DEBUG_CRASH(( "xferListAsciiStringObjectID - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8747,11 +8740,11 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			newPair.second = objectID;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiStringObjectID
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -8761,7 +8754,7 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 {
 
 	// sanity
-	DEBUG_ASSERTCRASH( list != NULL, ("xferListAsciiStringCoord3D - Invalid parameters") );
+	DEBUG_ASSERTCRASH( list != nullptr, ("xferListAsciiStringCoord3D - Invalid parameters") );
 
 	// version
 	XferVersion currentVersion = 1;
@@ -8791,9 +8784,9 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			coord = it->second;
 			xfer->xferCoord3D( &coord );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		AsciiStringCoord3DPair newPair;
@@ -8805,7 +8798,7 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			DEBUG_CRASH(( "xferListAsciiStringCoord3D - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8822,11 +8815,11 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			newPair.second = coord;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // ene xferListAsciiStringCoord3D
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -8873,20 +8866,20 @@ void ScriptEngine::xfer( Xfer *xfer )
 			// xfer data
 			xfer->xferSnapshot( sequentialScript );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
 		// this list should be empty on loading
-		if( m_sequentialScripts.size() != 0 )
+		if( !m_sequentialScripts.empty() )
 		{
 
 			DEBUG_CRASH(( "ScriptEngine::xfer - m_sequentialScripts should be empty but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each entry
 		for( UnsignedShort i = 0; i < sequentialScriptCount; ++i )
@@ -8901,9 +8894,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 			// xfer data
 			xfer->xferSnapshot( sequentialScript );
 
-		}  // end for i
+		}
 
-	}  // end else, load
+	}
 
 	// counters
 	UnsignedShort countersSize = m_numCounters;
@@ -8914,7 +8907,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_COUNTERS has changed size, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < countersSize; ++i )
 	{
 
@@ -8927,7 +8920,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		// countdown timer
 		xfer->xferBool( &m_counters[ i ].isCountdownTimer );
 
-	}  // end for, i
+	}
 
 	// num counters
 	xfer->xferInt( &m_numCounters );
@@ -8941,7 +8934,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_FLAGS has changed size, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < flagsSize; ++i )
 	{
 
@@ -8951,7 +8944,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		// name
 		xfer->xferAsciiString( &m_flags[ i ].name );
 
-	}  // end for i
+	}
 
 	// num flags
 	xfer->xferInt( &m_numFlags );
@@ -8965,14 +8958,14 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_ATTACK_PRIORITIES size has changed, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < attackPriorityInfoSize; ++i )
 	{
 
 		// xfer each data
 		xfer->xferSnapshot( &m_attackPriorityInfo[ i ] );
 
-	}  // end for i
+	}
 
 	// num attack info
 	xfer->xferInt( &m_numAttackInfo );
@@ -8990,7 +8983,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	if( xfer->getXferMode() == XFER_SAVE )
 	{
 
-		// iterate elemnts
+		// iterate elements
 		VecNamedRequestsIt it;
 		for( it = m_namedObjects.begin(); it != m_namedObjects.end(); ++it )
 		{
@@ -8999,14 +8992,14 @@ void ScriptEngine::xfer( Xfer *xfer )
 			namedObjectName = it->first;
 			xfer->xferAsciiString( &namedObjectName );
 
-			// write object id (note that object may be NULL)
+			// write object id (note that object may be null)
 			obj = it->second;
 			objectID = obj ? obj->getID() : INVALID_ID;
 			xfer->xferObjectID( &objectID );
 
-		}  // end for i
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		NamedRequest req;
@@ -9027,22 +9020,22 @@ void ScriptEngine::xfer( Xfer *xfer )
 			// read object id and turn into object pointer
 			xfer->xferObjectID( &objectID );
 			obj = TheGameLogic->findObjectByID( objectID );
-			if( obj == NULL && objectID != INVALID_ID )
+			if( obj == nullptr && objectID != INVALID_ID )
 			{
 
 				DEBUG_CRASH(( "ScriptEngine::xfer - Unable to find object by ID for m_namedObjects" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// assign
 			req.first = namedObjectName;
 			req.second = obj;
 			m_namedObjects.push_back( req );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
 	// first update
 	xfer->xferBool( &m_firstUpdate );
@@ -9092,7 +9085,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_triggeredSpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < triggeredSpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_triggeredSpecialPowers[ i ] );
 
@@ -9105,7 +9098,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_midwaySpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < midwaySpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_midwaySpecialPowers[ i ] );
 
@@ -9118,7 +9111,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_finishedSpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < finishedSpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_finishedSpecialPowers[ i ] );
 
@@ -9131,7 +9124,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_completedUpgrades size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < completedUpgradesSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_completedUpgrades[ i ] );
 
@@ -9144,7 +9137,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_acquiredSciences size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < acquiredSciencesSize; ++i )
 		xfer->xferScienceVec( &m_acquiredSciences[ i ] );
 
@@ -9196,20 +9189,20 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// player name
 				xfer->xferAsciiString( &it->m_playerName );
 
-			}  // end for, it
+			}
 
-		}  // end if, save
+		}
 		else
 		{
 
-			// the vector should be emtpy now
+			// the vector should be empty now
 			if( m_namedReveals.empty() == FALSE )
 			{
 
 				DEBUG_CRASH(( "ScriptEngine::xfer - m_namedReveals should be empty but is not!" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read all entries
 			NamedReveal reveal;
@@ -9231,9 +9224,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// put on list
 				m_namedReveals.push_back( reveal );
 
-			}  // end for, i
+			}
 
-		}  // end else, load
+		}
 
 		// all object type lists size
 		UnsignedShort allObjectTypesCount = m_allObjectTypeLists.size();
@@ -9255,9 +9248,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// save object types
 				xfer->xferSnapshot( objectTypes );
 
-			}  // end for, it
+			}
 
-		}  // end if, save
+		}
 		else
 		{
 
@@ -9268,7 +9261,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 				DEBUG_CRASH(( "ScriptEngine::xfer - m_allObjectTypeLists should be empty but is not!" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read all data
 			ObjectTypes *objectTypes;
@@ -9284,11 +9277,11 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// put on list
 				m_allObjectTypeLists.push_back( objectTypes );
 
-			}  // end for, i
+			}
 
-		}  //  end else, load
+		}
 
-	}  // end if, version 2
+	}
 
 	if (version >= 3) {
 		xfer->xferBool(&m_objectsShouldReceiveDifficultyBonus);
@@ -9323,12 +9316,12 @@ void ScriptEngine::xfer( Xfer *xfer )
 			m_curFadeValue = 0.0f;
 		}
 	}
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ScriptEngine::loadPostProcess( void )
+void ScriptEngine::loadPostProcess()
 {
 
 	// Now that we've loaded everything, go through and set them all back in sync with what we
@@ -9342,22 +9335,22 @@ void ScriptEngine::loadPostProcess( void )
 		TheAudio->addAudioEvent(&event);
 	}
 
-}  // end loadPostProcess
+}
 
 //#if defined(RTS_DEBUG)
-void ScriptEngine::debugVictory( void )
+void ScriptEngine::debugVictory()
 {
 	ScriptAction *action = newInstance(ScriptAction)(ScriptAction::VICTORY);
 	TheScriptActions->executeAction(action);
 }
 //#endif
 
-Bool ScriptEngine::hasShownMPLocalDefeatWindow(void)
+Bool ScriptEngine::hasShownMPLocalDefeatWindow()
 {
 	return m_shownMPLocalDefeatWindow;
 }
 
-void ScriptEngine::markMPLocalDefeatWindowShown(void)
+void ScriptEngine::markMPLocalDefeatWindowShown()
 {
 	m_shownMPLocalDefeatWindow = TRUE;
 }
@@ -9423,7 +9416,7 @@ void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause)
 	((funcptr)proc)(str.str(), buff);
 }
 
-void _updateFrameNumber( void )
+void _updateFrameNumber()
 {
 	if (TheScriptEngine->isTimeFast()) return;
 	typedef void (*funcptr)(int);
@@ -9442,7 +9435,7 @@ void _updateFrameNumber( void )
 	((funcptr)proc)(frameNum);
 }
 
-void _appendAllParticleSystems( void )
+void _appendAllParticleSystems()
 {
 	typedef void (*funcptr)(const char*);
 	if (!st_ParticleDLL) {
@@ -9471,7 +9464,7 @@ void _appendAllParticleSystems( void )
 }
 
 // all ThingTemplates can be thrown with a particle system, so...
-void _appendAllThingTemplates( void )
+void _appendAllThingTemplates()
 {
 	typedef void (*funcptr)(const char*);
 	if (!st_ParticleDLL) {
@@ -9533,7 +9526,7 @@ void _addUpdatedParticleSystem( AsciiString particleSystemName )
 	((funcptr2)proc2)(pTemplate);
 }
 
-AsciiString _getParticleSystemName( void )
+AsciiString _getParticleSystemName()
 {
 	typedef void (*funcptr)(char*);
 
@@ -9621,28 +9614,28 @@ extern void _updateAsciiStringParmsFromSystem( ParticleSystemTemplate *particleT
 		return;
 	}
 
-	((funcptr) proc)(0, particleTemplate->m_particleTypeName.str(), NULL);	// PARM_ParticleTypeName
-	((funcptr) proc)(1, particleTemplate->m_slaveSystemName.str(), NULL);	// PARM_SlaveSystemName
-	((funcptr) proc)(2, particleTemplate->m_attachedSystemName.str(), NULL);	// PARM_AttachedSystemName
+	((funcptr) proc)(0, particleTemplate->m_particleTypeName.str(), nullptr);	// PARM_ParticleTypeName
+	((funcptr) proc)(1, particleTemplate->m_slaveSystemName.str(), nullptr);	// PARM_SlaveSystemName
+	((funcptr) proc)(2, particleTemplate->m_attachedSystemName.str(), nullptr);	// PARM_AttachedSystemName
 
 }
 
 #define BACKUP_FILE_NAME	"Data\\INI\\ParticleSystem"
 #define BACKUP_EXT				"BAK"
-static void _writeOutINI( void )
+static void _writeOutINI()
 {
 	// currently, this uses NO intelligence. It blindly iterates through all of the
 	// particle system templates and writes out every field that it thinks it should.
 	const int maxFileLength = 128;
 	char buff[maxFileLength];
 
-	File *saveFile = NULL;
+	File *saveFile = nullptr;
 
 	int i = 0;
 	do {
 		if (saveFile) {
 				saveFile->close();
-				saveFile = NULL;
+				saveFile = nullptr;
 		}
 		sprintf(buff, "%s%d.%s", BACKUP_FILE_NAME, i, BACKUP_EXT);
 		saveFile = TheFileSystem->openFile(buff, File::READ | File::TEXT);
@@ -9664,9 +9657,9 @@ static void _writeOutINI( void )
 			saveFile->write(&singleChar, 1);
 		}
 		oldINI->close();
-		oldINI = NULL;
+		oldINI = nullptr;
 		saveFile->close();
-		saveFile = NULL;
+		saveFile = nullptr;
 
 	}
 
@@ -9687,7 +9680,7 @@ static void _writeOutINI( void )
 	}
 
 	newINI->close();
-	newINI = NULL;
+	newINI = nullptr;
 }
 
 
@@ -9813,7 +9806,7 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	// these were all originally << (feed-operator for streams)
 	// I might come back and re-write this later, if there are enough complaints. ;-) jkmcd
 	// in the meantime, move along...
-	std::string thisEntry = "";
+	std::string thisEntry;
 	thisEntry.append(HEADER).append(SEP_SPACE).append(templ->getName().str()).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_PRIORITY).append(EQ_WITH_SPACES).append(ParticlePriorityNames[templ->m_priority]).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_ISONESHOT).append(EQ_WITH_SPACES).append((templ->m_isOneShot ? STR_TRUE : STR_FALSE)).append(SEP_EOL);
@@ -9821,9 +9814,29 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	thisEntry.append(SEP_HEAD).append(F_TYPE).append(EQ_WITH_SPACES).append(ParticleTypeNames[templ->m_particleType]).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_PARTICLENAME).append(EQ_WITH_SPACES).append(templ->m_particleTypeName.str()).append(SEP_EOL);
 
+#if PARTICLE_USE_XY_ROTATION
+	sprintf(buff1, FORMAT_STRING, templ->m_angleX.getMinimumValue());
+	sprintf(buff2, FORMAT_STRING, templ->m_angleX.getMaximumValue());
+	thisEntry.append(SEP_HEAD).append(F_ANGLEX).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+
+	sprintf(buff1, FORMAT_STRING, templ->m_angleY.getMinimumValue());
+	sprintf(buff2, FORMAT_STRING, templ->m_angleY.getMaximumValue());
+	thisEntry.append(SEP_HEAD).append(F_ANGLEY).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+#endif
+
 	sprintf(buff1, FORMAT_STRING, templ->m_angleZ.getMinimumValue());
 	sprintf(buff2, FORMAT_STRING, templ->m_angleZ.getMaximumValue());
 	thisEntry.append(SEP_HEAD).append(F_ANGLEZ).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+
+#if PARTICLE_USE_XY_ROTATION
+	sprintf(buff1, FORMAT_STRING, templ->m_angularRateX.getMinimumValue());
+	sprintf(buff2, FORMAT_STRING, templ->m_angularRateX.getMaximumValue());
+	thisEntry.append(SEP_HEAD).append(F_ANGLERATEX).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+
+	sprintf(buff1, FORMAT_STRING, templ->m_angularRateY.getMinimumValue());
+	sprintf(buff2, FORMAT_STRING, templ->m_angularRateY.getMaximumValue());
+	thisEntry.append(SEP_HEAD).append(F_ANGLERATEY).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+#endif
 
 	sprintf(buff1, FORMAT_STRING, templ->m_angularRateZ.getMinimumValue());
 	sprintf(buff2, FORMAT_STRING, templ->m_angularRateZ.getMaximumValue());
@@ -10089,9 +10102,9 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	out->write(thisEntry.c_str(), thisEntry.size());
 }
 
-static int _getEditorBehavior( void )
+static int _getEditorBehavior()
 {
-	typedef int (*funcptr)( void );
+	typedef int (*funcptr)();
 
 	if (!st_ParticleDLL) {
 		return 0x00;
@@ -10107,7 +10120,7 @@ static int _getEditorBehavior( void )
 	return ((funcptr)proc)();
 }
 
-static void _updateAndSetCurrentSystem( void )
+static void _updateAndSetCurrentSystem()
 {
 	AsciiString particleSystemName = _getParticleSystemName();
 	_addUpdatedParticleSystem(particleSystemName);
@@ -10133,7 +10146,7 @@ static void _updateAndSetCurrentSystem( void )
 
 			ParticleSystemTemplate *parentTemp = TheParticleSystemManager->findParentTemplate(pTemp->getName(), 0);
 			if (parentTemp) {
-				ParticleSystem *parentSystem = NULL;
+				ParticleSystem *parentSystem = nullptr;
 				parentSystem = TheParticleSystemManager->createParticleSystem(parentTemp);
 
 				if (parentSystem) {
@@ -10168,7 +10181,7 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 
 	// save the old file
 	File *iniFile = TheFileSystem->openFile("Data\\INI\\ParticleSystem.ini", File::READ | File::TEXT);
-	File *outTempINI = NULL;
+	File *outTempINI = nullptr;
 
 	if (!iniFile) {
 		return;
@@ -10204,7 +10217,7 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 			// write out the closing "END"
 			outTempINI->write(linebuff, strlen(linebuff));
 			outTempINI->close();
-			outTempINI = NULL;
+			outTempINI = nullptr;
 		}
 
 		// force the current system to stop.
@@ -10216,7 +10229,7 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 		}
 		// reload that entry
 		INI ini;
-		ini.load("temporary.ini", INI_LOAD_OVERWRITE, NULL);
+		ini.load("temporary.ini", INI_LOAD_OVERWRITE, nullptr);
 
 		// delete the file
 //		unlink("temporary.ini");
@@ -10237,9 +10250,9 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 
 }
 
-static int _getNewCurrentParticleCap( void )
+static int _getNewCurrentParticleCap()
 {
-	typedef int (*funcptr)( void );
+	typedef int (*funcptr)();
 
 	if (!st_ParticleDLL) {
 		return -1;
@@ -10255,7 +10268,7 @@ static int _getNewCurrentParticleCap( void )
 	return ((funcptr)proc)();
 }
 
-static void _updateCurrentParticleCap( void )
+static void _updateCurrentParticleCap()
 {
 	typedef void (*funcptr)( int );
 
@@ -10273,7 +10286,7 @@ static void _updateCurrentParticleCap( void )
 	((funcptr)proc)(TheGlobalData->m_maxParticleCount);
 }
 
-static void _updateCurrentParticleCount( void )
+static void _updateCurrentParticleCount()
 {
 	typedef void (*funcptr)( int );
 
@@ -10291,7 +10304,7 @@ static void _updateCurrentParticleCount( void )
 	((funcptr)proc)(TheParticleSystemManager->getParticleCount());
 }
 
-static void _reloadTextures( void )
+static void _reloadTextures()
 {
 	// Need no interaction with the particle editor now.
 	ReloadAllTextures();
@@ -10303,18 +10316,18 @@ static void _initVTune()
 	// always try loading it, even if -vtune wasn't specified.
 	st_vTuneDLL = ::LoadLibrary("vtuneapi.dll");
 // nope, not here...
-//DEBUG_ASSERTCRASH(st_vTuneDLL != NULL, "VTuneAPI DLL not found!"));
+//DEBUG_ASSERTCRASH(st_vTuneDLL != nullptr, "VTuneAPI DLL not found!"));
 
 	if (st_vTuneDLL)
 	{
 		VTPause = (VTProc)::GetProcAddress(st_vTuneDLL, "VTPause");
 		VTResume = (VTProc)::GetProcAddress(st_vTuneDLL, "VTResume");
-		DEBUG_ASSERTCRASH(VTPause != NULL && VTResume != NULL, ("VTuneAPI procs not found!"));
+		DEBUG_ASSERTCRASH(VTPause != nullptr && VTResume != nullptr, ("VTuneAPI procs not found!"));
 	}
 	else
 	{
-		VTPause = NULL;
-		VTResume = NULL;
+		VTPause = nullptr;
+		VTResume = nullptr;
 	}
 
 	if (TheGlobalData->m_vTune)
@@ -10324,7 +10337,7 @@ static void _initVTune()
 		if (VTPause)
 			VTPause();
 		// only complain about it being missing if they were expecting it to be present
-		DEBUG_ASSERTCRASH(st_vTuneDLL != NULL, ("VTuneAPI DLL not found!"));
+		DEBUG_ASSERTCRASH(st_vTuneDLL != nullptr, ("VTuneAPI DLL not found!"));
 	}
 	else
 	{
@@ -10358,9 +10371,9 @@ static void _cleanUpVTune()
 	{
 		FreeLibrary(st_vTuneDLL);
 	}
-	st_vTuneDLL = NULL;
-	VTPause = NULL;
-	VTResume = NULL;
+	st_vTuneDLL = nullptr;
+	VTPause = nullptr;
+	VTResume = nullptr;
 }
 #endif	// VTUNE
 

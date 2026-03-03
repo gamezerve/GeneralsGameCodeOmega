@@ -30,6 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
+
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
 
@@ -59,30 +60,30 @@ Win32GameEngine::~Win32GameEngine()
 //-------------------------------------------------------------------------------------------------
 /** Initialize the game engine */
 //-------------------------------------------------------------------------------------------------
-void Win32GameEngine::init( void )
+void Win32GameEngine::init()
 {
 
 	// extending functionality
 	GameEngine::init();
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reset the system */
 //-------------------------------------------------------------------------------------------------
-void Win32GameEngine::reset( void )
+void Win32GameEngine::reset()
 {
 
 	// extending functionality
 	GameEngine::reset();
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update the game engine by updating the GameClient and
 	* GameLogic singletons. */
 //-------------------------------------------------------------------------------------------------
-void Win32GameEngine::update( void )
+void Win32GameEngine::update()
 {
 
 
@@ -97,7 +98,7 @@ void Win32GameEngine::update( void )
 			Sleep(5);
 			serviceWindowsOS();
 
-			if (TheLAN != NULL) {
+			if (TheLAN != nullptr) {
 				// BGC - need to update TheLAN so we can process and respond to other
 				// people's messages who may not be alt-tabbed out like we are.
 				TheLAN->setIsActive(isActive());
@@ -122,28 +123,28 @@ void Win32GameEngine::update( void )
 	// allow windows to perform regular windows maintenance stuff like msgs
 	serviceWindowsOS();
 
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 /** This function may be called from within this application to let
-  * Microsoft Windows do its message processing and dispatching.  Presumeably
+  * Microsoft Windows do its message processing and dispatching.  Presumably
 	* we would call this at least once each time around the game loop to keep
 	* Windows services from backing up */
 //-------------------------------------------------------------------------------------------------
-void Win32GameEngine::serviceWindowsOS( void )
+void Win32GameEngine::serviceWindowsOS()
 {
 	MSG msg;
   Int returnValue;
 
 	//
-	// see if we have any messages to process, a NULL window handle tells the
+	// see if we have any messages to process, a nullptr window handle tells the
 	// OS to look at the main window associated with the calling thread, us!
 	//
-	while( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
+	while( PeekMessage( &msg, nullptr, 0, 0, PM_NOREMOVE ) )
 	{
 
 		// get the message
-		returnValue = GetMessage( &msg, NULL, 0, 0 );
+		returnValue = GetMessage( &msg, nullptr, 0, 0 );
 
 		// this is one possible way to check for quitting conditions as a message
 		// of WM_QUIT will cause GetMessage() to return 0
@@ -163,7 +164,7 @@ void Win32GameEngine::serviceWindowsOS( void )
 		DispatchMessage( &msg );
 		TheMessageTime = 0;
 
-	}  // end while
+	}
 
-}  // end ServiceWindowsOS
+}
 

@@ -64,9 +64,9 @@ CleanupHazardUpdateModuleData::CleanupHazardUpdateModuleData()
 	static const FieldParse dataFieldParse[] =
 	{
 		{ "WeaponSlot",						INI::parseLookupList,						TheWeaponSlotTypeNamesLookupList, offsetof( CleanupHazardUpdateModuleData, m_weaponSlot ) },
-		{ "ScanRate",							INI::parseDurationUnsignedInt,	NULL, offsetof( CleanupHazardUpdateModuleData, m_scanFrames ) },
-		{ "ScanRange",						INI::parseReal,									NULL, offsetof( CleanupHazardUpdateModuleData, m_scanRange ) },
-		{ 0, 0, 0, 0 }
+		{ "ScanRate",							INI::parseDurationUnsignedInt,	nullptr, offsetof( CleanupHazardUpdateModuleData, m_scanFrames ) },
+		{ "ScanRange",						INI::parseReal,									nullptr, offsetof( CleanupHazardUpdateModuleData, m_scanRange ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 }
@@ -78,7 +78,7 @@ CleanupHazardUpdate::CleanupHazardUpdate( Thing *thing, const ModuleData* module
 	m_nextScanFrames						= 0;
 	m_nextShotAvailableInFrames = 0;
 	m_inRange  									= false;
-	m_weaponTemplate						= NULL;
+	m_weaponTemplate						= nullptr;
 	m_moveRange									= 0.0f;
 	m_pos.zero();
 
@@ -86,7 +86,7 @@ CleanupHazardUpdate::CleanupHazardUpdate( Thing *thing, const ModuleData* module
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-CleanupHazardUpdate::~CleanupHazardUpdate( void )
+CleanupHazardUpdate::~CleanupHazardUpdate()
 {
 
 }
@@ -222,7 +222,7 @@ void CleanupHazardUpdate::fireWhenReady()
 				{
 					scanClosestTarget();
 					m_nextScanFrames = data->m_scanFrames;
-					target = NULL; //Set target to NULL so we don't shoot at it (might be out of range)
+					target = nullptr; //Set target to nullptr so we don't shoot at it (might be out of range)
 				}
 			}
 			else
@@ -261,12 +261,12 @@ Object* CleanupHazardUpdate::scanClosestTarget()
 {
 	const CleanupHazardUpdateModuleData *data = getCleanupHazardUpdateModuleData();
 	Object *me = getObject();
-	Object *bestTargetInRange = NULL;
+	Object *bestTargetInRange = nullptr;
 	m_bestTargetID = INVALID_ID;
 
 	PartitionFilterAcceptByKindOf kindFilter(MAKE_KINDOF_MASK(KINDOF_CLEANUP_HAZARD), KINDOFMASK_NONE);
 	PartitionFilterSameMapStatus filterMapStatus(getObject());
-	PartitionFilter* filters[] = { &kindFilter, &filterMapStatus, NULL };
+	PartitionFilter* filters[] = { &kindFilter, &filterMapStatus, nullptr };
 
 	if( m_moveRange > 0.0f )
 	{
@@ -318,7 +318,7 @@ void CleanupHazardUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -357,15 +357,15 @@ void CleanupHazardUpdate::xfer( Xfer *xfer )
 	// move range
 	xfer->xferReal( &m_moveRange );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void CleanupHazardUpdate::loadPostProcess( void )
+void CleanupHazardUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

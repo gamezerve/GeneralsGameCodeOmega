@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Xfer.h"
 #include "GameLogic/Object.h"
@@ -44,12 +44,12 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-FloatUpdateModuleData::FloatUpdateModuleData( void )
+FloatUpdateModuleData::FloatUpdateModuleData()
 {
 
 	m_enabled = FALSE;
 
-}  // end FloatUpdateModuleData
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -60,12 +60,12 @@ FloatUpdateModuleData::FloatUpdateModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Enabled",	INI::parseBool,	NULL, offsetof( FloatUpdateModuleData, m_enabled ) },
-		{ 0, 0, 0, 0 }
+		{ "Enabled",	INI::parseBool,	nullptr, offsetof( FloatUpdateModuleData, m_enabled ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,18 +80,18 @@ FloatUpdate::FloatUpdate( Thing *thing, const ModuleData *moduleData )
 	// save our initial enabled status based on INI settings
 	m_enabled = ((FloatUpdateModuleData *)moduleData)->m_enabled;
 
-}  // end FloatUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-FloatUpdate::~FloatUpdate( void )
+FloatUpdate::~FloatUpdate()
 {
 
-}  // end ~FloatUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-UpdateSleepTime FloatUpdate::update( void )
+UpdateSleepTime FloatUpdate::update()
 {
 /// @todo srj use SLEEPY_UPDATE here
 
@@ -134,7 +134,7 @@ UpdateSleepTime FloatUpdate::update( void )
 	}
 
 	return UPDATE_SLEEP_NONE;
-}  // end update
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -145,7 +145,7 @@ void FloatUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -166,15 +166,15 @@ void FloatUpdate::xfer( Xfer *xfer )
 	// enabled
 	xfer->xferBool( &m_enabled );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void FloatUpdate::loadPostProcess( void )
+void FloatUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

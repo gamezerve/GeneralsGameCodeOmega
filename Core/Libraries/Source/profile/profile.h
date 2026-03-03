@@ -26,11 +26,8 @@
 //
 // Profiling module
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef PROFILE_H // Include guard
-#define PROFILE_H
+
+#pragma once
 
 // include all our public header files (use double quotes here)
 #include "profile_doc.h"
@@ -53,7 +50,7 @@ public:
   /**
     \brief Starts range recording.
 
-    \param range name of range to record, ==NULL for "frame"
+    \param range name of range to record, == nullptr for "frame"
   */
   static void StartRange(const char *range=0);
 
@@ -61,7 +58,7 @@ public:
     \brief Appends profile data to the last recorded frame
     of the given range.
 
-    \param range name of range to record, ==NULL for "frame"
+    \param range name of range to record, == nullptr for "frame"
   */
   static void AppendRange(const char *range=0);
 
@@ -71,7 +68,7 @@ public:
     \note After this call the recorded range data will be available
     as a new range frame.
 
-    \param range name of range to record, ==NULL for "frame"
+    \param range name of range to record, == nullptr for "frame"
   */
   static void StopRange(const char *range=0);
 
@@ -80,7 +77,7 @@ public:
 
     \return true if range profiling is enabled, false if not
   */
-  static bool IsEnabled(void);
+  static bool IsEnabled();
 
   /**
     \brief Determines the number of known (recorded) range frames.
@@ -91,7 +88,7 @@ public:
 
     \return number of recorded range frames
   */
-  static unsigned GetFrameCount(void);
+  static unsigned GetFrameCount();
 
   /**
     \brief Determines the range name of a recorded range frame.
@@ -109,7 +106,7 @@ public:
 
     This function does not change any recorded frames.
   */
-  static void ClearTotals(void);
+  static void ClearTotals();
 
   /**
     \brief Determines number of CPU clock cycles per second.
@@ -119,7 +116,7 @@ public:
 
     \return number of CPU clock cycles per second
   */
-  static _int64 GetClockCyclesPerSecond(void);
+  static _int64 GetClockCyclesPerSecond();
 
   /**
     \brief Add the given result function interface.
@@ -206,5 +203,3 @@ private:
   /// CPU clock cycles/second
   static _int64 m_clockCycles;
 };
-
-#endif // PROFILE_H

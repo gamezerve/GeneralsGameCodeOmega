@@ -31,9 +31,6 @@
 
 #pragma once
 
-#ifndef __CAVE_CONTAIN_H_
-#define __CAVE_CONTAIN_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/CreateModule.h"
 #include "GameLogic/Module/OpenContain.h"
@@ -58,7 +55,7 @@ public:
 
 		static const FieldParse dataFieldParse[] =
 		{
-			{ "CaveIndex", INI::parseInt, NULL, offsetof( CaveContainModuleData, m_caveIndexData ) },
+			{ "CaveIndex", INI::parseInt, nullptr, offsetof( CaveContainModuleData, m_caveIndexData ) },
 			{ 0, 0, 0, 0 }
 		};
     p.add(dataFieldParse);
@@ -96,19 +93,19 @@ public:
 	/**
 		return the player that *appears* to control this unit. if null, use getObject()->getControllingPlayer() instead.
 	*/
-	virtual void recalcApparentControllingPlayer( void );
+	virtual void recalcApparentControllingPlayer();
 
 	// contain list access
 	virtual void iterateContained( ContainIterateFunc func, void *userData, Bool reverse );
 	virtual UnsignedInt getContainCount() const;
-	virtual Int getContainMax( void ) const;
+	virtual Int getContainMax() const;
 	virtual const ContainedItemsList* getContainedItemsList() const;
 	virtual Bool isKickOutOnCapture(){ return FALSE; }///< Caves and Tunnels don't kick out on capture.
 
 	// override the onDie we inherit from OpenContain
 	virtual void onDie( const DamageInfo *damageInfo );  ///< the die callback
 
-	virtual void onCreate( void );
+	virtual void onCreate();
 	virtual void onBuildComplete();	///< This is called when you are a finished game object
 	virtual Bool shouldDoOnBuildComplete() const { return m_needToRunOnBuildComplete; }
 
@@ -126,5 +123,3 @@ protected:
 	Team *m_originalTeam;												///< our original team before we were garrisoned
 
 };
-
-#endif  // end __CAVE_CONTAIN_H_

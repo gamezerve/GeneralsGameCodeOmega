@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/INI.h"
 #include "GameClient/TerrainRoads.h"
@@ -57,9 +57,9 @@ void INI::parseTerrainRoadDefinition( INI* ini )
 											 road->getName().str()) );
 		throw INI_INVALID_DATA;
 
-	}  // end if
+	}
 
-	if( road == NULL )
+	if( road == nullptr )
 		road = TheTerrainRoads->newRoad( name );
 
 	DEBUG_ASSERTCRASH( road, ("Unable to allocate road '%s'", name.str()) );
@@ -67,7 +67,7 @@ void INI::parseTerrainRoadDefinition( INI* ini )
 	// parse the ini definition
 	ini->initFromINI( road, road->getRoadFieldParse() );
 
-}  // end parseTerrainRoad
+}
 
 
 

@@ -41,10 +41,6 @@
 
 #pragma once
 
-#ifndef __COMMON_GAMEMUSIC_H_
-#define __COMMON_GAMEMUSIC_H_
-
-
 //----------------------------------------------------------------------------
 //           Includes
 //----------------------------------------------------------------------------
@@ -85,7 +81,7 @@ public:
 		MusicTrack();
 		// virtual destructor prototype defined by memory pool object
 
-		const FieldParse *getFieldParse( void ) const { return m_musicTrackFieldParseTable; }
+		const FieldParse *getFieldParse() const { return m_musicTrackFieldParseTable; }
 
 		Int					index;									///< Track index
 		AsciiString name;										///< Logical name of track
@@ -114,5 +110,3 @@ class MusicManager
 
 		void setVolume( Real m_volume );
 };
-
-#endif // __COMMON_GAMEMUSIC_H_

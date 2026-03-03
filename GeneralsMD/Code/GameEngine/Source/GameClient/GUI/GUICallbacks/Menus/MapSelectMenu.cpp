@@ -28,12 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
 #include "Common/MessageStream.h"
 #include "Common/RandomValue.h"
-#include "Common/UserPreferences.h"
+#include "Common/OptionPreferences.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
 #include "GameClient/AnimateWindowManager.h"
@@ -50,7 +50,7 @@
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 static NameKeyType radioButtonSystemMapsID = NAMEKEY_INVALID;
 static NameKeyType radioButtonUserMapsID = NAMEKEY_INVALID;
-static GameWindow *mapList = NULL;
+static GameWindow *mapList = nullptr;
 
 static Bool showSoloMaps = true;
 static Bool isShuttingDown = false;
@@ -64,7 +64,7 @@ static void setupGameStart(AsciiString mapName)
 	TheShell->reverseAnimatewindow();
 }
 
-static void doGameStart( void )
+static void doGameStart()
 {
 	startGame = false;
 
@@ -77,14 +77,7 @@ static void doGameStart( void )
 	msg->appendIntegerArgument(s_AIDiff);
 	msg->appendIntegerArgument(0);
 
-	/// @todo: when Campaign & skirmish are separated, make campaign have fixed seed and skirmish random.
 	InitRandom(0);
-	/*
-	if (TheGlobalData->m_fixedSeed >= 0)
-		InitGameLogicRandom(TheGlobalData->m_fixedSeed);
-	else
-		InitGameLogicRandom(GameClientRandomValue(0, INT_MAX - 1));
-	*/
 
 	isShuttingDown = true;
 }
@@ -104,13 +97,12 @@ static void shutdownComplete( WindowLayout *layout )
 	// our shutdown is complete
 	TheShell->shutdownComplete( layout );
 
-}  // end if
+}
 
-void SetDifficultyRadioButton( void )
+void SetDifficultyRadioButton()
 {
-	AsciiString parentName( "MapSelectMenu.wnd:MapSelectMenuParent" );
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( parentName );
-	GameWindow *parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
+	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:MapSelectMenuParent" );
+	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 
 	if (!TheScriptEngine)
 	{
@@ -122,7 +114,7 @@ void SetDifficultyRadioButton( void )
 		{
 			case DIFFICULTY_EASY:
 			{
-				NameKeyType radioButtonEasyAIID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonEasyAI") );
+				NameKeyType radioButtonEasyAIID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonEasyAI" );
 				GameWindow *radioButtonEasyAI = TheWindowManager->winGetWindowFromId( parent, radioButtonEasyAIID );
 				GadgetRadioSetSelection(radioButtonEasyAI, FALSE);
 				s_AIDiff = DIFFICULTY_EASY;
@@ -130,7 +122,7 @@ void SetDifficultyRadioButton( void )
 			}
 			case DIFFICULTY_NORMAL:
 			{
-				NameKeyType radioButtonMediumAIID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonMediumAI") );
+				NameKeyType radioButtonMediumAIID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonMediumAI" );
 				GameWindow *radioButtonMediumAI = TheWindowManager->winGetWindowFromId( parent, radioButtonMediumAIID );
 				GadgetRadioSetSelection(radioButtonMediumAI, FALSE);
 				s_AIDiff = DIFFICULTY_NORMAL;
@@ -138,7 +130,7 @@ void SetDifficultyRadioButton( void )
 			}
 			case DIFFICULTY_HARD:
 			{
-				NameKeyType radioButtonHardAIID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonHardAI") );
+				NameKeyType radioButtonHardAIID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonHardAI" );
 				GameWindow *radioButtonHardAI = TheWindowManager->winGetWindowFromId( parent, radioButtonHardAIID );
 				GadgetRadioSetSelection(radioButtonHardAI, FALSE);
 				s_AIDiff = DIFFICULTY_HARD;
@@ -151,7 +143,7 @@ void SetDifficultyRadioButton( void )
 			}
 
 		}
-	} // if (TheScriptEngine)
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -171,9 +163,8 @@ void MapSelectMenuInit( WindowLayout *layout, void *userData )
 	Bool usesSystemMapDir = pref.usesSystemMapDir();
 
 	// get the listbox window
-	AsciiString listString( "MapSelectMenu.wnd:ListboxMap" );
-	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( listString );
-	mapList = TheWindowManager->winGetWindowFromId( NULL, mapListID );
+	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ListboxMap" );
+	mapList = TheWindowManager->winGetWindowFromId( nullptr, mapListID );
 	if( mapList )
 	{
 		if (TheMapCache)
@@ -183,16 +174,15 @@ void MapSelectMenuInit( WindowLayout *layout, void *userData )
 
 
 	// set keyboard focus to main parent
-	AsciiString parentName( "MapSelectMenu.wnd:MapSelectMenuParent" );
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( parentName );
-	GameWindow *parent = TheWindowManager->winGetWindowFromId( NULL, parentID );
+	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:MapSelectMenuParent" );
+	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 
-	NameKeyType buttonBackID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ButtonBack") );
-	GameWindow *buttonBack = TheWindowManager->winGetWindowFromId( NULL, buttonBackID );
+	NameKeyType buttonBackID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonBack" );
+	GameWindow *buttonBack = TheWindowManager->winGetWindowFromId( nullptr, buttonBackID );
 
-	NameKeyType buttonOKID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ButtonOK") );
-	GameWindow *buttonOK = TheWindowManager->winGetWindowFromId( NULL, buttonOKID );
+	NameKeyType buttonOKID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonOK" );
+	GameWindow *buttonOK = TheWindowManager->winGetWindowFromId( nullptr, buttonOKID );
 
 
 	TheShell->registerWithAnimateManager(buttonBack, WIN_ANIMATION_SLIDE_RIGHT, TRUE,0);
@@ -208,7 +198,7 @@ void MapSelectMenuInit( WindowLayout *layout, void *userData )
 		GadgetRadioSetSelection( radioButtonSystemMaps, FALSE );
 	else
 		GadgetRadioSetSelection( radioButtonUserMaps, FALSE );
-}  // end MapSelectMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu shutdown method */
@@ -226,12 +216,12 @@ void MapSelectMenuShutdown( WindowLayout *layout, void *userData )
 		shutdownComplete( layout );
 		return;
 
-	}  //end if
+	}
 
 	if (!startGame)
 		TheShell->reverseAnimatewindow();
 
-}  // end MapSelectMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu update method */
@@ -247,7 +237,7 @@ void MapSelectMenuUpdate( WindowLayout *layout, void *userData )
 		shutdownComplete(layout);
 
 
-}  // end MapSelectMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Map select menu input callback */
@@ -280,29 +270,28 @@ WindowMsgHandledType MapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 					//
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
-						AsciiString buttonName( "MapSelectMenu.wnd:ButtonBack" );
-						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( buttonName );
+						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonBack" );
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)button, buttonID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end MapSelectMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** MapSelect menu window system callback */
@@ -324,15 +313,15 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 		{
 
 			// get ids for our children controls
-			buttonBack = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ButtonBack") );
-			buttonOK = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ButtonOK") );
-			listboxMap = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ListboxMap") );
-			radioButtonEasyAI = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonEasyAI") );
-			radioButtonMediumAI = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonMediumAI") );
-			radioButtonHardAI = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:RadioButtonHardAI") );
+			buttonBack = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonBack" );
+			buttonOK = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonOK" );
+			listboxMap = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ListboxMap" );
+			radioButtonEasyAI = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonEasyAI" );
+			radioButtonMediumAI = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonMediumAI" );
+			radioButtonHardAI = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:RadioButtonHardAI" );
 			break;
 
-		}  // end create
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
@@ -340,7 +329,7 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end case
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -352,7 +341,7 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			return MSG_HANDLED;
 
-		}  // end input
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
@@ -402,13 +391,13 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheShell->pop();
 				buttonPushed = true;
 
-			}  // end if
+			}
 			else if( controlID == buttonOK )
 			{
 
 				Int selected;
 				UnicodeString map;
-				GameWindow *mapWindow = TheWindowManager->winGetWindowFromId( NULL, listboxMap );
+				GameWindow *mapWindow = TheWindowManager->winGetWindowFromId( nullptr, listboxMap );
 
 				// get the selected index
 				GadgetListBoxGetSelected( mapWindow, &selected );
@@ -418,15 +407,15 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 					buttonPushed = true;
 					// reset the campaign manager to empty
 					if( TheCampaignManager )
-					  TheCampaignManager->setCampaign( AsciiString( "" ) );
+					  TheCampaignManager->setCampaign( "" );
 					// get text of the map to load
 					const char *mapFname = (const char *)GadgetListBoxGetItemData( mapWindow, selected );
 					DEBUG_ASSERTCRASH(mapFname, ("No map item data"));
 					if (mapFname)
 						setupGameStart(mapFname);
-				}  // end if
+				}
 
-			}  // end else if
+			}
 			else if( controlID == radioButtonEasyAI)
 			{
 				s_AIDiff = DIFFICULTY_EASY;
@@ -441,7 +430,7 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			break;
 
-		}  // end selected
+		}
 		case GLM_DOUBLE_CLICKED:
 			{
 				if (buttonPushed)
@@ -457,8 +446,8 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 					{
 						//buttonPushed = true;
 						GadgetListBoxSetSelected( control, rowSelected );
-						NameKeyType buttonOKID = TheNameKeyGenerator->nameToKey( AsciiString("MapSelectMenu.wnd:ButtonOK") );
-						GameWindow *buttonOK = TheWindowManager->winGetWindowFromId( NULL, buttonOKID );
+						NameKeyType buttonOKID = TheNameKeyGenerator->nameToKey( "MapSelectMenu.wnd:ButtonOK" );
+						GameWindow *buttonOK = TheWindowManager->winGetWindowFromId( nullptr, buttonOKID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)buttonOK, buttonOKID );
@@ -469,8 +458,8 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 
-}  // end MapSelectMenuSystem
+}

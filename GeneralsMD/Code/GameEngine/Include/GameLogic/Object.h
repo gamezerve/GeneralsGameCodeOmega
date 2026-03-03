@@ -27,8 +27,6 @@
 // Author: Michael S. Booth, October 2000
 
 #pragma once
-#ifndef _OBJECT_H_
-#define _OBJECT_H_
 
 #include "Lib/BaseType.h"
 #include "ref_ptr.h"
@@ -123,9 +121,6 @@ enum WeaponStatus CPP_11(: Int);
 enum RadarPriorityType CPP_11(: Int);
 enum CanAttackResult CPP_11(: Int);
 
-// For ObjectStatusTypes
-#include "Common/ObjectStatusTypes.h"
-
 // For ObjectScriptStatusBit
 #include "GameLogic/ObjectScriptStatusBits.h"
 
@@ -141,7 +136,7 @@ struct TTriggerInfo
 	Byte									isInside;	///< True if the object is inside this trigger area this frame.
 	Byte									padding;	///< unused.
 
-	TTriggerInfo() : entered(false), exited(false), isInside(false), padding(false), pTrigger(NULL) { }
+	TTriggerInfo() : entered(false), exited(false), isInside(false), padding(false), pTrigger(nullptr) { }
 
 };
 
@@ -177,6 +172,10 @@ public:
 
 	Object* getNextObject() { return m_next; }
 	const Object* getNextObject() const { return m_next; }
+	Object* getPrevObject() { return m_prev; }
+	const Object* getPrevObject() const { return m_prev; }
+	void friend_setNextObject(Object* obj) { m_next = obj; }
+	void friend_setPrevObject(Object* obj) { m_prev = obj; }
 
 	void updateObjValuesFromMapProperties(Dict* properties);			///< Brings in properties set in the editor.
 
@@ -192,8 +191,8 @@ public:
 	void setBuilder( const Object *obj );
 
 	void enterGroup( AIGroup *group );							///< become a member of the AIGroup
-	void leaveGroup( void );												///< leave our current AIGroup
-	AIGroup *getGroup(void);
+	void leaveGroup();												///< leave our current AIGroup
+	AIGroup *getGroup();
 
 	// physical properties
 	Bool isMobile() const;																	///< returns true if object is currently able to move
@@ -211,7 +210,7 @@ public:
 	// cannot set velocity, since this is calculated from position every frame
 	Bool isDestroyed() const { return m_status.test( OBJECT_STATUS_DESTROYED ); }		///< Returns TRUE if object has been destroyed
 	Bool isAirborneTarget() const { return m_status.test( OBJECT_STATUS_AIRBORNE_TARGET ); }	///< Our locomotor will control marking us as a valid target for anti air weapons or not
-	Bool isUsingAirborneLocomotor( void ) const;										///< returns true if the current locomotor is an airborne one
+	Bool isUsingAirborneLocomotor() const;										///< returns true if the current locomotor is an airborne one
 
 	/// central place for us to put any additional capture logic
 	void onCapture( Player *oldOwner, Player *newOwner );
@@ -223,7 +222,7 @@ public:
 	void attemptDamage( DamageInfo *damageInfo );			///< damage object as specified by the info
 	void attemptHealing(Real amount, const Object* source);		///< heal object as specified by the info
 	Bool attemptHealingFromSoleBenefactor ( Real amount, const Object* source, UnsignedInt duration );///< for the non-stacking healers like ambulance and propaganda
-	ObjectID getSoleHealingBenefactor( void ) const;
+	ObjectID getSoleHealingBenefactor() const;
 
 	Real estimateDamage( DamageInfoInput& damageInfo ) const;
 	void kill( DamageType damageType = DAMAGE_UNRESISTABLE, DeathType deathType = DEATH_NORMAL );	///< kill the object with an optional type of damage and death.
@@ -234,6 +233,7 @@ public:
 
 	void scoreTheKill( const Object *victim );						///< I just killed this object.
 	void onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel newLevel, Bool provideFeedback = TRUE );	///< I just achieved this level right this moment
+	void createVeterancyLevelFX(VeterancyLevel oldLevel, VeterancyLevel newLevel);
 	ExperienceTracker* getExperienceTracker() {return m_experienceTracker;}
 	const ExperienceTracker* getExperienceTracker() const {return m_experienceTracker;}
 	VeterancyLevel getVeterancyLevel() const;
@@ -258,10 +258,13 @@ public:
 	void setCustomIndicatorColor(Color c);
 	void removeCustomIndicatorColor();
 
+	Bool isLogicallyVisible() const; ///< Returns whether the object is logically visible to the player, irrespective of shroud.
+
 	Bool isLocallyControlled() const;
+	Bool isLocallyViewed() const;
 	Bool isNeutralControlled() const;
 
-	Bool getIsUndetectedDefector(void) const { return BitIsSet(m_privateStatus, UNDETECTED_DEFECTOR); }
+	Bool getIsUndetectedDefector() const { return BitIsSet(m_privateStatus, UNDETECTED_DEFECTOR); }
 	void friend_setUndetectedDefector(Bool status);
 
 	inline Bool isOffMap() const { return BitIsSet(m_privateStatus, OFF_MAP); }
@@ -311,15 +314,15 @@ public:
 
 	//
 	// Find us our production update interface if we have one.  This method exists simply
-	// because we do this in a lot of places in the code and I want a convenient way to get thsi (CBD)
+	// because we do this in a lot of places in the code and I want a convenient way to get this (CBD)
 	//
-	ProductionUpdateInterface* getProductionUpdateInterface( void );
+	ProductionUpdateInterface* getProductionUpdateInterface();
 
 	//
 	// Find us our dock update interface if we have one.  Again, this method exists simple
 	// because we want to do this in a lot of places throughout the code
 	//
-	DockUpdateInterface *getDockUpdateInterface( void );
+	DockUpdateInterface *getDockUpdateInterface();
 
 	// Ditto for special powers -- Kris
 	SpecialPowerModuleInterface* findSpecialPowerModuleInterface( SpecialPowerType type ) const;
@@ -337,7 +340,7 @@ public:
 	void setStatus( ObjectStatusMaskType objectStatus, Bool set = true );
 	inline void clearStatus( ObjectStatusMaskType objectStatus ) { setStatus( objectStatus, false ); }
 	void updateUpgradeModules();	///< We need to go through our Upgrade Modules and see which should be activated
-	UpgradeMaskType getObjectCompletedUpgradeMask() const { return m_objectUpgradesCompleted; } ///< Upgrades I complete locally
+	const UpgradeMaskType& getObjectCompletedUpgradeMask() const { return m_objectUpgradesCompleted; } ///< Upgrades I complete locally
 
 	//This function sucks.
 	//It was added for objects that can disguise as other objects and contain upgraded subobject overrides.
@@ -354,7 +357,7 @@ public:
 
 	// Selectable is individually controlled on an object by object basis for design now.
 	// It defaults to the thingTemplate->isKindof(KINDOF_SELECTABLE), however, it can be overridden on an
-	// object by object basis.  Finally, it can be temporarily overriden by the OBJECT_STATUS_UNSELECTABLE.
+	// object by object basis.  Finally, it can be temporarily overridden by the OBJECT_STATUS_UNSELECTABLE.
 	// jba.
 	void setSelectable(Bool selectable);
 	Bool isSelectable() const;
@@ -363,7 +366,7 @@ public:
 
 	// User specified formation.
 	void setFormationID(enum FormationID id) {m_formationID = id;}
-	enum FormationID getFormationID(void) const {return m_formationID;}
+	enum FormationID getFormationID() const {return m_formationID;}
 	void setFormationOffset(const Coord2D& offset) {m_formationOffset = offset;}
 	void getFormationOffset(Coord2D* offset) const {*offset = m_formationOffset;}
 
@@ -416,8 +419,9 @@ public:
 	void friend_setPartitionData(PartitionData *pd) { m_partitionData = pd; }
 	PartitionData *friend_getPartitionData() const { return m_partitionData; }
 	const PartitionData *friend_getConstPartitionData() const { return m_partitionData; }
+	Bool hasGhostObject() const; ///< This object has a ghost object. This does not imply that a ghost snapshot is taken or active.
 
-	void onPartitionCellChange();///< We have moved a 'significant' amount, so do maintenence that can be considered 'cell-based'
+	void onPartitionCellChange();///< We have moved a 'significant' amount, so do maintenance that can be considered 'cell-based'
 	void handlePartitionCellMaintenance();					///< Undo and redo all shroud actions.  Call when something has changed, like position or ownership or Death
 
 	Real getVisionRange() const;				///< How far can you see?  This is dynamic so it is in Object.
@@ -429,8 +433,8 @@ public:
 	void setVisionSpied(Bool setting, Int byWhom);///< Change who is looking through our eyes
 
 	// Both of these calls are intended to only be used by TerrainLogic, specifically setActiveBoundary()
-	void friend_prepareForMapBoundaryAdjust(void);
-	void friend_notifyOfNewMapBoundary(void);
+	void friend_prepareForMapBoundaryAdjust();
+	void friend_notifyOfNewMapBoundary();
 
 	// data for the radar
 	void friend_setRadarData( RadarObject *rd ) { m_radarData = rd; }
@@ -441,11 +445,13 @@ public:
 	inline Object *getContainedBy() { return m_containedBy; }
 	inline const Object *getContainedBy() const { return m_containedBy; }
 	inline UnsignedInt getContainedByFrame() const { return m_containedByFrame; }
-	inline Bool isContained() const { return m_containedBy != NULL; }
+	inline Bool isContained() const { return m_containedBy != nullptr; }
 	void onContainedBy( Object *containedBy );
 	void onRemovedFrom( Object *removedFrom );
 	Int getTransportSlotCount() const;
 	void friend_setContainedBy( Object *containedBy ) { m_containedBy = containedBy; }
+	const Object* getEnclosingContainedBy() const; ///< Find the first enclosing container in the containment chain.
+	const Object* getOuterObject() const; ///< Get the top-level object
 
 	// Special Powers -------------------------------------------------------------------------------
 	SpecialPowerModuleInterface *getSpecialPowerModule( const SpecialPowerTemplate *specialPowerTemplate ) const;
@@ -484,8 +490,8 @@ public:
 	// see if this current weapon set's weapons has shared reload times
 	Bool isReloadTimeShared() const { return m_weaponSet.isSharedReloadTime(); }
 
-	Weapon* getCurrentWeapon(WeaponSlotType* wslot = NULL);
-	const Weapon* getCurrentWeapon(WeaponSlotType* wslot = NULL) const;
+	Weapon* getCurrentWeapon(WeaponSlotType* wslot = nullptr);
+	const Weapon* getCurrentWeapon(WeaponSlotType* wslot = nullptr) const;
 	void setFiringConditionForCurrentWeapon() const;
 	void adjustModelConditionForWeaponStatus();	///< Check to see if I should change my model condition.
 	void fireCurrentWeapon(Object *target);
@@ -609,20 +615,20 @@ public:
 	virtual void reactToTurretChange( WhichTurretType turret, Real oldRotation, Real oldPitch );
 
 	// Convenience function for checking certain kindof bits
-	Bool isStructure(void) const;
+	Bool isStructure() const;
 
 	// Convenience function for checking certain kindof bits
-	Bool isFactionStructure(void) const;
+	Bool isFactionStructure() const;
 
 	// Convenience function for checking certain kindof bits
-	Bool isNonFactionStructure(void) const;
+	Bool isNonFactionStructure() const;
 
-	Bool isHero(void) const;
+	Bool isHero() const;
 
 	Bool getReceivingDifficultyBonus() const { return m_isReceivingDifficultyBonus; }
 	void setReceivingDifficultyBonus(Bool receive);
 
-	inline UnsignedInt getSafeOcclusionFrame(void) { return m_safeOcclusionFrame; }	//< this is an object specific frame at which it's safe to enable building occlusion.
+	inline UnsignedInt getSafeOcclusionFrame() { return m_safeOcclusionFrame; }	//< this is an object specific frame at which it's safe to enable building occlusion.
 	inline void	setSafeOcclusionFrame(UnsignedInt frame) { m_safeOcclusionFrame = frame;}
 
 	// All of our cheating for radars and power go here.
@@ -659,10 +665,10 @@ protected:
 	virtual Object *asObjectMeth() { return this; }
 	virtual const Object *asObjectMeth() const { return this; }
 
-	virtual Real calculateHeightAboveTerrain(void) const;		// Calculates the actual height above terrain.  Doesn't use cache.
+	virtual Real calculateHeightAboveTerrain() const;		// Calculates the actual height above terrain.  Doesn't use cache.
 
-	void updateTriggerAreaFlags(void);
-	void setTriggerAreaFlagsForChangeInPosition(void);
+	void updateTriggerAreaFlags();
+	void setTriggerAreaFlagsForChangeInPosition();
 
 	/// Look and unlook are protected.  They should be called from Object::reasonToLook.  Like Capture, or death.
 	void look();
@@ -704,20 +710,20 @@ private:
 	GeometryInfo	m_geometryInfo;
 
 #if RETAIL_COMPATIBLE_AIGROUP
-	AIGroup*			m_group;								///< if non-NULL, we are part of this group of agents
+	AIGroup*			m_group;								///< if non-null, we are part of this group of agents
 #else
-	RefCountPtr<AIGroup> m_group; ///< if non-NULL, we are part of this group of agents
+	RefCountPtr<AIGroup> m_group; ///< if non-null, we are part of this group of agents
 #endif
 
 	// These will last for my lifetime.  I will reuse them and reset them.  The truly dynamic ones are in PartitionManager
 	SightingInfo		*m_partitionLastLook;								///< Where and for whom I last looked, so I can undo its effects when I stop
-	SightingInfo		*m_partitionRevealAllLastLook;			///< And a seperate look to reveal at a different range if so marked
+	SightingInfo		*m_partitionRevealAllLastLook;			///< And a separate look to reveal at a different range if so marked
 	Int							m_visionSpiedBy[MAX_PLAYER_COUNT];  ///< Reference count of having units spied on by players.
 	PlayerMaskType	m_visionSpiedMask;									///< For quick lookup and edge triggered maintenance
 
 	SightingInfo	*m_partitionLastShroud;	///< Where and for whom I last shrouded, so I can undo its effects when I stop
-	SightingInfo	*m_partitionLastThreat;	///< Where and for whom I last delt with threat, so I can undo its effects when I stop
-	SightingInfo	*m_partitionLastValue;	///< Where and for whom I last delt with value, so I can undo its effects when I stop
+	SightingInfo	*m_partitionLastThreat;	///< Where and for whom I last dealt with threat, so I can undo its effects when I stop
+	SightingInfo	*m_partitionLastValue;	///< Where and for whom I last dealt with value, so I can undo its effects when I stop
 
 	Real					m_visionRange;										///< looking range
 	Real					m_shroudClearingRange;						///< looking range for shroud ONLY
@@ -812,7 +818,7 @@ private:
 	Bool													m_singleUseCommandUsed;
 	Bool													m_isReceivingDifficultyBonus;
 
-};  // end class Object
+};
 
 // deleteInstance is not meant to be used with Object in order to require the use of TheGameLogic->destroyObject()
 void deleteInstance(Object* object) CPP_11(= delete);
@@ -829,5 +835,3 @@ AsciiString DebugDescribeObject(const Object *obj);
 #ifdef DEBUG_OBJECT_ID_EXISTS
 extern ObjectID TheObjectIDToDebug;
 #endif
-
-#endif // _OBJECT_H_

@@ -37,12 +37,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-
-#ifndef DX8CAPS_H
-#define DX8CAPS_H
 
 #include "always.h"
 #include "ww3dformat.h"
@@ -69,7 +64,10 @@ public:
 		VENDOR_3DFX,
 		VENDOR_3DLABS,
 		VENDOR_CIRRUSLOGIC,
-		VENDOR_RENDITION
+		VENDOR_RENDITION,
+		VENDOR_VMWARE,
+
+		VENDOR_COUNT
 	};
 
 	enum DeviceTypeATI {
@@ -209,7 +207,7 @@ public:
 
 	DX8Caps(IDirect3D8* direct3d, const D3DCAPS8& caps,WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
 	DX8Caps(IDirect3D8* direct3d, IDirect3DDevice8* D3DDevice,WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
-	static void Shutdown(void);
+	static void Shutdown();
 
 	void Compute_Caps(WW3DFormat display_format, const D3DADAPTER_IDENTIFIER8& adapter_id);
 	bool Support_TnL() const { return SupportTnL; };
@@ -317,6 +315,3 @@ private:
 	StringClass CapsLog;
 	StringClass CompactLog;
 };
-
-
-#endif

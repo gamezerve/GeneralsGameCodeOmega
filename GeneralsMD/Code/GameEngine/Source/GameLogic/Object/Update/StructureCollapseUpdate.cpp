@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
@@ -50,15 +50,16 @@ const Int MAX_IDX = 32;
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-static const char *TheStructureCollapsePhaseNames[] =
+static const char *const TheStructureCollapsePhaseNames[] =
 {
 	"INITIAL",
 	"DELAY",
 	"BURST",
 	"FINAL",
 
-	NULL
+	nullptr
 };
+static_assert(ARRAY_SIZE(TheStructureCollapsePhaseNames) == SC_PHASE_COUNT + 1, "Wrong array size");
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -67,17 +68,14 @@ StructureCollapseUpdate::StructureCollapseUpdate( Thing *thing, const ModuleData
 	m_collapseFrame = 0;
 	m_collapseState = COLLAPSESTATE_STANDING;
 	m_collapseVelocity = 0.0f;
-	//Added By Sadullah Nader
-	//Initialization(s) inserted
 	m_burstFrame = 0;
 	m_currentHeight = 0.0f;
-	//
 	setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-StructureCollapseUpdate::~StructureCollapseUpdate( void )
+StructureCollapseUpdate::~StructureCollapseUpdate()
 {
 }
 
@@ -86,7 +84,7 @@ static void parseFX( INI* ini, void *instance, void * /*store*/, const void* /*u
 {
 	StructureCollapseUpdateModuleData* self = (StructureCollapseUpdateModuleData*)instance;
 	StructureCollapsePhaseType scphase = (StructureCollapsePhaseType)INI::scanIndexList(ini->getNextToken(), TheStructureCollapsePhaseNames);
-	for (const char* token = ini->getNextToken(); token != NULL; token = ini->getNextTokenOrNull())
+	for (const char* token = ini->getNextToken(); token != nullptr; token = ini->getNextTokenOrNull())
 	{
 		const FXList *fxl = TheFXListStore->findFXList((token));	// could be null! this is OK!
 		self->m_fxs[scphase].push_back(fxl);
@@ -98,7 +96,7 @@ static void parseOCL( INI* ini, void *instance, void * /*store*/, const void* /*
 {
 	StructureCollapseUpdateModuleData* self = (StructureCollapseUpdateModuleData*)instance;
 	StructureCollapsePhaseType stphase = (StructureCollapsePhaseType)INI::scanIndexList(ini->getNextToken(), TheStructureCollapsePhaseNames);
-	for (const char* token = ini->getNextToken(); token != NULL; token = ini->getNextTokenOrNull())
+	for (const char* token = ini->getNextToken(); token != nullptr; token = ini->getNextTokenOrNull())
 	{
 		const ObjectCreationList *ocl = TheObjectCreationListStore->findObjectCreationList(token);	// could be null! this is OK!
 		self->m_ocls[stphase].push_back(ocl);
@@ -112,16 +110,16 @@ static void parseOCL( INI* ini, void *instance, void * /*store*/, const void* /*
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "MinCollapseDelay",						INI::parseDurationUnsignedInt,		NULL, offsetof( StructureCollapseUpdateModuleData, m_minCollapseDelay ) },
-		{ "MaxCollapseDelay",						INI::parseDurationUnsignedInt,		NULL, offsetof( StructureCollapseUpdateModuleData, m_maxCollapseDelay ) },
-		{ "MinBurstDelay",							INI::parseDurationUnsignedInt,		NULL, offsetof( StructureCollapseUpdateModuleData, m_minBurstDelay ) },
-		{ "MaxBurstDelay",							INI::parseDurationUnsignedInt,		NULL, offsetof( StructureCollapseUpdateModuleData, m_maxBurstDelay ) },
-		{ "CollapseDamping",						INI::parseReal,										NULL, offsetof( StructureCollapseUpdateModuleData, m_collapseDamping ) },
-		{ "MaxShudder",									INI::parseReal,										NULL, offsetof( StructureCollapseUpdateModuleData, m_maxShudder ) },
-		{ "BigBurstFrequency",					INI::parseInt,										NULL, offsetof( StructureCollapseUpdateModuleData, m_bigBurstFrequency ) },
-		{ "OCL",												parseOCL,													NULL, 0 },
-		{ "FXList",											parseFX,													NULL, 0 },
-		{ 0, 0, 0, 0 }
+		{ "MinCollapseDelay",						INI::parseDurationUnsignedInt,		nullptr, offsetof( StructureCollapseUpdateModuleData, m_minCollapseDelay ) },
+		{ "MaxCollapseDelay",						INI::parseDurationUnsignedInt,		nullptr, offsetof( StructureCollapseUpdateModuleData, m_maxCollapseDelay ) },
+		{ "MinBurstDelay",							INI::parseDurationUnsignedInt,		nullptr, offsetof( StructureCollapseUpdateModuleData, m_minBurstDelay ) },
+		{ "MaxBurstDelay",							INI::parseDurationUnsignedInt,		nullptr, offsetof( StructureCollapseUpdateModuleData, m_maxBurstDelay ) },
+		{ "CollapseDamping",						INI::parseReal,										nullptr, offsetof( StructureCollapseUpdateModuleData, m_collapseDamping ) },
+		{ "MaxShudder",									INI::parseReal,										nullptr, offsetof( StructureCollapseUpdateModuleData, m_maxShudder ) },
+		{ "BigBurstFrequency",					INI::parseInt,										nullptr, offsetof( StructureCollapseUpdateModuleData, m_bigBurstFrequency ) },
+		{ "OCL",												parseOCL,													nullptr, 0 },
+		{ "FXList",											parseFX,													nullptr, 0 },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 	p.add(DieMuxData::getFieldParse(), offsetof( StructureCollapseUpdateModuleData, m_dieMuxData ));
@@ -167,7 +165,7 @@ void StructureCollapseUpdate::onDie( const DamageInfo *damageInfo )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime StructureCollapseUpdate::update( void )
+UpdateSleepTime StructureCollapseUpdate::update()
 {
 	static const Real COLLAPSE_ACCELERATION_FACTOR = 0.02f;
 	const StructureCollapseUpdateModuleData *d = getStructureCollapseUpdateModuleData();
@@ -335,7 +333,7 @@ void StructureCollapseUpdate::doPhaseStuff(StructureCollapsePhaseType scphase, c
 			const OCLVec& v = d->m_ocls[scphase];
 			DEBUG_ASSERTCRASH(idx>=0&&idx<v.size(),("bad idx"));
 			const ObjectCreationList* ocl = v[idx];
-			ObjectCreationList::create(ocl, getObject(), target, NULL, getObject()->getOrientation() );
+			ObjectCreationList::create(ocl, getObject(), target, nullptr, getObject()->getOrientation() );
 		}
 	}
 }
@@ -346,7 +344,7 @@ void StructureCollapseUpdate::doCollapseDoneStuff()
 {
 	static NameKeyType key_BoneFXUpdate = NAMEKEY("BoneFXUpdate");
 	BoneFXUpdate *bfxu = (BoneFXUpdate *)getObject()->findUpdateModule(key_BoneFXUpdate);
-	if (bfxu != NULL)
+	if (bfxu != nullptr)
 	{
 		bfxu->stopAllBoneFX();
 	}
@@ -361,7 +359,7 @@ void StructureCollapseUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -394,15 +392,15 @@ void StructureCollapseUpdate::xfer( Xfer *xfer )
 	// current height
 	xfer->xferReal( &m_currentHeight );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void StructureCollapseUpdate::loadPostProcess( void )
+void StructureCollapseUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

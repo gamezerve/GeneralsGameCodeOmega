@@ -16,9 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#ifndef SIMPLEPLAYER_H
-#define SIMPLEPLAYER_H
+#pragma once
 
 #include "wmsdk.h"
 
@@ -90,7 +88,7 @@ protected:
                           DWORD dwParam2 );
 
     HRESULT AddWaveHeader( LPWAVEHDR pwh );
-    void    RemoveWaveHeaders( void );
+    void    RemoveWaveHeaders();
 
     CRITICAL_SECTION    m_CriSec;
     WAVEHDR_LIST       *m_whdrHead;
@@ -119,5 +117,3 @@ protected:
     LPWSTR  m_pszUrl;
 
 };
-
-#endif // SIMPLEPLAYER_H

@@ -160,12 +160,12 @@ static LRESULT CALLBACK checkBoxPropertiesCallback( HWND hWndDialog,
 						GadgetCheckBoxSetHiliteCheckedBoxColor( window, info->color );
 						GadgetCheckBoxSetHiliteCheckedBoxBorderColor( window, info->borderColor );
 
-					}  // end if
+					}
 
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end OK
+				}
 
 				// --------------------------------------------------------------------
         case IDCANCEL:
@@ -174,13 +174,13 @@ static LRESULT CALLBACK checkBoxPropertiesCallback( HWND hWndDialog,
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end cancel
+				}
 
-      }  // end switch( LOWORD( wParam ) )
+      }
 
       return 0;
 
-    } // end of WM_COMMAND
+    }
 
 		// ------------------------------------------------------------------------
     case WM_CLOSE:
@@ -189,15 +189,15 @@ static LRESULT CALLBACK checkBoxPropertiesCallback( HWND hWndDialog,
       DestroyWindow( hWndDialog );
       return 0;
 
-		}  // end close
+		}
 
 		// ------------------------------------------------------------------------
 		default:
 			return 0;
 
-  }  // end of switch
+  }
 
-}  // end checkBoxPropertiesCallback
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
@@ -215,8 +215,8 @@ HWND InitCheckBoxPropertiesDialog( GameWindow *window )
 												 (LPCTSTR)CHECK_BOX_PROPERTIES_DIALOG,
 												 TheEditor->getWindowHandle(),
 												 (DLGPROC)checkBoxPropertiesCallback );
-	if( dialog == NULL )
-		return NULL;
+	if( dialog == nullptr )
+		return nullptr;
 
 	// do the common initialization
 	CommonDialogInitialize( window, dialog );
@@ -284,7 +284,7 @@ HWND InitCheckBoxPropertiesDialog( GameWindow *window )
 
 	return dialog;
 
-}  // end InitCheckBoxPropertiesDialog
+}
 
 
 

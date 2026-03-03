@@ -38,8 +38,6 @@
 /*---------------------------------------------------------------------------*/
 
 #pragma once
-#ifndef _H_AIGUARD_
-#define _H_AIGUARD_
 
 // INCLUDES ///////////////////////////////////////////////////////////////////
 #include "Common/GameMemory.h"
@@ -80,8 +78,6 @@ public:
 
 	ExitConditions() : m_attackGiveUpFrame(0), m_conditionsToConsider(0), m_radiusSqr(0.0f)
 	{
-		//Added By Sadullah Nader
-		// Initializations missing and needed
 		m_center.zero();
 	}
 
@@ -115,13 +111,13 @@ public:
 	 * used by this machine.
 	 */
 	AIGuardMachine( Object *owner );
-	Object* findTargetToGuardByID( void ) { return TheGameLogic->findObjectByID(m_targetToGuard); }
+	Object* findTargetToGuardByID() { return TheGameLogic->findObjectByID(m_targetToGuard); }
 	void setTargetToGuard( const Object *object ) { m_targetToGuard = object ? object->getID() : INVALID_ID; }
 
-	const Coord3D *getPositionToGuard( void ) const { return &m_positionToGuard; }
+	const Coord3D *getPositionToGuard() const { return &m_positionToGuard; }
 	void setTargetPositionToGuard( const Coord3D *pos) { m_positionToGuard = *pos; }
 
-	const PolygonTrigger *getAreaToGuard( void ) const { return m_areaToGuard; }
+	const PolygonTrigger *getAreaToGuard() const { return m_areaToGuard; }
 	void setAreaToGuard( const PolygonTrigger *area) { m_areaToGuard = area; }
 
 	void setNemesisID(ObjectID id) { m_nemesisToAttack = id; }
@@ -130,7 +126,7 @@ public:
 	GuardMode getGuardMode() const { return m_guardMode; }
 	void setGuardMode(GuardMode guardMode) { m_guardMode = guardMode; }
 
-	Bool lookForInnerTarget(void);
+	Bool lookForInnerTarget();
 
 	static Real getStdGuardRange(const Object* obj);
 };
@@ -142,10 +138,10 @@ class AIGuardInnerState : public State
 public:
 	AIGuardInnerState( StateMachine *machine ) : State( machine, "AIGuardInner" )
 	{
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -165,8 +161,8 @@ class AIGuardIdleState : public State
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardIdleState, "AIGuardIdleState")
 public:
 	AIGuardIdleState( StateMachine *machine ) : State( machine, "AIGuardIdleState" ) { }
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -188,10 +184,10 @@ class AIGuardOuterState : public State
 public:
 	AIGuardOuterState( StateMachine *machine ) : State( machine, "AIGuardOuter" )
 	{
-		m_attackState = NULL;
+		m_attackState = nullptr;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -216,8 +212,8 @@ public:
 	{
 		m_nextReturnScanTime = 0;
 	}
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -236,8 +232,8 @@ class AIGuardPickUpCrateState : public AIPickUpCrateState
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardPickUpCrateState, "AIGuardPickUpCrateState")
 public:
 	AIGuardPickUpCrateState( StateMachine *machine );
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 };
 EMPTY_DTOR(AIGuardPickUpCrateState)
@@ -248,8 +244,8 @@ class AIGuardAttackAggressorState : public State
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardAttackAggressorState, "AIGuardAttackAggressorState")
 public:
 	AIGuardAttackAggressorState( StateMachine *machine );
-	virtual StateReturnType onEnter( void );
-	virtual StateReturnType update( void );
+	virtual StateReturnType onEnter();
+	virtual StateReturnType update();
 	virtual void onExit( StateExitType status );
 protected:
 	// snapshot interface
@@ -263,5 +259,3 @@ private:
 };
 
 //--------------------------------------------------------------------------------------
-
-#endif /* _H_AIGUARD_ */

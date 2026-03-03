@@ -46,7 +46,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/MessageStream.h"
@@ -141,11 +141,11 @@ static GameWindowMessage rawMouseToWindowMessage( const GameMessage *msg )
 				gwm = GWM_WHEEL_DOWN;
 			break;
 
-	}  // end switch
+	}
 
 	return gwm;
 
-}  // end rawMouseToWindowMessage
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ WindowTranslator::~WindowTranslator()
 
 // WindowTranslator ===========================================================
 /** Window translator that monitors raw input messages on the stream and
-	* acts on anything relavant to the windowing system */
+	* acts on anything relevant to the windowing system */
 //=============================================================================
 GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage *msg)
 {
@@ -203,7 +203,7 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 			ICoord2D mousePos = TheMouse->getMouseStatus()->pos;
 
 			if( TheWindowManager )
-				TheWindowManager->winProcessMouseEvent( GWM_NONE, &mousePos, NULL );
+				TheWindowManager->winProcessMouseEvent( GWM_NONE, &mousePos, nullptr );
 
 			// Force it to keep the message, regardless of what the window thinks it did with the input.
 			return KEEP_MESSAGE;
@@ -239,7 +239,7 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 			// process the mouse event position
 			GameWindowMessage gwm = rawMouseToWindowMessage( msg );
 			if( TheWindowManager )
-				returnCode = TheWindowManager->winProcessMouseEvent( gwm, &mousePos, NULL );
+				returnCode = TheWindowManager->winProcessMouseEvent( gwm, &mousePos, nullptr );
 
 			if( TheShell && TheShell->isShellActive() )
 				returnCode = WIN_INPUT_USED;
@@ -249,7 +249,7 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 
 			break;
 
-		}  // end, raw mouse position
+		}
 
 		// ------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_LEFT_DRAG:
@@ -275,7 +275,7 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 
 			break;
 
-		}  // end drag mouse
+		}
 
 		// ------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_WHEEL:
@@ -300,7 +300,7 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 
 			break;
 
-		}  // end mouse wheel
+		}
 
 		// ------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_KEY_DOWN:
@@ -336,13 +336,13 @@ GameMessageDisposition WindowTranslator::translateGameMessage(const GameMessage 
 
 			break;
 
-		}  // end key messages
+		}
 
 		// ------------------------------------------------------------------------
 		default:
 			break;
 
-	}  // end switch( msg->getType() )
+	}
 
 	// remove event from the stream if the return code specifies to do so
 	// If TheShell doesn't exist, then well, we're not in RTS, we're in GUIEdit

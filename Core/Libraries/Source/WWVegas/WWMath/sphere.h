@@ -48,13 +48,7 @@
  *   operator * -- Transform a sphere                                                          *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef SPHERE_H
-#define SPHERE_H
 
 #include "always.h"
 #include "vector3.h"
@@ -71,9 +65,9 @@
 class SphereClass
 {
 public:
-	inline SphereClass(void) { };
-	inline SphereClass(const Vector3 & center,float radius) { Init(center,radius); }
-	inline SphereClass(const Matrix3D& mtx,const Vector3 & center,float radius) { Init(mtx,center,radius); }
+	SphereClass() { };
+	SphereClass(const Vector3 & center,float radius) { Init(center,radius); }
+	SphereClass(const Matrix3D& mtx,const Vector3 & center,float radius) { Init(mtx,center,radius); }
 	inline SphereClass(const Vector3 & center,const SphereClass & s0);
 	inline SphereClass(const Vector3 *Position, const int VertCount);
 
@@ -82,7 +76,7 @@ public:
 	inline void Re_Center(const Vector3 & center);
 	inline void Add_Sphere(const SphereClass & s);
 	inline void Transform(const Matrix3D & tm);
-	inline float Volume(void) const;
+	inline float Volume() const;
 
 	inline SphereClass & operator += (const SphereClass & s);
 	inline SphereClass & operator *= (const Matrix3D & m);
@@ -374,7 +368,7 @@ inline void SphereClass::Transform(const Matrix3D & tm)
  * HISTORY:                                                                                    *
  *   3/22/99    GTH : Created.                                                                 *
  *=============================================================================================*/
-inline float SphereClass::Volume(void) const
+inline float SphereClass::Volume() const
 {
 	return (4.0 / 3.0) * WWMATH_PI * (Radius * Radius * Radius);
 }
@@ -545,8 +539,3 @@ inline SphereClass operator * (const Matrix3D & m, const SphereClass & s)
 {
 	return Transform_Sphere(m,s);
 }
-
-
-
-#endif
-

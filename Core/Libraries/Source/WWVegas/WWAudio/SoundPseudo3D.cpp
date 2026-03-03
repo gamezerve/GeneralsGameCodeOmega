@@ -55,7 +55,7 @@ SimplePersistFactoryClass<SoundPseudo3DClass, CHUNKID_PSEUDO_SOUND3D> _PseudoSou
 //	SoundPseudo3DClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-SoundPseudo3DClass::SoundPseudo3DClass (void)
+SoundPseudo3DClass::SoundPseudo3DClass ()
 {
 	return ;
 }
@@ -79,7 +79,7 @@ SoundPseudo3DClass::SoundPseudo3DClass (const SoundPseudo3DClass &src)
 //	~SoundPseudo3DClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-SoundPseudo3DClass::~SoundPseudo3DClass (void)
+SoundPseudo3DClass::~SoundPseudo3DClass ()
 {
 	Free_Miles_Handle ();
 	return ;
@@ -119,7 +119,7 @@ SoundPseudo3DClass::Set_Miles_Handle (MILES_HANDLE handle)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-SoundPseudo3DClass::Initialize_Miles_Handle (void)
+SoundPseudo3DClass::Initialize_Miles_Handle ()
 {
 	AudibleSoundClass::Initialize_Miles_Handle ();
 	Update_Pseudo_Volume ();
@@ -140,7 +140,7 @@ SoundPseudo3DClass::Update_Pseudo_Volume (float distance)
 	//
 	// Only do this if the sound is really playing
 	//
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		float volume_mod = Determine_Real_Volume ();
 		float max_distance = Get_DropOff_Radius ();
@@ -174,12 +174,12 @@ SoundPseudo3DClass::Update_Pseudo_Volume (float distance)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-SoundPseudo3DClass::Update_Pseudo_Volume (void)
+SoundPseudo3DClass::Update_Pseudo_Volume ()
 {
 	MMSLockClass lock;
 
 	// Only do this if the sound is really playing
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		//
 		// Find the difference in the sound position and its listener's position
@@ -203,14 +203,14 @@ SoundPseudo3DClass::Update_Pseudo_Volume (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-SoundPseudo3DClass::Update_Pseudo_Pan (void)
+SoundPseudo3DClass::Update_Pseudo_Pan ()
 {
 	MMSLockClass lock;
 
 	//
 	// Only do this if the sound is really playing
 	//
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		//
 		//	Transform the sound's position into 'listener-space'
@@ -242,7 +242,7 @@ SoundPseudo3DClass::Update_Pseudo_Pan (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-SoundPseudo3DClass::Allocate_Miles_Handle (void)
+SoundPseudo3DClass::Allocate_Miles_Handle ()
 {
 	AudibleSoundClass::Allocate_Miles_Handle ();
 	return ;
@@ -255,7 +255,7 @@ SoundPseudo3DClass::Allocate_Miles_Handle (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-SoundPseudo3DClass::Free_Miles_Handle (void)
+SoundPseudo3DClass::Free_Miles_Handle ()
 {
 	AudibleSoundClass::Free_Miles_Handle ();
 	return ;
@@ -272,7 +272,7 @@ SoundPseudo3DClass::On_Frame_Update (unsigned int milliseconds)
 {
 	// If necessary, update the volume based on the distance
 	// from the listener
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		Update_Pseudo_Volume ();
 		Update_Pseudo_Pan ();
 	}
@@ -288,7 +288,7 @@ SoundPseudo3DClass::On_Frame_Update (unsigned int milliseconds)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 const PersistFactoryClass &
-SoundPseudo3DClass::Get_Factory (void) const
+SoundPseudo3DClass::Get_Factory () const
 {
 	return _PseudoSound3DPersistFactory;
 }

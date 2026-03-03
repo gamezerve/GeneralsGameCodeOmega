@@ -34,24 +34,11 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
 
-#ifndef COLMATH_H
-#define COLMATH_H
-
-#ifndef ALWAYS_H
 #include "always.h"
-#endif
-
-#ifndef VECTOR3_H
 #include "vector3.h"
-#endif
-
-#ifndef CASTRES_H
 #include "castres.h"
-#endif
 
 class AAPlaneClass;
 class PlaneClass;
@@ -206,8 +193,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	struct ColmathStatsStruct
 	{
-		ColmathStatsStruct(void);
-		void Reset(void);
+		ColmathStatsStruct();
+		void Reset();
 
 		int TotalCollisionCount;
 		int TotalCollisionHitCount;
@@ -228,8 +215,8 @@ public:
 		int CollisionOBBoxOBBoxHitCount;
 	};
 
-	static void									Reset_Stats(void)				{ Stats.Reset(); }
-	static const ColmathStatsStruct &	Get_Current_Stats(void)		{ return Stats; }
+	static void									Reset_Stats()				{ Stats.Reset(); }
+	static const ColmathStatsStruct &	Get_Current_Stats()		{ return Stats; }
 
 private:
 
@@ -308,5 +295,3 @@ inline CollisionMath::OverlapType CollisionMath::eval_overlap_collision(const Ca
 #define TRACK_COLLISION_OBBOX_OBBOX
 #define TRACK_COLLISION_OBBOX_OBBOX_HIT
 #endif
-
-#endif // COLMATH_H

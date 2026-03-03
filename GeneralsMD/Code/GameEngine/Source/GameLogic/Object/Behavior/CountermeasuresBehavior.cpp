@@ -30,7 +30,7 @@
 
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
@@ -97,7 +97,7 @@ CountermeasuresBehavior::CountermeasuresBehavior( Thing *thing, const ModuleData
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-CountermeasuresBehavior::~CountermeasuresBehavior( void )
+CountermeasuresBehavior::~CountermeasuresBehavior()
 {
 }
 
@@ -121,10 +121,10 @@ void CountermeasuresBehavior::reportMissileForCountermeasures( Object *missile )
 		if( GameLogicRandomValueReal( 0.0f, 1.0f ) < data->m_evasionRate )
 		{
 			//This missile will be diverted!
-			ProjectileUpdateInterface* pui = NULL;
+			ProjectileUpdateInterface* pui = nullptr;
 			for( BehaviorModule** u = missile->getBehaviorModules(); *u; ++u )
 			{
-				if( (pui = (*u)->getProjectileUpdateInterface()) != NULL )
+				if( (pui = (*u)->getProjectileUpdateInterface()) != nullptr )
 				{
 					//Make sure the missile diverts after a delay. The delay needs to be larger than
 					//the countermeasure reaction time or else the missile won't have a countermeasure to divert to!
@@ -157,7 +157,7 @@ ObjectID CountermeasuresBehavior::calculateCountermeasureToDivertTo( const Objec
 	// This can slightly change behavior but does not significantly impact the overall survivability of the aircraft
 
 	Real closestFlareDist = 1e15f;
-	Object *closestFlare = NULL;
+	Object *closestFlare = nullptr;
 
 	const int volleySize = data->m_volleySize;
 	int volleyFlaresCounted = 0;
@@ -203,7 +203,7 @@ Bool CountermeasuresBehavior::isActive() const
 //-------------------------------------------------------------------------------------------------
 /** The update callback. */
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime CountermeasuresBehavior::update( void )
+UpdateSleepTime CountermeasuresBehavior::update()
 {
 	UnsignedInt now = TheGameLogic->getFrame();
 	const CountermeasuresBehaviorModuleData *data = getCountermeasuresBehaviorModuleData();
@@ -303,7 +303,7 @@ void CountermeasuresBehavior::launchVolley()
 		//Each flare in a volley will calculate a different vector to fly out. We have a +/- angle to
 		//spread out equally. With only one flare, it'll come straight out the back. Two flares will
 		//launch at the extreme positive and negative angle. Three flares will launch at extreme angles
-		//plus straight back. Four or more will divy it up equally.
+		//plus straight back. Four or more will divvy it up equally.
 		Real currentVolley = (Real)i;
 		Real ratio = 0.0f;
 		if( volleySize != 1.0f )
@@ -365,7 +365,7 @@ void CountermeasuresBehavior::crc( Xfer *xfer )
 	// extend base class
 	UpgradeMux::upgradeMuxCRC( xfer );
 
-}  // end crc
+}
 
 //------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -397,12 +397,12 @@ void CountermeasuresBehavior::xfer( Xfer *xfer )
 		xfer->xferUnsignedInt( &m_nextVolleyFrame );
 	}
 
-}  // end xfer
+}
 
 //------------------------------------------------------------------------------------------------
 /** Load post process */
 //------------------------------------------------------------------------------------------------
-void CountermeasuresBehavior::loadPostProcess( void )
+void CountermeasuresBehavior::loadPostProcess()
 {
 
 	// extend base class
@@ -411,6 +411,6 @@ void CountermeasuresBehavior::loadPostProcess( void )
 	// extend base class
 	UpgradeMux::upgradeMuxLoadPostProcess();
 
-}  // end loadPostProcess
+}
 
 

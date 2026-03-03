@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -45,7 +45,7 @@ void SpyVisionUpdateModuleData::buildFieldParse(MultiIniFieldParse& p)
   UpdateModuleData::buildFieldParse(p);
 	static const FieldParse dataFieldParse[] =
 	{
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
@@ -60,7 +60,7 @@ SpyVisionUpdate::SpyVisionUpdate( Thing *thing, const ModuleData* moduleData ) :
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-SpyVisionUpdate::~SpyVisionUpdate( void )
+SpyVisionUpdate::~SpyVisionUpdate()
 {
 }
 
@@ -78,7 +78,7 @@ void SpyVisionUpdate::activateSpyVision( UnsignedInt duration )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-UpdateSleepTime SpyVisionUpdate::update( void )
+UpdateSleepTime SpyVisionUpdate::update()
 {
 	if( m_deactivateFrame && (m_deactivateFrame <= TheGameLogic->getFrame()) )
 	{
@@ -94,7 +94,7 @@ UpdateSleepTime SpyVisionUpdate::update( void )
 void SpyVisionUpdate::doActivationWork( Bool setting )
 {
 	Player *ourPlayer = getObject()->getControllingPlayer();
-	if( ourPlayer == NULL  ||  ThePlayerList == NULL )
+	if( ourPlayer == nullptr  ||  ThePlayerList == nullptr )
 		return;
 
 	for (Int i=0; i < ThePlayerList->getPlayerCount(); ++i)
@@ -107,7 +107,7 @@ void SpyVisionUpdate::doActivationWork( Bool setting )
 	}
 }
 
-void SpyVisionUpdate::onDelete( void )
+void SpyVisionUpdate::onDelete()
 {
 	// If I was left on at the time of death, then turn me off.
 	if( m_deactivateFrame )
@@ -123,7 +123,7 @@ void SpyVisionUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -144,15 +144,15 @@ void SpyVisionUpdate::xfer( Xfer *xfer )
 	// deactivate frame
 	xfer->xferUnsignedInt( &m_deactivateFrame );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SpyVisionUpdate::loadPostProcess( void )
+void SpyVisionUpdate::loadPostProcess()
 {
 
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

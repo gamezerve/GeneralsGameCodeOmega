@@ -120,7 +120,7 @@ char CPUDetectClass::ProcessorString[48];
 
 const char* CPUDetectClass::Get_Processor_Manufacturer_Name()
 {
-	static const char* ManufacturerNames[] = {
+	static const char* const ManufacturerNames[] = {
 		"<Unknown>",
 		"Intel",
 		"UMC",
@@ -131,6 +131,7 @@ const char* CPUDetectClass::Get_Processor_Manufacturer_Name()
 		"Rise",
 		"Transmeta"
 	};
+	static_assert(ARRAY_SIZE(ManufacturerNames) == MANUFACTURER_COUNT, "Incorrect array size");
 
 	return ManufacturerNames[ProcessorManufacturer];
 }
@@ -801,7 +802,7 @@ void CPUDetectClass::Init_Processor_String()
 			case INTEL_PROCESSOR_PENTIUM4:						str+="Pentium4"; break;
 			}
 		}
-		strncpy(ProcessorString,str.str(),sizeof(ProcessorString));
+		strlcpy(ProcessorString,str.str(),sizeof(ProcessorString));
 	}
 
 }
@@ -941,7 +942,7 @@ void CPUDetectClass::Init_OS()
    OSVersionExtraInfo   = os.szCSDVersion;
 #else
 	typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-    HMODULE ntdll = LoadLibraryExA("ntdll", NULL, 0);
+    HMODULE ntdll = LoadLibraryExA("ntdll", nullptr, 0);
     if (ntdll != nullptr) {
         RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)::GetProcAddress(ntdll, "RtlGetVersion");
 
@@ -1103,7 +1104,7 @@ void CPUDetectClass::Init_Compact_Log()
    GetTimeZoneInformation(&time_zone);
    COMPACTLOG(("%d\t", time_zone.Bias));  // get diff between local time and UTC
 #elif defined(_UNIX)
-   time_t t = time(NULL);
+   time_t t = time(nullptr);
    localtime(&t);
    COMPACTLOG(("%d\t", timezone));
 #endif
@@ -1112,7 +1113,7 @@ void CPUDetectClass::Init_Compact_Log()
 	Get_OS_Info(os_info,OSVersionPlatformId,OSVersionNumberMajor,OSVersionNumberMinor,OSVersionBuildNumber);
 	COMPACTLOG(("%s\t",os_info.Code));
 
-	if (!stricmp(os_info.SubCode,"UNKNOWN")) {
+	if (stricmp(os_info.SubCode,"UNKNOWN") == 0) {
 		COMPACTLOG(("%d\t",OSVersionBuildNumber&0xffff));
 	}
 	else {

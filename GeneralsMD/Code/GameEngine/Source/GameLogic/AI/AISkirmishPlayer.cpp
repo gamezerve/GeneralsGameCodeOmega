@@ -26,7 +26,7 @@
 // Computerized opponent
 // Author: Michael S. Booth, January 2002
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
 #include "Common/GameMemory.h"
@@ -75,7 +75,7 @@ m_curLeftFlankRightDefenseAngle(0),
 m_curRightFlankLeftDefenseAngle(0),
 m_curRightFlankRightDefenseAngle(0),
 m_frameToCheckEnemy(0),
-m_currentEnemy(NULL)
+m_currentEnemy(nullptr)
 
 {
 	m_frameLastBuildingBuilt = TheGameLogic->getFrame();
@@ -91,7 +91,7 @@ AISkirmishPlayer::~AISkirmishPlayer()
 /**
  * Build our base.
  */
-void AISkirmishPlayer::processBaseBuilding( void )
+void AISkirmishPlayer::processBaseBuilding()
 {
 	//
 	// Refresh base buildings. Scan through list, if a building is missing,
@@ -99,12 +99,12 @@ void AISkirmishPlayer::processBaseBuilding( void )
 	//
 	if (m_readyToBuildStructure)
 	{
-		const ThingTemplate *bldgPlan=NULL;
-		BuildListInfo	*bldgInfo = NULL;
+		const ThingTemplate *bldgPlan=nullptr;
+		BuildListInfo	*bldgInfo = nullptr;
 		Bool isPriority = false;
-		Object *bldg = NULL;
-		const ThingTemplate *powerPlan=NULL;
-		BuildListInfo	*powerInfo = NULL;
+		Object *bldg = nullptr;
+		const ThingTemplate *powerPlan=nullptr;
+		BuildListInfo	*powerInfo = nullptr;
 		Bool isUnderPowered = !m_player->getEnergy()->hasSufficientPower();
 		Bool powerUnderConstruction = false;
 		for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
@@ -121,7 +121,7 @@ void AISkirmishPlayer::processBaseBuilding( void )
 			if (info->getObjectID() != INVALID_ID) {
 				// used to have a building.
 				Object *bldg = TheGameLogic->findObjectByID( info->getObjectID() );
-				if (bldg==NULL) {
+				if (bldg==nullptr) {
 					// got destroyed.
 					ObjectID priorID;
 					priorID = info->getObjectID();
@@ -155,15 +155,15 @@ void AISkirmishPlayer::processBaseBuilding( void )
 
               if (myDozer && ( myDozer->getControllingPlayer() != m_player || myDozer->isDisabledByType( DISABLED_UNMANNED ) ) )
               {//I don't expect this dozer to work well with me.
-                myDozer = NULL;
-                bldg->setBuilder( NULL );
+                myDozer = nullptr;
+                bldg->setBuilder( nullptr );
               }
 
-							if (myDozer==NULL) {
+							if (myDozer==nullptr) {
 								DEBUG_LOG(("AI's Dozer got killed (or captured).  Find another dozer."));
 								queueDozer();
  								myDozer = findDozer(bldg->getPosition());
-								if (myDozer==NULL || myDozer->getAI()==NULL) {
+								if (myDozer==nullptr || myDozer->getAI()==nullptr) {
 									continue;
 								}
 								myDozer->getAI()->aiResumeConstruction(bldg, CMD_FROM_AI);
@@ -205,7 +205,7 @@ void AISkirmishPlayer::processBaseBuilding( void )
 				}
 			}
 			if (curPlan->isKindOf(KINDOF_FS_POWER)) {
-				if (powerPlan==NULL && !curPlan->isKindOf(KINDOF_CASH_GENERATOR)) {
+				if (powerPlan==nullptr && !curPlan->isKindOf(KINDOF_CASH_GENERATOR)) {
 					if (isUnderPowered || info->isAutomaticBuild()) {
 						powerPlan = curPlan;
 						powerInfo = info;
@@ -216,7 +216,7 @@ void AISkirmishPlayer::processBaseBuilding( void )
 				continue; // marked to not build automatically.
 			}
 			Object *dozer = findDozer(info->getLocation());
-			if (dozer==NULL) {
+			if (dozer==nullptr) {
 				if (isUnderPowered) {
 					queueDozer();
 				}
@@ -233,7 +233,7 @@ void AISkirmishPlayer::processBaseBuilding( void )
 			// check if this building has any "rebuilds" left
 			if (info->isBuildable())
 			{
-				if (bldgPlan == NULL) {
+				if (bldgPlan == nullptr) {
 					bldgPlan = curPlan;
 					bldgInfo = info;
 				}
@@ -265,10 +265,11 @@ void AISkirmishPlayer::processBaseBuilding( void )
 				}
 				m_frameLastBuildingBuilt = TheGameLogic->getFrame();
 				// only build one building per delay loop
-			} // bldg built
+			}
 
 #else
 			// force delay between rebuilds
+			Int framesToBuild = bldgPlan->calcTimeToBuild(m_player);
 			if (TheGameLogic->getFrame() - m_frameLastBuildingBuilt < framesToBuild)
 			{
 				m_buildDelay = framesToBuild - (TheGameLogic->getFrame() - m_frameLastBuildingBuilt);
@@ -283,12 +284,12 @@ void AISkirmishPlayer::processBaseBuilding( void )
 					m_player->getMoney()->withdraw( cost );
 
 					// inst-construct the building
-					bldg = buildStructureNow(bldgPlan, info, NULL);
+					bldg = buildStructureNow(bldgPlan, bldgInfo);
 					// store the object with the build order
 					if (bldg)
 					{
-						info->setObjectID( bldg->getID() );
-						info->decrementNumRebuilds();
+						bldgInfo->setObjectID( bldg->getID() );
+						bldgInfo->decrementNumRebuilds();
 
 						m_readyToBuildStructure = false;
 						m_structureTimer = TheAI->getAiData()->m_structureSeconds*LOGICFRAMES_PER_SECOND;
@@ -298,11 +299,9 @@ void AISkirmishPlayer::processBaseBuilding( void )
 							m_structureTimer = m_structureTimer/TheAI->getAiData()->m_structuresWealthyMod;
 						}
 						m_frameLastBuildingBuilt = TheGameLogic->getFrame();
-						// only build one building per delay loop
-						break;
-					} // bldg built
-				} // have money
-			} // rebuild delay ok
+					}
+				}
+			}
 #endif
 		}
 	}
@@ -339,7 +338,7 @@ Bool AISkirmishPlayer::startTraining( WorkOrder *order, Bool busyOK, AsciiString
 			}
 			return true;
 		}
-	}  // end if
+	}
 
 	return FALSE;
 
@@ -399,7 +398,7 @@ Bool AISkirmishPlayer::selectTeamToReinforce( Int minPriority )
 /**
  * Determine the next team to build.  Return true if one was selected.
  */
-Bool AISkirmishPlayer::selectTeamToBuild( void )
+Bool AISkirmishPlayer::selectTeamToBuild()
 {
 	return AIPlayer::selectTeamToBuild();
 }
@@ -460,7 +459,7 @@ void AISkirmishPlayer::buildSpecificAIBuilding(const AsciiString &thingName)
 /**
 	Gets the player index of my enemy.
 	*/
-Int AISkirmishPlayer::getMyEnemyPlayerIndex(void) {
+Int AISkirmishPlayer::getMyEnemyPlayerIndex() {
 	Int playerNdx;
 	if (m_currentEnemy) {
 		return m_currentEnemy->getPlayerIndex();
@@ -477,9 +476,9 @@ Int AISkirmishPlayer::getMyEnemyPlayerIndex(void) {
 /**
 	Get the AI's enemy.  Recalc if it has been a while (5 seconds.)
 */
-void AISkirmishPlayer::acquireEnemy(void)
+void AISkirmishPlayer::acquireEnemy()
 {
-	Player *bestEnemy = NULL;
+	Player *bestEnemy = nullptr;
 	Real bestDistanceSqr = HUGE_DIST*HUGE_DIST;
 
 	if (m_currentEnemy) {
@@ -532,7 +531,7 @@ void AISkirmishPlayer::acquireEnemy(void)
 			}
 		}
 	}
-	if (bestEnemy!=NULL && (bestEnemy!=m_currentEnemy)) {
+	if (bestEnemy!=nullptr && (bestEnemy!=m_currentEnemy)) {
 		m_currentEnemy = bestEnemy;
 		AsciiString msg = TheNameKeyGenerator->keyToName(m_player->getPlayerNameKey());
 		msg.concat(" acquiring target enemy player: ");
@@ -546,7 +545,7 @@ void AISkirmishPlayer::acquireEnemy(void)
 /**
 	Get the AI's enemy.  Recalc if it has been a while (20 seconds.)
 */
-Player *AISkirmishPlayer::getAiEnemy(void)
+Player *AISkirmishPlayer::getAiEnemy()
 {
 	if (TheGameLogic->getFrame()>=m_frameToCheckEnemy) {
 		m_frameToCheckEnemy = TheGameLogic->getFrame() + 5*LOGICFRAMES_PER_SECOND;
@@ -599,7 +598,7 @@ void AISkirmishPlayer::buildAIBaseDefense(Bool flank)
 void AISkirmishPlayer::buildAIBaseDefenseStructure(const AsciiString &thingName, Bool flank)
 {
 	const ThingTemplate *tTemplate = TheThingFactory->findTemplate(thingName);
-	if (tTemplate==NULL) {
+	if (tTemplate==nullptr) {
 		DEBUG_CRASH(("Couldn't find base defense structure '%s' for side %s", thingName.str(), m_player->getSide().str()));
 		return;
 	}
@@ -693,7 +692,7 @@ void AISkirmishPlayer::buildAIBaseDefenseStructure(const AsciiString &thingName,
 		Bool canBuild;
 		Real placeAngle = tTemplate->getPlacementViewAngle();
 		canBuild = LBC_OK == TheBuildAssistant->isLocationLegalToBuild(&buildPos, tTemplate, placeAngle,
-			BuildAssistant::TERRAIN_RESTRICTIONS|BuildAssistant::NO_OBJECT_OVERLAP, NULL, m_player);
+			BuildAssistant::TERRAIN_RESTRICTIONS|BuildAssistant::NO_OBJECT_OVERLAP, nullptr, m_player);
 		TheTerrainVisual->removeAllBibs();	// isLocationLegalToBuild adds bib feedback, turn it off.  jba.
 		if (flank) {
 			m_curFlankBaseDefense++;
@@ -778,7 +777,7 @@ void AISkirmishPlayer::recruitSpecificAITeam(TeamPrototype *teamProto, Real recr
 		teamName.concat(" - Recruiting.");
 		TheScriptEngine->AppendDebugMessage(teamName, false);
 		const TCreateUnitsInfo *unitInfo = &teamProto->getTemplateInfo()->m_unitsInfo[0];
-//		WorkOrder *orders = NULL;
+//		WorkOrder *orders = nullptr;
 		Int i;
 		Int unitsRecruited = 0;
 		// Recruit.
@@ -829,7 +828,7 @@ void AISkirmishPlayer::recruitSpecificAITeam(TeamPrototype *teamProto, Real recr
 			// Put in front of queue.
 			prependTo_TeamReadyQueue(team);
 			team->m_priorityBuild = false;
-			team->m_workOrders = NULL;
+			team->m_workOrders = nullptr;
 			team->m_frameStarted = TheGameLogic->getFrame();
 			team->m_team = theTeam;
 			AsciiString teamName = teamProto->getName();
@@ -839,7 +838,7 @@ void AISkirmishPlayer::recruitSpecificAITeam(TeamPrototype *teamProto, Real recr
 			//disband.
 			if (!theTeam->getPrototype()->getIsSingleton()) {
 				deleteInstance(theTeam);
-				theTeam = NULL;
+				theTeam = nullptr;
 			}
 			AsciiString teamName = teamProto->getName();
 			teamName.concat(" - Recruited 0 units, disbanding.");
@@ -854,7 +853,7 @@ void AISkirmishPlayer::recruitSpecificAITeam(TeamPrototype *teamProto, Real recr
 /**
  * Train our teams.
  */
-void AISkirmishPlayer::processTeamBuilding( void )
+void AISkirmishPlayer::processTeamBuilding()
 {
 	// select a new team
 	if (selectTeamToBuild()) {
@@ -866,7 +865,7 @@ void AISkirmishPlayer::processTeamBuilding( void )
 /**
  * See if it's time to build another base building.
  */
-void AISkirmishPlayer::doBaseBuilding( void )
+void AISkirmishPlayer::doBaseBuilding()
 {
 	if (m_player->getCanBuildBase()) {
 		// See if we are ready to start trying a structure.
@@ -899,7 +898,7 @@ void AISkirmishPlayer::doBaseBuilding( void )
 /**
  * See if any ready teams have finished moving to the rally point.
  */
-void AISkirmishPlayer::checkReadyTeams( void )
+void AISkirmishPlayer::checkReadyTeams()
 {
 	AIPlayer::checkReadyTeams();
 }
@@ -908,7 +907,7 @@ void AISkirmishPlayer::checkReadyTeams( void )
 /**
  * See if any queued teams have finished building, or have run out of time.
  */
-void AISkirmishPlayer::checkQueuedTeams( void )
+void AISkirmishPlayer::checkQueuedTeams()
 {
 	AIPlayer::checkQueuedTeams();
 }
@@ -917,7 +916,7 @@ void AISkirmishPlayer::checkQueuedTeams( void )
 /**
  * See if it is time to start another ai team building.
  */
-void AISkirmishPlayer::doTeamBuilding( void )
+void AISkirmishPlayer::doTeamBuilding()
 {
 	// See if any teams are expired.
 	if (m_player->getCanBuildUnits()) {
@@ -951,7 +950,7 @@ void AISkirmishPlayer::doTeamBuilding( void )
 /**
  * Perform computer-controlled player AI
  */
-void AISkirmishPlayer::update( void )
+void AISkirmishPlayer::update()
 {
 	AIPlayer::update();
 }
@@ -1070,7 +1069,7 @@ void AISkirmishPlayer::adjustBuildList(BuildListInfo *list)
  * Find any things that build stuff & add them to the build list.  Then build any initially built
  * buildings.
  */
-void AISkirmishPlayer::newMap( void )
+void AISkirmishPlayer::newMap()
 {
 
 	/* Get our proper build list. */
@@ -1087,7 +1086,7 @@ void AISkirmishPlayer::newMap( void )
 		}
 		build = build->m_next;
 	}
-	DEBUG_ASSERTLOG(build!=NULL, ("Couldn't find build list for skirmish player."));
+	DEBUG_ASSERTLOG(build!=nullptr, ("Couldn't find build list for skirmish player."));
 
 	// Build any with the initially built flag.
 	for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
@@ -1111,7 +1110,7 @@ void AISkirmishPlayer::newMap( void )
 /**
  * Queues up a dozer.
  */
-void AISkirmishPlayer::queueDozer( void )
+void AISkirmishPlayer::queueDozer()
 {
 	AIPlayer::queueDozer();
 }
@@ -1182,7 +1181,7 @@ Bool AISkirmishPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *powe
 void AISkirmishPlayer::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -1224,13 +1223,13 @@ void AISkirmishPlayer::xfer( Xfer *xfer )
 	// right flank right defense angle
 	xfer->xferReal( &m_curRightFlankRightDefenseAngle );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AISkirmishPlayer::loadPostProcess( void )
+void AISkirmishPlayer::loadPostProcess()
 {
 
-}  // end loadPostProcess
+}
 

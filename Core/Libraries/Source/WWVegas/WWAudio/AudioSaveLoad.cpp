@@ -78,7 +78,7 @@ enum
 //
 ///////////////////////////////////////////////////////////////////////
 uint32
-StaticAudioSaveLoadClass::Chunk_ID (void) const
+StaticAudioSaveLoadClass::Chunk_ID () const
 {
 	return CHUNKID_STATIC_SAVELOAD;
 }
@@ -90,7 +90,7 @@ StaticAudioSaveLoadClass::Chunk_ID (void) const
 //
 ///////////////////////////////////////////////////////////////////////
 bool
-StaticAudioSaveLoadClass::Contains_Data (void) const
+StaticAudioSaveLoadClass::Contains_Data () const
 {
 	return true;
 }
@@ -112,7 +112,7 @@ StaticAudioSaveLoadClass::Save (ChunkSaveClass &csave)
 	//	Save the static sounds
 	//
 	SoundSceneClass *scene = WWAudioClass::Get_Instance ()->Get_Sound_Scene ();
-	if (scene != NULL) {
+	if (scene != nullptr) {
 		csave.Begin_Chunk (CHUNKID_STATIC_SCENE);
 			scene->Save_Static (csave);
 		csave.End_Chunk ();
@@ -142,7 +142,7 @@ StaticAudioSaveLoadClass::Load (ChunkLoadClass &cload)
 			case CHUNKID_STATIC_SCENE:
 			{
 				SoundSceneClass *scene = WWAudioClass::Get_Instance ()->Get_Sound_Scene ();
-				if (scene != NULL) {
+				if (scene != nullptr) {
 					scene->Load_Static (cload);
 				}
 			}
@@ -170,7 +170,7 @@ StaticAudioSaveLoadClass::Load (ChunkLoadClass &cload)
 //
 ///////////////////////////////////////////////////////////////////////
 uint32
-DynamicAudioSaveLoadClass::Chunk_ID (void) const
+DynamicAudioSaveLoadClass::Chunk_ID () const
 {
 	return CHUNKID_DYNAMIC_SAVELOAD;
 }
@@ -182,7 +182,7 @@ DynamicAudioSaveLoadClass::Chunk_ID (void) const
 //
 ///////////////////////////////////////////////////////////////////////
 bool
-DynamicAudioSaveLoadClass::Contains_Data (void) const
+DynamicAudioSaveLoadClass::Contains_Data () const
 {
 	return true;
 }
@@ -202,7 +202,7 @@ DynamicAudioSaveLoadClass::Save (ChunkSaveClass &csave)
 	//	Save the static sounds
 	//
 	SoundSceneClass *scene = WWAudioClass::Get_Instance ()->Get_Sound_Scene ();
-	if (scene != NULL) {
+	if (scene != nullptr) {
 
 		csave.Begin_Chunk (CHUNKID_DYNAMIC_VARIABLES);
 			float global_scale = LogicalListenerClass::Get_Global_Scale ();
@@ -261,7 +261,7 @@ DynamicAudioSaveLoadClass::Load (ChunkLoadClass &cload)
 			case CHUNKID_DYNAMIC_SCENE:
 			{
 				SoundSceneClass *scene = WWAudioClass::Get_Instance ()->Get_Sound_Scene ();
-				if (scene != NULL) {
+				if (scene != nullptr) {
 					scene->Load_Dynamic (cload);
 				}
 			}

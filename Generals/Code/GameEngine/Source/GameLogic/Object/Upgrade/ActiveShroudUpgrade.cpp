@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Xfer.h"
 #include "GameLogic/Module/ActiveShroudUpgrade.h"
@@ -36,12 +36,12 @@
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ActiveShroudUpgradeModuleData::ActiveShroudUpgradeModuleData( void )
+ActiveShroudUpgradeModuleData::ActiveShroudUpgradeModuleData()
 {
 
 	m_newShroudRange = 0.0f;
 
-}  // end SpecialPowerModuleData
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -51,12 +51,12 @@ ActiveShroudUpgradeModuleData::ActiveShroudUpgradeModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "NewShroudRange", INI::parseReal, NULL, offsetof( ActiveShroudUpgradeModuleData, m_newShroudRange ) },
-		{ 0, 0, 0, 0 }
+		{ "NewShroudRange", INI::parseReal, nullptr, offsetof( ActiveShroudUpgradeModuleData, m_newShroudRange ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,18 +68,18 @@ ActiveShroudUpgrade::ActiveShroudUpgrade( Thing *thing, const ModuleData* module
 							UpgradeModule( thing, moduleData )
 {
 
-}  // end ActiveShroudUpgrade
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-ActiveShroudUpgrade::~ActiveShroudUpgrade( void )
+ActiveShroudUpgrade::~ActiveShroudUpgrade()
 {
 
-}  // end ~ActiveShroudUpgrade
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void ActiveShroudUpgrade::upgradeImplementation( void )
+void ActiveShroudUpgrade::upgradeImplementation()
 {
 	// Set my object's ability to actively shroud.
 	if( getActiveShroudUpgradeModuleData() )
@@ -87,7 +87,7 @@ void ActiveShroudUpgrade::upgradeImplementation( void )
 		getObject()->setShroudRange( getActiveShroudUpgradeModuleData()->m_newShroudRange );
 		getObject()->handlePartitionCellMaintenance();// To shroud where I am without waiting.
 	}
-}  // end upgradeImplementation
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -98,7 +98,7 @@ void ActiveShroudUpgrade::crc( Xfer *xfer )
 	// extend base class
 	UpgradeModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -116,15 +116,15 @@ void ActiveShroudUpgrade::xfer( Xfer *xfer )
 	// extend base class
 	UpgradeModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ActiveShroudUpgrade::loadPostProcess( void )
+void ActiveShroudUpgrade::loadPostProcess()
 {
 
 	// extend base class
 	UpgradeModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

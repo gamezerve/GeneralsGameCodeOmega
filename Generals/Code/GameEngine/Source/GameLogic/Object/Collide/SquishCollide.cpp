@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/ThingFactory.h"
 #include "Common/Xfer.h"
@@ -51,7 +51,7 @@ SquishCollide::SquishCollide( Thing *thing, const ModuleData* moduleData ) : Col
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-SquishCollide::~SquishCollide( void )
+SquishCollide::~SquishCollide()
 {
 
 }
@@ -62,7 +62,7 @@ SquishCollide::~SquishCollide( void )
 void SquishCollide::onCollide( Object *other, const Coord3D *loc, const Coord3D *normal )
 {
 	// Note that other == null means "collide with ground"
-	if (other == NULL)
+	if (other == nullptr)
 		return;
 
 	Object *self = getObject();
@@ -92,7 +92,7 @@ void SquishCollide::onCollide( Object *other, const Coord3D *loc, const Coord3D 
 	if( other->getCrusherLevel() > 0 && other->getRelationship(getObject()) != ALLIES)
 	{
 		PhysicsBehavior *otherPhysics = other->getPhysics();
-		if (otherPhysics == NULL)
+		if (otherPhysics == nullptr)
 			return;
 
 		// use a 1.0 crush radius so the tank has to actually hit the infantry.
@@ -138,7 +138,7 @@ void SquishCollide::crc( Xfer *xfer )
 	// extend base class
 	CollideModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -156,15 +156,15 @@ void SquishCollide::xfer( Xfer *xfer )
 	// extend base class
 	CollideModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SquishCollide::loadPostProcess( void )
+void SquishCollide::loadPostProcess()
 {
 
 	// extend base class
 	CollideModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

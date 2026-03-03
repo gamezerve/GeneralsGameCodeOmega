@@ -35,19 +35,13 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef ASSETMGR_H
-#define ASSETMGR_H
 
 #include "always.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "htreemgr.h"
 #include "hanimmgr.h"
-#include "SLIST.H"
+#include "SLIST.h"
 #include "texture.h"
 #include "hashtemplate.h"
 #include "simplevec.h"
@@ -87,15 +81,15 @@ class AssetIterator
 
 public:
 
-	virtual							~AssetIterator(void) { };
-	virtual void					First(void) { Index = 0; }
-	virtual void					Next(void)	{ Index ++; }
-	virtual bool					Is_Done(void) = 0;
-	virtual const char *			Current_Item_Name(void) = 0;
+	virtual							~AssetIterator() { };
+	virtual void					First() { Index = 0; }
+	virtual void					Next()	{ Index ++; }
+	virtual bool					Is_Done() = 0;
+	virtual const char *			Current_Item_Name() = 0;
 
 protected:
 
-	AssetIterator(void)			{ Index = 0; }
+	AssetIterator()			{ Index = 0; }
 	int								Index;
 };
 
@@ -107,7 +101,7 @@ protected:
 class RenderObjIterator : public AssetIterator
 {
 public:
-	virtual int						Current_Item_Class_ID(void) = 0;
+	virtual int						Current_Item_Class_ID() = 0;
 };
 
 
@@ -124,7 +118,7 @@ public:
 	-------------------------------------------------------------------------------------
 	Dec 11, 1997, Asset Manager Brainstorming:
 
-	- WW3DAssetManager will be diferentiated from other game data asset managers
+	- WW3DAssetManager will be differentiated from other game data asset managers
 	(sounds, strings, etc) because they behave differently and serve different
 	purposes
 
@@ -178,6 +172,10 @@ public:
 	the prototype class needs to be able to tell you the class ID.  Actually this
 	code only seems to be used by tools such as SView but is needed anyway...
 
+	-------------------------------------------------------------------------------------
+	TheSuperHackers @fix xezon 08/11/2025
+	The Asset Manager will now return null when it cannot find or create a valid font
+	with the given inputs. This way the user knows that the requested font is unusable.
 */
 
 
@@ -189,8 +187,8 @@ public:
 	/*
 	** Constructor and destructor
 	*/
-	WW3DAssetManager(void);
-	virtual ~WW3DAssetManager(void);
+	WW3DAssetManager();
+	virtual ~WW3DAssetManager();
 
 	/*
 	** Access to the single instance of a WW3DAssetManager.  The user
@@ -202,8 +200,8 @@ public:
 	** use a line of code like this:
 	**	WW3DAssetManager::Get_Instance();
 	*/
-	static WW3DAssetManager *		Get_Instance(void) { return TheInstance; }
-	static void							Delete_This(void) { if (TheInstance) delete TheInstance; TheInstance=NULL; }
+	static WW3DAssetManager *		Get_Instance() { return TheInstance; }
+	static void							Delete_This() { delete TheInstance; TheInstance=nullptr; }
 
 	/*
 	** Load data from any type of w3d file
@@ -214,12 +212,12 @@ public:
 	/*
 	** Get rid of all of the currently loaded assets
 	*/
-	virtual void						Free_Assets(void);
+	virtual void						Free_Assets();
 
 	/*
 	**	Release any assets that only the asset manager has a reference to.
 	*/
-	virtual void						Release_Unused_Assets(void);
+	virtual void						Release_Unused_Assets();
 
 	/*
 	** Release assets not in the given exclusion list.
@@ -242,21 +240,21 @@ public:
 	** sub-categories of render objects.  NOTE! the user is responsible
 	** for releasing the iterator when finished with it!
 	*/
-	virtual RenderObjIterator *	Create_Render_Obj_Iterator(void);
+	virtual RenderObjIterator *	Create_Render_Obj_Iterator();
 	virtual void						Release_Render_Obj_Iterator(RenderObjIterator *);
 
 	/*
 	** Access to HAnims, Used by Animatable3DObj's
 	** TODO: make HAnims accessible from the HMODELS (or Animatable3DObj...)
 	*/
-	virtual AssetIterator *			Create_HAnim_Iterator(void);
+	virtual AssetIterator *			Create_HAnim_Iterator();
 	virtual HAnimClass *				Get_HAnim(const char * name);
 	virtual bool						Add_Anim (HAnimClass *new_anim) { return HAnimManager.Add_Anim (new_anim); }
 
 	/*
 	** Access to textures
 	*/
-//	virtual AssetIterator *			Create_Texture_Iterator(void);
+//	virtual AssetIterator *			Create_Texture_Iterator();
 
 	HashTemplateClass<StringClass,TextureClass*>& Texture_Hash() { return TextureHash; }
 
@@ -271,29 +269,28 @@ public:
 		TextureBaseClass::TexAssetType type=TextureBaseClass::TEX_REGULAR,
 		bool allow_reduction=true
 	);
-	TextureClass*						Get_Bumpmap_Based_On_Texture(TextureClass* texture);
 
-	virtual void						Release_All_Textures(void);
-	virtual void						Release_Unused_Textures(void);
+	virtual void						Release_All_Textures();
+	virtual void						Release_Unused_Textures();
 	virtual void						Release_Texture(TextureClass *);
 	virtual void						Load_Procedural_Textures();
 	virtual MetalMapManagerClass* Peek_Metal_Map_Manager() { return MetalManager; }
 
 	/*
 	** Access to Font3DInstances. (These are not saved, we just use the
-	** asset manager as a convienient way to create them.)
+	** asset manager as a convenient way to create them.)
 	*/
 	virtual Font3DInstanceClass * Get_Font3DInstance( const char * name);
 
 	/*
-	** Access to FontChars. Used by Render2DSentenceClass
+	** Access to FontChars. Used by Render2DSentenceClass. Can return null.
 	*/
 	virtual FontCharsClass *		Get_FontChars( const char * name, int point_size, bool is_bold = false );
 
 	/*
 	** Access to HTrees, Used by Animatable3DObj's
 	*/
-	virtual AssetIterator *			Create_HTree_Iterator(void);
+	virtual AssetIterator *			Create_HTree_Iterator();
 	virtual HTreeClass *				Get_HTree(const char * name);
 
 	/*
@@ -315,13 +312,13 @@ public:
 	/*
 	** Load on Demand
 	*/
-	bool	Get_WW3D_Load_On_Demand( void )			{ return WW3D_Load_On_Demand; }
+	bool	Get_WW3D_Load_On_Demand()			{ return WW3D_Load_On_Demand; }
 	void	Set_WW3D_Load_On_Demand( bool on_off )	{ WW3D_Load_On_Demand = on_off; }
 
 	/*
 	** Add fog to objects on load
 	*/
-	bool	Get_Activate_Fog_On_Load( void )				{ return Activate_Fog_On_Load; }
+	bool	Get_Activate_Fog_On_Load()				{ return Activate_Fog_On_Load; }
 	void	Set_Activate_Fog_On_Load( bool on_off )	{ Activate_Fog_On_Load = on_off; }
 
 	// Log texture statistics
@@ -332,16 +329,16 @@ protected:
 	/*
 	** Access to Font3DData. (These are privately managed/accessed)
 	*/
-	virtual AssetIterator *			Create_Font3DData_Iterator(void);
+	virtual AssetIterator *			Create_Font3DData_Iterator();
 	virtual void						Add_Font3DData(Font3DDataClass * font);
 	virtual void						Remove_Font3DData(Font3DDataClass * font);
 	virtual Font3DDataClass *		Get_Font3DData(const char * name);
-	virtual void						Release_All_Font3DDatas( void);
-	virtual void						Release_Unused_Font3DDatas( void);
+	virtual void						Release_All_Font3DDatas();
+	virtual void						Release_Unused_Font3DDatas();
 
-	virtual void						Release_All_FontChars( void );
+	virtual void						Release_All_FontChars();
 
-	void									Free(void);
+	void									Free();
 
 	PrototypeLoaderClass *			Find_Prototype_Loader(int chunk_id);
 	bool									Load_Prototype(ChunkLoadClass & cload);
@@ -437,5 +434,3 @@ protected:
 	// Font3DInstance need access to the Font3DData
 	friend class Font3DInstanceClass;
 };
-
-#endif

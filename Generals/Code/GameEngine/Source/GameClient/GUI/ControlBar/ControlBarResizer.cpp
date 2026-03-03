@@ -46,7 +46,7 @@
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -61,16 +61,16 @@
 
 const FieldParse ControlBarResizer::m_controlBarResizerParseTable[] =
 {
-	{ "AltPosition",		INI::parseICoord2D,						NULL, offsetof( ResizerWindow, m_altPos ) },
-	{ "AltSize",				INI::parseICoord2D,						NULL, offsetof( ResizerWindow, m_altSize ) },
-	{ NULL,										NULL,													NULL, 0 }  // keep this last
+	{ "AltPosition",		INI::parseICoord2D,						nullptr, offsetof( ResizerWindow, m_altPos ) },
+	{ "AltSize",				INI::parseICoord2D,						nullptr, offsetof( ResizerWindow, m_altSize ) },
+	{ nullptr,										nullptr,													nullptr, 0 }
 
 };
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
-ResizerWindow::ResizerWindow(void)
+ResizerWindow::ResizerWindow()
 {
 	m_defaultPos.x = m_defaultPos.y = 0;
 	m_defaultSize.x = m_defaultSize.y = 0;
@@ -78,11 +78,11 @@ ResizerWindow::ResizerWindow(void)
 	m_altPos.x = m_altPos.y = 0;
 }
 
-ControlBarResizer::ControlBarResizer( void )
+ControlBarResizer::ControlBarResizer()
 {
 
 }
-ControlBarResizer::~ControlBarResizer( void )
+ControlBarResizer::~ControlBarResizer()
 {
 	ResizerWindowList::iterator it = m_resizerWindowsList.begin();
 	while (it != m_resizerWindowsList.end())
@@ -99,11 +99,11 @@ ControlBarResizer::~ControlBarResizer( void )
 	m_resizerWindowsList.clear();
 }
 
-void ControlBarResizer::init( void )
+void ControlBarResizer::init()
 {
 	INI ini;
 	// Read from INI all the ControlBarSchemes
-	ini.load( AsciiString( "Data\\INI\\ControlBarResizer.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\ControlBarResizer", INI_LOAD_OVERWRITE, nullptr );
 
 }
 
@@ -117,7 +117,7 @@ ResizerWindow *ControlBarResizer::findResizerWindow( AsciiString name )
 		ResizerWindow *rWin = *it;
 		if( !rWin )
 		{
-			DEBUG_ASSERTCRASH(FALSE,("There's no resizerWindow in ControlBarResizer::findResizerWindow"));
+			DEBUG_CRASH(("There's no resizerWindow in ControlBarResizer::findResizerWindow"));
 			it++;
 			continue;
 		}
@@ -128,43 +128,43 @@ ResizerWindow *ControlBarResizer::findResizerWindow( AsciiString name )
 		}
 		it ++;
 	}
-	return NULL;
+	return nullptr;
 }
 
 ResizerWindow *ControlBarResizer::newResizerWindow( AsciiString name )
 {
 	ResizerWindow *newRwin = NEW ResizerWindow;
 	if(!newRwin)
-		return NULL;
+		return nullptr;
 
 	newRwin->m_name = name;
-	GameWindow *win = NULL;
-	win = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey(name));
+	GameWindow *win = nullptr;
+	win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(name));
 	if( !win )
 	{
 		DEBUG_ASSERTCRASH(win,("ControlBarResizer::newResizerWindow could not find window %s Are you sure that window is loaded yet?", name.str()) );
 		delete newRwin;
-		return NULL;
+		return nullptr;
 	}
 	win->winGetPosition(&newRwin->m_defaultPos.x,&newRwin->m_defaultPos.y);
 	win->winGetSize(&newRwin->m_defaultSize.x,&newRwin->m_defaultSize.y);
 	m_resizerWindowsList.push_back(newRwin);
 	return newRwin;
 }
-void ControlBarResizer::sizeWindowsDefault( void )
+void ControlBarResizer::sizeWindowsDefault()
 {
 	ResizerWindowList::iterator it = m_resizerWindowsList.begin();
-	GameWindow *win = NULL;
+	GameWindow *win = nullptr;
 	while (it != m_resizerWindowsList.end())
 	{
 		ResizerWindow *rWin = *it;
 		if( !rWin )
 		{
-			DEBUG_ASSERTCRASH(FALSE,("There's no resizerWindow in ControlBarResizer::sizeWindowsDefault"));
+			DEBUG_CRASH(("There's no resizerWindow in ControlBarResizer::sizeWindowsDefault"));
 			it++;
 			continue;
 		}
-		win = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey(rWin->m_name));
+		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(rWin->m_name));
 		if(!win)
 		{
 			it++;
@@ -176,10 +176,10 @@ void ControlBarResizer::sizeWindowsDefault( void )
 		it ++;
 	}
 }
-void ControlBarResizer::sizeWindowsAlt( void )
+void ControlBarResizer::sizeWindowsAlt()
 {
 	ResizerWindowList::iterator it = m_resizerWindowsList.begin();
-	GameWindow *win = NULL;
+	GameWindow *win = nullptr;
 	Real x = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
 	Real y = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
 	while (it != m_resizerWindowsList.end())
@@ -187,11 +187,11 @@ void ControlBarResizer::sizeWindowsAlt( void )
 		ResizerWindow *rWin = *it;
 		if( !rWin )
 		{
-			DEBUG_ASSERTCRASH(FALSE,("There's no resizerWindow in ControlBarResizer::sizeWindowsDefault"));
+			DEBUG_CRASH(("There's no resizerWindow in ControlBarResizer::sizeWindowsDefault"));
 			it++;
 			continue;
 		}
-		win = TheWindowManager->winGetWindowFromId(NULL, TheNameKeyGenerator->nameToKey(rWin->m_name));
+		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(rWin->m_name));
 		if(!win)
 		{
 			it++;
@@ -210,7 +210,7 @@ void ControlBarResizer::sizeWindowsAlt( void )
 void INI::parseControlBarResizerDefinition( INI* ini )
 {
 //	AsciiString name;
-//	ResizerWindow *rWin = NULL;
+//	ResizerWindow *rWin = nullptr;
 //
 //	// read the name
 //	const char* c = ini->getNextToken();
@@ -223,7 +223,7 @@ void INI::parseControlBarResizerDefinition( INI* ini )
 //		return;
 //	}
 //	rWin = resizer->findResizerWindow( name );
-//	if( rWin == NULL )
+//	if( rWin == nullptr )
 //	{
 //
 //		// image not found, create a new one
@@ -236,7 +236,7 @@ void INI::parseControlBarResizerDefinition( INI* ini )
 //	// parse the ini definition
 //	ini->initFromINI( rWin, resizer->getFieldParse());
 //
-}  // end parseMappedImage
+}
 
 
 //-----------------------------------------------------------------------------

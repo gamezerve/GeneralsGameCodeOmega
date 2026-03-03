@@ -27,7 +27,7 @@
 // Desc:   The action of this dock update is taking boxes and turning them into money for my ownerplayer
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
 #include "Common/Xfer.h"
@@ -39,7 +39,7 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-SupplyCenterDockUpdateModuleData::SupplyCenterDockUpdateModuleData( void )
+SupplyCenterDockUpdateModuleData::SupplyCenterDockUpdateModuleData()
 {
 }
 
@@ -52,12 +52,12 @@ SupplyCenterDockUpdateModuleData::SupplyCenterDockUpdateModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 
   p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,14 +79,14 @@ SupplyCenterDockUpdate::~SupplyCenterDockUpdate()
 // ------------------------------------------------------------------------------------------------
 Bool SupplyCenterDockUpdate::action( Object* docker, Object *drone )
 {
-	SupplyTruckAIInterface* supplyTruckAI = NULL;
-	if( docker->getAIUpdateInterface() == NULL )
+	SupplyTruckAIInterface* supplyTruckAI = nullptr;
+	if( docker->getAIUpdateInterface() == nullptr )
 		return FALSE;
 
 	supplyTruckAI = docker->getAIUpdateInterface()->getSupplyTruckAIInterface();
 
-	DEBUG_ASSERTCRASH( supplyTruckAI != NULL, ("Something Docking with a Supply Center must have a Supply-truck like AIUpdate") );
-	if( supplyTruckAI == NULL )
+	DEBUG_ASSERTCRASH( supplyTruckAI != nullptr, ("Something Docking with a Supply Center must have a Supply-truck like AIUpdate") );
+	if( supplyTruckAI == nullptr )
 		return FALSE;
 
 	UnsignedInt value = 0;
@@ -143,7 +143,7 @@ void SupplyCenterDockUpdate::crc( Xfer *xfer )
 	// extend base class
 	DockUpdate::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -161,15 +161,15 @@ void SupplyCenterDockUpdate::xfer( Xfer *xfer )
 	// extend base class
 	DockUpdate::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void SupplyCenterDockUpdate::loadPostProcess( void )
+void SupplyCenterDockUpdate::loadPostProcess()
 {
 
 	// extend base class
 	DockUpdate::loadPostProcess();
 
-}  // end loadPostProcess
+}

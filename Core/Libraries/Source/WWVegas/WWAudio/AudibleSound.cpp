@@ -135,15 +135,15 @@ namespace AUDIBLE_SOUND_DEF_SAVELOAD
 //	AudibleSoundClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-AudibleSoundClass::AudibleSoundClass (void)
+AudibleSoundClass::AudibleSoundClass ()
 	:	m_Priority (0.5F),
 		m_RuntimePriority (0),
-		m_SoundHandle (NULL),
+		m_SoundHandle (nullptr),
 		m_Length (0),
 		m_CurrentPosition (0),
 		m_Timestamp (0),
 		m_State (STATE_STOPPED),
-		m_Buffer (NULL),
+		m_Buffer (nullptr),
 		m_Volume (1.0F),
 		m_Pan (0.5F),
 		m_LoopCount (1),
@@ -152,12 +152,12 @@ AudibleSoundClass::AudibleSoundClass (void)
 		m_bDirty (true),
 		m_DropOffRadius (1),
 		m_IsCulled (true),
-		m_pConvertedFormat (NULL),
+		m_pConvertedFormat (nullptr),
 		m_PrevTransform (1),
 		m_Transform (1),
 		m_ListenerTransform (1),
-		m_Definition (NULL),
-		m_LogicalSound (NULL),
+		m_Definition (nullptr),
+		m_LogicalSound (nullptr),
 		m_StartOffset (0),
 		m_PitchFactor (1.0F)
 {
@@ -173,12 +173,12 @@ AudibleSoundClass::AudibleSoundClass (void)
 AudibleSoundClass::AudibleSoundClass (const AudibleSoundClass &src)
 	:	m_Priority (0.5F),
 		m_RuntimePriority (0),
-		m_SoundHandle (NULL),
+		m_SoundHandle (nullptr),
 		m_Length (0),
 		m_CurrentPosition (0),
 		m_Timestamp (0),
 		m_State (STATE_STOPPED),
-		m_Buffer (NULL),
+		m_Buffer (nullptr),
 		m_Volume (1.0F),
 		m_Pan (0.5F),
 		m_LoopCount (1),
@@ -187,11 +187,11 @@ AudibleSoundClass::AudibleSoundClass (const AudibleSoundClass &src)
 		m_bDirty (true),
 		m_DropOffRadius (1),
 		m_IsCulled (true),
-		m_pConvertedFormat (NULL),
+		m_pConvertedFormat (nullptr),
 		m_PrevTransform (1),
 		m_Transform (1),
-		m_Definition (NULL),
-		m_LogicalSound (NULL),
+		m_Definition (nullptr),
+		m_LogicalSound (nullptr),
 		m_StartOffset (0),
 		m_PitchFactor (1.0F)
 {
@@ -205,7 +205,7 @@ AudibleSoundClass::AudibleSoundClass (const AudibleSoundClass &src)
 //	~AudibleSoundClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-AudibleSoundClass::~AudibleSoundClass (void)
+AudibleSoundClass::~AudibleSoundClass ()
 {
 	m_State = STATE_STOPPED;
 	Free_Conversion ();
@@ -215,9 +215,9 @@ AudibleSoundClass::~AudibleSoundClass (void)
 	//	Delay the release of the buffer (fixes a sync bug
 	// with Miles internals).
 	//
-	if (m_Buffer != NULL) {
+	if (m_Buffer != nullptr) {
 		WWAudioThreadsClass::Add_Delayed_Release_Object (m_Buffer);
-		m_Buffer = NULL;
+		m_Buffer = nullptr;
 	}
 
 	Free_Miles_Handle ();
@@ -269,9 +269,9 @@ AudibleSoundClass::Set_Buffer (SoundBufferClass *buffer)
 	//	Delay the release of the buffer (fixes a sync bug
 	// with Miles internals).
 	//
-	if (m_Buffer != NULL) {
+	if (m_Buffer != nullptr) {
 		WWAudioThreadsClass::Add_Delayed_Release_Object (m_Buffer);
-		m_Buffer = NULL;
+		m_Buffer = nullptr;
 	}
 	REF_PTR_SET (m_Buffer, buffer);
 
@@ -282,7 +282,7 @@ AudibleSoundClass::Set_Buffer (SoundBufferClass *buffer)
 	}
 
 	// Get the time (in ms) that this buffer will play for...
-	if (m_Buffer != NULL) {
+	if (m_Buffer != nullptr) {
 		m_Length = m_Buffer->Get_Duration ();
 	}
 
@@ -304,7 +304,7 @@ AudibleSoundClass::Set_Buffer (SoundBufferClass *buffer)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 SoundBufferClass *
-AudibleSoundClass::Get_Buffer (void) const
+AudibleSoundClass::Get_Buffer () const
 {
 	if (m_Buffer) {
 		m_Buffer->Add_Ref ();
@@ -320,7 +320,7 @@ AudibleSoundClass::Get_Buffer (void) const
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 SoundBufferClass *
-AudibleSoundClass::Peek_Buffer (void) const
+AudibleSoundClass::Peek_Buffer () const
 {
 	return m_Buffer;
 }
@@ -337,7 +337,7 @@ AudibleSoundClass::Play (bool alloc_handle)
 	MMSLockClass lock;
 
 	// If we don't have a valid handle already, try to get one from miles
-	if (alloc_handle && (m_pConvertedFormat == NULL)) {
+	if (alloc_handle && (m_pConvertedFormat == nullptr)) {
 		Allocate_Miles_Handle ();
 	}
 
@@ -349,7 +349,7 @@ AudibleSoundClass::Play (bool alloc_handle)
 		m_LoopsLeft			= m_LoopCount;
 
 		// If we have a valid handle, then start playing the sample
-		if (m_SoundHandle != NULL) {
+		if (m_SoundHandle != nullptr) {
 			m_SoundHandle->Start_Sample ();
 		}
 
@@ -365,14 +365,14 @@ AudibleSoundClass::Play (bool alloc_handle)
 		//
 		//	Create the associate logical sound (if necessary)
 		//
-		if (m_LogicalSound == NULL && m_Definition != NULL) {
+		if (m_LogicalSound == nullptr && m_Definition != nullptr) {
 			m_LogicalSound = m_Definition->Create_Logical ();
 		}
 
 		//
 		//	Add this logical sound to the scene
 		//
-		if (m_LogicalSound != NULL) {
+		if (m_LogicalSound != nullptr) {
 			m_LogicalSound->Set_User_Data (m_UserObj, m_UserData);
 			m_LogicalSound->Set_Transform (m_Transform);
 			m_LogicalSound->Add_To_Scene ();
@@ -381,7 +381,7 @@ AudibleSoundClass::Play (bool alloc_handle)
 		//
 		//	Should we send off the text notification?
 		//
-		if (m_IsCulled == false && m_Definition != NULL) {
+		if (m_IsCulled == false && m_Definition != nullptr) {
 			const StringClass &text = m_Definition->Get_Display_Text ();
 			WWAudioClass::Get_Instance ()->Fire_Text_Callback (this, text);
 		}
@@ -397,7 +397,7 @@ AudibleSoundClass::Play (bool alloc_handle)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 bool
-AudibleSoundClass::Pause (void)
+AudibleSoundClass::Pause ()
 {
 	MMSLockClass lock;
 
@@ -407,7 +407,7 @@ AudibleSoundClass::Pause (void)
 	if (m_State == STATE_PLAYING) {
 
 		// Pass the pause request onto miles
-		if (m_SoundHandle != NULL) {
+		if (m_SoundHandle != nullptr) {
 			m_SoundHandle->Stop_Sample ();
 		}
 
@@ -427,7 +427,7 @@ AudibleSoundClass::Pause (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 bool
-AudibleSoundClass::Resume (void)
+AudibleSoundClass::Resume ()
 {
 	MMSLockClass lock;
 
@@ -437,7 +437,7 @@ AudibleSoundClass::Resume (void)
 	if (m_State == STATE_PAUSED) {
 
 		// Pass the resume request onto miles
-		if (m_SoundHandle != NULL) {
+		if (m_SoundHandle != nullptr) {
 			m_SoundHandle->Resume_Sample ();
 		}
 
@@ -468,7 +468,7 @@ AudibleSoundClass::Stop (bool remove_from_playlist)
 		 (m_State == STATE_PLAYING)) {
 
 		// Actually stop the sample from playing
-		if (m_SoundHandle != NULL) {
+		if (m_SoundHandle != nullptr) {
 			m_SoundHandle->Stop_Sample ();
 		}
 
@@ -488,7 +488,7 @@ AudibleSoundClass::Stop (bool remove_from_playlist)
 		//
 		//	Stop the logical portion of the sound
 		//
-		if (m_LogicalSound != NULL && m_LogicalSound->Is_Single_Shot () == false) {
+		if (m_LogicalSound != nullptr && m_LogicalSound->Is_Single_Shot () == false) {
 			m_LogicalSound->Remove_From_Scene ();
 		}
 	}
@@ -518,7 +518,7 @@ AudibleSoundClass::Seek (unsigned long milliseconds)
 		}
 
 		// Update the actual sound data if we are playing the sound
-		if (m_SoundHandle != NULL) {
+		if (m_SoundHandle != nullptr) {
 			m_SoundHandle->Set_Sample_MS_Position (m_CurrentPosition);
 		}
 	}
@@ -543,7 +543,7 @@ AudibleSoundClass::Set_Miles_Handle (MILES_HANDLE handle)
 	//
 	//	Is our data valid?
 	//
-	if (handle != INVALID_MILES_HANDLE && m_Buffer != NULL) {
+	if (handle != INVALID_MILES_HANDLE && m_Buffer != nullptr) {
 
 		//
 		//	Determine which type of sound handle to create, streaming or standard 2D
@@ -575,7 +575,7 @@ AudibleSoundClass::Set_Miles_Handle (MILES_HANDLE handle)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Initialize_Miles_Handle (void)
+AudibleSoundClass::Initialize_Miles_Handle ()
 {
 	MMSLockClass lock;
 
@@ -587,7 +587,7 @@ AudibleSoundClass::Initialize_Miles_Handle (void)
 	}
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		//
 		//	Initialize the handle
@@ -597,7 +597,7 @@ AudibleSoundClass::Initialize_Miles_Handle (void)
 		//
 		// Record the total length of the sample in milliseconds...
 		//
-		m_SoundHandle->Get_Sample_MS_Position ((S32 *)&m_Length, NULL);
+		m_SoundHandle->Get_Sample_MS_Position ((S32 *)&m_Length, nullptr);
 
 		//
 		// Pass our cached settings onto miles
@@ -637,7 +637,7 @@ AudibleSoundClass::Initialize_Miles_Handle (void)
 		//
 		// Associate this object instance with the handle
 		//
-		m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, (S32)this);
+		m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, (void *)this);
 	}
 
 	return ;
@@ -650,29 +650,29 @@ AudibleSoundClass::Initialize_Miles_Handle (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Free_Miles_Handle (void)
+AudibleSoundClass::Free_Miles_Handle ()
 {
 	MMSLockClass lock;
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		//
 		// Release our hold on this handle
 		//
-		m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, NULL);
+		m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, nullptr);
 		m_SoundHandle->End_Sample ();
 
 		//
 		// Remove the association between file handle and AudibleSoundClass object
 		//
-		//m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, NULL);
+		//m_SoundHandle->Set_Sample_User_Data (INFO_OBJECT_PTR, nullptr);
 
 		//
 		//	Free the sound handle object
 		//
 		delete m_SoundHandle;
-		m_SoundHandle = NULL;
+		m_SoundHandle = nullptr;
 	}
 
 	return ;
@@ -685,14 +685,14 @@ AudibleSoundClass::Free_Miles_Handle (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 float
-AudibleSoundClass::Get_Pan (void)
+AudibleSoundClass::Get_Pan ()
 {
 	MMSLockClass lock;
 
 	//
 	// Do we have a valid sample handle from miles?
 	//
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		m_Pan = ((float)m_SoundHandle->Get_Sample_Pan ()) / 127.0F;
 	}
 
@@ -719,7 +719,7 @@ AudibleSoundClass::Set_Pan (float pan)
 	//
 	// Do we have a valid sample handle from miles?
 	//
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		m_SoundHandle->Set_Sample_Pan (int(m_Pan * 127.0F));
 	}
 
@@ -742,9 +742,9 @@ AudibleSoundClass::Set_Pitch_Factor (float factor)
 	//
 	// Do we have a valid sample handle from miles?
 	//
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
-		if (m_Buffer != NULL) {
+		if (m_Buffer != nullptr) {
 
 			//
 			//	Get the base rate of the sound and scale our playback rate
@@ -766,13 +766,13 @@ AudibleSoundClass::Set_Pitch_Factor (float factor)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 int
-AudibleSoundClass::Get_Playback_Rate (void)
+AudibleSoundClass::Get_Playback_Rate ()
 {
 	MMSLockClass lock;
 	int retval = 0;
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		retval = m_SoundHandle->Get_Sample_Playback_Rate ();
 	}
 
@@ -791,7 +791,7 @@ AudibleSoundClass::Set_Playback_Rate (int rate_in_hz)
 	MMSLockClass lock;
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		m_SoundHandle->Set_Sample_Playback_Rate (rate_in_hz);
 	}
 
@@ -805,12 +805,12 @@ AudibleSoundClass::Set_Playback_Rate (int rate_in_hz)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 float
-AudibleSoundClass::Get_Volume (void)
+AudibleSoundClass::Get_Volume ()
 {
 	MMSLockClass lock;
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		m_Volume = ((float)m_SoundHandle->Get_Sample_Volume ()) / 127.0F;
 	}
 
@@ -834,7 +834,7 @@ AudibleSoundClass::Set_Volume (float volume)
 	m_Volume = max (m_Volume, 0.0F);
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 
 		// Calculate the 'real' volume to set based on the global volume and the sound
 		// effect volume.
@@ -852,7 +852,7 @@ AudibleSoundClass::Set_Volume (float volume)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 int
-AudibleSoundClass::Get_Loops_Left (void) const
+AudibleSoundClass::Get_Loops_Left () const
 {
 	return m_LoopsLeft;
 }
@@ -872,7 +872,7 @@ AudibleSoundClass::Set_Loop_Count (int count)
 	m_LoopCount = count;
 
 	// Do we have a valid sample handle from miles?
-	if (m_SoundHandle != NULL) {
+	if (m_SoundHandle != nullptr) {
 		m_SoundHandle->Set_Sample_Loop_Count (m_LoopCount);
 	}
 
@@ -915,14 +915,14 @@ AudibleSoundClass::On_Frame_Update (unsigned int milliseconds)
 		Update_Play_Position ();
 	}
 
-	if (m_pConvertedFormat != NULL) {
+	if (m_pConvertedFormat != nullptr) {
 		m_pConvertedFormat->Re_Sync (*this);
 	}
 
 	//
 	//	Move the logical sound with the audible one...
 	//
-	if (m_LogicalSound != NULL) {
+	if (m_LogicalSound != nullptr) {
 		m_LogicalSound->Set_Transform (m_Transform);
 	}
 
@@ -936,7 +936,7 @@ AudibleSoundClass::On_Frame_Update (unsigned int milliseconds)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Update_Play_Position (void)
+AudibleSoundClass::Update_Play_Position ()
 {
 	// Determine the current offset from the beginning of the sound buffer.
 	unsigned long play_time = ::GetTickCount () - m_Timestamp;
@@ -968,12 +968,12 @@ AudibleSoundClass::Update_Play_Position (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Allocate_Miles_Handle (void)
+AudibleSoundClass::Allocate_Miles_Handle ()
 {
 	//
 	// If we need to, get a play-handle from the audio system
 	//
-	if (m_SoundHandle == NULL) {
+	if (m_SoundHandle == nullptr) {
 		Set_Miles_Handle ((MILES_HANDLE)WWAudioClass::Get_Instance ()->Get_2D_Sample (*this));
 	}
 
@@ -987,14 +987,14 @@ AudibleSoundClass::Allocate_Miles_Handle (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::On_Loop_End (void)
+AudibleSoundClass::On_Loop_End ()
 {
 	// Determine if the sound is actually finished or still looping
 	if ((m_LoopCount != INFINITE_LOOPS) && (m_LoopsLeft < 1)) {
 
 		// Let the audio system know that we are done with this sound
 		Stop ();
-		if (m_Scene != NULL) {
+		if (m_Scene != nullptr) {
 			Remove_From_Scene ();
 		}
 
@@ -1015,7 +1015,7 @@ AudibleSoundClass::On_Loop_End (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 float
-AudibleSoundClass::Determine_Real_Volume (void) const
+AudibleSoundClass::Determine_Real_Volume () const
 {
 	float volume = m_Volume;
 
@@ -1037,10 +1037,10 @@ AudibleSoundClass::Determine_Real_Volume (void) const
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 LPCTSTR
-AudibleSoundClass::Get_Filename (void) const
+AudibleSoundClass::Get_Filename () const
 {
-	LPCTSTR filename = NULL;
-	if (m_Buffer != NULL) {
+	LPCTSTR filename = nullptr;
+	if (m_Buffer != nullptr) {
 		filename = m_Buffer->Get_Filename ();
 	}
 
@@ -1067,7 +1067,7 @@ AudibleSoundClass::Cull_Sound (bool culled)
 		//	Note: We also free the handle if a converted form
 		// of the sound is currently playing.
 		//
-		if (m_IsCulled || (m_pConvertedFormat != NULL)) {
+		if (m_IsCulled || (m_pConvertedFormat != nullptr)) {
 			Free_Miles_Handle ();
 		} else {
 			Allocate_Miles_Handle ();
@@ -1118,7 +1118,7 @@ void
 AudibleSoundClass::Add_To_Scene (bool start_playing)
 {
 	SoundSceneClass *scene = WWAudioClass::Get_Instance ()->Get_Sound_Scene ();
-	if ((scene != NULL) && (m_Scene == NULL)) {
+	if ((scene != nullptr) && (m_Scene == nullptr)) {
 
 		//
 		//	Add this sound to the static culling system
@@ -1137,16 +1137,16 @@ AudibleSoundClass::Add_To_Scene (bool start_playing)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Remove_From_Scene (void)
+AudibleSoundClass::Remove_From_Scene ()
 {
-	if (m_Scene != NULL) {
+	if (m_Scene != nullptr) {
 
 		//
 		//	Remove this sound from the  static culling system
 		//
 		m_Scene->Remove_Static_Sound (this);
-		m_Scene = NULL;
-		m_PhysWrapper = NULL;
+		m_Scene = nullptr;
+		m_PhysWrapper = nullptr;
 	}
 
 	return ;
@@ -1207,9 +1207,9 @@ AudibleSoundClass::Re_Sync (AudibleSoundClass &src)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Free_Conversion (void)
+AudibleSoundClass::Free_Conversion ()
 {
-	if (m_pConvertedFormat != NULL) {
+	if (m_pConvertedFormat != nullptr) {
 		m_pConvertedFormat->Stop ();
 		REF_PTR_RELEASE (m_pConvertedFormat);
 	}
@@ -1231,9 +1231,9 @@ AudibleSoundClass::Free_Conversion (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 void
-AudibleSoundClass::Convert_To_Filtered (void)
+AudibleSoundClass::Convert_To_Filtered ()
 {
-	if (m_pConvertedFormat == NULL) {
+	if (m_pConvertedFormat == nullptr) {
 
 		//
 		//	Make a copy of the sound in its new format
@@ -1271,9 +1271,9 @@ AudibleSoundClass::Convert_To_Filtered (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 AudibleSoundClass *
-AudibleSoundClass::As_Converted_Format (void)
+AudibleSoundClass::As_Converted_Format ()
 {
-	if (m_pConvertedFormat == NULL) {
+	if (m_pConvertedFormat == nullptr) {
 		Convert_To_Filtered ();
 	}
 
@@ -1287,7 +1287,7 @@ AudibleSoundClass::As_Converted_Format (void)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 const PersistFactoryClass &
-AudibleSoundClass::Get_Factory (void) const
+AudibleSoundClass::Get_Factory () const
 {
 	return _AudibleSoundPersistFactory;
 }
@@ -1304,7 +1304,7 @@ AudibleSoundClass::Get_Factory (void) const
 //	AudibleSoundDefinitionClass
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
-AudibleSoundDefinitionClass::AudibleSoundDefinitionClass (void)
+AudibleSoundDefinitionClass::AudibleSoundDefinitionClass ()
 	:	m_Priority (0.5F),
 		m_Volume (1.0F),
 		m_Pan (0.5F),
@@ -1365,7 +1365,7 @@ AudibleSoundDefinitionClass::AudibleSoundDefinitionClass (void)
 }
 
 // SKB: Put here because of conficts with CLASSID_???? with other projects.
-uint32 AudibleSoundDefinitionClass::Get_Class_ID (void) const
+uint32 AudibleSoundDefinitionClass::Get_Class_ID () const
 {
 	return CLASSID_SOUND;
 }
@@ -1382,7 +1382,7 @@ AudibleSoundDefinitionClass::Initialize_From_Sound (AudibleSoundClass *sound)
 	//
 	// Read the settings from the sound object
 	//
-	if (sound != NULL) {
+	if (sound != nullptr) {
 		Sound3DClass *sound_3d	= sound->As_Sound3DClass ();
 
 		//
@@ -1402,14 +1402,14 @@ AudibleSoundDefinitionClass::Initialize_From_Sound (AudibleSoundClass *sound)
 		m_Filename			= sound->Get_Filename ();
 		m_DropOffRadius	= sound->Get_DropOff_Radius ();
 		m_Priority			= sound->Peek_Priority ();
-		m_Is3D				= (sound_3d != NULL);
+		m_Is3D				= (sound_3d != nullptr);
 		m_Type				= sound->Get_Type ();
 		m_LoopCount			= sound->Get_Loop_Count ();
 		m_Volume				= sound->Get_Volume ();
 		m_StartOffset		= sound->Get_Start_Offset ();
 		m_PitchFactor		= sound->Get_Pitch_Factor ();
 
-		if (sound_3d != NULL) {
+		if (sound_3d != nullptr) {
 			m_MaxVolRadius = sound_3d->Get_Max_Vol_Radius ();
 		}
 	}
@@ -1424,7 +1424,7 @@ AudibleSoundDefinitionClass::Initialize_From_Sound (AudibleSoundClass *sound)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 const PersistFactoryClass &
-AudibleSoundDefinitionClass::Get_Factory (void) const
+AudibleSoundDefinitionClass::Get_Factory () const
 {
 	return _AudibleSoundDefPersistFactory;
 }
@@ -1569,7 +1569,7 @@ AudibleSoundDefinitionClass::Load_Variables (ChunkLoadClass &cload)
 //
 //////////////////////////////////////////////////////////////////////////////////
 PersistClass *
-AudibleSoundDefinitionClass::Create (void) const
+AudibleSoundDefinitionClass::Create () const
 {
 	return Create_Sound (CLASSID_3D);
 }
@@ -1582,7 +1582,7 @@ AudibleSoundDefinitionClass::Create (void) const
 AudibleSoundClass *
 AudibleSoundDefinitionClass::Create_Sound (int classid_hint) const
 {
-	AudibleSoundClass *new_sound = NULL;
+	AudibleSoundClass *new_sound = nullptr;
 
 	//
 	//	If this is a relative path, strip it off and assume
@@ -1590,7 +1590,7 @@ AudibleSoundDefinitionClass::Create_Sound (int classid_hint) const
 	//
 	StringClass real_filename(m_Filename,true);
 	const char *dir_delimiter = ::strrchr (m_Filename, '\\');
-	if (dir_delimiter != NULL && m_Filename.Get_Length () > 2 && m_Filename[1] != ':') {
+	if (dir_delimiter != nullptr && m_Filename.Get_Length () > 2 && m_Filename[1] != ':') {
 		real_filename = (dir_delimiter + 1);
 	}
 
@@ -1606,7 +1606,7 @@ AudibleSoundDefinitionClass::Create_Sound (int classid_hint) const
 	//
 	//	Did we successfully create the sound?
 	//
-	if (new_sound != NULL) {
+	if (new_sound != nullptr) {
 
 		//
 		//	Configure the sound
@@ -1635,9 +1635,9 @@ AudibleSoundDefinitionClass::Create_Sound (int classid_hint) const
 //
 //////////////////////////////////////////////////////////////////////////////////
 LogicalSoundClass *
-AudibleSoundDefinitionClass::Create_Logical (void)
+AudibleSoundDefinitionClass::Create_Logical ()
 {
-	LogicalSoundClass *logical_sound = NULL;
+	LogicalSoundClass *logical_sound = nullptr;
 
 	if (m_CreateLogical) {
 
@@ -1699,7 +1699,7 @@ AudibleSoundClass::Save (ChunkSaveClass &csave)
 		WRITE_MICRO_CHUNK (csave, VARID_PITCH_FACTOR, m_PitchFactor);
 		WRITE_MICRO_CHUNK (csave, VARID_LISTENER_TRANSFORM, m_ListenerTransform);
 
-		if (m_Buffer != NULL) {
+		if (m_Buffer != nullptr) {
 			WRITE_MICRO_CHUNK_STRING (csave, VARID_FILENAME, m_Buffer->Get_Filename ());
 		}
 
@@ -1761,7 +1761,7 @@ AudibleSoundClass::Load (ChunkLoadClass &cload)
 
 						case VARID_THIS_PTR:
 						{
-							AudibleSoundClass *old_ptr = NULL;
+							AudibleSoundClass *old_ptr = nullptr;
 							cload.Read(&old_ptr, sizeof (old_ptr));
 							SaveLoadSystemClass::Register_Pointer (old_ptr, this);
 						}
@@ -1780,8 +1780,8 @@ AudibleSoundClass::Load (ChunkLoadClass &cload)
 	//
 	//	Reconstruct the sound buffer we had before we saved
 	//
-	if (filename.Get_Length () > 0) {
-		bool is_3d = (As_Sound3DClass () != NULL);
+	if (!filename.Is_Empty()) {
+		bool is_3d = (As_Sound3DClass () != nullptr);
 		SoundBufferClass *buffer = WWAudioClass::Get_Instance ()->Get_Sound_Buffer (filename, is_3d);
 		Set_Buffer (buffer);
 		REF_PTR_RELEASE (buffer);

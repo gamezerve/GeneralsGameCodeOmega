@@ -86,12 +86,12 @@
  *                                                                                             *
  * HISTORY:                                                                                    *
  *=============================================================================================*/
-AABTreeClass::AABTreeClass(void) :
+AABTreeClass::AABTreeClass() :
 	NodeCount(0),
-	Nodes(NULL),
+	Nodes(nullptr),
 	PolyCount(0),
-	PolyIndices(NULL),
-	Mesh(NULL)
+	PolyIndices(nullptr),
+	Mesh(nullptr)
 {
 }
 
@@ -137,10 +137,10 @@ AABTreeClass::AABTreeClass(AABTreeBuilderClass * builder)
  *=============================================================================================*/
 AABTreeClass::AABTreeClass(const AABTreeClass & that) :
 	NodeCount(0),
-	Nodes(NULL),
+	Nodes(nullptr),
 	PolyCount(0),
-	PolyIndices(0),
-	Mesh(NULL)
+	PolyIndices(nullptr),
+	Mesh(nullptr)
 {
 	*this = that;
 }
@@ -157,7 +157,7 @@ AABTreeClass::AABTreeClass(const AABTreeClass & that) :
  * HISTORY:                                                                                    *
  *   6/19/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-AABTreeClass::~AABTreeClass(void)
+AABTreeClass::~AABTreeClass()
 {
 	Reset();
 }
@@ -208,21 +208,17 @@ AABTreeClass & AABTreeClass::operator = (const AABTreeClass & that)
  * HISTORY:                                                                                    *
  *   6/22/99    GTH : Created.                                                                 *
  *=============================================================================================*/
-void AABTreeClass::Reset(void)
+void AABTreeClass::Reset()
 {
 	NodeCount = 0;
-	if (Nodes) {
-		delete[] Nodes;
-		Nodes = NULL;
-	}
+	delete[] Nodes;
+	Nodes = nullptr;
+
 	PolyCount = 0;
-	if (PolyIndices) {
-		delete[] PolyIndices;
-		PolyIndices = NULL;
-	}
-	if (Mesh) {
-		Mesh = NULL;
-	}
+	delete[] PolyIndices;
+	PolyIndices = nullptr;
+
+	Mesh = nullptr;
 }
 
 /***********************************************************************************************
@@ -271,9 +267,9 @@ void AABTreeClass::Build_Tree_Recursive(AABTreeBuilderClass::CullNodeStruct * no
 	/*
 	** If this is a non-leaf node, set up the child indices, otherwise set up the polygon indices
 	*/
-	if (node->Front != NULL) {
+	if (node->Front != nullptr) {
 
-		WWASSERT(node->Back != NULL);		// if we have one child, we better have both!
+		WWASSERT(node->Back != nullptr);		// if we have one child, we better have both!
 		newnode->Set_Front_Child(node->Front->Index);
 		newnode->Set_Back_Child(node->Back->Index);
 
@@ -728,10 +724,6 @@ bool AABTreeClass::Intersect_OBBox_Recursive(AABTreeClass::CullNodeStruct * node
 	return res;
 }
 
-#ifdef RTS_DEBUG
-#pragma optimize("", off)	 // We get an odd error when using optimized in the debug.
-// All optimized seems to work.  jba.
-#endif
 /***********************************************************************************************
  * AABTreeClass::Cast_Ray_To_Polys -- cast the ray to polys in the given node                  *
  *                                                                                             *
@@ -791,10 +783,6 @@ bool AABTreeClass::Cast_Ray_To_Polys(CullNodeStruct * node,RayCollisionTestClass
 	}
 	return false;
 }
-#ifdef RTS_DEBUG
-#pragma optimize("", on)
-#endif
-
 
 /***********************************************************************************************
  * AABTreeClass::Cast_Semi_Infinite_Axis_Aligned_Ray_To_Polys -- cast ray to polys in the node *

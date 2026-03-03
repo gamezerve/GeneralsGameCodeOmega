@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BATTLE_PLAN_UPDATE_H_
-#define __BATTLE_PLAN_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/KindOf.h"
 #include "GameLogic/Module/SpecialPowerUpdateModule.h"
@@ -106,10 +103,17 @@ enum BattlePlanStatus CPP_11(: Int)
 	PLANSTATUS_SEARCHANDDESTROY,
 };
 
-class BattlePlanBonuses : public MemoryPoolObject
+struct BattlePlanBonusesData
 {
-	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(BattlePlanBonuses, "BattlePlanBonuses")
-public:
+	BattlePlanBonusesData() //Default the bonuses to no change.
+		: m_armorScalar(1.0f)
+		, m_bombardment(0)
+		, m_searchAndDestroy(0)
+		, m_holdTheLine(0)
+		, m_sightRangeScalar(1.0f)
+	{
+	}
+
 	Real						m_armorScalar;
 	Int							m_bombardment;				//Represents having weapon bonuses for bombardment plan
 	Int							m_searchAndDestroy;		//Represents having weapon bonuses for searchAndDestroy plan
@@ -117,6 +121,11 @@ public:
 	Real						m_sightRangeScalar;
 	KindOfMaskType	m_validKindOf;
 	KindOfMaskType	m_invalidKindOf;
+};
+
+class BattlePlanBonuses : public BattlePlanBonusesData, public MemoryPoolObject
+{
+	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(BattlePlanBonuses, "BattlePlanBonuses")
 };
 EMPTY_DTOR(BattlePlanBonuses)
 
@@ -145,7 +154,7 @@ public:
 	virtual Bool doesSpecialPowerHaveOverridableDestinationActive() const { return false; } //Is it active now?
 	virtual Bool doesSpecialPowerHaveOverridableDestination() const { return false; }	//Does it have it, even if it's not active?
 	virtual void setSpecialPowerOverridableDestination( const Coord3D *loc ) {}
-	virtual Bool isPowerCurrentlyInUse( const CommandButton *command = NULL ) const;
+	virtual Bool isPowerCurrentlyInUse( const CommandButton *command = nullptr ) const;
 
 	//Returns the currently active battle plan -- unpacked and ready... returns PLANSTATUS_NONE if in transition!
 	BattlePlanStatus getActiveBattlePlan() const;
@@ -190,7 +199,3 @@ protected:
 	ObjectID m_visionObjectID;
 
 };
-
-
-#endif
-

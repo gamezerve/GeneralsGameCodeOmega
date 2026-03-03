@@ -31,9 +31,6 @@
 
 #pragma once
 
-#ifndef __UNPAUSE_SPECIAL_POWER_UPGRADE_H_
-#define __UNPAUSE_SPECIAL_POWER_UPGRADE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpgradeModule.h"
 
@@ -47,7 +44,7 @@ class UnpauseSpecialPowerUpgradeModuleData : public UpgradeModuleData
 
 public:
 
-	UnpauseSpecialPowerUpgradeModuleData( void );
+	UnpauseSpecialPowerUpgradeModuleData();
 
 	static void buildFieldParse(MultiIniFieldParse& p);
 
@@ -71,10 +68,7 @@ public:
 
 protected:
 
-	virtual void upgradeImplementation( void ); ///< Here's the actual work of Upgrading
+	virtual void upgradeImplementation(); ///< Here's the actual work of Upgrading
 	virtual Bool isSubObjectsUpgrade() { return false; }
 
 };
-
-#endif
-

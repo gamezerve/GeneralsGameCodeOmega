@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _AI_STATE_MACHINE_H_
-#define _AI_STATE_MACHINE_H_
-
 #include "Lib/BaseType.h"
 
 #include "Common/AudioEventRTS.h"
@@ -106,8 +103,6 @@ enum AIStateType CPP_11(: Int)
 	AI_BUSY,																	///< This is a state that things will be in when they are busy doing random stuff that doesn't require AI interaction.
 	AI_EXIT_INSTANTLY,												///< exit this obj, without waiting -- do it in the onEnter! This frame!
 	AI_GUARD_RETALIATE,												///< attacks attacker but with restrictions (hybrid of attack and guard).
-
-	NUM_AI_STATES
 };
 
 //-----------------------------------------------------------------------------------------------------------
@@ -146,7 +141,7 @@ public:
 	virtual StateReturnType setState( StateID newStateID );
 
 	/// @todo Rethink state parameter passing. Continuing in this fashion will have a pile of params in the machine (MSB)
-	void setGoalPath( const std::vector<Coord3D>* path );
+	void setGoalPath( std::vector<Coord3D>* path );
 	void addToGoalPath( const Coord3D *pathPoint );
 	const Coord3D *getGoalPathPosition( Int i ) const;		///< return path position at index "i"
 	Int getGoalPathSize() const { return m_goalPath.size(); }
@@ -160,10 +155,10 @@ public:
 	void setGoalSquad( const Squad *squad );
 	void setGoalAIGroup( const AIGroup *group );
 
-	Squad *getGoalSquad(void);
+	Squad *getGoalSquad();
 
 	StateReturnType setTemporaryState( StateID newStateID, Int frameLimitCoount );			///< change the temporary state of the machine, and number of frames limit.
-	StateID getTemporaryState(void) const {return m_temporaryState?m_temporaryState->getID():INVALID_STATE_ID;}
+	StateID getTemporaryState() const {return m_temporaryState?m_temporaryState->getID():INVALID_STATE_ID;}
 
 public:	// overrides.
 	virtual StateReturnType updateStateMachine();				///< run one step of the machine
@@ -202,7 +197,6 @@ enum StateType CPP_11(: Int)
 		APPROACH_TARGET,											///< Approach a non-moving target.
 		AIM_AT_TARGET,												///< rotate to face GoalObject or GoalPosition
 		FIRE_WEAPON,													///< fire the machine owner's current weapon
-		NUM_ATTACK_STATES
 	};
 	AttackStateMachine( Object *owner, AIAttackState* att, AsciiString name, Bool follow, Bool attackingObject, Bool forceAttacking );
 
@@ -231,7 +225,7 @@ public:
 		LOOK_FOR_TARGETS,
 		DO_NOT_LOOK_FOR_TARGETS
 	};
-	virtual Bool isIdle(void) const { return true; }
+	virtual Bool isIdle() const { return true; }
 	AIIdleState( StateMachine *machine, AIIdleTargetingType shouldLookForTargets);
 	virtual StateReturnType onEnter();
 	virtual StateReturnType update();
@@ -348,7 +342,7 @@ public:
 	virtual StateReturnType onEnter() { return STATE_CONTINUE; }
 	virtual void onExit( StateExitType status ) { }
 	virtual StateReturnType update() { return STATE_CONTINUE; }
-	virtual Bool isBusy(void) const { return true; }
+	virtual Bool isBusy() const { return true; }
 protected:
 	// snapshot interface STUBBED.
 	virtual void crc( Xfer *xfer ){};
@@ -478,7 +472,7 @@ private:
 
 	enum { MIN_RECOMPUTE_TIME = 10 };
 
-	StateReturnType updateInternal( void );
+	StateReturnType updateInternal();
 
 	Coord3D				m_prevVictimPos;									///< Where we think our victim is
 	UnsignedInt		m_approachTimestamp;							///< When we last computed an approach goal
@@ -527,7 +521,7 @@ private:
 
 	enum { MIN_RECOMPUTE_TIME = 10 };
 
-	StateReturnType updateInternal( void );
+	StateReturnType updateInternal();
 
 	Coord3D				m_prevVictimPos;									///< Where we think our victim is
 	UnsignedInt		m_approachTimestamp;							///< When we last computed an approach goal
@@ -646,9 +640,9 @@ protected:
 
 protected:
 	void computeGoal(Bool useGroupOffsets);
-	Real calcExtraPathDistance(void);
-	const Waypoint *getNextWaypoint(void);
-	Bool hasNextWaypoint(void);
+	Real calcExtraPathDistance();
+	const Waypoint *getNextWaypoint();
+	Bool hasNextWaypoint();
 };
 EMPTY_DTOR(AIFollowWaypointPathState)
 
@@ -661,7 +655,7 @@ class AIFollowWaypointPathExactState : public AIInternalMoveToState
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIFollowWaypointPathExactState, "AIFollowWaypointPathExactState")
 public:
 	AIFollowWaypointPathExactState( StateMachine *machine, Bool asGroup ) : m_moveAsGroup(asGroup),
-		m_lastWaypoint(NULL),
+		m_lastWaypoint(nullptr),
 		AIInternalMoveToState( machine, "AIFollowWaypointPathExactState" ) { }
 	virtual StateReturnType onEnter();
 	virtual void onExit( StateExitType status );
@@ -1029,15 +1023,15 @@ class AIAttackSquadState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIAttackSquadState, "AIAttackSquadState")
 public:
-	AIAttackSquadState( StateMachine *machine, AttackExitConditionsInterface *attackParameters = NULL) :
+	AIAttackSquadState( StateMachine *machine, AttackExitConditionsInterface *attackParameters = nullptr) :
 			State( machine , "AIAttackSquadState") {	}
 	//~AIAttackSquadState();
 
 	virtual Bool isAttack() const { return m_attackSquadMachine ? m_attackSquadMachine->isInAttackState() : FALSE; }
-	virtual StateReturnType onEnter( void );
+	virtual StateReturnType onEnter();
 	virtual void onExit( StateExitType status );
-	virtual StateReturnType update( void );
-	Object *chooseVictim(void);
+	virtual StateReturnType update();
+	Object *chooseVictim();
 #ifdef STATE_MACHINE_DEBUG
 	virtual AsciiString getName() const ;
 #endif
@@ -1075,7 +1069,7 @@ class AIDockState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIDockState, "AIDockState")
 public:
-	AIDockState( StateMachine *machine ) : State( machine, "AIDockState" ), m_dockMachine(NULL), m_usingPrecisionMovement(FALSE) { }
+	AIDockState( StateMachine *machine ) : State( machine, "AIDockState" ), m_dockMachine(nullptr), m_usingPrecisionMovement(FALSE) { }
 	//~AIDockState();
 	virtual Bool isAttack() const { return m_dockMachine ? m_dockMachine->isInAttackState() : FALSE; }
 	virtual StateReturnType onEnter();
@@ -1164,9 +1158,9 @@ class AIGuardState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardState, "AIGuardState")
 public:
-	AIGuardState( StateMachine *machine ) : State( machine, "AIGuardState" ), m_guardMachine(NULL)
+	AIGuardState( StateMachine *machine ) : State( machine, "AIGuardState" ), m_guardMachine(nullptr)
 	{
-		m_guardMachine = NULL;
+		m_guardMachine = nullptr;
 	}
 	//~AIGuardState();
 	virtual Bool isAttack() const;
@@ -1195,7 +1189,7 @@ class AIGuardRetaliateState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIGuardRetaliateState, "AIGuardRetaliateState")
 public:
-	AIGuardRetaliateState( StateMachine *machine ) : State( machine, "AIGuardRetaliateState" ), m_guardRetaliateMachine(NULL) {}
+	AIGuardRetaliateState( StateMachine *machine ) : State( machine, "AIGuardRetaliateState" ), m_guardRetaliateMachine(nullptr) {}
 	//~AIGuardRetaliateState();
 	virtual Bool isAttack() const;
 	virtual StateReturnType onEnter();
@@ -1222,9 +1216,9 @@ class AITunnelNetworkGuardState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AITunnelNetworkGuardState, "AITunnelNetworkGuardState")
 public:
-	AITunnelNetworkGuardState( StateMachine *machine ) : State( machine, "AITunnelNetworkGuardState" ), m_guardMachine(NULL)
+	AITunnelNetworkGuardState( StateMachine *machine ) : State( machine, "AITunnelNetworkGuardState" ), m_guardMachine(nullptr)
 	{
-		m_guardMachine = NULL;
+		m_guardMachine = nullptr;
 	}
 	//~AIGuardState();
 	virtual Bool isAttack() const;
@@ -1252,7 +1246,7 @@ class AIHuntState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIHuntState, "AIHuntState")
 public:
-	AIHuntState( StateMachine *machine ) : State( machine, "AIHuntState" ), m_huntMachine(NULL)
+	AIHuntState( StateMachine *machine ) : State( machine, "AIHuntState" ), m_huntMachine(nullptr)
 	{
 		m_nextEnemyScanTime = 0;
 	}
@@ -1285,7 +1279,7 @@ class AIAttackAreaState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIAttackAreaState, "AIAttackAreaState")
 public:
-	AIAttackAreaState( StateMachine *machine ) : State( machine, "AIAttackAreaState" ), m_attackMachine(NULL),
+	AIAttackAreaState( StateMachine *machine ) : State( machine, "AIAttackAreaState" ), m_attackMachine(nullptr),
 		m_nextEnemyScanTime(0) { }
 	//~AIAttackAreaState();
 	virtual Bool isAttack() const { return m_attackMachine ? m_attackMachine->isInAttackState() : FALSE; }
@@ -1330,5 +1324,3 @@ protected:
 	Bool m_canTurnInPlace;
 };
 EMPTY_DTOR(AIFaceState)
-
-#endif

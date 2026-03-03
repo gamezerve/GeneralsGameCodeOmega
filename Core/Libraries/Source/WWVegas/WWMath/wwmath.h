@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef WWMATH_H
-#define WWMATH_H
 
 #include "always.h"
 #include <math.h>
@@ -52,7 +46,8 @@
 */
 #define WWMATH_EPSILON		0.0001f
 #define WWMATH_EPSILON2		WWMATH_EPSILON * WWMATH_EPSILON
-#define WWMATH_PI				3.141592654f
+#define WWMATH_PI					3.141592654f
+#define WWMATH_TWO_PI			6.283185308f
 #define WWMATH_FLOAT_MAX	(FLT_MAX)
 #define WWMATH_FLOAT_MIN	(FLT_MIN)
 #define WWMATH_SQRT2			1.414213562f
@@ -98,8 +93,8 @@ public:
 
 // Initialization and Shutdown.  Other math sub-systems which require initialization and
 // shutdown processing will be handled in these functions
-static void			Init(void);
-static void			Shutdown(void);
+static void			Init();
+static void			Shutdown();
 
 // These are meant to be a collection of small math utility functions to be optimized at some point.
 static WWINLINE float Fabs(float val)
@@ -147,7 +142,7 @@ static WWINLINE float		Round(float val) { return floorf(val + 0.5f); }
 static WWINLINE bool			Fast_Is_Float_Positive(const float & val);
 static WWINLINE bool			Is_Power_Of_2(const unsigned int val);
 
-static float		Random_Float(void);
+static float		Random_Float();
 
 static WWINLINE float		Random_Float(float min,float max);
 static WWINLINE float		Clamp(float val, float min = 0.0f, float max = 1.0f);
@@ -170,6 +165,8 @@ static WWINLINE float			Byte_To_Unit_Float(unsigned char byte) { return ((float)
 
 static WWINLINE bool			Is_Valid_Float(float x);
 static WWINLINE bool			Is_Valid_Double(double x);
+
+static WWINLINE float Normalize_Angle(float angle); // Normalizes the angle to the range -PI..PI
 
 };
 
@@ -653,5 +650,7 @@ WWINLINE float WWMath::Inv_Sqrt(float val)
 }
 #endif
 
-
-#endif
+WWINLINE float WWMath::Normalize_Angle(float angle)
+{
+	return angle - (WWMATH_TWO_PI * Floor((angle + WWMATH_PI) / WWMATH_TWO_PI));
+}

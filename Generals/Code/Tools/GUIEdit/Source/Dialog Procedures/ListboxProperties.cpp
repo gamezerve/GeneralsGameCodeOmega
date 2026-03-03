@@ -46,6 +46,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
+
 #include "GUIEdit.h"
 #include "Properties.h"
 #include "LayoutScheme.h"
@@ -135,7 +136,7 @@ static void addScrollbar( GameWindow *listbox )
 		info = TheDefaultScheme->getImageAndColor( LISTBOX_UP_BUTTON_HILITE_PUSHED );
 		GadgetButtonSetHiliteSelectedImage( upButton, info->image );
 
-	}  // end if
+	}
 
 	GameWindow *downButton = GadgetListBoxGetDownButton( listbox );
 	if( downButton )
@@ -156,7 +157,7 @@ static void addScrollbar( GameWindow *listbox )
 		info = TheDefaultScheme->getImageAndColor( LISTBOX_DOWN_BUTTON_HILITE_PUSHED );
 		GadgetButtonSetHiliteSelectedImage( downButton, info->image );
 
-	}  // end if
+	}
 
 	GameWindow *slider = GadgetListBoxGetSlider( listbox );
 	if( slider )
@@ -211,9 +212,9 @@ static void addScrollbar( GameWindow *listbox )
 		info = TheDefaultScheme->getImageAndColor( LISTBOX_SLIDER_THUMB_HILITE_PUSHED );
 		GadgetSliderSetHiliteSelectedThumbImage( slider, info->image );
 
-	}  // end if, slider
+	}
 
-}  // end addScrollbar
+}
 
 // removeScrollbar ============================================================
 /** Remove all scrollbar constructs froma listbox that has it already */
@@ -224,23 +225,23 @@ static void removeScrollbar( GameWindow *listbox )
 
 	// delete the up button
 	TheWindowManager->winDestroy( listData->upButton );
-	listData->upButton = NULL;
+	listData->upButton = nullptr;
 
 	// delete down button
 	TheWindowManager->winDestroy( listData->downButton );
-	listData->downButton = NULL;
+	listData->downButton = nullptr;
 
 	// delete the slider
 	TheWindowManager->winDestroy( listData->slider );
-	listData->slider = NULL;
+	listData->slider = nullptr;
 
 	// remove the scrollbar flag from the listbox data
 	listData->scrollBar = FALSE;
 
-}  // end removeScrollbar
+}
 
 // resizeMaxItems =============================================================
-/** Change the max items that a listbox can accomodate */
+/** Change the max items that a listbox can accommodate */
 //=============================================================================
 static void resizeMaxItems( GameWindow *listbox, UnsignedInt newMaxItems )
 {
@@ -248,7 +249,7 @@ static void resizeMaxItems( GameWindow *listbox, UnsignedInt newMaxItems )
 
 
 
-}  // end resizeMaxItems
+}
 
 // listboxPropertiesCallback ==================================================
 /** Dialog callback for properties */
@@ -326,7 +327,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 
 					break;
 
-				}  // end case subcontrol color
+				}
 
 				// --------------------------------------------------------------------
         case IDOK:
@@ -432,7 +433,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							GadgetButtonSetHiliteSelectedColor( upButton, info->color );
 							GadgetButtonSetHiliteSelectedBorderColor( upButton, info->borderColor );
 
-						}  // end if
+						}
 
 						// down button
 						GameWindow *downButton = GadgetListBoxGetDownButton( window );
@@ -472,7 +473,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							GadgetButtonSetHiliteSelectedColor( downButton, info->color );
 							GadgetButtonSetHiliteSelectedBorderColor( downButton, info->borderColor );
 
-						}  // end if
+						}
 
 						// slider
 						GameWindow *slider = GadgetListBoxGetSlider( window );
@@ -559,7 +560,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							GadgetSliderSetHiliteSelectedThumbColor( slider, info->color );
 							GadgetSliderSetHiliteSelectedThumbBorderColor( slider, info->borderColor );
 
-						}  // end if
+						}
 
 						// save specific list data
 						ListboxData *listData = (ListboxData *)window->winGetUserData();
@@ -577,7 +578,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							removeScrollbar( window );
 
 						// change in the size of the listbox
-						Int newMaxItems = GetDlgItemInt( hWndDialog, EDIT_MAX_ITEMS, NULL, FALSE );
+						Int newMaxItems = GetDlgItemInt( hWndDialog, EDIT_MAX_ITEMS, nullptr, FALSE );
 						if( newMaxItems != listData->listLength )
 							GadgetListBoxSetListLength( window, newMaxItems );
 
@@ -596,7 +597,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							window->winSetStatus( bit );
 
 						// Multi-column
-						Int newColumns = GetDlgItemInt( hWndDialog, EDIT_NUM_COLUMNS,NULL,FALSE);
+						Int newColumns = GetDlgItemInt( hWndDialog, EDIT_NUM_COLUMNS,nullptr,FALSE);
 
 						if(newColumns > 1)
 						{
@@ -604,7 +605,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							GetDlgItemText(hWndDialog,EDIT_COLUMN_PERCENT,percentages,sizeof(percentages));
 							if(strlen(percentages) == 0)
 							{
-								MessageBox(NULL,"You have specified a column amount greater then 1, please enter the same about of percentages","whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
+								MessageBox(nullptr,"You have specified a column amount greater then 1, please enter the same about of percentages","whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
 								break;
 							}
 
@@ -612,17 +613,17 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 							Int i = 0;
 							Int total = 0;
 							Char *token = strtok( percentages, "," );
-							while( token != NULL )
+							while( token != nullptr )
 							{
 								newPercentages[i] = atoi(token);
 								total += newPercentages[i];
-								token = strtok( NULL, "," );
+								token = strtok( nullptr, "," );
 								i++;
 								if(i > newColumns && token)
 								{
 									Char whoopsMsg[250];
 									sprintf(whoopsMsg,"You have Specified %d columns but I have read in more then that for the percentages, please double check your data", newColumns);
-									MessageBox(NULL, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
+									MessageBox(nullptr, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
 									delete[] newPercentages;
 									return 0;
 								}
@@ -630,7 +631,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 								{
 									Char whoopsMsg[250];
 									sprintf(whoopsMsg,"You have Specified %d columns but I have read in only %d for the percentages, please double check your data", newColumns, i );
-									MessageBox(NULL, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
+									MessageBox(nullptr, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
 									delete[] newPercentages;
 									return 0;
 								}
@@ -638,7 +639,7 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 								{
 									Char whoopsMsg[250];
 									sprintf(whoopsMsg,"Please Double check to make sure your percentages add up to 100.");
-									MessageBox(NULL, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
+									MessageBox(nullptr, whoopsMsg,"Whoops",MB_OK | MB_ICONSTOP | MB_APPLMODAL);
 									delete[] newPercentages;
 									return 0;
 								}
@@ -647,12 +648,12 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
 						}
 						listData->columns = newColumns;
 
-					}  // end if
+					}
 
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end OK
+				}
 
 				// --------------------------------------------------------------------
         case IDCANCEL:
@@ -661,13 +662,13 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
           DestroyWindow( hWndDialog );
           break;
 
-				}  // end cancel
+				}
 
-      }  // end switch( LOWORD( wParam ) )
+      }
 
       return 0;
 
-    } // end of WM_COMMAND
+    }
 
 		// ------------------------------------------------------------------------
     case WM_CLOSE:
@@ -676,15 +677,15 @@ static LRESULT CALLBACK listboxPropertiesCallback( HWND hWndDialog,
       DestroyWindow( hWndDialog );
       return 0;
 
-		}  // end close
+		}
 
 		// ------------------------------------------------------------------------
 		default:
 			return 0;
 
-  }  // end of switch
+  }
 
-}  // end listboxPropertiesCallback
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -703,8 +704,8 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 												 (LPCTSTR)LISTBOX_PROPERTIES_DIALOG,
 												 TheEditor->getWindowHandle(),
 												 (DLGPROC)listboxPropertiesCallback );
-	if( dialog == NULL )
-		return NULL;
+	if( dialog == nullptr )
+		return nullptr;
 
 	// do the common initialization
 	CommonDialogInitialize( window, dialog );
@@ -804,7 +805,7 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 		borderColor = GadgetButtonGetHiliteSelectedBorderColor( upButton );
 		StoreImageAndColor( LISTBOX_UP_BUTTON_HILITE_PUSHED, image, color, borderColor );
 
-	}  // end if
+	}
 
 	// --------------------------------------------------------------------------
 	GameWindow *downButton = GadgetListBoxGetDownButton( window );
@@ -844,7 +845,7 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 		borderColor = GadgetButtonGetHiliteSelectedBorderColor( downButton );
 		StoreImageAndColor( LISTBOX_DOWN_BUTTON_HILITE_PUSHED, image, color, borderColor );
 
-	}  // end if
+	}
 
 	GameWindow *slider = GadgetListBoxGetSlider( window );
 	if( slider )
@@ -928,7 +929,7 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 		borderColor = GadgetSliderGetHiliteSelectedThumbBorderColor( slider );
 		StoreImageAndColor( LISTBOX_SLIDER_THUMB_HILITE_PUSHED, image, color, borderColor );
 
-	}  // end if
+	}
 
 	// init listbox specific property section
 	ListboxData *listData = (ListboxData *)window->winGetUserData();
@@ -948,8 +949,8 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 		sprintf(percentages,"%d",listData->columnWidthPercentage[0]);
 		for(Int i = 1; i < listData->columns; i++ )
 		{
-			strcat(percentages,",");
-			strcat(percentages,itoa(listData->columnWidthPercentage[i],tempStr,10));
+			strlcat(percentages, ",", ARRAY_SIZE(percentages));
+			strlcat(percentages, itoa(listData->columnWidthPercentage[i],tempStr,10), ARRAY_SIZE(percentages));
 		}
 		SetDlgItemText(dialog,EDIT_COLUMN_PERCENT,percentages);
 
@@ -968,7 +969,7 @@ HWND InitListboxPropertiesDialog( GameWindow *window )
 
 	return dialog;
 
-}  // end InitListboxPropertiesDialog
+}
 
 
 

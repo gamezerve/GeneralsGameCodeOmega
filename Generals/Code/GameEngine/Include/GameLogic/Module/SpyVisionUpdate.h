@@ -31,9 +31,6 @@
 
 #pragma once
 
-#ifndef _SPY_VISION_UPDATE_H
-#define _SPY_VISION_UPDATE_H
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 
@@ -62,8 +59,8 @@ public:
 	SpyVisionUpdate( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 
-	virtual void onDelete( void );
-	virtual UpdateSleepTime update( void );
+	virtual void onDelete();
+	virtual UpdateSleepTime update();
 
 	void activateSpyVision( UnsignedInt duration );
 
@@ -73,6 +70,3 @@ private:
 
 	UnsignedInt m_deactivateFrame;
 };
-
-#endif
-

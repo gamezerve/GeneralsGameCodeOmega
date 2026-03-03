@@ -27,7 +27,7 @@
 // Desc:   Keeps track of shots fired and people targeted for weapons that want a history of such a thing
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/GameType.h"
@@ -66,7 +66,7 @@ FiringTracker::~FiringTracker()
 //-------------------------------------------------------------------------------------------------
 Int FiringTracker::getNumConsecutiveShotsAtVictim( const Object *victim ) const
 {
-	if( victim == NULL )
+	if( victim == nullptr )
 		return 0;// safety, this function is for asking about shots at a victim
 
 	if( victim->getID() != m_victimID )
@@ -349,7 +349,7 @@ void FiringTracker::crc( Xfer *xfer )
 	// object helper base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -376,15 +376,15 @@ void FiringTracker::xfer( Xfer *xfer )
 	// frame to start cooldown
 	xfer->xferUnsignedInt( &m_frameToStartCooldown );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void FiringTracker::loadPostProcess( void )
+void FiringTracker::loadPostProcess()
 {
 
 	// object helper back class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

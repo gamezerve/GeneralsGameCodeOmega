@@ -36,13 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef AABTREEBUILDER_H
-#define AABTREEBUILDER_H
 
 #include "always.h"
 #include "vector3.h"
@@ -66,14 +60,14 @@ class AABTreeBuilderClass
 {
 public:
 
-	AABTreeBuilderClass(void);
-	~AABTreeBuilderClass(void);
+	AABTreeBuilderClass();
+	~AABTreeBuilderClass();
 
 	void					Build_AABTree(int polycount,TriIndex * polys,int vertcount,Vector3 * verts);
 	void					Export(ChunkSaveClass & csave);
 
-	int					Node_Count(void);
-	int					Poly_Count(void);
+	int					Node_Count();
+	int					Poly_Count();
 
 	enum
 	{
@@ -91,12 +85,12 @@ private:
 	*/
 	struct CullNodeStruct
 	{
-		CullNodeStruct(void) : Index(0),Min(0,0,0),Max(0,0,0),Front(NULL),Back(NULL),PolyCount(0),PolyIndices(NULL) {}
-		~CullNodeStruct(void)
+		CullNodeStruct() : Index(0),Min(0,0,0),Max(0,0,0),Front(nullptr),Back(nullptr),PolyCount(0),PolyIndices(nullptr) {}
+		~CullNodeStruct()
 		{
-			if (Front) { delete Front; }
-			if (Back) { delete Back; }
-			if (PolyIndices) { delete[] PolyIndices; }
+			delete Front;
+			delete Back;
+			delete[] PolyIndices;
 		}
 
 		int						Index;
@@ -113,7 +107,7 @@ private:
 	*/
 	struct SplitChoiceStruct
 	{
-		SplitChoiceStruct(void) :
+		SplitChoiceStruct() :
 			Cost(FLT_MAX),
 			FrontCount(0),
 			BackCount(0),
@@ -137,11 +131,11 @@ private:
 
 	struct SplitArraysStruct
 	{
-		SplitArraysStruct(void) :
+		SplitArraysStruct() :
 			FrontCount(0),
 			BackCount(0),
-			FrontPolys(NULL),
-			BackPolys(NULL)
+			FrontPolys(nullptr),
+			BackPolys(nullptr)
 		{
 		}
 
@@ -202,9 +196,3 @@ private:
 
 	friend class AABTreeClass;
 };
-
-
-
-
-#endif //AABTREEBUILDER_H
-

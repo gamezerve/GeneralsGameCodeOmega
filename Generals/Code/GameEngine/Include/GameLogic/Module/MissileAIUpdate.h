@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _MISSILE_AI_UPDATE_H_
-#define _MISSILE_AI_UPDATE_H_
-
 #include "Common/GameType.h"
 #include "Common/GlobalData.h"
 #include "GameLogic/Module/AIUpdate.h"
@@ -99,7 +96,7 @@ public:
 	virtual Bool processCollision(PhysicsBehavior *physics, Object *other); ///< Returns true if the physics collide should apply the force.  Normally not.  jba.
 
 	virtual UpdateSleepTime update();
-	virtual void onDelete( void );
+	virtual void onDelete();
 
 protected:
 
@@ -139,6 +136,3 @@ private:
 
 
 };
-
-#endif // _MISSILE_AI_UPDATE_H_
-

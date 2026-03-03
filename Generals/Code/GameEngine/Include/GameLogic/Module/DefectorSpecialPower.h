@@ -32,9 +32,6 @@
 
 #pragma once
 
-#ifndef __DEFECTORSPECIALPOWER_H_
-#define __DEFECTORSPECIALPOWER_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/SpecialPowerModule.h"
 
@@ -54,7 +51,7 @@ class DefectorSpecialPowerModuleData : public SpecialPowerModuleData
 
 public:
 
-	DefectorSpecialPowerModuleData( void );
+	DefectorSpecialPowerModuleData();
 
 	static void buildFieldParse( MultiIniFieldParse& p );
 
@@ -81,5 +78,3 @@ public:
 protected:
 
 };
-#endif  // end DefectorSpecialPower
-

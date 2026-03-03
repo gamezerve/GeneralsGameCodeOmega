@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __BUILDASSISTANT_H_
-#define __BUILDASSISTANT_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "Common/STLTypedefs.h"
 #include "Lib/BaseType.h"
@@ -57,7 +54,7 @@ class ObjectSellInfo : public MemoryPoolObject
 
 public:
 
-	ObjectSellInfo( void );
+	ObjectSellInfo();
 	// virtual destructor prototypes provided by memory pool object
 
 	ObjectID m_id;									///< id of object to sell
@@ -114,7 +111,7 @@ public:
 	{
 		TERRAIN_RESTRICTIONS	= 0x00000001,	///< Check for basic terrain restrictions
 		CLEAR_PATH						= 0x00000002,	///< Must be able to path find to location
-		NO_OBJECT_OVERLAP			= 0X00000004,	///< Can't overlap enemy objects, or locally controled objects that can't move out of the way
+		NO_OBJECT_OVERLAP			= 0X00000004,	///< Can't overlap enemy objects, or locally controlled objects that can't move out of the way
 		USE_QUICK_PATHFIND    = 0x00000008, ///< Use the quick pathfind method for CLEAR_PATH
 		SHROUD_REVEALED				= 0x00000010,	///< Check to make sure the shroud is revealed
 		NO_ENEMY_OBJECT_OVERLAP=0x00000020,	///< Can't overlap enemy objects only.
@@ -122,12 +119,12 @@ public:
 
 public:
 
-	BuildAssistant( void );
-	virtual ~BuildAssistant( void );
+	BuildAssistant();
+	virtual ~BuildAssistant();
 
-	virtual void init( void );					///< for subsytem
-	virtual void reset( void );					///< for subsytem
-	virtual void update( void );				///< for subsytem
+	virtual void init();					///< for subsytem
+	virtual void reset();					///< for subsytem
+	virtual void update();				///< for subsytem
 
 	/// iterate the "footprint" area of a structure at the given "sample resolution"
 	void iterateFootprint( const ThingTemplate *build,
@@ -168,13 +165,13 @@ public:
 
 	/// tiling wall object helper function, we can use this to "tile" walls when building
 	virtual TileBuildInfo *buildTiledLocations( const ThingTemplate *thingBeingTiled,
-																							Real angle, // angle to consturct thing being tiled
+																							Real angle, // angle to construct thing being tiled
 																						  const Coord3D *start, const Coord3D *end,
 																						  Real tilingSize, Int maxTiles,
 																							Object *builderObject );
 
 	/// return the "scratch pad" array that can be used to create a line of build locations
-	virtual inline Coord3D *getBuildLocations( void ) { return m_buildPositions; }
+	virtual Coord3D *getBuildLocations() { return m_buildPositions; }
 
 	/// is the template a line build object, like a wall
 	virtual Bool isLineBuildTemplate( const ThingTemplate *tTemplate );
@@ -208,10 +205,7 @@ protected:
 	Int m_buildPositionSize;				///< number of elements in the build position array
 	ObjectSellList m_sellList;			///< list of objects currently going through the "sell process"
 
-};  // end BuildAssistant
+};
 
 // EXTERN /////////////////////////////////////////////////////////////////////////////////////////
 extern BuildAssistant *TheBuildAssistant;
-
-#endif // __BUILDASSISTANT_H_
-

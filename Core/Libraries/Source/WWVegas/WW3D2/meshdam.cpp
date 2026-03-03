@@ -57,13 +57,13 @@
  * HISTORY:                                                                                    *
  *   10/28/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-DamageClass::DamageClass(void):
+DamageClass::DamageClass():
 	DamageIndex(0),
 	NumMaterials(0),
 	NumVerts(0),
 	NumColors(0),
-	Verts(NULL),
-	Colors(NULL)
+	Verts(nullptr),
+	Colors(nullptr)
 {
 }
 
@@ -80,17 +80,13 @@ DamageClass::DamageClass(void):
  * HISTORY:                                                                                    *
  *   10/28/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-DamageClass::~DamageClass(void)
+DamageClass::~DamageClass()
 {
-	if (Verts != NULL) {
-		delete [] Verts;
-		Verts = NULL;
-	}
+	delete [] Verts;
+	Verts = nullptr;
 
-	if (Colors != NULL) {
-		delete[] Colors;
-		Colors = NULL;
-	}
+	delete[] Colors;
+	Colors = nullptr;
 }
 
 /***********************************************************************************************

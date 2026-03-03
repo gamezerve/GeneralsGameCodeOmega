@@ -44,7 +44,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"always.h"
-#include	"RANDOM.H"
+#include "RANDOM.h"
 
 // Timing tests for random these random number generators in seconds for
 // 10000000 iterations. Testing done by Hector Yee, 6/20/01
@@ -56,7 +56,7 @@ Time for Random3=1.281000
 Time for Random4=0.375000
 Time for Built in Rand()=0.813000
 Results from DIEHARD battery of tests
-A p-value of 0.0 or 1.0 means it fails. Anything inbetween is ok.
+A p-value of 0.0 or 1.0 means it fails. Anything in between is ok.
 R0 - FAILED almost all tests, didn't complete squeeze test
 R2 - Passed all tests, p-value 0.6
 R3 - Failed 11 of 253 tests, p-value 1.0
@@ -109,7 +109,7 @@ RandomClass::RandomClass(unsigned seed) :
  * HISTORY:                                                                                    *
  *   02/27/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-int RandomClass::operator ()(void)
+int RandomClass::operator ()()
 {
 	/*
 	**	Transform the seed value into the next number in the sequence.
@@ -190,7 +190,7 @@ Random2Class::Random2Class(unsigned seed) :
  * HISTORY:                                                                                    *
  *   05/20/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-int Random2Class::operator() (void)
+int Random2Class::operator() ()
 {
 	Table[Index1] ^= Table[Index2];
 	int val = Table[Index1];
@@ -211,7 +211,7 @@ int Random2Class::operator() (void)
  *    This routine will generate a random number between the two values specified. It uses     *
  *    a method that will not bias the values in any way.                                       *
  *                                                                                             *
- * INPUT:   minval   -- The minium return value (inclusive).                                   *
+ * INPUT:   minval   -- The minimum return value (inclusive).                                  *
  *                                                                                             *
  *          maxval   -- The maximum return value (inclusive).                                  *
  *                                                                                             *
@@ -296,7 +296,7 @@ Random3Class::Random3Class(unsigned seed1, unsigned seed2) :
  * HISTORY:                                                                                    *
  *   05/20/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-int Random3Class::operator() (void)
+int Random3Class::operator() ()
 {
 	int loword = Seed;
 	int hiword = Index++;
@@ -320,7 +320,7 @@ int Random3Class::operator() (void)
  *    This routine will generate a random number between the two values specified. It uses     *
  *    a method that will not bias the values in any way.                                       *
  *                                                                                             *
- * INPUT:   minval   -- The minium return value (inclusive).                                   *
+ * INPUT:   minval   -- The minimum return value (inclusive).                                  *
  *                                                                                             *
  *          maxval   -- The maximum return value (inclusive).                                  *
  *                                                                                             *
@@ -368,7 +368,7 @@ Random4Class::Random4Class(unsigned int seed)
 	 // mti is N+1 after this
 }
 
-int Random4Class::operator() (void)
+int Random4Class::operator() ()
 {
     unsigned int y;
     static unsigned int mag01[2]={0x0, MATRIX_A};

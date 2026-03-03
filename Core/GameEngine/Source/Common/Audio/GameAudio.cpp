@@ -42,7 +42,7 @@
 //         Includes
 //----------------------------------------------------------------------------
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/GameAudio.h"
 
 #include "Common/AudioAffect.h"
@@ -59,7 +59,7 @@
 #include "Common/OSDisplay.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
-#include "Common/UserPreferences.h"
+#include "Common/OptionPreferences.h"
 
 #include "GameClient/ControlBar.h"
 #include "GameClient/Drawable.h"
@@ -80,7 +80,7 @@ static const char* TheSpeakerTypes[] =
 	"4 Speaker",
 	"5.1 Surround",
 	"7.1 Surround",
-	NULL
+	nullptr
 };
 
 static const Int TheSpeakerTypesCount = sizeof(TheSpeakerTypes) / sizeof(TheSpeakerTypes[0]);
@@ -90,55 +90,61 @@ static void parseSpeakerType( INI *ini, void *instance, void *store, const void 
 // Field Parse table for Audio Settings ///////////////////////////////////////////////////////////
 static const FieldParse audioSettingsFieldParseTable[] =
 {
-	{ "AudioRoot",						INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_audioRoot) },
-	{ "SoundsFolder",					INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_soundsFolder) },
-	{ "MusicFolder",					INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_musicFolder) },
-	{ "StreamingFolder",			INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_streamingFolder) },
-	{ "SoundsExtension",			INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_soundsExtension) },
+	{ "AudioRoot",						INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_audioRoot) },
+	{ "SoundsFolder",					INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_soundsFolder) },
+	{ "MusicFolder",					INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_musicFolder) },
+	{ "StreamingFolder",			INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_streamingFolder) },
+	{ "SoundsExtension",			INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_soundsExtension) },
 
-	{ "UseDigital",						INI::parseBool,											NULL,							offsetof( AudioSettings, m_useDigital) },
-	{ "UseMidi",							INI::parseBool,											NULL,							offsetof( AudioSettings, m_useMidi) },
-	{ "OutputRate",						INI::parseInt,											NULL,							offsetof( AudioSettings, m_outputRate) },
-	{ "OutputBits",						INI::parseInt,											NULL,							offsetof( AudioSettings, m_outputBits) },
-	{ "OutputChannels",				INI::parseInt,											NULL,							offsetof( AudioSettings, m_outputChannels) },
-	{ "SampleCount2D",				INI::parseInt,											NULL,							offsetof( AudioSettings, m_sampleCount2D) },
-	{ "SampleCount3D",				INI::parseInt,											NULL,							offsetof( AudioSettings, m_sampleCount3D) },
-	{ "StreamCount",					INI::parseInt,											NULL,							offsetof( AudioSettings, m_streamCount) },
+	{ "UseDigital",						INI::parseBool,											nullptr,							offsetof( AudioSettings, m_useDigital) },
+	{ "UseMidi",							INI::parseBool,											nullptr,							offsetof( AudioSettings, m_useMidi) },
+	{ "OutputRate",						INI::parseInt,											nullptr,							offsetof( AudioSettings, m_outputRate) },
+	{ "OutputBits",						INI::parseInt,											nullptr,							offsetof( AudioSettings, m_outputBits) },
+	{ "OutputChannels",				INI::parseInt,											nullptr,							offsetof( AudioSettings, m_outputChannels) },
+	{ "SampleCount2D",				INI::parseInt,											nullptr,							offsetof( AudioSettings, m_sampleCount2D) },
+	{ "SampleCount3D",				INI::parseInt,											nullptr,							offsetof( AudioSettings, m_sampleCount3D) },
+	{ "StreamCount",					INI::parseInt,											nullptr,							offsetof( AudioSettings, m_streamCount) },
 
-	{ "Preferred3DHW1",				INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_preferred3DProvider[0]) },
-	{ "Preferred3DHW2",				INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_preferred3DProvider[1]) },
-	{ "Preferred3DHW3",				INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_preferred3DProvider[2]) },
-	{ "Preferred3DHW4",				INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_preferred3DProvider[3]) },
+	{ "Preferred3DHW1",				INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_preferred3DProvider[0]) },
+	{ "Preferred3DHW2",				INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_preferred3DProvider[1]) },
+	{ "Preferred3DHW3",				INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_preferred3DProvider[2]) },
+	{ "Preferred3DHW4",				INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_preferred3DProvider[3]) },
 
-	{ "Preferred3DSW",				INI::parseAsciiString,							NULL,							offsetof( AudioSettings, m_preferred3DProvider[4]) },
+	{ "Preferred3DSW",				INI::parseAsciiString,							nullptr,							offsetof( AudioSettings, m_preferred3DProvider[4]) },
 
-	{ "Default2DSpeakerType",		 parseSpeakerType,							NULL,							offsetof( AudioSettings, m_defaultSpeakerType2D) },
-	{ "Default3DSpeakerType",		 parseSpeakerType,							NULL,							offsetof( AudioSettings, m_defaultSpeakerType3D) },
+	{ "Default2DSpeakerType",		 parseSpeakerType,							nullptr,							offsetof( AudioSettings, m_defaultSpeakerType2D) },
+	{ "Default3DSpeakerType",		 parseSpeakerType,							nullptr,							offsetof( AudioSettings, m_defaultSpeakerType3D) },
 
-	{ "MinSampleVolume",			INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_minVolume) },
-	{ "GlobalMinRange",				INI::parseInt,											NULL,							offsetof( AudioSettings, m_globalMinRange) },
-	{ "GlobalMaxRange",				INI::parseInt,											NULL,							offsetof( AudioSettings, m_globalMaxRange) },
-	{ "TimeBetweenDrawableSounds", INI::parseDurationUnsignedInt, NULL,							offsetof( AudioSettings, m_drawableAmbientFrames) },
-	{ "TimeToFadeAudio",			INI::parseDurationUnsignedInt,			NULL,							offsetof( AudioSettings, m_fadeAudioFrames) },
-	{ "AudioFootprintInBytes",INI::parseUnsignedInt,							NULL,							offsetof( AudioSettings, m_maxCacheSize) },
-	{ "Relative2DVolume",			INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_relative2DVolume ) },
-	{ "DefaultSoundVolume",		INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_defaultSoundVolume) },
-	{ "Default3DSoundVolume",	INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_default3DSoundVolume) },
-	{ "DefaultSpeechVolume",	INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_defaultSpeechVolume) },
-	{ "DefaultMusicVolume",		INI::parsePercentToReal,						NULL,							offsetof( AudioSettings, m_defaultMusicVolume) },
-	{ "DefaultMoneyTransactionVolume", INI::parsePercentToReal,		NULL,							offsetof( AudioSettings, m_defaultMoneyTransactionVolume) },
-	{ "MicrophoneDesiredHeightAboveTerrain",	INI::parseReal,			NULL,							offsetof( AudioSettings, m_microphoneDesiredHeightAboveTerrain ) },
-	{ "MicrophoneMaxPercentageBetweenGroundAndCamera", INI::parsePercentToReal,	NULL,	offsetof( AudioSettings, m_microphoneMaxPercentageBetweenGroundAndCamera ) },
-  { "ZoomMinDistance",		INI::parseReal,									NULL,							offsetof( AudioSettings, m_zoomMinDistance ) },
-  { "ZoomMaxDistance",		INI::parseReal,									NULL,							offsetof( AudioSettings, m_zoomMaxDistance ) },
-  { "ZoomSoundVolumePercentageAmount",		INI::parsePercentToReal,	NULL,		offsetof( AudioSettings, m_zoomSoundVolumePercentageAmount ) },
+	{ "MinSampleVolume",			INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_minVolume) },
+	{ "Use3DSoundRangeVolumeFade", INI::parseBool,								nullptr,							offsetof( AudioSettings, m_use3DSoundRangeVolumeFade) },
+	{ "3DSoundRangeVolumeFadeExponent", INI::parseReal,						nullptr,							offsetof( AudioSettings, m_3DSoundRangeVolumeFadeExponent) },
+	{ "GlobalMinRange",				INI::parseInt,											nullptr,							offsetof( AudioSettings, m_globalMinRange) },
+	{ "GlobalMaxRange",				INI::parseInt,											nullptr,							offsetof( AudioSettings, m_globalMaxRange) },
+	{ "TimeBetweenDrawableSounds", INI::parseDurationUnsignedInt, nullptr,							offsetof( AudioSettings, m_drawableAmbientFrames) },
+	{ "TimeToFadeAudio",			INI::parseDurationUnsignedInt,			nullptr,							offsetof( AudioSettings, m_fadeAudioFrames) },
+	{ "AudioFootprintInBytes",INI::parseUnsignedInt,							nullptr,							offsetof( AudioSettings, m_maxCacheSize) },
+	{ "Relative2DVolume",			INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_relative2DVolume ) },
+	{ "DefaultSoundVolume",		INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_defaultSoundVolume) },
+	{ "Default3DSoundVolume",	INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_default3DSoundVolume) },
+	{ "DefaultSpeechVolume",	INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_defaultSpeechVolume) },
+	{ "DefaultMusicVolume",		INI::parsePercentToReal,						nullptr,							offsetof( AudioSettings, m_defaultMusicVolume) },
+	{ "DefaultMoneyTransactionVolume", INI::parsePercentToReal,		nullptr,							offsetof( AudioSettings, m_defaultMoneyTransactionVolume) },
+	{ "MicrophoneDesiredHeightAboveTerrain",	INI::parseReal,			nullptr,							offsetof( AudioSettings, m_microphoneDesiredHeightAboveTerrain ) },
+	{ "MicrophoneMaxPercentageBetweenGroundAndCamera", INI::parsePercentToReal,	nullptr,	offsetof( AudioSettings, m_microphoneMaxPercentageBetweenGroundAndCamera ) },
+  { "ZoomMinDistance",		INI::parseReal,									nullptr,							offsetof( AudioSettings, m_zoomMinDistance ) },
+  { "ZoomMaxDistance",		INI::parseReal,									nullptr,							offsetof( AudioSettings, m_zoomMaxDistance ) },
+  { "ZoomSoundVolumePercentageAmount",		INI::parsePercentToReal,	nullptr,		offsetof( AudioSettings, m_zoomSoundVolumePercentageAmount ) },
 
-	{ NULL, NULL, NULL, NULL }
+	{ nullptr, nullptr, nullptr, 0 }
 };
 
 // Singleton TheAudio /////////////////////////////////////////////////////////////////////////////
-AudioManager *TheAudio = NULL;
+AudioManager *TheAudio = nullptr;
 
+const char *const AudioManager::MuteAudioReasonNames[] =
+{
+	"MuteAudioReason_WindowFocus",
+};
 
 // AudioManager Device Independent functions //////////////////////////////////////////////////////
 AudioManager::AudioManager() :
@@ -146,13 +152,13 @@ AudioManager::AudioManager() :
 	m_sound3DOn(TRUE),
 	m_musicOn(TRUE),
 	m_speechOn(TRUE),
-	m_music(NULL),
-	m_sound(NULL),
+	m_music(nullptr),
+	m_sound(nullptr),
 	m_surroundSpeakers(FALSE),
-	m_hardwareAccel(FALSE),
-	m_musicPlayingFromCD(FALSE)
+	m_hardwareAccel(FALSE)
 {
-	// Added by Sadullah Nader
+	static_assert(ARRAY_SIZE(AudioManager::MuteAudioReasonNames) == MuteAudioReason_Count, "Incorrect array size");
+
 	m_adjustedVolumes.clear();
 	m_audioRequests.clear();
 	m_listenerPosition.zero();
@@ -166,14 +172,13 @@ AudioManager::AudioManager() :
 	m_systemSoundVolume   = 0.0f;
 	m_systemSpeechVolume  = 0.0f;
 	m_volumeHasChanged			= FALSE;
-	//
-
 	m_listenerOrientation.set(0.0, 1.0, 0.0);
 	theAudioHandlePool = AHSV_FirstHandle;
 	m_audioSettings = NEW AudioSettings;
 	m_miscAudio = NEW MiscAudio;
 	m_silentAudioEvent = NEW AudioEventRTS;
-	m_savedValues = NULL;
+	m_savedValues = nullptr;
+	m_muteReasonBits = 0;
 	m_disallowSpeech = FALSE;
 }
 
@@ -184,80 +189,48 @@ AudioManager::~AudioManager()
 	AudioEventInfoHashIt it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
 		AudioEventInfo *eventInfo = (*it).second;
-		if (eventInfo) {
-			deleteInstance(eventInfo);
-			eventInfo = NULL;
-		}
+		deleteInstance(eventInfo);
 	}
+	m_allAudioEventInfo.clear();
 
 	delete m_silentAudioEvent;
-	m_silentAudioEvent = NULL;
+	m_silentAudioEvent = nullptr;
 
 	delete m_music;
-	m_music = NULL;
+	m_music = nullptr;
 
 	delete m_sound;
-	m_sound = NULL;
+	m_sound = nullptr;
 
 	delete m_miscAudio;
-	m_miscAudio = NULL;
+	m_miscAudio = nullptr;
 
 	delete m_audioSettings;
-	m_audioSettings = NULL;
+	m_audioSettings = nullptr;
 
-	if (m_savedValues)
-		delete [] m_savedValues;
+	delete [] m_savedValues;
 }
 
 //-------------------------------------------------------------------------------------------------
 void AudioManager::init()
 {
 	INI ini;
-	ini.load( AsciiString( "Data\\INI\\AudioSettings.ini" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( "Data\\INI\\AudioSettings", INI_LOAD_OVERWRITE, nullptr);
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Music.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Music.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Music", INI_LOAD_OVERWRITE, nullptr );
+	ini.loadFileDirectory( "Data\\INI\\Music", INI_LOAD_OVERWRITE, nullptr );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\SoundEffects.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\SoundEffects.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\SoundEffects", INI_LOAD_OVERWRITE, nullptr );
+	ini.loadFileDirectory( "Data\\INI\\SoundEffects", INI_LOAD_OVERWRITE, nullptr );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Speech.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Speech.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Speech", INI_LOAD_OVERWRITE, nullptr );
+	ini.loadFileDirectory( "Data\\INI\\Speech", INI_LOAD_OVERWRITE, nullptr );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Voice.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Voice.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( "Data\\INI\\Default\\Voice", INI_LOAD_OVERWRITE, nullptr );
+	ini.loadFileDirectory( "Data\\INI\\Voice", INI_LOAD_OVERWRITE, nullptr );
 
-	// do the miscellaneous sound files last so that we find the audioeventrts associated with the events.
-	ini.load( AsciiString( "Data\\INI\\MiscAudio.ini" ), INI_LOAD_OVERWRITE, NULL);
-
-	// determine if one of the music tracks exists. Since their now BIGd, one implies all.
-	// If they don't exist, then attempt to load them from the CD.
-	if (!TheGlobalData->m_headless && !isMusicAlreadyLoaded())
-	{
-		m_musicPlayingFromCD = TRUE;
-		while (TRUE)
-		{
-			// @todo Unload any files from CD first. - jkmcd
-
-			TheFileSystem->loadMusicFilesFromCD();
-			if (isMusicAlreadyLoaded())
-			{
-				break;
-			}
-			// We loop infinitely on the splash screen if we don't allow breaking out of this loop.
-//#if !defined( RTS_DEBUG )
-			else
-			{
-				// Display the warning.
-
-				if (OSDisplayWarningBox("GUI:InsertCDPrompt", "GUI:InsertCDMessage", OSDBT_OK | OSDBT_CANCEL, OSDOF_SYSTEMMODAL | OSDOF_EXCLAMATIONICON) == OSDBT_CANCEL) {
-					//TheGameEngine->setQuitting(TRUE);  // Can't do this to WorldBuilder
-					break;
-				}
-			}
-//#endif
-		}
-	}
+	// do the miscellaneous sound files last so that we find the AudioEventRTS associated with the events.
+	ini.loadFileDirectory( "Data\\INI\\MiscAudio", INI_LOAD_OVERWRITE, nullptr);
 
 	m_music = NEW MusicManager;
 	m_sound = NEW SoundManager;
@@ -410,7 +383,7 @@ void AudioManager::getInfoForAudioEvent( const AudioEventRTS *eventToFindAndFill
 //-------------------------------------------------------------------------------------------------
 AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 {
-	if (eventToAdd->getEventName().isEmpty() || eventToAdd->getEventName() == AsciiString("NoSound")) {
+	if (eventToAdd->getEventName().isEmpty() || eventToAdd->getEventName() == "NoSound") {
 		return AHSV_NoSound;
 	}
 
@@ -425,7 +398,12 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		}
 	}
 
-	switch (eventToAdd->getAudioEventInfo()->m_soundType)
+	const AudioType soundType = eventToAdd->getAudioEventInfo()->m_soundType;
+
+	// Check if audio type is on
+	// TheSuperHackers @info Zero audio volume is not a fail condition, because music, speech and sounds
+	// still need to be in flight in case the user raises the volume on runtime after the audio was already triggered.
+	switch (soundType)
 	{
 		case AT_Music:
 			if (!isOn(AudioAffect_Music))
@@ -436,21 +414,33 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 				return AHSV_NoSound;
 			break;
 		case AT_Streaming:
+			// if we're currently playing uninterruptable speech, then disallow the addition of this sample
+			if (getDisallowSpeech())
+				return AHSV_NoSound;
 			if (!isOn(AudioAffect_Speech))
 				return AHSV_NoSound;
 			break;
 	}
 
-	// if we're currently playing uninterruptable speech, then disallow the addition of this sample
-	if (getDisallowSpeech() && eventToAdd->getAudioEventInfo()->m_soundType == AT_Streaming) {
-		return AHSV_NoSound;
-	}
+	// TheSuperHackers @info Scripted audio events are logical, i.e. synchronized across clients.
+	// In retail mode this early return cannot be taken for such audio events as it skips code that changes the logical game seed values.
+	// In non-retail mode logical audio events are decoupled from the CRC computation, so this early return is allowed.
+#if RETAIL_COMPATIBLE_CRC
+	const Bool logicalAudio = eventToAdd->getIsLogicalAudio();
+#else
+	const Bool logicalAudio = FALSE;
+#endif
+	const Bool notForLocal = !eventToAdd->getUninterruptible() && !shouldPlayLocally(eventToAdd);
 
+	if (!logicalAudio && notForLocal)
+	{
+		return AHSV_NotForLocal;
+	}
 
 	AudioEventRTS *audioEvent = MSGNEW("AudioEventRTS") AudioEventRTS(*eventToAdd);		// poolify
 	audioEvent->setPlayingHandle( allocateNewHandle() );
 	audioEvent->generateFilename();	// which file are we actually going to play?
-	((AudioEventRTS*)eventToAdd)->setPlayingAudioIndex( audioEvent->getPlayingAudioIndex() );
+	eventToAdd->setPlayingAudioIndex( audioEvent->getPlayingAudioIndex() );
 	audioEvent->generatePlayInfo();	// generate pitch shift and volume shift now as well
 
 	std::list<std::pair<AsciiString, Real> >::iterator it;
@@ -461,12 +451,13 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		}
 	}
 
-	if (!audioEvent->getUninterruptable()) {
-		if (!shouldPlayLocally(audioEvent)) {
-			releaseAudioEventRTS(audioEvent);
-			return AHSV_NotForLocal;
-		}
+#if RETAIL_COMPATIBLE_CRC
+	if (notForLocal)
+	{
+		releaseAudioEventRTS(audioEvent);
+		return AHSV_NotForLocal;
 	}
+#endif
 
 	// cull muted audio
 	if (audioEvent->getVolume() < m_audioSettings->m_minVolume) {
@@ -477,8 +468,7 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_Muted;
 	}
 
-	AudioType type = eventToAdd->getAudioEventInfo()->m_soundType;
-	if (type == AT_Music)
+	if (soundType == AT_Music)
 	{
 		m_music->addAudioEvent(audioEvent);
 	}
@@ -504,7 +494,7 @@ Bool AudioManager::isValidAudioEvent(const AudioEventRTS *eventToCheck) const
 
 	getInfoForAudioEvent(eventToCheck);
 
-	return (eventToCheck->getAudioEventInfo() != NULL);
+	return (eventToCheck->getAudioEventInfo() != nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -790,7 +780,7 @@ void AudioManager::setListenerPosition( const Coord3D *newListenerPos, const Coo
 }
 
 //-------------------------------------------------------------------------------------------------
-const Coord3D *AudioManager::getListenerPosition( void ) const
+const Coord3D *AudioManager::getListenerPosition() const
 {
 	return &m_listenerPosition;
 }
@@ -807,9 +797,7 @@ AudioRequest *AudioManager::allocateAudioRequest( Bool useAudioEvent )
 //-------------------------------------------------------------------------------------------------
 void AudioManager::releaseAudioRequest( AudioRequest *requestToRelease )
 {
-	if (requestToRelease) {
-		deleteInstance(requestToRelease);
-	}
+	deleteInstance(requestToRelease);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -820,7 +808,7 @@ void AudioManager::appendAudioRequest( AudioRequest *m_request )
 
 //-------------------------------------------------------------------------------------------------
 // Remove all pending audio requests
-void AudioManager::removeAllAudioRequests( void )
+void AudioManager::removeAllAudioRequests()
 {
   std::list<AudioRequest*>::iterator it;
   for ( it = m_audioRequests.begin(); it != m_audioRequests.end(); it++ ) {
@@ -831,7 +819,7 @@ void AudioManager::removeAllAudioRequests( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-void AudioManager::processRequestList( void )
+void AudioManager::processRequestList()
 {
 
 }
@@ -872,7 +860,7 @@ AudioEventInfo *AudioManager::findAudioEventInfo( AsciiString eventName ) const
 	AudioEventInfoHash::const_iterator it;
 	it = m_allAudioEventInfo.find(eventName);
 	if (it == m_allAudioEventInfo.end()) {
-		return NULL;
+		return nullptr;
 	}
 
 	return (*it).second;
@@ -880,7 +868,7 @@ AudioEventInfo *AudioManager::findAudioEventInfo( AsciiString eventName ) const
 
 //-------------------------------------------------------------------------------------------------
 // Remove all AudioEventInfo's with the m_isLevelSpecific flag
-void AudioManager::removeLevelSpecificAudioEventInfos(void)
+void AudioManager::removeLevelSpecificAudioEventInfos()
 {
   AudioEventInfoHash::iterator it = m_allAudioEventInfo.begin();
 
@@ -901,31 +889,31 @@ void AudioManager::removeLevelSpecificAudioEventInfos(void)
 }
 
 //-------------------------------------------------------------------------------------------------
-const AudioSettings *AudioManager::getAudioSettings( void ) const
+const AudioSettings *AudioManager::getAudioSettings() const
 {
 	return m_audioSettings;
 }
 
 //-------------------------------------------------------------------------------------------------
-AudioSettings *AudioManager::friend_getAudioSettings( void )
+AudioSettings *AudioManager::friend_getAudioSettings()
 {
 	return m_audioSettings;
 }
 
 //-------------------------------------------------------------------------------------------------
-const MiscAudio *AudioManager::getMiscAudio( void ) const
+const MiscAudio *AudioManager::getMiscAudio() const
 {
 	return m_miscAudio;
 }
 
 //-------------------------------------------------------------------------------------------------
-MiscAudio *AudioManager::friend_getMiscAudio( void )
+MiscAudio *AudioManager::friend_getMiscAudio()
 {
 	return m_miscAudio;
 }
 
 //-------------------------------------------------------------------------------------------------
-const FieldParse *AudioManager::getFieldParseTable( void ) const
+const FieldParse *AudioManager::getFieldParseTable() const
 {
 	return audioSettingsFieldParseTable;
 }
@@ -957,9 +945,9 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool AudioManager::isMusicAlreadyLoaded(void) const
+Bool AudioManager::isMusicAlreadyLoaded() const
 {
-	const AudioEventInfo *musicToLoad = NULL;
+	const AudioEventInfo *musicToLoad = nullptr;
 	AudioEventInfoHash::const_iterator it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
 		if (it->second) {
@@ -1020,7 +1008,7 @@ Bool AudioManager::shouldPlayLocally(const AudioEventRTS *audioEvent)
 	if( !localPlayer->isPlayerActive() )
 	{
 		//We are dead, thus are observing. Get the player we are observing. It's
-		//possible that we're not looking at any player, therefore it can be NULL.
+		//possible that we're not looking at any player, therefore it can be null.
 		localPlayer = TheControlBar->getObserverLookAtPlayer();
 	}
 
@@ -1042,12 +1030,12 @@ Bool AudioManager::shouldPlayLocally(const AudioEventRTS *audioEvent)
 
 	Player *owningPlayer = ThePlayerList->getNthPlayer(audioEvent->getPlayerIndex());
 
-	if (BitIsSet(ei->m_type, ST_PLAYER) && BitIsSet(ei->m_type, ST_UI) && owningPlayer == NULL) {
+	if (BitIsSet(ei->m_type, ST_PLAYER) && BitIsSet(ei->m_type, ST_UI) && owningPlayer == nullptr) {
 		DEBUG_ASSERTCRASH(!TheGameLogic->isInGameLogicUpdate(), ("Playing %s sound -- player-based UI sound without specifying a player.", ei->m_audioName.str()));
 		return TRUE;
 	}
 
-	if (owningPlayer == NULL) {
+	if (owningPlayer == nullptr) {
 		DEBUG_CRASH(("Sound '%s' expects an owning player, but the audio event that created it didn't specify one.", ei->m_audioName.str()));
 		return FALSE;
 	}
@@ -1058,7 +1046,7 @@ Bool AudioManager::shouldPlayLocally(const AudioEventRTS *audioEvent)
 	}
 
 	const Team *localTeam = localPlayer->getDefaultTeam();
-	if (localTeam == NULL) {
+	if (localTeam == nullptr) {
 		return FALSE;
 	}
 
@@ -1080,7 +1068,7 @@ Bool AudioManager::shouldPlayLocally(const AudioEventRTS *audioEvent)
 }
 
 //-------------------------------------------------------------------------------------------------
-AudioHandle AudioManager::allocateNewHandle( void )
+AudioHandle AudioManager::allocateNewHandle()
 {
 	// note, intenionally a post increment rather than a pre increment.
 	return theAudioHandlePool++;
@@ -1089,20 +1077,22 @@ AudioHandle AudioManager::allocateNewHandle( void )
 //-------------------------------------------------------------------------------------------------
 void AudioManager::releaseAudioEventRTS( AudioEventRTS *&eventToRelease )
 {
-	if( eventToRelease )
-	{
-		delete eventToRelease;
-		eventToRelease = NULL;
-	}
+	delete eventToRelease;
+	eventToRelease = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
-void AudioManager::loseFocus( void )
+void AudioManager::muteAudio( MuteAudioReason reason )
 {
-	if (m_savedValues)
+	m_muteReasonBits |= 1u << reason;
+
+	DEBUG_LOG(("AudioManager::muteAudio(%s): m_muteReason=%u muted=%d",
+		MuteAudioReasonNames[reason], m_muteReasonBits, (int)(m_muteReasonBits != 0)));
+
+	if (m_muteReasonBits == 0 || m_savedValues)
 		return;
 
-	// In this case, make all the audio go silent.
+	// Make all the audio go silent.
 	m_savedValues = NEW Real[NUM_VOLUME_TYPES];
 	m_savedValues[VOLUME_TYPE_MUSIC] = m_systemMusicVolume;
 	m_savedValues[VOLUME_TYPE_SOUND] = m_systemSoundVolume;
@@ -1114,12 +1104,17 @@ void AudioManager::loseFocus( void )
 }
 
 //-------------------------------------------------------------------------------------------------
-void AudioManager::regainFocus( void )
+void AudioManager::unmuteAudio( MuteAudioReason reason )
 {
-	if (!m_savedValues)
+	m_muteReasonBits &= ~(1u << reason);
+
+	DEBUG_LOG(("AudioManager::unmuteAudio(%s): m_muteReason=%u muted=%d",
+		MuteAudioReasonNames[reason], m_muteReasonBits, (int)(m_muteReasonBits != 0)));
+
+	if (m_muteReasonBits != 0 || !m_savedValues)
 		return;
 
-	// We got focus back. Restore the previous audio values.
+	// Restore the previous audio values.
 	setVolume(m_savedValues[VOLUME_TYPE_MUSIC], (AudioAffect) (AudioAffect_Music | AudioAffect_SystemSetting));
 	setVolume(m_savedValues[VOLUME_TYPE_SOUND], (AudioAffect) (AudioAffect_Sound | AudioAffect_SystemSetting));
 	setVolume(m_savedValues[VOLUME_TYPE_SOUND3D], (AudioAffect) (AudioAffect_Sound3D | AudioAffect_SystemSetting));
@@ -1127,7 +1122,7 @@ void AudioManager::regainFocus( void )
 
 	// Now, blow away the old volumes.
 	delete [] m_savedValues;
-	m_savedValues = NULL;
+	m_savedValues = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------

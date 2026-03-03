@@ -25,7 +25,7 @@
 // AIStates.cpp
 // Implementation of AI behavior states
 // Author: Michael S. Booth, January 2002
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
 #include "Common/ActionManager.h"
@@ -73,14 +73,14 @@ static Bool cannotPossiblyAttackObject( State *thisState, void* userData );
 AICommandParms::AICommandParms(AICommandType cmd, CommandSourceType cmdSource) :
 	m_cmd(cmd),
 	m_cmdSource(cmdSource),
-	m_obj(NULL),
-	m_otherObj(NULL),
-	m_team(NULL),
-	m_waypoint(NULL),
-	m_polygon(NULL),
+	m_obj(nullptr),
+	m_otherObj(nullptr),
+	m_team(nullptr),
+	m_waypoint(nullptr),
+	m_polygon(nullptr),
 	m_intValue(0),
-	m_commandButton(NULL),
-	m_path(NULL)
+	m_commandButton(nullptr),
+	m_path(nullptr)
 {
 		m_pos.zero();
 		m_coords.clear();
@@ -177,13 +177,13 @@ void AICommandParmsStorage::doXfer(Xfer *xfer)
 		cmdName = m_commandButton->getName();
 	}
 	xfer->xferAsciiString(&cmdName);
-	if (cmdName.isNotEmpty() && m_commandButton==NULL) {
+	if (cmdName.isNotEmpty() && m_commandButton==nullptr) {
 		m_commandButton = TheControlBar->findCommandButton(cmdName);
 	}
 
-	Bool hasPath = m_path!=NULL;
+	Bool hasPath = m_path!=nullptr;
 	xfer->xferBool(&hasPath);
-	if (hasPath && m_path==NULL) {
+	if (hasPath && m_path==nullptr) {
 		m_path = newInstance(Path);
 	}
 	if (hasPath) {
@@ -229,7 +229,7 @@ static Bool isSamePosition( const Coord3D *ourPos, const Coord3D *prevTargetPos,
 void AttackStateMachine::crc( Xfer *xfer )
 {
 	StateMachine::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -241,15 +241,15 @@ void AttackStateMachine::xfer( Xfer *xfer )
 	xfer->xferVersion( &v, cv );
 
 	StateMachine::xfer(xfer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AttackStateMachine::loadPostProcess( void )
+void AttackStateMachine::loadPostProcess()
 {
 	StateMachine::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 static Bool inWeaponRangeObject(State *thisState, void* userData);
@@ -265,27 +265,27 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 	// we want to use the CONTINUE mode (not NEW) since we already have acquired the target.
 	static const StateConditionInfo objectConditionsNormal[] =
 	{
-		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, NULL),
-		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, NULL),
+		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, nullptr),
+		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
 		StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET),
-		StateConditionInfo(NULL, NULL, NULL)	// keep last
+		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 	// we want to use the CONTINUE mode (not NEW) since we already have acquired the target.
 	static const StateConditionInfo objectConditionsForced[] =
 	{
-		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, NULL),
+		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, nullptr),
 		StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET_FORCED),
-		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, NULL),
-		StateConditionInfo(NULL, NULL, NULL)	// keep last
+		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
+		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 	const StateConditionInfo* objectConditions = forceAttacking ? objectConditionsForced : objectConditionsNormal;
 
 	static const StateConditionInfo positionConditions[] =
 	{
-		StateConditionInfo(outOfWeaponRangePosition, AttackStateMachine::CHASE_TARGET, NULL),
-		StateConditionInfo(NULL, NULL, NULL)	// keep last
+		StateConditionInfo(outOfWeaponRangePosition, AttackStateMachine::CHASE_TARGET, nullptr),
+		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 #ifdef STATE_MACHINE_DEBUG
@@ -328,8 +328,8 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 		{
 			static const StateConditionInfo portableStructureChaseConditions[] =
 			{
-				StateConditionInfo(inWeaponRangeObject, AttackStateMachine::AIM_AT_TARGET, NULL),
-				StateConditionInfo(NULL, NULL, NULL)	// keep last
+				StateConditionInfo(inWeaponRangeObject, AttackStateMachine::AIM_AT_TARGET, nullptr),
+				StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 			};
 
 			/* we're a rider on a mobile object, so we can't control our motion.
@@ -406,7 +406,7 @@ AttackStateMachine::~AttackStateMachine()
 //-----------------------------------------------------------------------------------------------------------
 static Object* findEnemyInContainer(Object* killer, Object* bldg)
 {
-	const ContainedItemsList* items = bldg->getContain() ? bldg->getContain()->getContainedItemsList() : NULL;
+	const ContainedItemsList* items = bldg->getContain() ? bldg->getContain()->getContainedItemsList() : nullptr;
 	if (items)
 	{
 		for (ContainedItemsList::const_iterator it = items->begin(); it != items->end(); ++it )
@@ -424,7 +424,7 @@ static Object* findEnemyInContainer(Object* killer, Object* bldg)
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -470,7 +470,7 @@ AIRappelState::AIRappelState( StateMachine *machine ) : State( machine, "AIRappe
 // ------------------------------------------------------------------------------------------------
 void AIRappelState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -485,14 +485,14 @@ void AIRappelState::xfer( Xfer *xfer )
 	xfer->xferReal(&m_rappelRate);
 	xfer->xferReal(&m_destZ);
 	xfer->xferBool(&m_targetIsBldg);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIRappelState::loadPostProcess( void )
+void AIRappelState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 //-----------------------------------------------------------------------------------------------------------
 StateReturnType AIRappelState::onEnter()
 {
@@ -510,7 +510,7 @@ StateReturnType AIRappelState::onEnter()
 
 	m_targetIsBldg = true;
 	Object* bldg = getMachineGoalObject();
-	if (bldg == NULL || bldg->isEffectivelyDead() || !bldg->isKindOf(KINDOF_STRUCTURE))
+	if (bldg == nullptr || bldg->isEffectivelyDead() || !bldg->isKindOf(KINDOF_STRUCTURE))
 		m_targetIsBldg = false;
 
 	const Coord3D* pos = obj->getPosition();
@@ -541,7 +541,7 @@ StateReturnType AIRappelState::update()
 	const Coord3D* pos = obj->getPosition();
 
 	Object* bldg = getMachineGoalObject();
-	if (m_targetIsBldg && (bldg == NULL || bldg->isEffectivelyDead()))
+	if (m_targetIsBldg && (bldg == nullptr || bldg->isEffectivelyDead()))
 	{
 		// if bldg is destroyed, just head for the ground
 		// BGC - bldg could be destroyed as they are heading down the rope.
@@ -577,7 +577,7 @@ StateReturnType AIRappelState::update()
 			if (numKilled > 0)
 			{
 				const FXList* fx = obj->getTemplate()->getPerUnitFX("CombatDropKillFX");
-				FXList::doFXObj(fx, bldg, NULL);
+				FXList::doFXObj(fx, bldg, nullptr);
 				DEBUG_LOG(("Killing %d enemies in combat drop!",numKilled));
 			}
 
@@ -672,10 +672,10 @@ AIStateMachine::AIStateMachine( Object *obj, AsciiString name ) : StateMachine( 
 	DEBUG_ASSERTCRASH(getOwner()->getAI(), ("An AI State Machine '%s' was constructed without an AIUpdateInterface, please tell JKMCD", name.str()));
 
 	m_goalPath.clear();
-	m_goalWaypoint = NULL;
-	m_goalSquad = NULL;
+	m_goalWaypoint = nullptr;
+	m_goalSquad = nullptr;
 
-	m_temporaryState = NULL;
+	m_temporaryState = nullptr;
 	m_temporaryStateFramEnd = 0;
 
 	// order matters: first state is the default state.
@@ -699,12 +699,12 @@ AIStateMachine::AIStateMachine( Object *obj, AsciiString name ) : StateMachine( 
 	defineState( AI_MOVE_AND_EVACUATE_AND_EXIT,	newInstance(AIMoveAndEvacuateState)( this ), AI_MOVE_AND_DELETE, AI_MOVE_AND_DELETE );
 	defineState( AI_MOVE_AND_DELETE,						newInstance(AIMoveAndDeleteState)( this ), AI_IDLE, AI_IDLE );
 	defineState( AI_WAIT,												newInstance(AIWaitState)( this ), AI_IDLE, AI_IDLE );
-	defineState( AI_ATTACK_POSITION,						newInstance(AIAttackState)( this, false, false, false,  NULL ), AI_IDLE, AI_IDLE );
-	defineState( AI_ATTACK_OBJECT,							newInstance(AIAttackState)( this, false, true, false, NULL ), AI_IDLE, AI_IDLE );
-	defineState( AI_FORCE_ATTACK_OBJECT,				newInstance(AIAttackState)( this, false, true, true, NULL ), AI_IDLE, AI_IDLE );
+	defineState( AI_ATTACK_POSITION,						newInstance(AIAttackState)( this, false, false, false,  nullptr ), AI_IDLE, AI_IDLE );
+	defineState( AI_ATTACK_OBJECT,							newInstance(AIAttackState)( this, false, true, false, nullptr ), AI_IDLE, AI_IDLE );
+	defineState( AI_FORCE_ATTACK_OBJECT,				newInstance(AIAttackState)( this, false, true, true, nullptr ), AI_IDLE, AI_IDLE );
 
-	defineState( AI_ATTACK_AND_FOLLOW_OBJECT,		newInstance(AIAttackState)( this, true, true, false, NULL ), AI_IDLE, AI_IDLE );
-	defineState( AI_ATTACK_SQUAD,								newInstance(AIAttackSquadState)( this, NULL ), AI_IDLE, AI_IDLE );
+	defineState( AI_ATTACK_AND_FOLLOW_OBJECT,		newInstance(AIAttackState)( this, true, true, false, nullptr ), AI_IDLE, AI_IDLE );
+	defineState( AI_ATTACK_SQUAD,								newInstance(AIAttackSquadState)( this, nullptr ), AI_IDLE, AI_IDLE );
 	defineState( AI_WANDER,											newInstance(AIWanderState)( this ), AI_IDLE, AI_MOVE_AWAY_FROM_REPULSORS );
 	defineState( AI_PANIC,											newInstance(AIPanicState)( this ), AI_IDLE, AI_MOVE_AWAY_FROM_REPULSORS );
 	defineState( AI_DEAD,												newInstance(AIDeadState)( this ), AI_IDLE, AI_IDLE );
@@ -726,10 +726,7 @@ AIStateMachine::AIStateMachine( Object *obj, AsciiString name ) : StateMachine( 
 //----------------------------------------------------------------------------------------------------------
 AIStateMachine::~AIStateMachine()
 {
-	if (m_goalSquad)
-	{
-		deleteInstance(m_goalSquad);
-	}
+	deleteInstance(m_goalSquad);
 }
 
 
@@ -739,7 +736,7 @@ AIStateMachine::~AIStateMachine()
 void AIStateMachine::crc( Xfer *xfer )
 {
 	StateMachine::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -779,11 +776,11 @@ void AIStateMachine::xfer( Xfer *xfer )
 			m_goalWaypoint = TheTerrainLogic->getWaypointByName(waypointName);
 		}
 	}
-	Bool hasSquad = (m_goalSquad!=NULL);
+	Bool hasSquad = (m_goalSquad!=nullptr);
 	xfer->xferBool(&hasSquad);
 	if (xfer->getXferMode() == XFER_LOAD)
 	{
-		if (hasSquad && m_goalSquad==NULL) {
+		if (hasSquad && m_goalSquad==nullptr) {
 			m_goalSquad = newInstance( Squad );
 		}
 	}
@@ -800,28 +797,28 @@ void AIStateMachine::xfer( Xfer *xfer )
 	if (xfer->getXferMode() == XFER_LOAD && id != INVALID_STATE_ID) {
 		m_temporaryState = internalGetState( id );
 	}
-	if (m_temporaryState!=NULL) {
+	if (m_temporaryState!=nullptr) {
 		xfer->xferSnapshot(m_temporaryState);
 	}
 
 	xfer->xferUnsignedInt(&m_temporaryStateFramEnd);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIStateMachine::loadPostProcess( void )
+void AIStateMachine::loadPostProcess()
 {
 	StateMachine::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 /**
  * Define a simple path
  */
-void AIStateMachine::setGoalPath( const std::vector<Coord3D>* path )
+void AIStateMachine::setGoalPath( std::vector<Coord3D>* path )
 {
-	m_goalPath = *path;
+	stl::move_or_swap(m_goalPath, *path);
 }
 
 #ifdef STATE_MACHINE_DEBUG
@@ -829,7 +826,7 @@ void AIStateMachine::setGoalPath( const std::vector<Coord3D>* path )
 /**
  * Get the current state name.
  */
-AsciiString AIStateMachine::getCurrentStateName(void) const
+AsciiString AIStateMachine::getCurrentStateName() const
 {
 	AsciiString name = StateMachine::getCurrentStateName();
 
@@ -877,7 +874,7 @@ StateReturnType AIStateMachine::updateStateMachine()
 			return status;
 		}
 		m_temporaryState->onExit(EXIT_NORMAL);
-		m_temporaryState = NULL;
+		m_temporaryState = nullptr;
 	}
 	StateReturnType retType = StateMachine::updateStateMachine();
 
@@ -941,14 +938,14 @@ StateReturnType AIStateMachine::setTemporaryState( StateID newStateID, Int frame
 #endif
 	if (m_temporaryState) {
 		m_temporaryState->onExit(EXIT_RESET);
-		m_temporaryState = NULL;
+		m_temporaryState = nullptr;
 	}
 	if (newState) {
 		m_temporaryState = newState;
 		StateReturnType ret = m_temporaryState->onEnter();
 		if (ret != STATE_CONTINUE) {
 			m_temporaryState->onExit(EXIT_NORMAL);
-			m_temporaryState = NULL;
+			m_temporaryState = nullptr;
 			return ret;
 		}
 		enum {FRAME_COUNT_MAX = 60*LOGICFRAMES_PER_SECOND};
@@ -969,7 +966,7 @@ StateReturnType AIStateMachine::setTemporaryState( StateID newStateID, Int frame
  */
 void AIStateMachine::addToGoalPath( const Coord3D *pathPoint)
 {
-	if (m_goalPath.size()==0) {
+	if (m_goalPath.empty()) {
 		m_goalPath.push_back(*pathPoint);
 	}	else {
 		Coord3D *finalPoint = &m_goalPath[ m_goalPath.size() - 1 ];
@@ -987,7 +984,7 @@ void AIStateMachine::addToGoalPath( const Coord3D *pathPoint)
 const Coord3D *AIStateMachine::getGoalPathPosition( Int i ) const
 {
 	if (i < 0 || i >= m_goalPath.size())
-		return NULL;
+		return nullptr;
 
 	return &m_goalPath[i];
 }
@@ -1016,8 +1013,8 @@ void AIStateMachine::clear()
 {
 	StateMachine::clear();
 	m_goalPath.clear();
-	m_goalWaypoint = NULL;
-	m_goalSquad = NULL;
+	m_goalWaypoint = nullptr;
+	m_goalSquad = nullptr;
 
 	AIUpdateInterface* ai = getOwner()->getAI();
 	if (ai)
@@ -1052,7 +1049,7 @@ StateReturnType AIStateMachine::setState(StateID newStateID)
 //----------------------------------------------------------------------------------------------------------
 void AIStateMachine::setGoalTeam( const Team *team )
 {
-	if (m_goalSquad == NULL) {
+	if (m_goalSquad == nullptr) {
 		m_goalSquad = newInstance( Squad );
 	}
 
@@ -1062,7 +1059,7 @@ void AIStateMachine::setGoalTeam( const Team *team )
 //----------------------------------------------------------------------------------------------------------
 void AIStateMachine::setGoalSquad( const Squad *squad )
 {
-	if (m_goalSquad == NULL) {
+	if (m_goalSquad == nullptr) {
 		m_goalSquad = newInstance( Squad );
 	}
 
@@ -1072,7 +1069,7 @@ void AIStateMachine::setGoalSquad( const Squad *squad )
 //----------------------------------------------------------------------------------------------------------
 void AIStateMachine::setGoalAIGroup( const AIGroup *group )
 {
-	if (m_goalSquad == NULL) {
+	if (m_goalSquad == nullptr) {
 		m_goalSquad = newInstance( Squad );
 	}
 
@@ -1080,7 +1077,7 @@ void AIStateMachine::setGoalAIGroup( const AIGroup *group )
 }
 
 //----------------------------------------------------------------------------------------------------------
-Squad *AIStateMachine::getGoalSquad( void )
+Squad *AIStateMachine::getGoalSquad()
 {
 	return m_goalSquad;
 }
@@ -1212,7 +1209,7 @@ Bool outOfWeaponRangePosition( State *thisState, void* userData )
 		Bool viewBlocked = false;
 		if (onGround)
 		{
-			viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(obj, *obj->getPosition(), NULL, *pos);
+			viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(obj, *obj->getPosition(), nullptr, *pos);
 		}
 		if (viewBlocked)
 		{
@@ -1273,7 +1270,7 @@ AIIdleState::AIIdleState( StateMachine *machine, AIIdleState::AIIdleTargetingTyp
 // ------------------------------------------------------------------------------------------------
 void AIIdleState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -1288,14 +1285,14 @@ void AIIdleState::xfer( Xfer *xfer )
 	xfer->xferUnsignedShort(&m_initialSleepOffset);
 	xfer->xferBool(&m_shouldLookForTargets);
 	xfer->xferBool(&m_inited);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIIdleState::loadPostProcess( void )
+void AIIdleState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 //----------------------------------------------------------------------------------------------
 /**
  * Stake out our space.
@@ -1334,7 +1331,7 @@ void AIIdleState::doInitIdleState()
 	Object *obj = getMachineOwner();
 	AIUpdateInterface *ai = obj->getAI();
 	const Locomotor* loco = ai->getCurLocomotor();
-	Bool ultraAccurate = (loco != NULL && loco->isUltraAccurate());
+	Bool ultraAccurate = (loco != nullptr && loco->isUltraAccurate());
 #define NO_STOP_AND_SLIDE
 	if (ai->isIdle() && ai->isDoingGroundMovement())
 	{
@@ -1373,7 +1370,7 @@ void AIIdleState::doInitIdleState()
 	}
 
 	ai->setLocomotorGoalNone();
-	ai->setCurrentVictim(NULL);
+	ai->setCurrentVictim(nullptr);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1454,7 +1451,7 @@ StateReturnType AIIdleState::update()
 				m_initialSleepOffset = oldSleepOffset;
 			}
 		}
-	}  // end if, should look for targets
+	}
 
 	return STATE_SLEEP(timeToSleep);
 }
@@ -1467,7 +1464,7 @@ StateReturnType AIDeadState::onEnter()
 {
 	Object *obj = getMachineOwner();
 
-	// How can an object be NULL here? I don't think it actually can, but this check must be
+	// How can an object be null here? I don't think it actually can, but this check must be
 	// here for a reason. - jkmcd
 	if (obj)
 	{
@@ -1540,7 +1537,7 @@ void AIDeadState::onExit( StateExitType status )
 // ------------------------------------------------------------------------------------------------
 void AIInternalMoveToState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -1560,15 +1557,15 @@ void AIInternalMoveToState::xfer( Xfer *xfer )
 	xfer->xferUnsignedInt(&m_pathTimestamp);
 	xfer->xferUnsignedInt(&m_blockedRepathTimestamp);
 	xfer->xferBool(&m_adjustDestinations);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIInternalMoveToState::loadPostProcess( void )
+void AIInternalMoveToState::loadPostProcess()
 {
 	startMoveSound();
-}  // end loadPostProcess
+}
 
 Bool AIInternalMoveToState::getAdjustsDestination() const
 {
@@ -1660,7 +1657,7 @@ StateReturnType AIInternalMoveToState::onEnter()
 	}
 
 	// Target to stop at the end of this path.
-	// This value will be overriden by the FollowWaypoint ai state.
+	// This value will be overridden by the FollowWaypoint ai state.
 	ai->setPathExtraDistance(0);
 	ai->setDesiredSpeed( FAST_AS_POSSIBLE );
 
@@ -1671,7 +1668,7 @@ StateReturnType AIInternalMoveToState::onEnter()
 /**
  * Start playing the object's move sound.
  */
-void AIInternalMoveToState::startMoveSound(void)
+void AIInternalMoveToState::startMoveSound()
 {
 	Object *obj = getMachineOwner();
 	const BodyModuleInterface *objBody = obj->getBodyModule();
@@ -1730,7 +1727,7 @@ void AIInternalMoveToState::onExit( StateExitType status )
 	// (This is why destructors should not do game logic)
 	if (ai) {
 		ai->friend_endingMove();
-		DEBUG_ASSERTLOG(obj->getTeam(), ("AIInternalMoveToState::onExit obj has NULL team."));
+		DEBUG_ASSERTLOG(obj->getTeam(), ("AIInternalMoveToState::onExit obj has null team."));
 		if (obj->getTeam() && ai->isDoingGroundMovement() && ai->getCurLocomotor() &&
 								ai->getCurLocomotor()->isUltraAccurate()) {
 			Real dx = m_goalPosition.x-obj->getPosition()->x;
@@ -1763,7 +1760,7 @@ StateReturnType AIInternalMoveToState::update()
 			/// @todo srj -- find a way to sleep for a number of frames here, if possible
 			return STATE_CONTINUE;
 		}
-		if (thePath==NULL) {
+		if (thePath==nullptr) {
 			return STATE_FAILURE;
 		}
 		m_waitingForPath = false;
@@ -1779,7 +1776,7 @@ StateReturnType AIInternalMoveToState::update()
 	}
 
 	Bool forceRecompute = false;
-	if (thePath==NULL) {
+	if (thePath==nullptr) {
 		forceRecompute = true;
 	}
 	Bool blocked=false;
@@ -1838,7 +1835,7 @@ StateReturnType AIInternalMoveToState::update()
 		}
 	}
 
-	if (thePath != NULL)
+	if (thePath != nullptr)
 		ai->setLocomotorGoalPositionOnPath();
 
 	// if our goal has moved, recompute our path
@@ -1852,7 +1849,7 @@ StateReturnType AIInternalMoveToState::update()
 
 			// srj sez: must re-set setLocoGoal after computePath, since computePath
 			// can set the loco goal to NONE...
-			if (ai->getPath() != NULL)
+			if (ai->getPath() != nullptr)
 				ai->setLocomotorGoalPositionOnPath();
 			else
 				return STATE_CONTINUE;
@@ -1920,7 +1917,7 @@ protected:
 void AIAttackMoveStateMachine::crc( Xfer *xfer )
 {
 	StateMachine::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -1932,15 +1929,15 @@ void AIAttackMoveStateMachine::xfer( Xfer *xfer )
 	xfer->xferVersion( &v, cv );
 
 	StateMachine::xfer(xfer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackMoveStateMachine::loadPostProcess( void )
+void AIAttackMoveStateMachine::loadPostProcess()
 {
 	StateMachine::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //-----------------------------------------------------------------------------------------------------------
 AIAttackMoveStateMachine::AIAttackMoveStateMachine(Object *owner, AsciiString name) : StateMachine(owner, name)
@@ -1948,7 +1945,7 @@ AIAttackMoveStateMachine::AIAttackMoveStateMachine(Object *owner, AsciiString na
 	// order matters: first state is the default state.
 	defineState( AI_IDLE, newInstance(AIIdleState)( this, AIIdleState::DO_NOT_LOOK_FOR_TARGETS ), AI_IDLE, AI_IDLE );
 	defineState( AI_PICK_UP_CRATE, newInstance(AIPickUpCrateState)( this ), AI_IDLE, AI_IDLE );
-	defineState( AI_ATTACK_OBJECT,	newInstance(AIAttackState)(this, false, true, false, NULL ), AI_IDLE, AI_IDLE);
+	defineState( AI_ATTACK_OBJECT,	newInstance(AIAttackState)(this, false, true, false, nullptr ), AI_IDLE, AI_IDLE);
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -2031,7 +2028,7 @@ StateReturnType AIMoveToState::update()
 	if (goalObj)
 	{
 		m_goalPosition = *goalObj->getPosition();
-		Bool gotPhysics = obj->getPhysics()!=NULL && goalObj->getPhysics()!=NULL;
+		Bool gotPhysics = obj->getPhysics()!=nullptr && goalObj->getPhysics()!=nullptr;
 		Bool isMissile = obj->isKindOf(KINDOF_PROJECTILE);
 		if (isMissile) {
 			Real halfHeight = getMachineGoalObject()->getGeometryInfo().getMaxHeightAbovePosition()/2.0f;
@@ -2089,7 +2086,7 @@ StateReturnType AIMoveOutOfTheWayState::onEnter()
 	Object *obj = getMachineOwner();
 	AIUpdateInterface *ai = obj->getAI();
 
-	if (ai->getPath()==NULL) {
+	if (ai->getPath()==nullptr) {
 		// Must have existing path.
 		return STATE_FAILURE;
 	}
@@ -2139,7 +2136,7 @@ void AIMoveOutOfTheWayState::onExit( StateExitType status )
 void AIMoveAndTightenState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -2155,15 +2152,15 @@ void AIMoveAndTightenState::xfer( Xfer *xfer )
 	AIInternalMoveToState::xfer(xfer);
 	xfer->xferInt(&m_okToRepathTimes);
 	xfer->xferBool(&m_checkForPath);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIMoveAndTightenState::loadPostProcess( void )
+void AIMoveAndTightenState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIMoveAndTightenState::onEnter()
@@ -2361,13 +2358,13 @@ Bool AIAttackApproachTargetState::computePath()
 	}
 	if (m_waitingForPath) return true;
 
-	if (!forceRepath && ai->getPath()==NULL && !ai->isWaitingForPath())
+	if (!forceRepath && ai->getPath()==nullptr && !ai->isWaitingForPath())
 	{
 		forceRepath = true;
 	}
 
 	// force minimum time between recomputation
-	/// @todo Unify recomputation conditions & account for obj ID so everyone doesnt compute on the same frame (MSB)
+	/// @todo Unify recomputation conditions & account for obj ID so everyone doesn't compute on the same frame (MSB)
 	if (!forceRepath && TheGameLogic->getFrame() - m_approachTimestamp < MIN_RECOMPUTE_TIME)
 	{
 		//CRCDEBUG_LOG(("AIAttackApproachTargetState::computePath - bailing because of min time for object %d", getMachineOwner()->getID()));
@@ -2462,7 +2459,7 @@ Bool AIAttackApproachTargetState::computePath()
 void AIAttackApproachTargetState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -2483,16 +2480,16 @@ void AIAttackApproachTargetState::xfer( Xfer *xfer )
 	xfer->xferBool(&m_isAttackingObject);
 	xfer->xferBool(&m_stopIfInRange);
 	xfer->xferBool(&m_isInitialApproach);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackApproachTargetState::loadPostProcess( void )
+void AIAttackApproachTargetState::loadPostProcess()
 {
  // extend base class
   AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIAttackApproachTargetState::onEnter()
@@ -2586,7 +2583,7 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 	if (getMachine()->isGoalObjectDestroyed())
 	{
 		ai->notifyVictimIsDead();
-		ai->setCurrentVictim(NULL);
+		ai->setCurrentVictim(nullptr);
 		return STATE_FAILURE;
 	}
 	m_stopIfInRange = !ai->isAttackPath();
@@ -2599,7 +2596,17 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 	{
 		if( victim->testStatus( OBJECT_STATUS_STEALTHED ) && !victim->testStatus( OBJECT_STATUS_DETECTED ) )
 		{
-			return STATE_FAILURE;	// If obj is stealthed, can no longer approach.
+			// If obj is stealthed, can no longer approach.
+			// TheSuperHackers @bugfix Stubbjax 19/11/2025 Except when disarming stealthed mines.
+#if RETAIL_COMPATIBLE_CRC
+			return STATE_FAILURE;
+#else
+			const Bool isTargetingMine = weapon && weapon->getDamageType() == DAMAGE_DISARM &&
+				(victim->isKindOf(KINDOF_MINE));
+
+			if (!isTargetingMine)
+				return STATE_FAILURE;
+#endif
 		}
 		ai->setCurrentVictim(victim);
 		// Attacking an object.
@@ -2642,7 +2649,7 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 			Bool viewBlocked = false;
 			if ( ai->isDoingGroundMovement() )
 			{
-				viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(source, *source->getPosition(), NULL, m_goalPosition);
+				viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(source, *source->getPosition(), nullptr, m_goalPosition);
 			}
 			if (!viewBlocked)
 			{
@@ -2706,10 +2713,10 @@ void AIAttackApproachTargetState::onExit( StateExitType status )
 	AIUpdateInterface *ai = getMachineOwner()->getAI();
 	Object *obj = getMachineOwner();
 	if (ai) {
-		ai->ignoreObstacle(NULL);
+		ai->ignoreObstacle(nullptr);
 
 		// Per JohnA, this state should not be calling ai->destroyPath, because we can have spastic users
-		// that click the target repeadedly. This will prevent the unit from stuttering for said spastic
+		// that click the target repeatedly. This will prevent the unit from stuttering for said spastic
 		// users.
 		// ai->destroyPath();
 		// urg. hacky. if we are a projectile, reset precise z-pos.
@@ -2761,13 +2768,13 @@ Bool AIAttackPursueTargetState::computePath()
 	}
 	if (m_waitingForPath) return true;
 
-	if (!forceRepath && ai->getPath()==NULL && !ai->isWaitingForPath())
+	if (!forceRepath && ai->getPath()==nullptr && !ai->isWaitingForPath())
 	{
 		forceRepath = true;
 	}
 
 	// force minimum time between recomputation
-	/// @todo Unify recomputation conditions & account for obj ID so everyone doesnt compute on the same frame (MSB)
+	/// @todo Unify recomputation conditions & account for obj ID so everyone doesn't compute on the same frame (MSB)
 	if (!forceRepath && TheGameLogic->getFrame() - m_approachTimestamp < MIN_RECOMPUTE_TIME)
 	{
 		return true;
@@ -2817,7 +2824,7 @@ Bool AIAttackPursueTargetState::computePath()
 void AIAttackPursueTargetState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -2838,16 +2845,16 @@ void AIAttackPursueTargetState::xfer( Xfer *xfer )
 	xfer->xferBool(&m_isAttackingObject);
 	xfer->xferBool(&m_stopIfInRange);
 	xfer->xferBool(&m_isInitialApproach);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackPursueTargetState::loadPostProcess( void )
+void AIAttackPursueTargetState::loadPostProcess()
 {
  // extend base class
   AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIAttackPursueTargetState::onEnter()
@@ -2929,7 +2936,7 @@ StateReturnType AIAttackPursueTargetState::updateInternal()
 	if (getMachine()->isGoalObjectDestroyed())
 	{
 		ai->notifyVictimIsDead();
-		ai->setCurrentVictim(NULL);
+		ai->setCurrentVictim(nullptr);
 		return STATE_FAILURE;
 	}
 	m_stopIfInRange = false;
@@ -3045,7 +3052,7 @@ Bool AIPickUpCrateState::computePath()
 void AIPickUpCrateState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3063,16 +3070,16 @@ void AIPickUpCrateState::xfer( Xfer *xfer )
 	xfer->xferInt(&m_delayCounter);
 	xfer->xferCoord3D(&m_goalPosition);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIPickUpCrateState::loadPostProcess( void )
+void AIPickUpCrateState::loadPostProcess()
 {
  // extend base class
   AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIPickUpCrateState::onEnter()
@@ -3123,7 +3130,7 @@ StateReturnType AIPickUpCrateState::update()
 void AIFollowPathState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3140,15 +3147,15 @@ void AIFollowPathState::xfer( Xfer *xfer )
 	xfer->xferInt(&m_index);
 	xfer->xferBool(&m_adjustFinal);
 	xfer->xferBool(&m_adjustFinalOverride);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIFollowPathState::loadPostProcess( void )
+void AIFollowPathState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIFollowPathState::onEnter()
@@ -3159,7 +3166,7 @@ StateReturnType AIFollowPathState::onEnter()
 	m_index = 0;
 	const Coord3D *pos = ai->friend_getGoalPathPosition( m_index );
 
-	if (pos == NULL)
+	if (pos == nullptr)
 		return STATE_FAILURE;
 
 	// set initial movement goal
@@ -3267,7 +3274,7 @@ StateReturnType AIFollowPathState::update()
 		//determine which waypoints to plot in the waypoint renderer.
 		ai->friend_setCurrentGoalPathIndex( m_index );
 		ai->ignoreObstacleID(INVALID_ID); // we have exited whatever object we are leaving, if any.  jba.
-		if (pos == NULL)
+		if (pos == nullptr)
 		{
 			// reached the end of the path
 			return STATE_SUCCESS;
@@ -3325,7 +3332,7 @@ StateReturnType AIFollowPathState::update()
 void AIMoveAndEvacuateState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3340,15 +3347,15 @@ void AIMoveAndEvacuateState::xfer( Xfer *xfer )
 	AIInternalMoveToState::xfer(xfer);
 
 	xfer->xferCoord3D(&m_origin);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIMoveAndEvacuateState::loadPostProcess( void )
+void AIMoveAndEvacuateState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIMoveAndEvacuateState::onEnter()
@@ -3431,7 +3438,7 @@ AIAttackMoveToState::~AIAttackMoveToState()
 // ------------------------------------------------------------------------------------------------
 void AIAttackMoveToState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3451,14 +3458,14 @@ void AIAttackMoveToState::xfer( Xfer *xfer )
 		xfer->xferInt(&m_retryCount);
 	}
 	xfer->xferSnapshot(m_attackMoveMachine);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackMoveToState::loadPostProcess( void )
+void AIAttackMoveToState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -3467,7 +3474,7 @@ AsciiString AIAttackMoveToState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_attackMoveMachine) name.concat(m_attackMoveMachine->getCurrentStateName());
-	else name.concat("*NULL m_deployMachine");
+	else name.concat("*null m_deployMachine");
 	return name;
 }
 #endif
@@ -3532,7 +3539,7 @@ StateReturnType AIAttackMoveToState::update()
 
 		Object* nextObjectToAttack;
 		nextObjectToAttack = ai->getNextMoodTarget( !forceRetargetThisFrame, false );
-		if (nextObjectToAttack != NULL)
+		if (nextObjectToAttack != nullptr)
 		{
 			ai->friend_endingMove();
 			m_attackMoveMachine->setGoalObject(nextObjectToAttack);
@@ -3586,7 +3593,7 @@ StateReturnType AIAttackMoveToState::update()
 void AIMoveAndDeleteState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3601,15 +3608,15 @@ void AIMoveAndDeleteState::xfer( Xfer *xfer )
 	AIInternalMoveToState::xfer(xfer);
 
 	xfer->xferBool(&m_appendGoalPosition);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIMoveAndDeleteState::loadPostProcess( void )
+void AIMoveAndDeleteState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIMoveAndDeleteState::onEnter()
@@ -3672,7 +3679,7 @@ void AIMoveAndDeleteState::onExit( StateExitType status )
 
 #define ALLOW_BACKTRACK
 //----------------------------------------------------------------------------------------------------------
-const Waypoint * AIFollowWaypointPathState::getNextWaypoint(void)
+const Waypoint * AIFollowWaypointPathState::getNextWaypoint()
 {
 #ifdef ALLOW_BACKTRACK
 	Int linkCount = m_currentWaypoint->getNumLinks();
@@ -3685,7 +3692,7 @@ const Waypoint * AIFollowWaypointPathState::getNextWaypoint(void)
 #else
 	if (!hasNextWaypoint()) {
 		m_priorWaypoint = m_currentWaypoint;
-		return NULL;
+		return nullptr;
 	}
 	Int skip = -1;
 	Int i;
@@ -3711,7 +3718,7 @@ const Waypoint * AIFollowWaypointPathState::getNextWaypoint(void)
 }
 
 //----------------------------------------------------------------------------------------------------------
-Bool AIFollowWaypointPathState::hasNextWaypoint(void)
+Bool AIFollowWaypointPathState::hasNextWaypoint()
 {
 #ifdef ALLOW_BACKTRACK
 	return m_currentWaypoint->getNumLinks()>0;
@@ -3719,7 +3726,7 @@ Bool AIFollowWaypointPathState::hasNextWaypoint(void)
 	if (m_currentWaypoint->getNumLinks()==0) {
 		return false; // no links, no next.
 	}
-	if (m_priorWaypoint==NULL) {
+	if (m_priorWaypoint==nullptr) {
 		return m_currentWaypoint->getNumLinks()>0;
 	}
 	if (m_currentWaypoint->getNumLinks()>1) {
@@ -3735,7 +3742,7 @@ Bool AIFollowWaypointPathState::hasNextWaypoint(void)
 }
 
 //----------------------------------------------------------------------------------------------------------
-Real AIFollowWaypointPathState::calcExtraPathDistance(void)
+Real AIFollowWaypointPathState::calcExtraPathDistance()
 {
 	Real extra = PATHFIND_CELL_SIZE_F/10.0f;
 	const Waypoint *curWay = m_currentWaypoint;
@@ -3758,7 +3765,7 @@ Real AIFollowWaypointPathState::calcExtraPathDistance(void)
 //----------------------------------------------------------------------------------------------------------
 void AIFollowWaypointPathState::computeGoal(Bool useGroupOffsets)
 {
-	if (m_currentWaypoint == NULL)
+	if (m_currentWaypoint == nullptr)
 		return;
 
 	Object *obj = getMachineOwner();
@@ -3835,7 +3842,7 @@ void AIFollowWaypointPathState::computeGoal(Bool useGroupOffsets)
 void AIFollowWaypointPathState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -3873,25 +3880,25 @@ void AIFollowWaypointPathState::xfer( Xfer *xfer )
 	}
 
 	xfer->xferBool(&m_appendGoalPosition);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIFollowWaypointPathState::loadPostProcess( void )
+void AIFollowWaypointPathState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIFollowWaypointPathState::onEnter()
 {
 	m_appendGoalPosition = false; // not moving off the map at this point.
-	m_priorWaypoint = NULL;
+	m_priorWaypoint = nullptr;
 	m_currentWaypoint = ((AIStateMachine *)getMachine())->getGoalWaypoint();
 	AIUpdateInterface *ai = getMachineOwner()->getAI();
 
-	if (m_currentWaypoint == NULL && !m_moveAsGroup)		return STATE_FAILURE;
+	if (m_currentWaypoint == nullptr && !m_moveAsGroup)		return STATE_FAILURE;
 
 	getMachine()->setGoalPosition(m_currentWaypoint->getLocation());
 
@@ -3933,7 +3940,7 @@ StateReturnType AIFollowWaypointPathState::onEnter()
 			m_groupOffset.y = obj->getPosition()->y - center.y;
 		}
 	}
-	if (m_currentWaypoint==NULL && m_moveAsGroup) {
+	if (m_currentWaypoint==nullptr && m_moveAsGroup) {
 		m_currentWaypoint = obj->getTeam()->getCurrentWaypoint();
 	}
 	// set initial movement goal
@@ -4016,7 +4023,7 @@ StateReturnType AIFollowWaypointPathState::update()
 	if (m_moveAsGroup && m_currentWaypoint != obj->getTeam()->getCurrentWaypoint()) {
 		m_priorWaypoint = m_currentWaypoint;
 		m_currentWaypoint = obj->getTeam()->getCurrentWaypoint();
-		if (m_currentWaypoint == NULL) {
+		if (m_currentWaypoint == nullptr) {
 			return STATE_SUCCESS;
 		}
 		computeGoal(false);
@@ -4087,7 +4094,7 @@ StateReturnType AIFollowWaypointPathState::update()
 
 
 		// if there are no links from this waypoint, we're done
-		if (m_currentWaypoint==NULL)	{
+		if (m_currentWaypoint==nullptr)	{
 			/// Trigger "end of waypoint path" scripts (jba)
 			ai->setCompletedWaypoint(m_priorWaypoint);
 			return STATE_SUCCESS;
@@ -4135,7 +4142,7 @@ StateReturnType AIFollowWaypointPathState::update()
 void AIFollowWaypointPathExactState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4157,15 +4164,15 @@ void AIFollowWaypointPathExactState::xfer( Xfer *xfer )
 	{
 		m_lastWaypoint = TheTerrainLogic->getWaypointByID(id);
 	}
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIFollowWaypointPathExactState::loadPostProcess( void )
+void AIFollowWaypointPathExactState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIFollowWaypointPathExactState::onEnter()
@@ -4173,7 +4180,7 @@ StateReturnType AIFollowWaypointPathExactState::onEnter()
 	const Waypoint *currentWaypoint = ((AIStateMachine *)getMachine())->getGoalWaypoint();
 	AIUpdateInterface *ai = getMachineOwner()->getAI();
 
-	if (currentWaypoint == NULL) return STATE_FAILURE;
+	if (currentWaypoint == nullptr) return STATE_FAILURE;
 
 	getMachine()->setGoalPosition(currentWaypoint->getLocation());
 
@@ -4269,7 +4276,7 @@ AIAttackFollowWaypointPathState::~AIAttackFollowWaypointPathState()
 // ------------------------------------------------------------------------------------------------
 void AIAttackFollowWaypointPathState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4285,14 +4292,14 @@ void AIAttackFollowWaypointPathState::xfer( Xfer *xfer )
   AIFollowWaypointPathState::xfer( xfer );
 
 	xfer->xferSnapshot(m_attackFollowMachine);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackFollowWaypointPathState::loadPostProcess( void )
+void AIAttackFollowWaypointPathState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -4301,7 +4308,7 @@ AsciiString AIAttackFollowWaypointPathState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_attackFollowMachine) name.concat(m_attackFollowMachine->getCurrentStateName());
-	else name.concat("*NULL m_attackFollowMachine");
+	else name.concat("*null m_attackFollowMachine");
 	return name;
 }
 #endif
@@ -4358,7 +4365,7 @@ StateReturnType AIAttackFollowWaypointPathState::update()
 
 			nextObjectToAttack = ai->getNextMoodTarget( !forceRetargetThisFrame, false );
 		}
-		if (nextObjectToAttack != NULL)
+		if (nextObjectToAttack != nullptr)
 		{
 			m_attackFollowMachine->setGoalObject(nextObjectToAttack);
 			m_attackFollowMachine->setState( AI_ATTACK_OBJECT );
@@ -4403,7 +4410,7 @@ void AIAttackFollowWaypointPathState ::onExit( StateExitType status )
 void AIWanderState::crc( Xfer *xfer )
 {
 	AIFollowWaypointPathState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4419,15 +4426,15 @@ void AIWanderState::xfer( Xfer *xfer )
 
 	xfer->xferInt(&m_waitFrames);
 	xfer->xferInt(&m_timer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIWanderState::loadPostProcess( void )
+void AIWanderState::loadPostProcess()
 {
 	AIFollowWaypointPathState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -4436,8 +4443,8 @@ StateReturnType AIWanderState::onEnter()
 	m_currentWaypoint = ((AIStateMachine *)getMachine())->getGoalWaypoint();
 
 	AIUpdateInterface *ai = getMachineOwner()->getAI();
-	m_priorWaypoint = NULL;
-	if (m_currentWaypoint == NULL || ai==NULL)
+	m_priorWaypoint = nullptr;
+	if (m_currentWaypoint == nullptr || ai==nullptr)
 		return STATE_FAILURE;
 	m_groupOffset.x = m_groupOffset.y = 0;
 	Locomotor* curLoco = ai->getCurLocomotor();
@@ -4480,7 +4487,7 @@ StateReturnType AIWanderState::update()
 
 		m_currentWaypoint = getNextWaypoint();
 		// if there are no links from this waypoint, we're done
-		if (m_currentWaypoint == NULL)	{
+		if (m_currentWaypoint == nullptr)	{
 			/// Trigger "end of waypoint path" scripts (jba)
 			ai->setCompletedWaypoint(m_priorWaypoint);
 
@@ -4525,7 +4532,7 @@ void AIWanderState::onExit( StateExitType status )
 void AIWanderInPlaceState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4542,15 +4549,15 @@ void AIWanderInPlaceState::xfer( Xfer *xfer )
 	xfer->xferCoord3D(&m_origin);
 	xfer->xferInt(&m_waitFrames);
 	xfer->xferInt(&m_timer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** LoadPostProcess */
 // ------------------------------------------------------------------------------------------------
-void AIWanderInPlaceState::loadPostProcess( void )
+void AIWanderInPlaceState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
 StateReturnType AIWanderInPlaceState::onEnter()
@@ -4635,7 +4642,7 @@ void AIWanderInPlaceState::onExit( StateExitType status )
 void AIPanicState::crc( Xfer *xfer )
 {
 	AIFollowWaypointPathState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4651,15 +4658,15 @@ void AIPanicState::xfer( Xfer *xfer )
 
 	xfer->xferInt(&m_waitFrames);
 	xfer->xferInt(&m_timer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIPanicState::loadPostProcess( void )
+void AIPanicState::loadPostProcess()
 {
 	AIFollowWaypointPathState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 /**
  * Panic and run screaming along a waypoint path.
@@ -4670,7 +4677,7 @@ StateReturnType AIPanicState::onEnter()
 
 	Object *obj = getMachineOwner();
 	AIUpdateInterface *ai = obj->getAI();
-	if (m_currentWaypoint == NULL)
+	if (m_currentWaypoint == nullptr)
 		return STATE_FAILURE;
 	// set initial movement goal
 	Locomotor* curLoco = ai->getCurLocomotor();
@@ -4721,7 +4728,7 @@ StateReturnType AIPanicState::update()
 
 		m_currentWaypoint = getNextWaypoint();
 		// if there are no links from this waypoint, we're done
-		if (m_currentWaypoint == NULL)	{
+		if (m_currentWaypoint == nullptr)	{
 			/// Trigger "end of waypoint path" scripts (jba)
 			ai->setCompletedWaypoint(m_priorWaypoint);
 
@@ -4760,7 +4767,7 @@ void AIPanicState::onExit( StateExitType status )
 // ------------------------------------------------------------------------------------------------
 void AIAttackAimAtTargetState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -4775,14 +4782,14 @@ void AIAttackAimAtTargetState::xfer( Xfer *xfer )
 	xfer->xferBool(&m_canTurnInPlace);
 	xfer->xferBool(&m_setLocomotor);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackAimAtTargetState::loadPostProcess( void )
+void AIAttackAimAtTargetState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIAttackAimAtTargetState::onEnter()
@@ -4793,7 +4800,7 @@ StateReturnType AIAttackAimAtTargetState::onEnter()
 	Object* victim = getMachineGoalObject();
 	const Coord3D* targetPos = getMachineGoalPosition();
 	AIUpdateInterface* sourceAI = source->getAI();
-	AIUpdateInterface* victimAI = victim ? victim->getAI() : NULL;
+	AIUpdateInterface* victimAI = victim ? victim->getAI() : nullptr;
 
 	Locomotor* curLoco = sourceAI->getCurLocomotor();
 	m_canTurnInPlace = curLoco ? curLoco->getMinSpeed() == 0.0f : false;
@@ -4940,7 +4947,7 @@ StateReturnType AIAttackAimAtTargetState::update()
 
 		if (fabs(relAngle) < aimDelta /*&& !m_preAttackFrames*/ )
 		{
-			AIUpdateInterface* victimAI = victim ? victim->getAI() : NULL;
+			AIUpdateInterface* victimAI = victim ? victim->getAI() : nullptr;
 			// add ourself as a targeter BEFORE calling isTemporarilyPreventingAimSuccess().
 			// we do this every time thru, just in case we get into a squabble with our turret-ai
 			// over whether or not we are a targeter... (srj)
@@ -5011,7 +5018,7 @@ void AIAttackAimAtTargetState::onExit( StateExitType status )
 StateReturnType AIAttackFireWeaponState::onEnter()
 {
 	// contained by AIAttackState, so no separate timer
-	DEBUG_ASSERTCRASH(m_att != NULL, ("m_att may not be null"));
+	DEBUG_ASSERTCRASH(m_att != nullptr, ("m_att may not be null"));
 
 	Object *obj = getMachineOwner();
 	AIUpdateInterface *ai = obj->getAI();
@@ -5025,7 +5032,7 @@ StateReturnType AIAttackFireWeaponState::onEnter()
 	Object *victim = getMachineGoalObject();
 
 	if (victim && obj->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget) {
-		if (obj->getTeam()->getTeamTargetObject()==NULL) {
+		if (obj->getTeam()->getTeamTargetObject()==nullptr) {
 			obj->getTeam()->setTeamTargetObject(victim);
 		}
 	}
@@ -5096,7 +5103,7 @@ StateReturnType AIAttackFireWeaponState::update()
 			(victim->isDestroyed() || victim->isEffectivelyDead() || (victim->isKindOf(KINDOF_MINE) && victim->testStatus(OBJECT_STATUS_MASKED)))
 		)
 		{
-			const Coord3D* originalVictimPos = m_att ? m_att->getOriginalVictimPos() : NULL;
+			const Coord3D* originalVictimPos = m_att ? m_att->getOriginalVictimPos() : nullptr;
 			if (originalVictimPos)
 			{
 				// note that it is important to use getLastCommandSource here; this allows
@@ -5107,7 +5114,7 @@ StateReturnType AIAttackFireWeaponState::update()
 				PartitionFilterSamePlayer filterPlayer( victim->getControllingPlayer() );
 				PartitionFilterSameMapStatus filterMapStatus(obj);
 				PartitionFilterPossibleToAttack filterAttack(ATTACK_NEW_TARGET, obj, lastCmdSource);
-				PartitionFilter *filters[] = { &filterAttack, &filterPlayer, &filterMapStatus, NULL };
+				PartitionFilter *filters[] = { &filterAttack, &filterPlayer, &filterMapStatus, nullptr };
 				// note that we look around originalVictimPos, *not* the current victim's pos.
 				victim = ThePartitionManager->getClosestObject( originalVictimPos, continueRange, FROM_CENTER_2D, filters );// could be null. this is ok.
 				if (victim)
@@ -5173,13 +5180,13 @@ StateReturnType AIWaitState::update()
 //----------------------------------------------------------------------------------------------------------
 AIAttackState::AIAttackState( StateMachine *machine, Bool follow, Bool attackingObject, Bool forceAttacking, AttackExitConditionsInterface* attackParameters) :
 	State( machine , "AIAttackState"),
-	m_attackMachine(NULL),
+	m_attackMachine(nullptr),
 	m_attackParameters(attackParameters),
-	m_lockedWeaponOnEnter(NULL),
+	m_lockedWeaponOnEnter(nullptr),
 	m_follow(follow),
 	m_isAttackingObject(attackingObject),
 	m_isForceAttacking(forceAttacking),
-	m_victimTeam( NULL )
+	m_victimTeam( nullptr )
 {
 	m_originalVictimPos.zero();
 }
@@ -5189,7 +5196,7 @@ AIAttackState::~AIAttackState()
 {
 	// nope, don't do this, since we may well still have it targeted
 	// even though we're leaving this state.
-	// turn it off when we do setCurrentVictim(NULL).
+	// turn it off when we do setCurrentVictim(nullptr).
 	//addSelfAsTargeter(false);
 
 	if (m_attackMachine)
@@ -5204,7 +5211,7 @@ AIAttackState::~AIAttackState()
 // ------------------------------------------------------------------------------------------------
 void AIAttackState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -5216,12 +5223,12 @@ void AIAttackState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_attackMachine!=NULL;
+	Bool hasMachine = m_attackMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 	xfer->xferCoord3D(&m_originalVictimPos);
 
-	if (hasMachine && m_attackMachine==NULL)	{
+	if (hasMachine && m_attackMachine==nullptr)	{
 		// create new state machine for attack behavior
 		m_attackMachine = newInstance(AttackStateMachine)(getMachineOwner(), this, "AIAttackMachine", m_follow, m_isAttackingObject, m_isForceAttacking  );
 	}
@@ -5234,12 +5241,12 @@ void AIAttackState::xfer( Xfer *xfer )
 	AttackExitConditionsInterface*	m_attackParameters;					///< these are not owned by this, and will not be deleted on destruction
 	Bool										m_isForceAttacking
 	*/
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackState::loadPostProcess( void )
+void AIAttackState::loadPostProcess()
 {
 	Object* victim = getMachineGoalObject();
 	if (victim)
@@ -5247,8 +5254,8 @@ void AIAttackState::loadPostProcess( void )
 		m_victimTeam = victim->getTeam();
 	}
 	Object* source = getMachineOwner();
-	m_lockedWeaponOnEnter = source->isCurWeaponLocked() ? source->getCurrentWeapon() : NULL;
-}  // end loadPostProcess
+	m_lockedWeaponOnEnter = source->isCurWeaponLocked() ? source->getCurrentWeapon() : nullptr;
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -5257,7 +5264,7 @@ AsciiString AIAttackState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_attackMachine) name.concat(m_attackMachine->getCurrentStateName());
-	else name.concat("*NULL m_attackMachine");
+	else name.concat("*null m_attackMachine");
 	return name;
 }
 #endif
@@ -5333,7 +5340,7 @@ StateReturnType AIAttackState::onEnter()
 	if (m_isAttackingObject)
 	{
 		Object* victim = getMachineGoalObject();
-		if (victim == NULL || victim->isEffectivelyDead())
+		if (victim == nullptr || victim->isEffectivelyDead())
 		{
 			ai->notifyVictimIsDead();
 			return STATE_FAILURE;	// we have nothing to attack!
@@ -5358,7 +5365,7 @@ StateReturnType AIAttackState::onEnter()
 			source->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_IGNORING_STEALTH ) );
 	}
 
-	m_lockedWeaponOnEnter = source->isCurWeaponLocked() ? curWeapon : NULL;
+	m_lockedWeaponOnEnter = source->isCurWeaponLocked() ? curWeapon : nullptr;
 
 	StateReturnType retType = m_attackMachine->initDefaultState();
 	if( retType == STATE_CONTINUE )
@@ -5396,7 +5403,7 @@ StateReturnType AIAttackState::update()
 	{
 		Object* victim = getMachineGoalObject();
 
-		if (victim == NULL || victim->isEffectivelyDead())
+		if (victim == nullptr || victim->isEffectivelyDead())
 		{
 			source->getAI()->notifyVictimIsDead();
 			return STATE_SUCCESS;	// my, that was easy
@@ -5418,15 +5425,15 @@ StateReturnType AIAttackState::update()
 			{
 				if( !victim->getStatusBits().test( OBJECT_STATUS_CAN_ATTACK ) )
 				{
-					if ( victim->getContain() != NULL )
+					if ( victim->getContain() != nullptr )
 					{
 						if (victim->getContain()->isGarrisonable() && (victim->getContain()->getContainCount() == 0) )
 						{
 							if ( source->getRelationship( victim ) == NEUTRAL )
 							{
-								ai->friend_setGoalObject(NULL);
+								ai->friend_setGoalObject(nullptr);
 								if (victim==source->getTeam()->getTeamTargetObject()) {
-									source->getTeam()->setTeamTargetObject(NULL);
+									source->getTeam()->setTeamTargetObject(nullptr);
 								}
 								ai->notifyVictimIsDead();	// well, not "dead", but longer attackable
 								return STATE_FAILURE;
@@ -5440,9 +5447,9 @@ StateReturnType AIAttackState::update()
 			// order matters: we want to know if I consider it to be an enemy, not vice versa
 			if( source->getRelationship( victim ) != ENEMIES)
 			{
-				ai->friend_setGoalObject(NULL);
+				ai->friend_setGoalObject(nullptr);
 				if (victim==source->getTeam()->getTeamTargetObject()) {
-					source->getTeam()->setTeamTargetObject(NULL);
+					source->getTeam()->setTeamTargetObject(nullptr);
 				}
 				ai->notifyVictimIsDead();	// well, not "dead", but longer attackable
 				return STATE_FAILURE;
@@ -5463,11 +5470,11 @@ StateReturnType AIAttackState::update()
 	// if we entered with a locked weapon (ie, a special weapon), then we will
 	// only keep attacking as long as that weapon remains the cur weapon...
 	// if anything ever changes that weapon, we exit attack mode immediately.
-	if (m_lockedWeaponOnEnter != NULL && m_lockedWeaponOnEnter != curWeapon)
+	if (m_lockedWeaponOnEnter != nullptr && m_lockedWeaponOnEnter != curWeapon)
 		return STATE_FAILURE;
 
 	// we've shot as many times as we are allowed to
-	if (curWeapon == NULL || curWeapon->getMaxShotCount() <= 0)
+	if (curWeapon == nullptr || curWeapon->getMaxShotCount() <= 0)
 		return STATE_FAILURE;
 
 	/**
@@ -5487,15 +5494,12 @@ void AIAttackState::onExit( StateExitType status )
 	USE_PERF_TIMER(AIAttackState)
 	// nope, don't do this, since we may well still have it targeted
 	// even though we're leaving this state. turn it off when we
-	// turn it off when we do setCurrentVictim(NULL).
+	// turn it off when we do setCurrentVictim(nullptr).
 	//addSelfAsTargeter(false);
 
 	// destroy the attack machine
-	if (m_attackMachine)
-	{
-		deleteInstance(m_attackMachine);
-		m_attackMachine = NULL;
-	}
+	deleteInstance(m_attackMachine);
+	m_attackMachine = nullptr;
 
 	Object *obj = getMachineOwner();
 	obj->clearStatus( MAKE_OBJECT_STATUS_MASK4( OBJECT_STATUS_IS_FIRING_WEAPON,
@@ -5510,10 +5514,10 @@ void AIAttackState::onExit( StateExitType status )
 	if (ai)
 	{
 		//ai->notifyVictimIsDead();	no, do NOT do this here.
-		ai->setCurrentVictim(NULL);
+		ai->setCurrentVictim(nullptr);
 		for (int i = 0; i < MAX_TURRETS; ++i)
-			ai->setTurretTargetObject((WhichTurretType)i, NULL, 0);
-		ai->friend_setGoalObject(NULL);
+			ai->setTurretTargetObject((WhichTurretType)i, nullptr, 0);
+		ai->friend_setGoalObject(nullptr);
 	}
 }
 
@@ -5542,7 +5546,7 @@ protected:
 void AIAttackThenIdleStateMachine::crc( Xfer *xfer )
 {
 	StateMachine::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -5554,21 +5558,21 @@ void AIAttackThenIdleStateMachine::xfer( Xfer *xfer )
 	xfer->xferVersion( &v, cv );
 
 	StateMachine::xfer(xfer);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackThenIdleStateMachine::loadPostProcess( void )
+void AIAttackThenIdleStateMachine::loadPostProcess()
 {
 	StateMachine::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //-----------------------------------------------------------------------------------------------------------
 AIAttackThenIdleStateMachine::AIAttackThenIdleStateMachine(Object *owner, AsciiString name) : StateMachine(owner, name)
 {
 	// order matters: first state is the default state.
-	defineState( AI_ATTACK_OBJECT,	newInstance(AIAttackState)(this, false, true, false, NULL ), AI_IDLE, AI_IDLE );
+	defineState( AI_ATTACK_OBJECT,	newInstance(AIAttackState)(this, false, true, false, nullptr ), AI_IDLE, AI_IDLE );
 	defineState( AI_PICK_UP_CRATE, newInstance(AIPickUpCrateState)( this ), AI_IDLE, AI_IDLE );
 	defineState( AI_IDLE, newInstance(AIIdleState)( this, AIIdleState::DO_NOT_LOOK_FOR_TARGETS ), AI_IDLE, AI_IDLE );
 }
@@ -5596,7 +5600,7 @@ AIAttackSquadState::~AIAttackSquadState()
 // ------------------------------------------------------------------------------------------------
 void AIAttackSquadState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -5608,11 +5612,11 @@ void AIAttackSquadState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_attackSquadMachine!=NULL;
+	Bool hasMachine = m_attackSquadMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_attackSquadMachine==NULL)	{
+	if (hasMachine && m_attackSquadMachine==nullptr)	{
 		// create new state machine for attack behavior
 		m_attackSquadMachine = newInstance(AIAttackThenIdleStateMachine)( getMachineOwner(), "AIAttackMachine"  );
 	}
@@ -5620,14 +5624,14 @@ void AIAttackSquadState::xfer( Xfer *xfer )
 	if (hasMachine) {
 		xfer->xferSnapshot(m_attackSquadMachine);
 	}
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackSquadState::loadPostProcess( void )
+void AIAttackSquadState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -5636,7 +5640,7 @@ AsciiString AIAttackSquadState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_attackSquadMachine) name.concat(m_attackSquadMachine->getCurrentStateName());
-	else name.concat("*NULL m_attackSquadMachine");
+	else name.concat("*null m_attackSquadMachine");
 	return name;
 }
 #endif
@@ -5646,7 +5650,7 @@ AsciiString AIAttackSquadState::getName(  ) const
  * Begin an attack on the machine's goal team.
  * To do this, we use a sub attack machine.
  */
-StateReturnType AIAttackSquadState::onEnter( void )
+StateReturnType AIAttackSquadState::onEnter()
 {
 	// create new state machine for attack behavior
 	m_attackSquadMachine = newInstance(AIAttackThenIdleStateMachine)( getMachineOwner(), "AIAttackMachine"  );
@@ -5664,7 +5668,7 @@ StateReturnType AIAttackSquadState::onEnter( void )
  * Execute one frame of "attack enemy" behavior.
  */
 
-StateReturnType AIAttackSquadState::update( void )
+StateReturnType AIAttackSquadState::update()
 {
 
 	if( !m_attackSquadMachine )
@@ -5709,21 +5713,18 @@ StateReturnType AIAttackSquadState::update( void )
 //----------------------------------------------------------------------------------------------------------
 void AIAttackSquadState::onExit( StateExitType status )
 {
-	if( m_attackSquadMachine )
-	{
-		// destroy the attack machine
-		deleteInstance(m_attackSquadMachine);
-		m_attackSquadMachine = NULL;
-	}
+	// destroy the attack machine
+	deleteInstance(m_attackSquadMachine);
+	m_attackSquadMachine = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------------
-Object *AIAttackSquadState::chooseVictim(void)
+Object *AIAttackSquadState::chooseVictim()
 {
 	Squad *victimSquad = ((AIStateMachine*)getMachine())->getGoalSquad();
 	if (!victimSquad)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	Object *owner = getMachineOwner();
@@ -5734,20 +5735,20 @@ Object *AIAttackSquadState::chooseVictim(void)
 	{
 		if (moodVal & MM_Mood_Sleep)
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		if (moodVal & MM_Mood_Passive)
 		{
 			BodyModuleInterface *bmi = owner->getBodyModule();
 			if (!bmi) {
-				return NULL;
+				return nullptr;
 			}
 
 			const DamageInfo *di = bmi->getLastDamageInfo();
 			if (!di)
 			{
-				return NULL;
+				return nullptr;
 			}
 
 			return TheGameLogic->findObjectByID(di->in.m_sourceID);
@@ -5777,7 +5778,7 @@ Object *AIAttackSquadState::chooseVictim(void)
 			Int numUnits = objects.size();
 			if (numUnits == 0)
 			{
-				return NULL;
+				return nullptr;
 			}
 
 			Int unitToAttack = GameLogicRandomValue(0, numUnits - 1);
@@ -5791,9 +5792,9 @@ Object *AIAttackSquadState::chooseVictim(void)
 
 			PartitionFilterAcceptOnSquad f1(victimSquad);
 			PartitionFilterSameMapStatus filterMapStatus(getMachineOwner());
-			PartitionFilter *filters[] = { &f1, &filterMapStatus, NULL };
+			PartitionFilter *filters[] = { &f1, &filterMapStatus, nullptr };
 
-			Object *victim = ThePartitionManager->getClosestObject(getMachineOwner(), HUGE_DIST, FROM_CENTER_2D, filters, NULL, NULL);
+			Object *victim = ThePartitionManager->getClosestObject(getMachineOwner(), HUGE_DIST, FROM_CENTER_2D, filters, nullptr, nullptr);
 			return victim;
 			break;
 		}
@@ -5802,17 +5803,17 @@ Object *AIAttackSquadState::chooseVictim(void)
 		{
 			// everyone picks the same unit
 			VecObjectPtr objects = victimSquad->getLiveObjects();
-			if (objects.size() > 0)
+			if (!objects.empty())
 			{
 				return objects[0];
 			}
 
-			return NULL;
+			return nullptr;
 			break;
 		}
 	};
 
-	return NULL;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -5833,7 +5834,7 @@ AIDockState::~AIDockState()
 // ------------------------------------------------------------------------------------------------
 void AIDockState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -5845,11 +5846,11 @@ void AIDockState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_dockMachine!=NULL;
+	Bool hasMachine = m_dockMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_dockMachine==NULL)	{
+	if (hasMachine && m_dockMachine==nullptr)	{
 		// create new state machine for attack behavior
 		m_dockMachine = newInstance(AIDockMachine)( getMachineOwner());
 	}
@@ -5857,14 +5858,14 @@ void AIDockState::xfer( Xfer *xfer )
 		xfer->xferSnapshot(m_dockMachine);
 	}
 	xfer->xferBool(&m_usingPrecisionMovement);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIDockState::loadPostProcess( void )
+void AIDockState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -5873,7 +5874,7 @@ AsciiString AIDockState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_dockMachine) name.concat(m_dockMachine->getCurrentStateName());
-	else name.concat("*NULL m_dockMachine");
+	else name.concat("*null m_dockMachine");
 	return name;
 }
 #endif
@@ -5888,17 +5889,17 @@ StateReturnType AIDockState::onEnter()
 {
 	// who are we docking with?
 	Object *dockWithMe = getMachineGoalObject();
-	if (dockWithMe == NULL)
+	if (dockWithMe == nullptr)
 	{
 		// we have nothing to dock with!
 		DEBUG_LOG(("No goal in AIDockState::onEnter - exiting."));
 		return STATE_FAILURE;
 	}
-  DockUpdateInterface *dock = NULL;
+  DockUpdateInterface *dock = nullptr;
 	dock = dockWithMe->getDockUpdateInterface();
 
 	// if we have nothing to dock with, fail
-	if (dock == NULL)	{
+	if (dock == nullptr)	{
 		DEBUG_LOG(("Goal is not a dock in AIDockState::onEnter - exiting."));
 		return STATE_FAILURE;
 	}
@@ -5916,7 +5917,7 @@ StateReturnType AIDockState::onEnter()
 	// tell the docking machine what it is docking with
 	m_dockMachine->setGoalObject( dockWithMe );
 	// now that essential parameters are set, set the machine's initial state
-	return m_dockMachine->initDefaultState( );
+	return m_dockMachine->initDefaultState();
 }
 
 /**
@@ -5929,7 +5930,7 @@ void AIDockState::onExit( StateExitType status )
 	if (m_dockMachine) {
 		m_dockMachine->halt();// GS, you have to halt before you delete to do cleanup.
 		deleteInstance(m_dockMachine);
-		m_dockMachine = NULL;
+		m_dockMachine = nullptr;
 	}	else {
 		DEBUG_LOG(("Dock exited immediately"));
 	}
@@ -5939,7 +5940,7 @@ void AIDockState::onExit( StateExitType status )
 	if (ai)
 	{
 		ai->setCanPathThroughUnits(false);
-		ai->ignoreObstacle( NULL );
+		ai->ignoreObstacle( nullptr );
 	}
 
 }
@@ -5985,7 +5986,7 @@ StateReturnType AIDockState::update()
 void AIEnterState::crc( Xfer *xfer )
 {
 	AIInternalMoveToState::crc(xfer);
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6000,15 +6001,15 @@ void AIEnterState::xfer( Xfer *xfer )
 	AIInternalMoveToState::xfer(xfer);
 
 	xfer->xferObjectID(&m_entryToClear);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIEnterState::loadPostProcess( void )
+void AIEnterState::loadPostProcess()
 {
 	AIInternalMoveToState::loadPostProcess();
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIEnterState::onEnter()
@@ -6058,7 +6059,7 @@ void AIEnterState::onExit( StateExitType status )
 	if (ai)
 	{
 
-		ai->ignoreObstacle( NULL );
+		ai->ignoreObstacle( nullptr );
 		if (ai->getCurLocomotor())
 		{
 			ai->getCurLocomotor()->setAllowInvalidPosition(false);
@@ -6081,6 +6082,15 @@ void AIEnterState::onExit( StateExitType status )
 	}
 }
 
+static bool hasVerticalOverlap(const Object* a, const Object* b)
+{
+	const float aLower = a->getPosition()->z;
+	const float aUpper = aLower + a->getGeometryInfo().getMaxHeightAbovePosition();
+	const float bLower = b->getPosition()->z;
+	const float bUpper = bLower + b->getGeometryInfo().getMaxHeightAbovePosition();
+	return aUpper >= bLower && aLower <= bUpper;
+}
+
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIEnterState::update()
 {
@@ -6095,7 +6105,7 @@ StateReturnType AIEnterState::update()
 		// -- tell the humvee to enter a chinook
 		// -- fly the chinook around; the rangers follow the chinook like dopes
 		// this just bails in this case. (srj)
-		if (goal->getContainedBy() != NULL && goal->isAboveTerrain() && !obj->isAboveTerrain())
+		if (goal->getContainedBy() != nullptr && goal->isAboveTerrain() && !obj->isAboveTerrain())
 		{
 			return STATE_FAILURE;
 		}
@@ -6144,7 +6154,13 @@ StateReturnType AIEnterState::update()
 	StateReturnType code = AIInternalMoveToState::update();
 
 	// if it's airborne, wait for it to land
+#if RETAIL_COMPATIBLE_CRC
 	if (code == STATE_SUCCESS && goal->isAboveTerrain() && !obj->isAboveTerrain())
+#else
+	// TheSuperHackers @bugfix Stubbjax 05/11/2025 Check for vertical overlap when entering containers.
+	// This prevents levitating or airborne units from entering containers they are not actually touching.
+	if (code == STATE_SUCCESS && !hasVerticalOverlap(goal, obj))
+#endif
 	{
 		code = STATE_CONTINUE;
 	}
@@ -6193,7 +6209,7 @@ StateReturnType AIEnterState::update()
 // ------------------------------------------------------------------------------------------------
 void AIExitState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6206,14 +6222,14 @@ void AIExitState::xfer( Xfer *xfer )
   xfer->xferVersion( &version, currentVersion );
 
 	xfer->xferObjectID(&m_entryToClear);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIExitState::loadPostProcess( void )
+void AIExitState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIExitState::onEnter()
@@ -6254,9 +6270,9 @@ StateReturnType AIExitState::update()
 		DEBUG_ASSERTCRASH(obj, ("obj must not be null here"));
 
 		//GS.  The goal of unified ExitInterfaces dies a horrible death.  I can't ask Object for the exit,
-		// as removeFromContain is only in the Contain type.  I'm spliting the names in shame.
-		ExitInterface* goalExitInterface = goal->getContain() ? goal->getContain()->getContainExitInterface() : NULL;
-		if( goalExitInterface == NULL )
+		// as removeFromContain is only in the Contain type.  I'm splitting the names in shame.
+		ExitInterface* goalExitInterface = goal->getContain() ? goal->getContain()->getContainExitInterface() : nullptr;
+		if( goalExitInterface == nullptr )
 			return STATE_FAILURE;
 
 		if( goalExitInterface->isExitBusy() )
@@ -6268,7 +6284,7 @@ StateReturnType AIExitState::update()
 
 		goalExitInterface->exitObjectViaDoor(obj, exitDoor);
 		if( getMachine()->getCurrentStateID() != getID() )
-			return STATE_CONTINUE;// Not sucess, because exitViaDoor has changed us to FollowPath, and if we say Success, our machine will think FollowPath succeeded
+			return STATE_CONTINUE;// Not success, because exitViaDoor has changed us to FollowPath, and if we say Success, our machine will think FollowPath succeeded
 		else
 			return STATE_SUCCESS;
 	}
@@ -6320,7 +6336,7 @@ AsciiString AIGuardState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_guardMachine) name.concat(m_guardMachine->getCurrentStateName());
-	else name.concat("*NULL guardMachine");
+	else name.concat("*null guardMachine");
 	return name;
 }
 #endif
@@ -6329,7 +6345,7 @@ AsciiString AIGuardState::getName(  ) const
 // ------------------------------------------------------------------------------------------------
 void AIGuardState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6341,11 +6357,11 @@ void AIGuardState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_guardMachine!=NULL;
+	Bool hasMachine = m_guardMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_guardMachine==NULL)	{
+	if (hasMachine && m_guardMachine==nullptr)	{
 		// create new state machine for guard behavior
 		m_guardMachine = newInstance(AIGuardMachine)( getMachineOwner());
 	}
@@ -6353,14 +6369,14 @@ void AIGuardState::xfer( Xfer *xfer )
 		xfer->xferSnapshot(m_guardMachine);
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIGuardState::loadPostProcess( void )
+void AIGuardState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 /**
@@ -6394,7 +6410,7 @@ StateReturnType AIGuardState::onEnter()
 void AIGuardState::onExit( StateExitType status )
 {
 	deleteInstance(m_guardMachine);
-	m_guardMachine = NULL;
+	m_guardMachine = nullptr;
 
 	Object *obj = getMachineOwner();
 	obj->getAI()->clearGuardTargetType();
@@ -6405,7 +6421,7 @@ StateReturnType AIGuardState::update()
 {
 	//DEBUG_LOG(("AIGuardState frame %d: %08lx",TheGameLogic->getFrame(),getMachineOwner()));
 
-	if (m_guardMachine == NULL)
+	if (m_guardMachine == nullptr)
 	{
 		return STATE_FAILURE; // We actually already exited.
 	}
@@ -6446,7 +6462,7 @@ AsciiString AITunnelNetworkGuardState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_guardMachine) name.concat(m_guardMachine->getCurrentStateName());
-	else name.concat("*NULL guardMachine");
+	else name.concat("*null guardMachine");
 	return name;
 }
 #endif
@@ -6455,7 +6471,7 @@ AsciiString AITunnelNetworkGuardState::getName(  ) const
 // ------------------------------------------------------------------------------------------------
 void AITunnelNetworkGuardState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6467,11 +6483,11 @@ void AITunnelNetworkGuardState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_guardMachine!=NULL;
+	Bool hasMachine = m_guardMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_guardMachine==NULL)	{
+	if (hasMachine && m_guardMachine==nullptr)	{
 		// create new state machine for guard behavior
 		m_guardMachine = newInstance(AITNGuardMachine)( getMachineOwner());
 	}
@@ -6479,14 +6495,14 @@ void AITunnelNetworkGuardState::xfer( Xfer *xfer )
 		xfer->xferSnapshot(m_guardMachine);
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AITunnelNetworkGuardState::loadPostProcess( void )
+void AITunnelNetworkGuardState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 /**
@@ -6515,7 +6531,7 @@ StateReturnType AITunnelNetworkGuardState::onEnter()
 void AITunnelNetworkGuardState::onExit( StateExitType status )
 {
 	deleteInstance(m_guardMachine);
-	m_guardMachine = NULL;
+	m_guardMachine = nullptr;
 
 	Object *obj = getMachineOwner();
 	obj->getAI()->clearGuardTargetType();
@@ -6526,7 +6542,7 @@ StateReturnType AITunnelNetworkGuardState::update()
 {
 	//DEBUG_LOG(("AITunnelNetworkGuardState frame %d: %08lx",TheGameLogic->getFrame(),getMachineOwner()));
 
-	if (m_guardMachine == NULL)
+	if (m_guardMachine == nullptr)
 	{
 		return STATE_FAILURE; // We actually already exited.
 	}
@@ -6569,7 +6585,7 @@ AIHuntState::~AIHuntState()
 // ------------------------------------------------------------------------------------------------
 void AIHuntState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6581,11 +6597,11 @@ void AIHuntState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_huntMachine!=NULL;
+	Bool hasMachine = m_huntMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_huntMachine==NULL)	{
+	if (hasMachine && m_huntMachine==nullptr)	{
 		// create new state machine for hunt behavior
 		m_huntMachine = newInstance(AIAttackThenIdleStateMachine)( getMachineOwner(), "AIAttackThenIdleStateMachine");
 	}
@@ -6594,14 +6610,14 @@ void AIHuntState::xfer( Xfer *xfer )
 	}
 	xfer->xferUnsignedInt(&m_nextEnemyScanTime);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIHuntState::loadPostProcess( void )
+void AIHuntState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 /**
@@ -6628,7 +6644,7 @@ void AIHuntState::onExit( StateExitType status )
 {
 	// destroy the hunt machine
 	deleteInstance(m_huntMachine);
-	m_huntMachine = NULL;
+	m_huntMachine = nullptr;
 
 	Object *obj = getMachineOwner();
 	if (obj)
@@ -6644,7 +6660,7 @@ AsciiString AIHuntState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_huntMachine) name.concat(m_huntMachine->getCurrentStateName());
-	else name.concat("*NULL huntMachine");
+	else name.concat("*null huntMachine");
 	return name;
 }
 #endif
@@ -6676,17 +6692,17 @@ StateReturnType AIHuntState::update()
 
 		m_nextEnemyScanTime = now + ENEMY_SCAN_RATE;
 
-		const AttackPriorityInfo *info = NULL;
+		const AttackPriorityInfo *info = nullptr;
 		info = ai->getAttackInfo();
 
 		// Check if team auto targets same victim.
-		Object* teamVictim = NULL;
+		Object* teamVictim = nullptr;
 		if (owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 		{
 			teamVictim = owner->getTeam()->getTeamTargetObject();
 		}
-		Object* victim = NULL;
-		if (teamVictim && info==NULL)
+		Object* victim = nullptr;
+		if (teamVictim && info==nullptr)
 		{
 			victim = teamVictim;
 		}
@@ -6694,15 +6710,15 @@ StateReturnType AIHuntState::update()
 		{
 			// do NOT do line of sight check - we want to find everything
 			victim = TheAI->findClosestEnemy( owner, 9999.9f, AI::CAN_ATTACK, info );
-			if (victim==NULL && owner->getControllingPlayer() && owner->getControllingPlayer()->getUnitsShouldHunt()) {
+			if (victim==nullptr && owner->getControllingPlayer() && owner->getControllingPlayer()->getUnitsShouldHunt()) {
 				// If we are doing an all hunt, try hunting without the attack priority info. jba.
-				victim = TheAI->findClosestEnemy(owner, 9999.9f, AI::CAN_ATTACK, NULL);
+				victim = TheAI->findClosestEnemy(owner, 9999.9f, AI::CAN_ATTACK, nullptr);
 			}
 			if (owner->getTeam()->getPrototype()->getTemplateInfo()->m_attackCommonTarget)
 			{
 				// Check priorities.
 				if (teamVictim && info) {
-					if (victim==NULL) {
+					if (victim==nullptr) {
 						DEBUG_LOG(("Couldnt' find victim. hmm."));
 						victim = teamVictim;
 					}
@@ -6728,7 +6744,7 @@ StateReturnType AIHuntState::update()
 		}
 		if (owner->getControllingPlayer() && owner->getControllingPlayer()->getUnitsShouldHunt()==FALSE) {
 			// If we are not doing an all hunt, then exit hunt state - no more victims.
-			if (m_huntMachine->getCurrentStateID() == AI_IDLE && victim==NULL) {
+			if (m_huntMachine->getCurrentStateID() == AI_IDLE && victim==nullptr) {
 				return STATE_SUCCESS; // we killed everything :) jba.
 			}
 		}
@@ -6765,7 +6781,7 @@ AIAttackAreaState::~AIAttackAreaState()
 // ------------------------------------------------------------------------------------------------
 void AIAttackAreaState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6777,11 +6793,11 @@ void AIAttackAreaState::xfer( Xfer *xfer )
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
-	Bool hasMachine = m_attackMachine!=NULL;
+	Bool hasMachine = m_attackMachine!=nullptr;
 
 	xfer->xferBool(&hasMachine);
 
-	if (hasMachine && m_attackMachine==NULL)	{
+	if (hasMachine && m_attackMachine==nullptr)	{
 		// create new state machine for hunt behavior
 		m_attackMachine = newInstance(AIAttackThenIdleStateMachine)( getMachineOwner(), "AIAttackThenIdleStateMachine");
 	}
@@ -6790,14 +6806,14 @@ void AIAttackAreaState::xfer( Xfer *xfer )
 	}
 	xfer->xferUnsignedInt(&m_nextEnemyScanTime);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIAttackAreaState::loadPostProcess( void )
+void AIAttackAreaState::loadPostProcess()
 {
-}  // end loadPostProcess
+}
 
 #ifdef STATE_MACHINE_DEBUG
 //----------------------------------------------------------------------------------------------------------
@@ -6806,7 +6822,7 @@ AsciiString AIAttackAreaState::getName(  ) const
 	AsciiString name = m_name;
 	name.concat("/");
 	if (m_attackMachine) name.concat(m_attackMachine->getCurrentStateName());
-	else name.concat("*NULL m_attackMachine");
+	else name.concat("*null m_attackMachine");
 	return name;
 }
 #endif
@@ -6832,7 +6848,7 @@ void AIAttackAreaState::onExit( StateExitType status )
 {
 	// destroy the hunt machine
 	deleteInstance(m_attackMachine);
-	m_attackMachine = NULL;
+	m_attackMachine = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -6856,10 +6872,10 @@ StateReturnType AIAttackAreaState::update()
 		m_nextEnemyScanTime = now + ENEMY_SCAN_RATE;
 
 		AIUpdateInterface *ai = owner->getAI();
-		if (ai->getAreaToGuard() == NULL)
+		if (ai->getAreaToGuard() == nullptr)
 			return STATE_FAILURE;
 
-		const AttackPriorityInfo *info = NULL;
+		const AttackPriorityInfo *info = nullptr;
 		info = ai->getAttackInfo();
 		PartitionFilterPolygonTrigger polyFilter(ai->getAreaToGuard());
 
@@ -6871,7 +6887,7 @@ StateReturnType AIAttackAreaState::update()
 		{
 			m_attackMachine->setState( AI_ATTACK_OBJECT );
 		}
-		if (victim==NULL) {
+		if (victim==nullptr) {
 			return STATE_SUCCESS;
 		}
 	}
@@ -6899,7 +6915,7 @@ StateReturnType AIAttackAreaState::update()
 // ------------------------------------------------------------------------------------------------
 void AIFaceState::crc( Xfer *xfer )
 {
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method */
@@ -6912,15 +6928,15 @@ void AIFaceState::xfer( Xfer *xfer )
   xfer->xferVersion( &version, currentVersion );
 
 	xfer->xferBool(&m_canTurnInPlace);
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void AIFaceState::loadPostProcess( void )
+void AIFaceState::loadPostProcess()
 {
 	// empty.  jba.
-}  // end loadPostProcess
+}
 
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIFaceState::onEnter()
@@ -6932,7 +6948,7 @@ StateReturnType AIFaceState::onEnter()
 	m_canTurnInPlace = curLoco ? curLoco->getMinSpeed() == 0.0f : false;
 
 	Object* target = getMachineGoalObject();
-	if (m_obj && target == NULL )
+	if (m_obj && target == nullptr )
 	{
 		// Nothing to face...
 		return STATE_FAILURE;

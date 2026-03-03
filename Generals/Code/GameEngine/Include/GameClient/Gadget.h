@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef __GADGET_H_
-#define __GADGET_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -124,7 +121,7 @@ enum
 													GWS_PROGRESS_BAR,
 };
 
-// Gadget paramaters
+// Gadget parameters
 enum
 {
 
@@ -374,11 +371,11 @@ typedef struct _ListboxData
 	Int					selectPos;				// Position of current selected entry (for SINGLE select)
 	Int					*selections;			// Pointer to array of selections (for MULTI select)
 
-	Short				displayHeight;		// Height in pixels of listbox display region
-																// this is computed based on the existance
+	Int					displayHeight;		// Height in pixels of listbox display region
+																// this is computed based on the existence
 																// of a title or not.
 	UnsignedInt doubleClickTime;	//
-	Short				displayPos;				// Position of current display entry in pixels
+	Int					displayPos;				// Position of current display entry in pixels
 
 } ListboxData;
 
@@ -525,14 +522,12 @@ extern WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedIn
 																								 WindowMsgData mData1, WindowMsgData mData2 );
 
 
-extern Bool InitializeEntryGadget( void );
+extern Bool InitializeEntryGadget();
 
-extern Bool ShutdownEntryGadget( void );
+extern Bool ShutdownEntryGadget();
 
 // Entry Gadget Functions
 extern void InformEntry( WideChar c );
 
 // list box stuff
 extern Int GetListboxTopEntry( ListboxData list );
-
-#endif // __GADGET_H_

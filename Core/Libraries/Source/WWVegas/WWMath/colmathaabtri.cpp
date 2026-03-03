@@ -122,7 +122,7 @@ enum
 */
 struct BTCollisionStruct
 {
-	BTCollisionStruct(void) {}
+	BTCollisionStruct() {}
 
 	void Init(const AABoxClass &box,const Vector3 &move,const TriClass &tri,const Vector3 &trimove)
 	{
@@ -146,7 +146,7 @@ struct BTCollisionStruct
 		Vector3::Cross_Product(E[0],E[1],&N);
 	}
 
-	bool						StartBad;			// Inital configuration is intersecting?
+	bool						StartBad;			// Initial configuration is intersecting?
 	float						MaxFrac;				// Longest move allowed so far
 
 	int						AxisId;				// Last separating axis
@@ -265,7 +265,7 @@ static inline bool aabtri_separation_test
  *   4/8/99     GTH : Created.                                                                 *
  *   7/12/99    GTH : converted to AABox                                                       *
  *=============================================================================================*/
-static inline bool aabtri_check_axis(void)
+static inline bool aabtri_check_axis()
 {
 	float		dist;						// separation along the axis
 	float		axismove;				// size of the move along the axis.
@@ -428,7 +428,7 @@ static inline bool aabtri_check_basis_axis
  * HISTORY:                                                                                    *
  *   4/8/99     GTH : Created.                                                                 *
  *=============================================================================================*/
-static inline bool aabtri_check_normal_axis(void)
+static inline bool aabtri_check_normal_axis()
 {
 	float		dist;						// separation along the axis
 	float		axismove;				// size of the move along the axis.
@@ -859,9 +859,9 @@ exit:
 */
 struct AABTIntersectStruct
 {
-	AABTIntersectStruct(void) :
-		Box(NULL),
-		Tri(NULL)
+	AABTIntersectStruct() :
+		Box(nullptr),
+		Tri(nullptr)
 	{
 	}
 

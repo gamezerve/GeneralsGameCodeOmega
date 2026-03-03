@@ -36,32 +36,31 @@
 
 
 #include "pointerremap.h"
-#include "refcount.h"
 #include "wwdebug.h"
 
 
 const int POINTER_TABLES_GROWTH_STEP = 4096;
 
 
-PointerRemapClass::PointerRemapClass(void)
+PointerRemapClass::PointerRemapClass()
 {
 	PointerPairTable.Set_Growth_Step(POINTER_TABLES_GROWTH_STEP);
 	PointerRequestTable.Set_Growth_Step(POINTER_TABLES_GROWTH_STEP);
 	RefCountRequestTable.Set_Growth_Step(POINTER_TABLES_GROWTH_STEP);
 }
 
-PointerRemapClass::~PointerRemapClass(void)
+PointerRemapClass::~PointerRemapClass()
 {
 }
 
-void PointerRemapClass::Reset(void)
+void PointerRemapClass::Reset()
 {
 	PointerPairTable.Delete_All();
 	PointerRequestTable.Delete_All();
 	RefCountRequestTable.Delete_All();
 }
 
-void PointerRemapClass::Process(void)
+void PointerRemapClass::Process()
 {
 	if ( PointerPairTable.Count() > 0 ) {
 		qsort(&PointerPairTable[0], PointerPairTable.Count(), sizeof(PointerPairTable[0]), ptr_pair_compare_function);
@@ -112,10 +111,10 @@ void PointerRemapClass::Process_Request_Table(DynamicVectorClass<PtrRemapStruct>
 		} else {
 
 			// Failed to re-map the pointer.
-			// warn the user, set pointer to NULL, reset index to the pre_search_index.
+			// warn the user, set pointer to null, reset index to the pre_search_index.
 			// If this happens, things could be going very wrong.  (find out why its happening!)
 			pair_index = pre_search_index;
-			*request_table[pointer_index].PointerToRemap = NULL;
+			*request_table[pointer_index].PointerToRemap = nullptr;
 #ifdef WWDEBUG
 			const char * file = request_table[pointer_index].File;
 			int line = request_table[pointer_index].Line;

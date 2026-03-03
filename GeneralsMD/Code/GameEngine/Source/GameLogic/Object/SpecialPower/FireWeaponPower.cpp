@@ -42,7 +42,7 @@
 //-----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #define DEFINE_WEAPONSLOTTYPE_NAMES //For access to TheWeaponSlotTypeNames
 
@@ -58,7 +58,7 @@
 #include "GameLogic/Module/FireWeaponPower.h"
 
 
-FireWeaponPowerModuleData::FireWeaponPowerModuleData( void )
+FireWeaponPowerModuleData::FireWeaponPowerModuleData()
 {
 	m_maxShotsToFire = 1;
 }
@@ -71,12 +71,12 @@ FireWeaponPowerModuleData::FireWeaponPowerModuleData( void )
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "MaxShotsToFire", INI::parseUnsignedInt, NULL, offsetof( FireWeaponPowerModuleData, m_maxShotsToFire ) },
-		{ 0, 0, 0, 0 }
+		{ "MaxShotsToFire", INI::parseUnsignedInt, nullptr, offsetof( FireWeaponPowerModuleData, m_maxShotsToFire ) },
+		{ nullptr, nullptr, nullptr, 0 }
 	};
 	p.add(dataFieldParse);
 
-}  // end buildFieldParse
+}
 
 
 // ------------------------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ FireWeaponPower::FireWeaponPower( Thing *thing, const ModuleData *moduleData )
 }
 
 // ------------------------------------------------------------------------------------------------
-FireWeaponPower::~FireWeaponPower( void )
+FireWeaponPower::~FireWeaponPower()
 {
 
 }
@@ -185,7 +185,7 @@ void FireWeaponPower::crc( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -203,15 +203,15 @@ void FireWeaponPower::xfer( Xfer *xfer )
 	// extend base class
 	SpecialPowerModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void FireWeaponPower::loadPostProcess( void )
+void FireWeaponPower::loadPostProcess()
 {
 
 	// extend base class
 	SpecialPowerModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -114,7 +114,7 @@ bool BitChannelClass::Save(ChunkSaveClass & csave, bool compress)
 
     W3dTimeCodedBitChannelStruct * chn = (W3dTimeCodedBitChannelStruct *)malloc(channelsize);
 
-    if (chn == NULL)  {
+    if (chn == nullptr)  {
     	return false;
     }
 
@@ -157,7 +157,7 @@ bool BitChannelClass::Save(ChunkSaveClass & csave, bool compress)
 			return false;
 		}
 
-		if (chn != NULL) {
+		if (chn != nullptr) {
 			free(chn);
 		}
 
@@ -183,7 +183,7 @@ bool BitChannelClass::Save(ChunkSaveClass & csave, bool compress)
 
 		W3dBitChannelStruct * chn = (W3dBitChannelStruct *)malloc(channelsize);
 
-		if (chn == NULL) {
+		if (chn == nullptr) {
 			return false;
 		}
 
@@ -203,7 +203,7 @@ bool BitChannelClass::Save(ChunkSaveClass & csave, bool compress)
 			return false;
 		}
 
-		if (chn != NULL) {
+		if (chn != nullptr) {
 			free(chn);
 		}
 
@@ -233,7 +233,7 @@ void BitChannelClass::compute_range(void)
 	while ((End >= 0) && (is_default(Get_Bit(End)))) {
 		End--;
 	}
-}	 // compute_range
+}
 
 
 //
@@ -258,12 +258,12 @@ uint32 BitChannelClass::find_useless_packet(W3dTimeCodedBitChannelStruct * c)
             	return(try_idx + 1);
             }
 
-      }	// for
+      }
     }
 
 	return( PACKETS_ALL_USEFUL );
 
-} // find_useless_packet
+}
 
 
 //
@@ -293,7 +293,7 @@ void BitChannelClass::remove_packet(W3dTimeCodedBitChannelStruct * c, uint32 pac
   // Decrement Packet Count
   c->NumTimeCodes--;
 
-} // remove_packet
+}
 
 //
 //  Take a non-compressed TimeCoded Bit Channel
@@ -311,7 +311,7 @@ void BitChannelClass::compress(W3dTimeCodedBitChannelStruct * c)
 
 	}
 
-} // compress
+}
 
 
 

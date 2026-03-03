@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/GameState.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -55,7 +55,7 @@ CaveContain::CaveContain( Thing *thing, const ModuleData* moduleData ) : OpenCon
 {
 	m_needToRunOnBuildComplete = true;
 	m_caveIndex = 0;
-	m_originalTeam = NULL;
+	m_originalTeam = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ void CaveContain::removeFromContain( Object *obj, Bool exposeStealthUnits )
 {
 
 	// sanity
-	if( obj == NULL )
+	if( obj == nullptr )
 		return;
 
 	//
@@ -175,10 +175,10 @@ void CaveContain::onRemoving( Object *obj )
 		// (hokey exception: if our team is null, don't bother -- this
 		// usually means we are being called during game-teardown and
 		// the teams are no longer valid...)
-		if (getObject()->getTeam() != NULL)
+		if (getObject()->getTeam() != nullptr)
 		{
 			changeTeamOnAllConnectedCaves( m_originalTeam, FALSE );
-			m_originalTeam = NULL;
+			m_originalTeam = nullptr;
 		}
 
 		// change the state back from garrisoned
@@ -188,7 +188,7 @@ void CaveContain::onRemoving( Object *obj )
 			draw->clearModelConditionState( MODELCONDITION_GARRISONED );
 		}
 
-	}  // end if
+	}
 }
 
 Bool CaveContain::isValidContainerFor(const Object* obj, Bool checkCapacity) const
@@ -203,7 +203,7 @@ UnsignedInt CaveContain::getContainCount() const
 	return myTracker->getContainCount();
 }
 
-Int CaveContain::getContainMax( void ) const
+Int CaveContain::getContainMax() const
 {
 	TunnelTracker *myTracker = TheCaveSystem->getTunnelTrackerForCaveIndex( m_caveIndex );
 	return myTracker->getContainMax();
@@ -236,13 +236,13 @@ void CaveContain::onDie( const DamageInfo * damageInfo )
 
 
 //-------------------------------------------------------------------------------------------------
-void CaveContain::onCreate( void )
+void CaveContain::onCreate()
 {
 	m_caveIndex = getCaveContainModuleData()->m_caveIndexData;
 }
 
 //-------------------------------------------------------------------------------------------------
-void CaveContain::onBuildComplete( void )
+void CaveContain::onBuildComplete()
 {
 	if( ! shouldDoOnBuildComplete() )
 		return;
@@ -275,10 +275,10 @@ void CaveContain::tryToSetCaveIndex( Int newIndex )
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void CaveContain::recalcApparentControllingPlayer( void )
+void CaveContain::recalcApparentControllingPlayer()
 {
 	//Record original team first time through.
-	if( m_originalTeam == NULL )
+	if( m_originalTeam == nullptr )
 	{
 		m_originalTeam = getObject()->getTeam();
 	}
@@ -286,8 +286,8 @@ void CaveContain::recalcApparentControllingPlayer( void )
 	// (hokey trick: if our team is null, nuke originalTeam -- this
 	// usually means we are being called during game-teardown and
 	// the teams are no longer valid...)
-	if (getObject()->getTeam() == NULL)
-		m_originalTeam = NULL;
+	if (getObject()->getTeam() == nullptr)
+		m_originalTeam = nullptr;
 
 	// This is called from onContaining, so a one is the edge trigger to do capture stuff
 	if( getContainCount() == 1 )
@@ -324,10 +324,10 @@ static CaveInterface* findCave(Object* obj)
 	for (BehaviorModule** i = obj->getBehaviorModules(); *i; ++i)
 	{
 		CaveInterface* c = (*i)->getCaveInterface();
-		if (c != NULL)
+		if (c != nullptr)
 			return c;
 	}
-	return NULL;
+	return nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -344,12 +344,12 @@ void CaveContain::changeTeamOnAllConnectedCaves( Team *newTeam, Bool setOriginal
 			// This is a distributed Garrison in terms of capturing, so when one node
 			// triggers the change, he needs to tell everyone, so anyone can do the un-change.
 			CaveInterface *caveModule = findCave(currentCave);
-			if( caveModule == NULL )
+			if( caveModule == nullptr )
 				continue;
 			if( setOriginalTeams )
 				caveModule->setOriginalTeam( currentCave->getTeam() );
 			else
-				caveModule->setOriginalTeam( NULL );
+				caveModule->setOriginalTeam( nullptr );
 
 			// Now do the actual switch for this one.
 
@@ -374,7 +374,7 @@ void CaveContain::crc( Xfer *xfer )
 	// extend base class
 	OpenContain::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -408,29 +408,29 @@ void CaveContain::xfer( Xfer *xfer )
 		{
 
 			m_originalTeam = TheTeamFactory->findTeamByID( teamID );
-			if( m_originalTeam == NULL )
+			if( m_originalTeam == nullptr )
 			{
 
 				DEBUG_CRASH(( "CaveContain::xfer - Unable to find original team by id" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 		else
-			m_originalTeam = NULL;
+			m_originalTeam = nullptr;
 
-	}  // end if
+	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void CaveContain::loadPostProcess( void )
+void CaveContain::loadPostProcess()
 {
 
 	// extend base class
 	OpenContain::loadPostProcess();
 
-}  // end loadPostProcess
+}

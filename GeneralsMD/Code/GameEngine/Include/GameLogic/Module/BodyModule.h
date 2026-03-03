@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BODYMODULE_H_
-#define __BODYMODULE_H_
-
 #include "Common/Module.h"
 #include "GameLogic/Damage.h"
 #include "GameLogic/ArmorSet.h"
@@ -61,15 +58,16 @@ enum BodyDamageType CPP_11(: Int)
 };
 
 #ifdef DEFINE_BODYDAMAGETYPE_NAMES
-static const char* TheBodyDamageTypeNames[] =
+static const char* const TheBodyDamageTypeNames[] =
 {
 	"PRISTINE",
 	"DAMAGED",
 	"REALLYDAMAGED",
 	"RUBBLE",
 
-	NULL
+	nullptr
 };
+static_assert(ARRAY_SIZE(TheBodyDamageTypeNames) == BODYDAMAGETYPE_COUNT + 1, "Incorrect array size");
 #endif
 
 enum MaxHealthChangeType CPP_11(: Int)
@@ -78,15 +76,20 @@ enum MaxHealthChangeType CPP_11(: Int)
 	PRESERVE_RATIO,
 	ADD_CURRENT_HEALTH_TOO,
 	FULLY_HEAL,
+
+	MAX_HEALTH_CHANGE_COUNT
 };
 
 #ifdef DEFINE_MAXHEALTHCHANGETYPE_NAMES
-static const char* TheMaxHealthChangeTypeNames[] =
+static const char* const TheMaxHealthChangeTypeNames[] =
 {
 	"SAME_CURRENTHEALTH",
 	"PRESERVE_RATIO",
 	"ADD_CURRENT_HEALTH_TOO",
+	"FULLY_HEAL",
+	nullptr
 };
+static_assert(ARRAY_SIZE(TheMaxHealthChangeTypeNames) == MAX_HEALTH_CHANGE_COUNT + 1, "Incorrect array size");
 #endif
 
 
@@ -191,7 +194,7 @@ public:
 	virtual void internalChangeHealth( Real delta ) = 0;
 
 	virtual void setIndestructible( Bool indestructible ) = 0;
-	virtual Bool isIndestructible( void ) const = 0;
+	virtual Bool isIndestructible() const = 0;
 
 	virtual void evaluateVisualCondition() = 0;
 	virtual void updateBodyParticleSystems() = 0; // made public for topple and building collapse updates -ML
@@ -258,7 +261,7 @@ public:
 	virtual void clearArmorSetFlag(ArmorSetType ast) = 0;
 	virtual Bool testArmorSetFlag(ArmorSetType ast) = 0;
 
-	virtual const DamageInfo *getLastDamageInfo() const { return NULL; }	///< return info on last damage dealt to this object
+	virtual const DamageInfo *getLastDamageInfo() const { return nullptr; }	///< return info on last damage dealt to this object
 	virtual UnsignedInt getLastDamageTimestamp() const { return 0; }	///< return frame of last damage dealt
 	virtual UnsignedInt getLastHealingTimestamp() const { return 0; }	///< return frame of last healing dealt
 	virtual ObjectID getClearableLastAttacker() const { return INVALID_ID; }
@@ -266,7 +269,7 @@ public:
 	virtual Bool getFrontCrushed() const { return false; }
 	virtual Bool getBackCrushed() const { return false; }
 
-	virtual void setInitialHealth(Int initialPercent)  {  } ///< Sets the inital load health %.
+	virtual void setInitialHealth(Int initialPercent)  {  } ///< Sets the initial load health %.
 	virtual void setMaxHealth(Real maxHealth, MaxHealthChangeType healthChangeType = SAME_CURRENTHEALTH )  {  } ///< Sets the max health.
 
 	virtual void setFrontCrushed(Bool v) { DEBUG_CRASH(("you should never call this for generic Bodys")); }
@@ -274,7 +277,7 @@ public:
 
 
 	virtual void setIndestructible( Bool indestructible ) { }
-	virtual Bool isIndestructible( void ) const { return TRUE; }
+	virtual Bool isIndestructible() const { return TRUE; }
 
 	//Allows outside systems to apply defensive bonuses or penalties (they all stack as a multiplier!)
 	virtual void applyDamageScalar( Real scalar ) { m_damageScalar *= scalar; }
@@ -297,12 +300,10 @@ protected:
 	// snapshot methods
 	virtual void crc( Xfer *xfer );
 	virtual void xfer( Xfer *xfer );
-	virtual void loadPostProcess( void );
+	virtual void loadPostProcess();
 
 	Real	m_damageScalar;
 
 };
 inline BodyModule::BodyModule( Thing *thing, const ModuleData* moduleData ) : BehaviorModule( thing, moduleData ), m_damageScalar(1.0f) { }
 inline BodyModule::~BodyModule() { }
-
-#endif

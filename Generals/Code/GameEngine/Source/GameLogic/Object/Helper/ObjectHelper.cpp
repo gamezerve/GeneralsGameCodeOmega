@@ -37,10 +37,10 @@
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-ObjectHelper::~ObjectHelper( void )
+ObjectHelper::~ObjectHelper()
 {
 
-}  // end ~ObjectHelper
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ void ObjectHelper::crc( Xfer *xfer )
 	// update module crc
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /* Xfer method
@@ -85,15 +85,15 @@ void ObjectHelper::xfer( Xfer *xfer )
 	// update module xfer
 	UpdateModule::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
 // ------------------------------------------------------------------------------------------------
-void ObjectHelper::loadPostProcess( void )
+void ObjectHelper::loadPostProcess()
 {
 
 	// update module post process
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}
