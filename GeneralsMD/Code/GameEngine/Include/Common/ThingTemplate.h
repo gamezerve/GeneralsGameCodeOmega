@@ -86,7 +86,7 @@ typedef std::map<AsciiString, const FXList*> PerUnitFXMap;
 //-------------------------------------------------------------------------------------------------
 enum
 {
-	MAX_UPGRADE_CAMEO_UPGRADES = 5
+	MAX_UPGRADE_CAMEO_UPGRADES = 7 // Reborn
 };
 
 //-------------------------------------------------------------------------------------------------
