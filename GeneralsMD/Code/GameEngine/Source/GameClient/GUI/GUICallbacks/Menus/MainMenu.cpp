@@ -112,7 +112,7 @@ static NameKeyType exitID = NAMEKEY_INVALID;
 static NameKeyType motdID = NAMEKEY_INVALID;
 static NameKeyType worldBuilderID = NAMEKEY_INVALID;
 static NameKeyType getUpdateID = NAMEKEY_INVALID;
-static NameKeyType buttonTRAININGID = NAMEKEY_INVALID;
+static NameKeyType buttonTRAININGID = NAMEKEY_INVALID; // Re-enabled Reborn
 static NameKeyType buttonChallengeID = NAMEKEY_INVALID;
 static NameKeyType buttonUSAID = NAMEKEY_INVALID;
 static NameKeyType buttonGLAID = NAMEKEY_INVALID;
@@ -456,7 +456,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	motdID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMOTD" );
 	worldBuilderID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonWorldBuilder" );
 	getUpdateID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGetUpdate" );
-	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" ); // Reborn
+	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" ); // Re-enabled Reborn
 	buttonChallengeID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChallenge" );
 	buttonUSAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSA" );
 	buttonGLAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLA" );
@@ -505,7 +505,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonDiffBack = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonDiffBackID );
 
 	getUpdate = TheWindowManager->winGetWindowFromId( parentMainMenu, getUpdateID );
-  buttonTRAINING = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonTRAININGID ); // Reborn
+	buttonTRAINING = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonTRAININGID ); // Re-enabled Reborn
 	buttonChallenge = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChallengeID );
 	buttonUSA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSAID );
 	buttonGLA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonGLAID );
@@ -1061,7 +1061,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				TheTransitionHandler->setGroup("MainMenuFactionTraining");
 			}
-			else if(controlID == buttonTRAININGID)
+			else if(controlID == buttonTRAININGID)  // Re-enabled Reborn
 			{
 				if(dontAllowTransitions && !campaignSelected)
 				{
@@ -1502,7 +1502,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 
 
-// This button has been removed for the mission disk -June 2003 - Re-enabled on Reborn
+// This button has been removed for the mission disk -June 2003  // Re-enabled Reborn
 			else if(controlID == buttonTRAININGID)
 			{
 				if(campaignSelected || dontAllowTransitions)
@@ -1519,7 +1519,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				showLogo = FALSE;
 				showSide = SHOW_TRAINING;
 
-//				setupGameStart(TheCampaignManager->getCurrentMap());
+				//setupGameStart(TheCampaignManager->getCurrentMap());
 			}
 			else if(controlID == buttonUSAID)
 			{
