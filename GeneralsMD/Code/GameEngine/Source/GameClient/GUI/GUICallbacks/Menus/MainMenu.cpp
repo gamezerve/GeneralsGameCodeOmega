@@ -456,7 +456,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	motdID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMOTD" );
 	worldBuilderID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonWorldBuilder" );
 	getUpdateID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGetUpdate" );
-//	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" );
+	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" ); // Reborn
 	buttonChallengeID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChallenge" );
 	buttonUSAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSA" );
 	buttonGLAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLA" );
@@ -505,7 +505,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonDiffBack = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonDiffBackID );
 
 	getUpdate = TheWindowManager->winGetWindowFromId( parentMainMenu, getUpdateID );
-//	buttonTRAINING = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonTRAININGID );
+  buttonTRAINING = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonTRAININGID ); // Reborn
 	buttonChallenge = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChallengeID );
 	buttonUSA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSAID );
 	buttonGLA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonGLAID );
@@ -1061,7 +1061,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				TheTransitionHandler->setGroup("MainMenuFactionTraining");
 			}
-/*			else if(controlID == buttonTRAININGID)
+			else if(controlID == buttonTRAININGID)
 			{
 				if(dontAllowTransitions && !campaignSelected)
 				{
@@ -1077,7 +1077,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
-*/			else if(controlID == skirmishID)
+			else if(controlID == skirmishID)
 			{
 				if(dontAllowTransitions && !campaignSelected)
 				{
@@ -1181,7 +1181,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				// we'll just use the training logo anim for now
 				TheTransitionHandler->reverse("MainMenuFactionTraining");
 			}
-/*			else if(controlID == buttonTRAININGID)
+			else if(controlID == buttonTRAININGID)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
 				{
@@ -1195,7 +1195,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
-*/			else if(controlID == skirmishID)
+			else if(controlID == skirmishID)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
 				{
@@ -1502,8 +1502,8 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 
 
-// This button has been removed for the mission disk -June 2003
-/*			else if(controlID == buttonTRAININGID)
+// This button has been removed for the mission disk -June 2003 - Re-enabled on Reborn
+			else if(controlID == buttonTRAININGID)
 			{
 				if(campaignSelected || dontAllowTransitions)
 					break;
@@ -1521,7 +1521,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 //				setupGameStart(TheCampaignManager->getCurrentMap());
 			}
-*/			else if(controlID == buttonUSAID)
+			else if(controlID == buttonUSAID)
 			{
 				if(campaignSelected || dontAllowTransitions)
 					break;
