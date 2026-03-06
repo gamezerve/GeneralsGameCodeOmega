@@ -137,7 +137,11 @@ FRAME_RIGHT_VOICE = 140,
 
 static const Int TELETYPE_UPDATE_FREQ = 2; // how many frames between teletype updates
 
-
+Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
 
 //-----------------------------------------------------------------------------
 // LoadScreen Class
@@ -564,6 +568,9 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 
 #if RTS_GENERALS
 			moveWindows( m_videoStream->frameIndex());
+#else
+			if (IsRebornCampaign()) // Reborn
+				moveWindows(m_videoStream->frameIndex());
 #endif
 
 			m_videoStream->frameNext();
@@ -590,11 +597,14 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 		}
 
 #if !RTS_GENERALS
+		if (!IsRebornCampaign())
+		{
 		// let the background image show through
 		m_videoStream->close();
 		m_videoStream = nullptr;
 		m_loadScreen->winGetInstanceData()->setVideoBuffer( nullptr );
 		TheDisplay->draw();
+		}
 #endif
 	}
 	else
@@ -621,8 +631,35 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 		{
 			GadgetStaticTextSetText(m_objectiveLines[i], m_unicodeObjectiveLines[i]);
 		}
+
 #else
-		// if we're min spec'ed don't play a movie
+		if (IsRebornCampaign())
+		{
+			// if we're min speced
+			m_videoStream->frameGoto(m_videoStream->frameCount()); // zero based
+			while (!m_videoStream->isFrameReady())
+				Sleep(1);
+			m_videoStream->frameDecompress();
+			m_videoStream->frameRender(m_videoBuffer);
+			if (m_videoBuffer)
+				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
+
+			m_objectiveWin->winHide(FALSE);
+			for (i = 0; i < MAX_DISPLAYED_UNITS; ++i)
+				m_unitDesc[i]->winHide(FALSE);
+			m_location->winHide(FALSE);
+
+			TheAudio->friend_forcePlayAudioEventRTS(&TheCampaignManager->getCurrentMission()->m_briefingVoice);
+
+			for (Int i = 0; i < MAX_OBJECTIVE_LINES; ++i)
+			{
+				GadgetStaticTextSetText(m_objectiveLines[i], m_unicodeObjectiveLines[i]);
+			}
+		}
+		else
+		{
+			// if we're min spec'ed don't play a movie
+		}
 #endif
 
 		Int delay = mission->m_voiceLength * 1000;
