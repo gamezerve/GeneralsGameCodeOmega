@@ -531,6 +531,17 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 			m_progressBar->winSetEnabledImage( 6, image );
 		}
 	}
+	else if (campaignName.compareNoCase("Training") == 0)  // Reborn Gen Progress Bar Restoration
+	{
+		if (const Image *image = TheMappedImageCollection->findImageByName("MissionLoad_USA")) // Reborn Placeholder
+		{
+			backgroundWin->winSetEnabledImage( 0, image );
+		}
+		if (const Image *image = TheMappedImageCollection->findImageByName("LoadingBar_ProgressCenter4"))
+		{
+			m_progressBar->winSetEnabledImage( 6, image );
+		}
+	}
 	// else leave the default background screen
 
 
