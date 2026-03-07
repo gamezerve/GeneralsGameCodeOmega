@@ -51,6 +51,7 @@
 #include "Common/GameEngine.h"
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/WindowLayout.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/Shell.h"
 #include "GameClient/KeyDefs.h"
@@ -93,7 +94,11 @@ GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
-
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Message Box window system callback */
@@ -130,13 +135,32 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 		//---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 		{
-			GameWindow *control = (GameWindow *)mData1;
+			GameWindow* control = (GameWindow*)mData1;
 			Int controlID = control->winGetWindowId();
-			static NameKeyType buttonOkID = TheNameKeyGenerator->nameToKey( "MessageBox.wnd:ButtonOk" );
-			static NameKeyType buttonYesID = TheNameKeyGenerator->nameToKey( "MessageBox.wnd:ButtonYes" );
-			static NameKeyType buttonNoID = TheNameKeyGenerator->nameToKey( "MessageBox.wnd:ButtonNo" );
-			static NameKeyType buttonCancelID = TheNameKeyGenerator->nameToKey( "MessageBox.wnd:ButtonCancel" );
-			WindowMessageBoxData *MsgBoxCallbacks = (WindowMessageBoxData *)window->winGetUserData();
+
+			const Bool useGen = IsRebornCampaign();
+
+			NameKeyType buttonOkID;
+			NameKeyType buttonYesID;
+			NameKeyType buttonNoID;
+			NameKeyType buttonCancelID;
+
+			if (useGen)
+			{
+				buttonOkID = TheNameKeyGenerator->nameToKey("MessageBoxGen.wnd:ButtonOk");
+				buttonYesID = TheNameKeyGenerator->nameToKey("MessageBoxGen.wnd:ButtonYes");
+				buttonNoID = TheNameKeyGenerator->nameToKey("MessageBoxGen.wnd:ButtonNo");
+				buttonCancelID = TheNameKeyGenerator->nameToKey("MessageBoxGen.wnd:ButtonCancel");
+			}
+			else
+			{
+				buttonOkID = TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonOk");
+				buttonYesID = TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonYes");
+				buttonNoID = TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonNo");
+				buttonCancelID = TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonCancel");
+			}
+
+			WindowMessageBoxData* MsgBoxCallbacks = (WindowMessageBoxData*)window->winGetUserData();
 
 			if( controlID == buttonOkID )
 			{
@@ -216,10 +240,23 @@ WindowMsgHandledType QuitMessageBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
-			static NameKeyType buttonOkID = TheNameKeyGenerator->nameToKey( "QuitMessageBox.wnd:ButtonOk" );
-			static NameKeyType buttonYesID = TheNameKeyGenerator->nameToKey( "QuitMessageBox.wnd:ButtonYes" );
-			static NameKeyType buttonNoID = TheNameKeyGenerator->nameToKey( "QuitMessageBox.wnd:ButtonNo" );
-			static NameKeyType buttonCancelID = TheNameKeyGenerator->nameToKey( "QuitMessageBox.wnd:ButtonCancel" );
+			const Bool useGen = IsRebornCampaign();
+
+			const NameKeyType buttonOkID =
+				TheNameKeyGenerator->nameToKey(useGen ? "QuitMessageBoxGen.wnd:ButtonOk"
+					: "QuitMessageBox.wnd:ButtonOk");
+
+			const NameKeyType buttonYesID =
+				TheNameKeyGenerator->nameToKey(useGen ? "QuitMessageBoxGen.wnd:ButtonYes"
+					: "QuitMessageBox.wnd:ButtonYes");
+
+			const NameKeyType buttonNoID =
+				TheNameKeyGenerator->nameToKey(useGen ? "QuitMessageBoxGen.wnd:ButtonNo"
+					: "QuitMessageBox.wnd:ButtonNo");
+
+			const NameKeyType buttonCancelID =
+				TheNameKeyGenerator->nameToKey(useGen ? "QuitMessageBoxGen.wnd:ButtonCancel"
+					: "QuitMessageBox.wnd:ButtonCancel");
 			WindowMessageBoxData *MsgBoxCallbacks = (WindowMessageBoxData *)window->winGetUserData();
 
 			if( controlID == buttonOkID )

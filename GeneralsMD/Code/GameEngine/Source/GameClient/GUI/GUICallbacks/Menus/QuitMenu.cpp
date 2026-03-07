@@ -38,6 +38,7 @@
 #include "Common/PlayerList.h"
 #include "Common/RandomValue.h"
 #include "Common/Recorder.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/GameWindowManager.h"
@@ -53,6 +54,7 @@
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/DisconnectMenu.h"
 #include "GameLogic/ScriptEngine.h"
+
 
 
 
@@ -73,24 +75,42 @@ static GameWindow *buttonSaveLoadWin = nullptr;
 static GameWindow *buttonOptionsWin = nullptr;
 static GameWindow *buttonExitWin = nullptr;
 
+static WindowLayout* quitMenuGenLayout = nullptr; // Reborn
+
 static NameKeyType buttonExit = NAMEKEY_INVALID;
 static NameKeyType buttonRestart = NAMEKEY_INVALID;
 static NameKeyType buttonReturn = NAMEKEY_INVALID;
 static NameKeyType buttonOptions = NAMEKEY_INVALID;
 static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 
-static void initGadgetsFullQuit()
+static void initGadgetsFullQuit(Bool useGen)
 {
-	buttonExit = TheNameKeyGenerator->nameToKey( "QuitMenu.wnd:ButtonExit" );
-	buttonRestart = TheNameKeyGenerator->nameToKey( "QuitMenu.wnd:ButtonRestart" );
-	buttonReturn = TheNameKeyGenerator->nameToKey( "QuitMenu.wnd:ButtonReturn" );
-	buttonOptions = TheNameKeyGenerator->nameToKey( "QuitMenu.wnd:ButtonOptions" );
-	buttonSaveLoad = TheNameKeyGenerator->nameToKey( "QuitMenu.wnd:ButtonSaveLoad" );
+	if (useGen)
+	{
+		buttonExit = TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:ButtonExit");
+		buttonRestart = TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:ButtonRestart");
+		buttonReturn = TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:ButtonReturn");
+		buttonOptions = TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:ButtonOptions");
+		buttonSaveLoad = TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:ButtonSaveLoad");
+	}
+	else
+	{
+		buttonExit = TheNameKeyGenerator->nameToKey("QuitMenu.wnd:ButtonExit");
+		buttonRestart = TheNameKeyGenerator->nameToKey("QuitMenu.wnd:ButtonRestart");
+		buttonReturn = TheNameKeyGenerator->nameToKey("QuitMenu.wnd:ButtonReturn");
+		buttonOptions = TheNameKeyGenerator->nameToKey("QuitMenu.wnd:ButtonOptions");
+		buttonSaveLoad = TheNameKeyGenerator->nameToKey("QuitMenu.wnd:ButtonSaveLoad");
+	}
 
-	buttonRestartWin	= TheWindowManager->winGetWindowFromId( nullptr, buttonRestart );
-	buttonSaveLoadWin = TheWindowManager->winGetWindowFromId( nullptr, buttonSaveLoad );
-	buttonOptionsWin = TheWindowManager->winGetWindowFromId( nullptr, buttonOptions );
-	buttonExitWin = TheWindowManager->winGetWindowFromId( nullptr, buttonExit );
+	buttonRestartWin = TheWindowManager->winGetWindowFromId(nullptr, buttonRestart);
+	buttonSaveLoadWin = TheWindowManager->winGetWindowFromId(nullptr, buttonSaveLoad);
+	buttonOptionsWin = TheWindowManager->winGetWindowFromId(nullptr, buttonOptions);
+	buttonExitWin = TheWindowManager->winGetWindowFromId(nullptr, buttonExit);
+
+	DEBUG_ASSERTCRASH(buttonRestartWin != nullptr, ("buttonRestartWin null"));
+	DEBUG_ASSERTCRASH(buttonSaveLoadWin != nullptr, ("buttonSaveLoadWin null"));
+	DEBUG_ASSERTCRASH(buttonOptionsWin != nullptr, ("buttonOptionsWin null"));
+	DEBUG_ASSERTCRASH(buttonExitWin != nullptr, ("buttonExitWin null"));
 }
 
 static void initGadgetsNoSaveQuit()
@@ -126,10 +146,22 @@ void destroyQuitMenu()
 		deleteInstance(noSaveLoadQuitMenuLayout);
 		noSaveLoadQuitMenuLayout = nullptr;
 	}
+	if (quitMenuGenLayout) // Reborn
+	{
+		quitMenuGenLayout->destroyWindows();
+		deleteInstance(quitMenuGenLayout);
+		quitMenuGenLayout = nullptr;
+	}
 	quitMenuLayout = nullptr;
 	isVisible = FALSE;
 
 	TheInGameUI->setQuitMenuVisible(FALSE);
+}
+
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
 }
 
 /**
@@ -263,7 +295,9 @@ void HideQuitMenu()
 		return;
 	if(quitMenuLayout && quitMenuLayout == noSaveLoadQuitMenuLayout)
 		TheTransitionHandler->reverse("QuitNoSaveBack");
-	else if( quitMenuLayout && quitMenuLayout == fullQuitMenuLayout)
+	else if (quitMenuLayout && quitMenuLayout == quitMenuGenLayout) // Reborn
+		TheTransitionHandler->reverse("QuitFullBackGen");
+	else if (quitMenuLayout && quitMenuLayout == fullQuitMenuLayout)
 		TheTransitionHandler->reverse("QuitFullBack");
 
 	TheInGameUI->setQuitMenuVisible( FALSE );
@@ -328,7 +362,11 @@ void ToggleQuitMenu()
 			TheGameLogic->setGamePaused(FALSE);
 		if(quitMenuLayout && quitMenuLayout == noSaveLoadQuitMenuLayout)
 			TheTransitionHandler->reverse("QuitNoSaveBack");
-		else if( quitMenuLayout && quitMenuLayout == fullQuitMenuLayout )
+		else if (quitMenuLayout && quitMenuLayout == quitMenuGenLayout) // Reborn
+		{
+			TheTransitionHandler->reverse("QuitFullBackGen");
+		}
+		else if (quitMenuLayout && quitMenuLayout == fullQuitMenuLayout)
 		{
 			TheTransitionHandler->reverse("QuitFullBack");
 			//begin KRISMORNESS
@@ -362,12 +400,31 @@ void ToggleQuitMenu()
 		}
 		else
 		{
-			if(!fullQuitMenuLayout)
-				fullQuitMenuLayout= TheWindowManager->winCreateLayout( "Menus/QuitMenu.wnd" );
-			quitMenuLayout = fullQuitMenuLayout;
-			initGadgetsFullQuit();
-			TheTransitionHandler->remove("QuitFull");
-			TheTransitionHandler->setGroup("QuitFull");
+			if (IsRebornCampaign()) // Reborn
+			{
+				if (!quitMenuGenLayout)
+					quitMenuGenLayout = TheWindowManager->winCreateLayout("Menus/QuitMenuGen.wnd");
+				quitMenuLayout = quitMenuGenLayout;
+				initGadgetsFullQuit(TRUE);
+			}
+			else
+			{
+				if (!fullQuitMenuLayout)
+					fullQuitMenuLayout = TheWindowManager->winCreateLayout("Menus/QuitMenu.wnd");
+				quitMenuLayout = fullQuitMenuLayout;
+				initGadgetsFullQuit(FALSE);
+			}
+
+			if (IsRebornCampaign()) // Reborn
+			{
+				TheTransitionHandler->remove("QuitFullGen");
+				TheTransitionHandler->setGroup("QuitFullGen");
+			}
+			else
+			{
+				TheTransitionHandler->remove("QuitFull");
+				TheTransitionHandler->setGroup("QuitFull");
+			}
 		}
 
 		// load the quit menu from the layout file if needed
