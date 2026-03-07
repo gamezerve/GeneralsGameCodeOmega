@@ -33,6 +33,7 @@
 
 #include "Common/Debug.h"
 #include "Common/Language.h"
+#include "GameClient/CampaignManager.h" // Reborn
 #include "GameClient/Display.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameWindow.h"
@@ -72,6 +73,12 @@ UnsignedInt WindowLayoutCurrentVersion = 2;
 //
 static Bool sendMousePosMessages = TRUE;
 
+
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
 //-------------------------------------------------------------------------------------------------
 /** Process windows waiting to be destroyed */
 //-------------------------------------------------------------------------------------------------
@@ -1618,15 +1625,35 @@ GameWindow *GameWindowManager::gogoMessageBox(Int x, Int y, Int width, Int heigh
 	GameWindow *trueParent = nullptr;
 	//Changed by Chris
 	if(useLogo)
-		trueParent = winCreateFromScript( "Menus/QuitMessageBox.wnd" );
+	{
+		if (IsRebornCampaign()) // Reborn campaign needs to use Generals theme, so we need to load a different script for it
+			trueParent = winCreateFromScript("Menus/QuitMessageBoxGen.wnd");
+		else
+			trueParent = winCreateFromScript("Menus/QuitMessageBox.wnd");
+	}
 	else
-		trueParent = winCreateFromScript( "Menus/MessageBox.wnd" );
+	{
+		if (IsRebornCampaign())
+			trueParent = winCreateFromScript("Menus/MessageBoxGen.wnd");
+		else
+			trueParent = winCreateFromScript("Menus/MessageBox.wnd");
+	}
 	//Added By Chris
 	AsciiString menuName;
 	if(useLogo)
-		menuName.set("QuitMessageBox.wnd:");
+	{
+		if (IsRebornCampaign()) // Reborn campaign needs to use Generals theme, so we need to load a different script for it
+			menuName.set("QuitMessageBoxGen.wnd:");
+		else
+			menuName.set("QuitMessageBox.wnd:");
+	}
 	else
-		menuName.set("MessageBox.wnd:");
+	{
+		if (IsRebornCampaign())
+			menuName.set("MessageBoxGen.wnd:");
+		else
+			menuName.set("MessageBox.wnd:");
+	}
 
 	AsciiString tempName;
 	GameWindow *parent = nullptr;
