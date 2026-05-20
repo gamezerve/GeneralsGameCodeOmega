@@ -192,8 +192,299 @@ static void setMoneyPopupFont(GameWindow* window)
 		window->winSetFont(font);
 }
 
+
+static const Int MONEY_POPUP_INCOMING_REQUEST_ROW = MAX_SLOTS - 1;
+static Int s_moneyPopupPlayerIndexByRow[MAX_SLOTS];
+
+static UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
+
+static Int s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
+static Int s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
+
+static Bool hasPendingMoneyRequest()
+{
+	return s_pendingMoneyRequestRequesterIndex != PLAYER_INDEX_INVALID &&
+		s_pendingMoneyRequestTargetIndex != PLAYER_INDEX_INVALID;
+}
+
+static void clearPendingMoneyRequest()
+{
+	s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
+	s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
+}
+
+static void populateMoneyPopupAllies();
+
+static UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer)
+{
+	if (!targetPlayer)
+		return 0;
+
+	const UnsignedInt minimumMoneyReserve = 2000;
+
+	UnsignedInt targetMoney = targetPlayer->getMoney()->countMoney();
+	UnsignedInt availableMoney = targetMoney > minimumMoneyReserve ? targetMoney - minimumMoneyReserve : 0;
+
+	return availableMoney / 5;
+}
+
+static Bool isMoneyRequestCooldownActive(Player* player, UnsignedInt* secondsRemaining = nullptr)
+{
+	if (!TheGameLogic || !player)
+		return FALSE;
+
+	PlayerIndex playerIndex = player->getPlayerIndex();
+	if (playerIndex < 0 || playerIndex >= MAX_PLAYER_COUNT)
+		return FALSE;
+
+	UnsignedInt currentFrame = TheGameLogic->getFrame();
+	UnsignedInt cooldownEndFrame = s_moneyRequestCooldownEndFrameByPlayer[playerIndex];
+
+	if (currentFrame >= cooldownEndFrame)
+	{
+		if (secondsRemaining)
+			*secondsRemaining = 0;
+
+		return FALSE;
+	}
+
+	UnsignedInt framesRemaining = cooldownEndFrame - currentFrame;
+
+	if (secondsRemaining)
+		*secondsRemaining = (framesRemaining + LOGICFRAMES_PER_SECOND - 1) / LOGICFRAMES_PER_SECOND;
+
+	return TRUE;
+}
+
+static WindowMsgHandledType moneyRequestButtonSystem(
+	GameWindow* window,
+	UnsignedInt msg,
+	WindowMsgData mData1,
+	WindowMsgData mData2)
+{
+	if (msg != GBM_SELECTED)
+		return MSG_IGNORED;
+
+	const UnsignedInt minimumMoneyReserve = 10000;
+
+	GameWindow* control = (GameWindow*)mData1;
+	if (!control || !ThePlayerList)
+		return MSG_HANDLED;
+
+	Int rowNum = -1;
+
+	for (Int i = 0; i < MAX_SLOTS; ++i)
+	{
+		AsciiString buttonName;
+		buttonName.format("MoneyPopup.wnd:ButtonPlayer%d", i);
+
+		if (control->winGetWindowId() == NAMEKEY(buttonName))
+		{
+			rowNum = i;
+			break;
+		}
+	}
+
+	if (rowNum < 0 && control->winGetWindowId() == NAMEKEY("MoneyPopup.wnd:ButtonReject"))
+		rowNum = MONEY_POPUP_INCOMING_REQUEST_ROW;
+
+	if (rowNum < 0 || rowNum >= MAX_SLOTS)
+		return MSG_HANDLED;
+
+	if (rowNum == MONEY_POPUP_INCOMING_REQUEST_ROW)
+	{
+		if (control->winGetWindowId() == NAMEKEY("MoneyPopup.wnd:ButtonReject"))
+		{
+			Player* requester = ThePlayerList->getNthPlayer(s_pendingMoneyRequestRequesterIndex);
+			Player* target = ThePlayerList->getLocalPlayer();
+
+			if (!requester || !target)
+				return MSG_HANDLED;
+
+			if (s_pendingMoneyRequestTargetIndex != target->getPlayerIndex())
+				return MSG_HANDLED;
+
+			if (target->isLocalPlayer())
+			{
+				UnicodeString rejectMessage;
+				rejectMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestRejected"),
+					requester->getPlayerDisplayName().str());
+
+				TheInGameUI->message(rejectMessage);
+			}
+
+			if (requester->isLocalPlayer())
+			{
+				UnicodeString rejectedByMessage;
+				rejectedByMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestRejectedByPlayer"),
+					target->getPlayerDisplayName().str());
+
+				TheInGameUI->message(rejectedByMessage);
+			}
+
+			clearPendingMoneyRequest();
+			populateMoneyPopupAllies();
+
+			return MSG_HANDLED;
+		}
+	}
+
+	if (rowNum == MONEY_POPUP_INCOMING_REQUEST_ROW)
+	{
+		Player* requester = ThePlayerList->getNthPlayer(s_pendingMoneyRequestRequesterIndex);
+		Player* target = ThePlayerList->getLocalPlayer();
+
+		if (!requester || !target)
+			return MSG_HANDLED;
+
+		if (s_pendingMoneyRequestTargetIndex != target->getPlayerIndex())
+			return MSG_HANDLED;
+
+		UnsignedInt transferAmount = getMoneyRequestTransferAmount(target);
+
+		if (transferAmount == 0)
+			return MSG_HANDLED;
+
+		target->getMoney()->withdraw(transferAmount, FALSE);
+		requester->getMoney()->deposit(transferAmount, FALSE);
+
+		UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (20 * LOGICFRAMES_PER_SECOND);
+
+		s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
+		s_moneyRequestCooldownEndFrameByPlayer[requester->getPlayerIndex()] = cooldownEndFrame;
+
+		if (target->isLocalPlayer())
+		{
+			UnicodeString sentMessage;
+			sentMessage.format(
+				TheGameText->fetch("GUI:MoneySentToPlayer"),
+				transferAmount,
+				requester->getPlayerDisplayName().str());
+
+			TheInGameUI->message(sentMessage);
+		}
+
+		if (requester->isLocalPlayer())
+		{
+			UnicodeString receivedMessage;
+			receivedMessage.format(
+				TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+				transferAmount,
+				target->getPlayerDisplayName().str());
+
+			TheInGameUI->message(receivedMessage);
+		}
+
+		clearPendingMoneyRequest();
+		populateMoneyPopupAllies();
+
+		return MSG_HANDLED;
+	}
+
+	Int targetPlayerIndex = s_moneyPopupPlayerIndexByRow[rowNum];
+	if (targetPlayerIndex == PLAYER_INDEX_INVALID)
+		return MSG_HANDLED;
+
+	Player* targetPlayer = ThePlayerList->getNthPlayer(targetPlayerIndex);
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+
+	if (!targetPlayer || !localPlayer)
+		return MSG_HANDLED;
+
+	if (!targetPlayer->isSkirmishAIPlayer())
+	{
+		if (hasPendingMoneyRequest())
+		{
+			if (s_pendingMoneyRequestRequesterIndex == localPlayer->getPlayerIndex() &&
+				s_pendingMoneyRequestTargetIndex == targetPlayer->getPlayerIndex())
+			{
+				clearPendingMoneyRequest();
+				populateMoneyPopupAllies();
+			}
+
+			return MSG_HANDLED;
+		}
+
+		s_pendingMoneyRequestRequesterIndex = localPlayer->getPlayerIndex();
+		s_pendingMoneyRequestTargetIndex = targetPlayer->getPlayerIndex();
+
+		UnicodeString requestSentMessage;
+		requestSentMessage.format(
+			TheGameText->fetch("GUI:MoneyRequestSent"),
+			targetPlayer->getPlayerDisplayName().str());
+
+		TheInGameUI->message(requestSentMessage);
+
+		if (targetPlayer->isLocalPlayer())
+		{
+			UnicodeString requestReceivedMessage;
+			requestReceivedMessage.format(
+				TheGameText->fetch("GUI:MoneyRequestReceived"),
+				localPlayer->getPlayerDisplayName().str());
+
+			TheInGameUI->message(requestReceivedMessage);
+		}
+
+		populateMoneyPopupAllies();
+
+		return MSG_HANDLED;
+	}
+
+	if (TheVictoryConditions &&
+		TheVictoryConditions->hasSinglePlayerBeenDefeated(targetPlayer))
+	{
+		return MSG_HANDLED;
+	}
+
+	if (isMoneyRequestCooldownActive(localPlayer) || isMoneyRequestCooldownActive(targetPlayer))
+		return MSG_HANDLED;
+
+
+	UnsignedInt targetMoney = targetPlayer->getMoney()->countMoney();
+	UnsignedInt availableMoney = targetMoney > minimumMoneyReserve ? targetMoney - minimumMoneyReserve : 0;
+	UnsignedInt transferAmount = availableMoney / 5;
+
+	if (transferAmount == 0)
+		return MSG_HANDLED;
+
+	targetPlayer->getMoney()->withdraw(transferAmount, FALSE);
+	localPlayer->getMoney()->deposit(transferAmount, FALSE);
+
+	UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (20 * LOGICFRAMES_PER_SECOND);
+
+	s_moneyRequestCooldownEndFrameByPlayer[localPlayer->getPlayerIndex()] = cooldownEndFrame;
+	s_moneyRequestCooldownEndFrameByPlayer[targetPlayer->getPlayerIndex()] = cooldownEndFrame;
+
+	UnicodeString receivedMessage;
+	receivedMessage.format(
+		TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+		transferAmount,
+		targetPlayer->getPlayerDisplayName().str());
+
+	TheInGameUI->message(receivedMessage);
+
+	//UnicodeString sentMessage;
+	//sentMessage.format(
+	//	TheGameText->fetch("GUI:MoneySentToPlayer"),
+	//	localPlayer->getPlayerDisplayName().str(),
+	//	transferAmount);
+
+	//if (targetPlayer->isLocalPlayer())
+	//	TheInGameUI->message(sentMessage);
+
+
+	populateMoneyPopupAllies();
+
+	return MSG_HANDLED;
+}
+
 static void populateMoneyPopupAllies()
 {
+	for (Int i = 0; i < MAX_SLOTS; ++i)
+		s_moneyPopupPlayerIndexByRow[i] = PLAYER_INDEX_INVALID;
+
 	if (!s_moneyPopupLayout || !TheGameInfo || !ThePlayerList)
 		return;
 
@@ -257,20 +548,69 @@ static void populateMoneyPopupAllies()
 			if (TheVictoryConditions)
 				isDefeated = TheVictoryConditions->hasSinglePlayerBeenDefeated(player);
 
-			buttonWin->winEnable(!isDefeated);
+			const UnsignedInt minimumMoneyReserve = 10000;
+
+			UnsignedInt playerMoney = player->getMoney()->countMoney();
+			Bool isLowOnMoney = (playerMoney <= minimumMoneyReserve);
+
+			UnsignedInt localCooldownSeconds = 0;
+			UnsignedInt targetCooldownSeconds = 0;
+
+			Bool isLocalCooldownActive = isMoneyRequestCooldownActive(localPlayer, &localCooldownSeconds);
+			Bool isTargetCooldownActive = isMoneyRequestCooldownActive(player, &targetCooldownSeconds);
+
+			Bool isPendingRequestByLocalPlayer =
+				hasPendingMoneyRequest() &&
+				s_pendingMoneyRequestRequesterIndex == localPlayer->getPlayerIndex();
+
+			Bool isPendingRequestTarget =
+				isPendingRequestByLocalPlayer &&
+				s_pendingMoneyRequestTargetIndex == player->getPlayerIndex();
+
+			Bool isPendingRequestToLocalPlayer =
+				hasPendingMoneyRequest() &&
+				s_pendingMoneyRequestTargetIndex == localPlayer->getPlayerIndex();
+
+			Bool isCooldownActive = isLocalCooldownActive || isTargetCooldownActive;
+			UnsignedInt cooldownSeconds = localCooldownSeconds > targetCooldownSeconds ? localCooldownSeconds : targetCooldownSeconds;
+			buttonWin->winEnable(!isDefeated && !isLowOnMoney && !isCooldownActive &&
+				!isPendingRequestToLocalPlayer &&
+				(!isPendingRequestByLocalPlayer || isPendingRequestTarget));
+
+			s_moneyPopupPlayerIndexByRow[rowNum] = player->getPlayerIndex();
 
 			if (isDefeated)
+			{
 				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:Defeated"));
+			}
+			else if (isLowOnMoney)
+			{
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:LowOnMoney"));
+			}
+			else if (isCooldownActive)
+			{
+				UnicodeString cooldownText;
+				cooldownText.format(TheGameText->fetch("GUI:MoneyRequestCooldown"), cooldownSeconds);
+				GadgetButtonSetText(buttonWin, cooldownText);
+			}
+			else if (isPendingRequestTarget)
+			{
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:CancelRequest"));
+			}
+			else
+			{
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:RequestMoney"));
+			}
 
 		}
 
 		++rowNum;
 
-		if (rowNum >= MAX_SLOTS)
+		if (rowNum >= MONEY_POPUP_INCOMING_REQUEST_ROW)
 			break;
 	}
 
-	while (rowNum < MAX_SLOTS)
+	while (rowNum < MONEY_POPUP_INCOMING_REQUEST_ROW)
 	{
 		AsciiString windowName;
 		windowName.format("MoneyPopup.wnd:StaticTextPlayer%d", rowNum);
@@ -288,6 +628,73 @@ static void populateMoneyPopupAllies()
 
 		++rowNum;
 	}
+
+	GameWindow* requestTextWin = TheWindowManager->winGetWindowFromId(
+		root,
+		NAMEKEY("MoneyPopup.wnd:StaticTextPlayer7"));
+
+	GameWindow* requestButtonWin = TheWindowManager->winGetWindowFromId(
+		root,
+		NAMEKEY("MoneyPopup.wnd:ButtonPlayer7"));
+
+	GameWindow* requestRejectButtonWin = TheWindowManager->winGetWindowFromId(
+		root,
+		NAMEKEY("MoneyPopup.wnd:ButtonReject"));
+
+	if (requestTextWin && requestButtonWin && requestRejectButtonWin)
+	{
+		Player* localPlayer = ThePlayerList->getLocalPlayer();
+
+		if (localPlayer &&
+			s_pendingMoneyRequestTargetIndex == localPlayer->getPlayerIndex() &&
+			s_pendingMoneyRequestRequesterIndex != PLAYER_INDEX_INVALID)
+		{
+			Player* requester = ThePlayerList->getNthPlayer(s_pendingMoneyRequestRequesterIndex);
+			Player* target = ThePlayerList->getNthPlayer(s_pendingMoneyRequestTargetIndex);
+
+			if (requester && target)
+			{
+				UnsignedInt amount = getMoneyRequestTransferAmount(target);
+
+				UnicodeString requestText;
+				requestText.format(
+					TheGameText->fetch("GUI:MoneyRequestIncoming"),
+					requester->getPlayerDisplayName().str(),
+					requester->getSide().str(),
+					amount);
+
+				Color requesterColor = requester->getPlayerColor();
+				Color backColor = GameMakeColor(0, 0, 0, 255);
+
+				requestTextWin->winHide(FALSE);
+				requestTextWin->winSetEnabledTextColors(requesterColor, backColor);
+				GadgetStaticTextSetText(requestTextWin, requestText);
+
+				requestButtonWin->winHide(FALSE);
+				requestButtonWin->winEnable(amount > 0);
+				requestRejectButtonWin->winHide(FALSE);
+				requestRejectButtonWin->winEnable(TRUE);
+				GadgetButtonSetText(requestButtonWin, TheGameText->fetch("GUI:Send"));
+			}
+		}
+		else
+		{
+			requestTextWin->winHide(FALSE);
+			requestTextWin->winSetEnabledTextColors(
+				GameMakeColor(160, 160, 160, 255),
+				GameMakeColor(0, 0, 0, 255));
+			GadgetStaticTextSetText(requestTextWin, UnicodeString(L"----"));
+
+			requestButtonWin->winHide(FALSE);
+			requestButtonWin->winEnable(FALSE);
+			GadgetButtonSetText(requestButtonWin, TheGameText->fetch("GUI:Send"));
+
+			requestRejectButtonWin->winHide(FALSE);
+			requestRejectButtonWin->winEnable(FALSE);
+			GadgetButtonSetText(requestRejectButtonWin, TheGameText->fetch("GUI:Deny"));
+		}
+	}
+
 }
 
 static void closeMoneyPopup()
@@ -339,6 +746,9 @@ static WindowMsgHandledType moneyDisplayInput(
 	WindowMsgData data1,
 	WindowMsgData data2)
 {
+	if (msg == GWM_LEFT_DOWN)
+		return MSG_HANDLED;
+
 	if (msg == GWM_LEFT_UP)
 	{
 		if (!canUseMoneyPopup() || isMoneyPopupBlockedByModalUI())
@@ -354,6 +764,14 @@ static WindowMsgHandledType moneyDisplayInput(
 		else
 		{
 			s_moneyPopupLayout = TheWindowManager->winCreateLayout("MoneyPopup.wnd");
+
+			if (s_moneyPopupLayout)
+			{
+				GameWindow* root = s_moneyPopupLayout->getFirstWindow();
+				if (root)
+					root->winSetSystemFunc(moneyRequestButtonSystem);
+			}
+
 			populateMoneyPopupAllies();
 		}
 
@@ -1906,6 +2324,13 @@ void ControlBar::init()
 			win->winSetTooltipFunc(commandButtonTooltip);
 			win->winSetInputFunc(moneyDisplayInput);
 		}
+		// Reborn: Helper window for Money Popup. Creates larger hit area for mouse input
+		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplayInput"));
+		if (win)
+		{
+			win->winSetTooltipFunc(commandButtonTooltip);
+			win->winSetInputFunc(moneyDisplayInput);
+		}
 		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd:GeneralsExp"));
 		if(win)
 		{
@@ -2140,6 +2565,41 @@ void ControlBar::update()
 	{
 		hideBuildTooltipLayout();
 	}*/
+
+	GameWindow* moneyWin = TheWindowManager->winGetWindowFromId(
+		nullptr,
+		TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplay"));
+
+	if (moneyWin)
+	{
+		Player* localPlayer = ThePlayerList ? ThePlayerList->getLocalPlayer() : nullptr;
+
+		if (hasPendingMoneyRequest() &&
+			localPlayer &&
+			s_pendingMoneyRequestTargetIndex == localPlayer->getPlayerIndex())
+		{
+			UnsignedInt blinkFrame = TheGameLogic ? TheGameLogic->getFrame() : 0;
+
+			if ((blinkFrame / 15) % 2)
+			{
+				moneyWin->winSetEnabledTextColors(
+					GameMakeColor(255, 255, 0, 255),
+					GameMakeColor(0, 0, 0, 255));
+			}
+			else
+			{
+				moneyWin->winSetEnabledTextColors(
+					GameMakeColor(255, 255, 255, 255),
+					GameMakeColor(0, 0, 0, 255));
+			}
+		}
+		else
+		{
+			moneyWin->winSetEnabledTextColors(
+				GameMakeColor(255, 255, 255, 255),
+				GameMakeColor(0, 0, 0, 255));
+		}
+	}
 
 	updateSpecialPowerShortcut();
 	// if we're an observer, don't do the complete update

@@ -1,3 +1,48 @@
+
+GUI:MoneyRequestRejected
+"Rejected money request from %ls"
+END
+
+GUI:MoneyRequestRejectedByPlayer
+"%ls rejected your money request"
+END
+
+GUI:MoneyRequestSent
+"Money request sent to %ls"
+END
+
+GUI:MoneyRequestReceived
+"%ls is requesting money from you"
+END
+
+GUI:MoneyReceivedFromPlayer
+"Received $%d from %ls"
+END
+
+GUI:MoneySentToPlayer
+"Sent $%d to %ls"
+END
+
+GUI:CancelRequest
+"Cancel Request"
+END
+
+GUI:MoneyRequestIncoming
+"%ls - %hs requested money. Amount to send: $%d"
+END
+
+GUI:Send
+"Send"
+END
+
+GUI:MoneyRequestCooldown
+"Wait %d sec"
+END
+
+GUI:LowOnMoney
+"Low on Money"
+END
+
 GUI:RequestMoney
 "Request Money"
 END
@@ -3032,7 +3077,7 @@ CONTROLBAR:Money
 END
 
 CONTROLBAR:MoneyDescription
-"This is the amount of money you have"
+"This is the amount of money you have \n \n Click here to open money request page"
 END
 
 CONTROLBAR:NapalmStrike

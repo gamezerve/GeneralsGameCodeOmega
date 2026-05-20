@@ -7,13 +7,13 @@ ENDLAYOUTBLOCK
 WINDOW
   WINDOWTYPE = USER;
   SCREENRECT = UPPERLEFT: 232 120,
-               BOTTOMRIGHT: 572 320,
+               BOTTOMRIGHT: 572 336,
                CREATIONRESOLUTION: 800 600;
   NAME = "MoneyPopup.wnd:MoneyPopupParent";
   STATUS = ENABLED;
   STYLE = USER;
   SYSTEMCALLBACK = "[None]";
-  INPUTCALLBACK = "[None]";
+  INPUTCALLBACK = "GameWinBlockInput";
   TOOLTIPCALLBACK = "[None]";
   DRAWCALLBACK = "[None]";
   FONT = NAME: "Times New Roman", SIZE: 14, BOLD: 0;
@@ -111,7 +111,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -208,7 +208,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -305,7 +305,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -402,7 +402,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -499,7 +499,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -596,7 +596,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -693,7 +693,7 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
@@ -732,7 +732,7 @@ WINDOW
   WINDOW
     WINDOWTYPE = STATICTEXT;
     SCREENRECT = UPPERLEFT: 240 280,
-                 BOTTOMRIGHT: 468 298,
+                 BOTTOMRIGHT: 468 320,
                  CREATIONRESOLUTION: 800 600;
     NAME = "MoneyPopup.wnd:StaticTextPlayer7";
     STATUS = ENABLED;
@@ -780,8 +780,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = PUSHBUTTON;
-    SCREENRECT = UPPERLEFT: 472 280,
-                 BOTTOMRIGHT: 564 298,
+    SCREENRECT = UPPERLEFT: 472 292,
+                 BOTTOMRIGHT: 516 310,
                  CREATIONRESOLUTION: 800 600;
     NAME = "MoneyPopup.wnd:ButtonPlayer7";
     STATUS = ENABLED+IMAGE;
@@ -790,10 +790,58 @@ WINDOW
     INPUTCALLBACK = "[None]";
     TOOLTIPCALLBACK = "[None]";
     DRAWCALLBACK = "[None]";
-    FONT = NAME: "Arial", SIZE: 8, BOLD: 0;
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
     HEADERTEMPLATE = "ButtonSmall";
     TOOLTIPDELAY = -1;
     TEXT = "GUI:RequestMoney";
+    TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                DISABLED: 62 64 92 255, DISABLEDBORDER: 31 32 47 255,
+                HILITE:   186 255 12 255, HILITEBORDER:   0 2 0 255;
+    ENABLEDDRAWDATA = IMAGE: Buttons-Left, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                      IMAGE: NoImage, COLOR: 47 55 168 255, BORDERCOLOR: 254 254 254 255,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: Buttons-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: Buttons-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    DISABLEDDRAWDATA = IMAGE: Buttons-Disabled-Left, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                       IMAGE: NoImage, COLOR: 192 192 192 255, BORDERCOLOR: 128 128 128 255,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: Buttons-Disabled-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: Buttons-Disabled-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    HILITEDRAWDATA = IMAGE: Buttons-HiLite-Left, COLOR: 209 253 4 255, BORDERCOLOR: 59 60 52 255,
+                     IMAGE: Buttons-Pushed-Left, COLOR: 47 55 168 255, BORDERCOLOR: 254 254 254 255,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: Buttons-Pushed-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: Buttons-Pushed-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: Buttons-HiLite-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: Buttons-HiLite-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+  END
+  CHILD
+  WINDOW
+    WINDOWTYPE = PUSHBUTTON;
+    SCREENRECT = UPPERLEFT: 524 292,
+                 BOTTOMRIGHT: 564 310,
+                 CREATIONRESOLUTION: 800 600;
+    NAME = "MoneyPopup.wnd:ButtonReject";
+    STATUS = ENABLED+IMAGE;
+    STYLE = PUSHBUTTON+MOUSETRACK;
+    SYSTEMCALLBACK = "[None]";
+    INPUTCALLBACK = "[None]";
+    TOOLTIPCALLBACK = "[None]";
+    DRAWCALLBACK = "[None]";
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+    HEADERTEMPLATE = "ButtonSmall";
+    TOOLTIPDELAY = -1;
+    TEXT = "GUI:Deny";
     TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                 DISABLED: 62 64 92 255, DISABLEDBORDER: 31 32 47 255,
                 HILITE:   186 255 12 255, HILITEBORDER:   0 2 0 255;

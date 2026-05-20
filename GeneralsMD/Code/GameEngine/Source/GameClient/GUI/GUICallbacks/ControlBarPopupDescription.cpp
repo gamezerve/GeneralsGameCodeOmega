@@ -2077,7 +2077,15 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 	else if(tooltipWin)
 	{
 
-		if( tooltipWin == TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplay")))
+		GameWindow* moneyDisplayWin = TheWindowManager->winGetWindowFromId(
+			nullptr,
+			TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplay"));
+
+		GameWindow* moneyDisplayInputWin = TheWindowManager->winGetWindowFromId(
+			nullptr,
+			TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplayInput")); // Reborn: Added to increase money input hitbox
+
+		if (tooltipWin == moneyDisplayWin || tooltipWin == moneyDisplayInputWin)
 		{
 			name = TheGameText->fetch("CONTROLBAR:Money");
 			descrip = TheGameText->fetch("CONTROLBAR:MoneyDescription");
