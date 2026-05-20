@@ -25,7 +25,7 @@ namespace rts
 HANDLE ClientInstance::s_mutexHandle = nullptr;
 UnsignedInt ClientInstance::s_instanceIndex = 0;
 
-#if defined(RTS_MULTI_INSTANCE)
+#if defined(RTS_MULTI_INSTANCE) || defined(RTS_DEBUG)
 Bool ClientInstance::s_isMultiInstance = true;
 #else
 Bool ClientInstance::s_isMultiInstance = false;
