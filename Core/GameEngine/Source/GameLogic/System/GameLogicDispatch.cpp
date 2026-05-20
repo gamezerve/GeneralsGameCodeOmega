@@ -90,6 +90,13 @@
 extern Int g_resourceMultiplierPercent; // Reborn
 extern SkirmishGameInfo* TheSkirmishGameInfo; // Reborn
 
+// Reborn: Money request state/functions are owned by ControlBar.cpp but processed here for replay-safe logic.
+extern Int s_pendingMoneyRequestRequesterIndex;
+extern Int s_pendingMoneyRequestTargetIndex;
+extern UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
+extern void clearPendingMoneyRequest();
+extern UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer);
+
 
 #define MAX_PATH_SUBJECTS 64
 static Bool theBuildPlan = false;
@@ -646,6 +653,178 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
+		// Reborn: The following messages are for the money request system. They are processed through the logic message stream to ensure that the resulting state changes are deterministic and properly synchronized in multiplayer and replay scenarios.
+		case GameMessage::MSG_REBORN_REQUEST_MONEY:
+		{
+			// Reborn: Process money request through the logic message stream so replay and multiplayer state stay deterministic.
+			Int requesterIndex = msg->getArgument(0)->integer;
+			Int targetIndex = msg->getArgument(1)->integer;
+
+			Player* requester = ThePlayerList->getNthPlayer(requesterIndex);
+			Player* target = ThePlayerList->getNthPlayer(targetIndex);
+
+			if (!requester || !target)
+				break;
+
+			if (target->isSkirmishAIPlayer())
+			{
+				UnsignedInt transferAmount = getMoneyRequestTransferAmount(target);
+
+				if (transferAmount == 0)
+					break;
+
+				target->getMoney()->withdraw(transferAmount, FALSE);
+				requester->getMoney()->deposit(transferAmount, FALSE);
+
+				UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (120 * LOGICFRAMES_PER_SECOND);
+
+				s_moneyRequestCooldownEndFrameByPlayer[requester->getPlayerIndex()] = cooldownEndFrame;
+				s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
+
+				UnicodeString receivedMessage;
+				receivedMessage.format(
+					TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+					transferAmount,
+					target->getPlayerDisplayName().str());
+
+				TheInGameUI->message(receivedMessage);
+
+				break;
+			}
+
+			s_pendingMoneyRequestRequesterIndex = requesterIndex;
+			s_pendingMoneyRequestTargetIndex = targetIndex;
+
+			if (requester->isLocalPlayer())
+			{
+				UnicodeString requestSentMessage;
+				requestSentMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestSent"),
+					target->getPlayerDisplayName().str());
+
+				TheInGameUI->message(requestSentMessage);
+			}
+
+			if (target->isLocalPlayer())
+			{
+				UnicodeString requestReceivedMessage;
+				requestReceivedMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestReceived"),
+					requester->getPlayerDisplayName().str());
+
+				TheInGameUI->message(requestReceivedMessage);
+			}
+
+			break;
+		}
+
+		case GameMessage::MSG_REBORN_CANCEL_MONEY_REQUEST:
+		{
+			// Reborn: Cancel pending money request through the logic message stream.
+			Int requesterIndex = msg->getArgument(0)->integer;
+			Int targetIndex = msg->getArgument(1)->integer;
+
+			if (s_pendingMoneyRequestRequesterIndex == requesterIndex &&
+				s_pendingMoneyRequestTargetIndex == targetIndex)
+			{
+				clearPendingMoneyRequest();
+			}
+
+			break;
+		}
+
+		case GameMessage::MSG_REBORN_REJECT_MONEY_REQUEST:
+		{
+			// Reborn: Reject pending money request through the logic message stream.
+			Int requesterIndex = msg->getArgument(0)->integer;
+			Int targetIndex = msg->getArgument(1)->integer;
+
+			Player* requester = ThePlayerList->getNthPlayer(requesterIndex);
+			Player* target = ThePlayerList->getNthPlayer(targetIndex);
+
+			if (!requester || !target)
+				break;
+
+			if (s_pendingMoneyRequestRequesterIndex != requesterIndex ||
+				s_pendingMoneyRequestTargetIndex != targetIndex)
+				break;
+
+			if (target->isLocalPlayer())
+			{
+				UnicodeString rejectMessage;
+				rejectMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestRejected"),
+					requester->getPlayerDisplayName().str());
+
+				TheInGameUI->message(rejectMessage);
+			}
+
+			if (requester->isLocalPlayer())
+			{
+				UnicodeString rejectedByMessage;
+				rejectedByMessage.format(
+					TheGameText->fetch("GUI:MoneyRequestRejectedByPlayer"),
+					target->getPlayerDisplayName().str());
+
+				TheInGameUI->message(rejectedByMessage);
+			}
+
+			clearPendingMoneyRequest();
+
+			break;
+		}
+
+		case GameMessage::MSG_REBORN_ACCEPT_MONEY_REQUEST:
+		{
+			// Reborn: Apply accepted money transfer through the logic message stream so replay reproduces the same result.
+			Int requesterIndex = msg->getArgument(0)->integer;
+			Int targetIndex = msg->getArgument(1)->integer;
+
+			Player* requester = ThePlayerList->getNthPlayer(requesterIndex);
+			Player* target = ThePlayerList->getNthPlayer(targetIndex);
+
+			if (!requester || !target)
+				break;
+
+			UnsignedInt transferAmount = getMoneyRequestTransferAmount(target);
+
+			if (transferAmount == 0)
+				break;
+
+			target->getMoney()->withdraw(transferAmount, FALSE);
+			requester->getMoney()->deposit(transferAmount, FALSE);
+
+			UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (120 * LOGICFRAMES_PER_SECOND);
+
+			s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
+			s_moneyRequestCooldownEndFrameByPlayer[requester->getPlayerIndex()] = cooldownEndFrame;
+
+			if (target->isLocalPlayer())
+			{
+				UnicodeString sentMessage;
+				sentMessage.format(
+					TheGameText->fetch("GUI:MoneySentToPlayer"),
+					transferAmount,
+					requester->getPlayerDisplayName().str());
+
+				TheInGameUI->message(sentMessage);
+			}
+
+			if (requester->isLocalPlayer())
+			{
+				UnicodeString receivedMessage;
+				receivedMessage.format(
+					TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+					transferAmount,
+					target->getPlayerDisplayName().str());
+
+				TheInGameUI->message(receivedMessage);
+			}
+
+			clearPendingMoneyRequest();
+
+			break;
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DO_WEAPON:

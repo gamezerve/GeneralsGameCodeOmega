@@ -548,6 +548,10 @@ public:
 		MSG_DO_SPECIAL_POWER_AT_OBJECT,							///< do special at with target object
 		MSG_SET_RALLY_POINT,												///< (objectID, location)
 		MSG_RESET_RALLY_POINT,                      ///< Reborn: (objectID)
+		MSG_REBORN_REQUEST_MONEY,										///< Reborn: Route money request actions through GameMessage so the result is replay-safe.
+		MSG_REBORN_CANCEL_MONEY_REQUEST,						///< Reborn: Route money request actions through GameMessage so the result is replay-safe.
+		MSG_REBORN_ACCEPT_MONEY_REQUEST,						///< Reborn: Route money request actions through GameMessage so the result is replay-safe.
+		MSG_REBORN_REJECT_MONEY_REQUEST,						///< Reborn: Route money request actions through GameMessage so the result is replay-safe.
 		MSG_PURCHASE_SCIENCE,												///< purchase a science
 		MSG_QUEUE_UPGRADE,													///< queue the "research" of an upgrade
 		MSG_CANCEL_UPGRADE,													///< cancel the "research" of an upgrade

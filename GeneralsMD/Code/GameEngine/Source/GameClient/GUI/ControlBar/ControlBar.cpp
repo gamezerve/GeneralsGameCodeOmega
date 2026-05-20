@@ -196,10 +196,12 @@ static void setMoneyPopupFont(GameWindow* window)
 static const Int MONEY_POPUP_INCOMING_REQUEST_ROW = MAX_SLOTS - 1;
 static Int s_moneyPopupPlayerIndexByRow[MAX_SLOTS];
 
-static UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
+// Reborn: Shared money request cooldown state used by UI and logic message handling.
+UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
 
-static Int s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
-static Int s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
+// Reborn: Shared pending money request state used by UI and logic message handling.
+Int s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
+Int s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
 
 static Bool hasPendingMoneyRequest()
 {
@@ -207,7 +209,8 @@ static Bool hasPendingMoneyRequest()
 		s_pendingMoneyRequestTargetIndex != PLAYER_INDEX_INVALID;
 }
 
-static void clearPendingMoneyRequest()
+// Reborn: Clear pending money request state shared by UI and replay-safe logic messages.
+void clearPendingMoneyRequest()
 {
 	s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
 	s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
@@ -215,7 +218,8 @@ static void clearPendingMoneyRequest()
 
 static void populateMoneyPopupAllies();
 
-static UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer)
+// Reborn: Calculate the transferable money amount while preserving the target player's reserve.
+UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer)
 {
 	if (!targetPlayer)
 		return 0;
@@ -304,28 +308,15 @@ static WindowMsgHandledType moneyRequestButtonSystem(
 			if (s_pendingMoneyRequestTargetIndex != target->getPlayerIndex())
 				return MSG_HANDLED;
 
-			if (target->isLocalPlayer())
-			{
-				UnicodeString rejectMessage;
-				rejectMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestRejected"),
-					requester->getPlayerDisplayName().str());
-
-				TheInGameUI->message(rejectMessage);
-			}
-
-			if (requester->isLocalPlayer())
-			{
-				UnicodeString rejectedByMessage;
-				rejectedByMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestRejectedByPlayer"),
-					target->getPlayerDisplayName().str());
-
-				TheInGameUI->message(rejectedByMessage);
-			}
-
-			clearPendingMoneyRequest();
-			populateMoneyPopupAllies();
+			// Reborn: Reject the pending money request through GameMessage so replay and multiplayer clients clear the same request.
+			DEBUG_LOG(("RebornMoney UI append frame=%d msg=%d requester=%d target=%d",
+				TheGameLogic ? TheGameLogic->getFrame() : -1,
+				GameMessage::MSG_REBORN_REJECT_MONEY_REQUEST,
+				requester->getPlayerIndex(),
+				target->getPlayerIndex()));
+			GameMessage* rejectMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_REJECT_MONEY_REQUEST);
+			rejectMessage->appendIntegerArgument(requester->getPlayerIndex());
+			rejectMessage->appendIntegerArgument(target->getPlayerIndex());
 
 			return MSG_HANDLED;
 		}
@@ -342,43 +333,15 @@ static WindowMsgHandledType moneyRequestButtonSystem(
 		if (s_pendingMoneyRequestTargetIndex != target->getPlayerIndex())
 			return MSG_HANDLED;
 
-		UnsignedInt transferAmount = getMoneyRequestTransferAmount(target);
-
-		if (transferAmount == 0)
-			return MSG_HANDLED;
-
-		target->getMoney()->withdraw(transferAmount, FALSE);
-		requester->getMoney()->deposit(transferAmount, FALSE);
-
-		UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (20 * LOGICFRAMES_PER_SECOND);
-
-		s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
-		s_moneyRequestCooldownEndFrameByPlayer[requester->getPlayerIndex()] = cooldownEndFrame;
-
-		if (target->isLocalPlayer())
-		{
-			UnicodeString sentMessage;
-			sentMessage.format(
-				TheGameText->fetch("GUI:MoneySentToPlayer"),
-				transferAmount,
-				requester->getPlayerDisplayName().str());
-
-			TheInGameUI->message(sentMessage);
-		}
-
-		if (requester->isLocalPlayer())
-		{
-			UnicodeString receivedMessage;
-			receivedMessage.format(
-				TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
-				transferAmount,
-				target->getPlayerDisplayName().str());
-
-			TheInGameUI->message(receivedMessage);
-		}
-
-		clearPendingMoneyRequest();
-		populateMoneyPopupAllies();
+		// Reborn: Accept the pending money request through GameMessage so the transfer is replay-safe.
+		DEBUG_LOG(("RebornMoney UI append frame=%d msg=%d requester=%d target=%d",
+			TheGameLogic ? TheGameLogic->getFrame() : -1,
+			GameMessage::MSG_REBORN_ACCEPT_MONEY_REQUEST,
+			requester->getPlayerIndex(),
+			target->getPlayerIndex()));
+		GameMessage* acceptMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_ACCEPT_MONEY_REQUEST);
+		acceptMessage->appendIntegerArgument(requester->getPlayerIndex());
+		acceptMessage->appendIntegerArgument(target->getPlayerIndex());
 
 		return MSG_HANDLED;
 	}
@@ -400,34 +363,29 @@ static WindowMsgHandledType moneyRequestButtonSystem(
 			if (s_pendingMoneyRequestRequesterIndex == localPlayer->getPlayerIndex() &&
 				s_pendingMoneyRequestTargetIndex == targetPlayer->getPlayerIndex())
 			{
-				clearPendingMoneyRequest();
-				populateMoneyPopupAllies();
+				// Reborn: Cancel the pending money request through GameMessage so replay and multiplayer clients clear the same request.
+				DEBUG_LOG(("RebornMoney UI append frame=%d msg=%d requester=%d target=%d",
+					TheGameLogic ? TheGameLogic->getFrame() : -1,
+					GameMessage::MSG_REBORN_CANCEL_MONEY_REQUEST,
+					localPlayer->getPlayerIndex(),
+					targetPlayer->getPlayerIndex()));
+				GameMessage* cancelMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_CANCEL_MONEY_REQUEST);
+				cancelMessage->appendIntegerArgument(localPlayer->getPlayerIndex());
+				cancelMessage->appendIntegerArgument(targetPlayer->getPlayerIndex());
 			}
 
 			return MSG_HANDLED;
 		}
 
-		s_pendingMoneyRequestRequesterIndex = localPlayer->getPlayerIndex();
-		s_pendingMoneyRequestTargetIndex = targetPlayer->getPlayerIndex();
-
-		UnicodeString requestSentMessage;
-		requestSentMessage.format(
-			TheGameText->fetch("GUI:MoneyRequestSent"),
-			targetPlayer->getPlayerDisplayName().str());
-
-		TheInGameUI->message(requestSentMessage);
-
-		if (targetPlayer->isLocalPlayer())
-		{
-			UnicodeString requestReceivedMessage;
-			requestReceivedMessage.format(
-				TheGameText->fetch("GUI:MoneyRequestReceived"),
-				localPlayer->getPlayerDisplayName().str());
-
-			TheInGameUI->message(requestReceivedMessage);
-		}
-
-		populateMoneyPopupAllies();
+		// Reborn: Send the money request through GameMessage so pending request state is replay-safe.
+		DEBUG_LOG(("RebornMoney UI append frame=%d msg=%d requester=%d target=%d",
+			TheGameLogic ? TheGameLogic->getFrame() : -1,
+			GameMessage::MSG_REBORN_REQUEST_MONEY,
+			localPlayer->getPlayerIndex(),
+			targetPlayer->getPlayerIndex()));
+		GameMessage* requestMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_REQUEST_MONEY);
+		requestMessage->appendIntegerArgument(localPlayer->getPlayerIndex());
+		requestMessage->appendIntegerArgument(targetPlayer->getPlayerIndex());
 
 		return MSG_HANDLED;
 	}
@@ -449,21 +407,15 @@ static WindowMsgHandledType moneyRequestButtonSystem(
 	if (transferAmount == 0)
 		return MSG_HANDLED;
 
-	targetPlayer->getMoney()->withdraw(transferAmount, FALSE);
-	localPlayer->getMoney()->deposit(transferAmount, FALSE);
-
-	UnsignedInt cooldownEndFrame = TheGameLogic->getFrame() + (20 * LOGICFRAMES_PER_SECOND);
-
-	s_moneyRequestCooldownEndFrameByPlayer[localPlayer->getPlayerIndex()] = cooldownEndFrame;
-	s_moneyRequestCooldownEndFrameByPlayer[targetPlayer->getPlayerIndex()] = cooldownEndFrame;
-
-	UnicodeString receivedMessage;
-	receivedMessage.format(
-		TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
-		transferAmount,
-		targetPlayer->getPlayerDisplayName().str());
-
-	TheInGameUI->message(receivedMessage);
+	// Reborn: Request money from an allied AI through GameMessage so the transfer is replay-safe.
+	DEBUG_LOG(("RebornMoney UI append frame=%d msg=%d requester=%d target=%d",
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
+		GameMessage::MSG_REBORN_REQUEST_MONEY,
+		localPlayer->getPlayerIndex(),
+		targetPlayer->getPlayerIndex()));
+	GameMessage* requestMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_REQUEST_MONEY);
+	requestMessage->appendIntegerArgument(localPlayer->getPlayerIndex());
+	requestMessage->appendIntegerArgument(targetPlayer->getPlayerIndex());
 
 	//UnicodeString sentMessage;
 	//sentMessage.format(

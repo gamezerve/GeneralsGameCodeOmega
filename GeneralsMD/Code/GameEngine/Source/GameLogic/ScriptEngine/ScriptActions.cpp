@@ -6822,7 +6822,8 @@ void ScriptActions::doRebornRandomObjectUseButton(
 	const AsciiString& commandButton3
 )
 {
-	DEBUG_LOG(("Reborn Rand Obj Use Button Script: player=%s objectType=%s button1=%s button2=%s button3=%s\n",
+	DEBUG_LOG(("Reborn Rand Obj Use Button Script: frame=%d player=%s objectType=%s button1=%s button2=%s button3=%s\n",
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
 		playerName.str(),
 		objectType.str(),
 		commandButton1.str(),
@@ -6863,6 +6864,13 @@ void ScriptActions::doRebornRandomObjectUseButton(
 				continue;
 			}
 
+			DEBUG_LOG(("Reborn Rand Obj Use Button Script: candidate object id=%d template=%s pos=(%.2f, %.2f, %.2f)\n",
+				obj->getID(),
+				objTemplate->getName().str(),
+				obj->getPosition()->x,
+				obj->getPosition()->y,
+				obj->getPosition()->z));
+
 			candidateObjects.push_back(obj);
 		}
 	}
@@ -6870,7 +6878,10 @@ void ScriptActions::doRebornRandomObjectUseButton(
 	DEBUG_LOG(("Reborn Rand Obj Use Button Script: candidate object count=%d\n", candidateObjects.size()));
 
 	while (!candidateObjects.empty()) {
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: rolling object index from 0 to %d\n",
+			(Int)candidateObjects.size() - 1));
 		Int objectIndex = GameLogicRandomValue(0, (Int)candidateObjects.size() - 1);
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: selected object index=%d\n", objectIndex));
 		Object* obj = candidateObjects[objectIndex];
 		candidateObjects[objectIndex] = candidateObjects.back();
 		candidateObjects.pop_back();
@@ -6994,7 +7005,7 @@ void ScriptActions::doRebornRandomObjectUseButton(
 							}
 
 							if (pu->isUpgradeInQueue(otherUpgrade)) {
-								DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because another EXTENSION_QUEUE_EXCLUSIVE upgrade=%s is already in queue on object=%s\n",
+								DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because another extension upgrade=%s is already in queue on object=%s\n",
 									buttonName.str(),
 									otherUpgrade->getUpgradeName().str(),
 									objTemplate->getName().str()));
@@ -7088,7 +7099,10 @@ void ScriptActions::doRebornRandomObjectUseButton(
 			usableButtons.size(),
 			objTemplate->getName().str()));
 
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: rolling button index from 0 to %d\n",
+			(Int)usableButtons.size() - 1));
 		Int buttonIndex = GameLogicRandomValue(0, (Int)usableButtons.size() - 1);
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: selected button index=%d\n", buttonIndex));
 
 		DEBUG_LOG(("Reborn Rand Obj Use Button Script: selected button=%s for object=%s\n",
 			usableButtons[buttonIndex]->getName().str(),
