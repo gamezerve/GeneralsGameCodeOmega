@@ -682,10 +682,24 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 				s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
 
 				UnicodeString receivedMessage;
-				receivedMessage.format(
-					TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
-					transferAmount,
-					target->getPlayerDisplayName().str());
+
+				if (TheGameLogic && TheGameLogic->isInReplayGame())
+				{
+					// Reborn: Use an observer-friendly money transfer message while watching replays.
+					receivedMessage.format(
+						TheGameText->fetch("GUI:ReplayMoneyTransferred"),
+						requester->getPlayerDisplayName().str(),
+						transferAmount,
+						target->getPlayerDisplayName().str());
+				}
+				else
+				{
+					// Reborn: Show the normal local-player message during live gameplay.
+					receivedMessage.format(
+						TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+						transferAmount,
+						target->getPlayerDisplayName().str());
+				}
 
 				TheInGameUI->message(receivedMessage);
 
@@ -695,24 +709,38 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			s_pendingMoneyRequestRequesterIndex = requesterIndex;
 			s_pendingMoneyRequestTargetIndex = targetIndex;
 
-			if (requester->isLocalPlayer())
+			if (TheGameLogic && TheGameLogic->isInReplayGame())
 			{
-				UnicodeString requestSentMessage;
-				requestSentMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestSent"),
+				// Reborn: Replay observers need a neutral request message that names both players.
+				UnicodeString replayRequestMessage;
+				replayRequestMessage.format(
+					TheGameText->fetch("GUI:ReplayMoneyRequestSent"),
+					requester->getPlayerDisplayName().str(),
 					target->getPlayerDisplayName().str());
 
-				TheInGameUI->message(requestSentMessage);
+				TheInGameUI->message(replayRequestMessage);
 			}
-
-			if (target->isLocalPlayer())
+			else
 			{
-				UnicodeString requestReceivedMessage;
-				requestReceivedMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestReceived"),
-					requester->getPlayerDisplayName().str());
+				if (requester->isLocalPlayer())
+				{
+					UnicodeString requestSentMessage;
+					requestSentMessage.format(
+						TheGameText->fetch("GUI:MoneyRequestSent"),
+						target->getPlayerDisplayName().str());
 
-				TheInGameUI->message(requestReceivedMessage);
+					TheInGameUI->message(requestSentMessage);
+				}
+
+				if (target->isLocalPlayer())
+				{
+					UnicodeString requestReceivedMessage;
+					requestReceivedMessage.format(
+						TheGameText->fetch("GUI:MoneyRequestReceived"),
+						requester->getPlayerDisplayName().str());
+
+					TheInGameUI->message(requestReceivedMessage);
+				}
 			}
 
 			break;
@@ -749,24 +777,38 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 				s_pendingMoneyRequestTargetIndex != targetIndex)
 				break;
 
-			if (target->isLocalPlayer())
+			if (TheGameLogic && TheGameLogic->isInReplayGame())
 			{
-				UnicodeString rejectMessage;
-				rejectMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestRejected"),
+				// Reborn: Replay observers need a neutral rejection message that names both players.
+				UnicodeString replayRejectMessage;
+				replayRejectMessage.format(
+					TheGameText->fetch("GUI:ReplayMoneyRequestRejected"),
+					target->getPlayerDisplayName().str(),
 					requester->getPlayerDisplayName().str());
 
-				TheInGameUI->message(rejectMessage);
+				TheInGameUI->message(replayRejectMessage);
 			}
-
-			if (requester->isLocalPlayer())
+			else
 			{
-				UnicodeString rejectedByMessage;
-				rejectedByMessage.format(
-					TheGameText->fetch("GUI:MoneyRequestRejectedByPlayer"),
-					target->getPlayerDisplayName().str());
+				if (target->isLocalPlayer())
+				{
+					UnicodeString rejectMessage;
+					rejectMessage.format(
+						TheGameText->fetch("GUI:MoneyRequestRejected"),
+						requester->getPlayerDisplayName().str());
 
-				TheInGameUI->message(rejectedByMessage);
+					TheInGameUI->message(rejectMessage);
+				}
+
+				if (requester->isLocalPlayer())
+				{
+					UnicodeString rejectedByMessage;
+					rejectedByMessage.format(
+						TheGameText->fetch("GUI:MoneyRequestRejectedByPlayer"),
+						target->getPlayerDisplayName().str());
+
+					TheInGameUI->message(rejectedByMessage);
+				}
 			}
 
 			clearPendingMoneyRequest();
@@ -799,26 +841,41 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			s_moneyRequestCooldownEndFrameByPlayer[target->getPlayerIndex()] = cooldownEndFrame;
 			s_moneyRequestCooldownEndFrameByPlayer[requester->getPlayerIndex()] = cooldownEndFrame;
 
-			if (target->isLocalPlayer())
+			if (TheGameLogic && TheGameLogic->isInReplayGame())
 			{
-				UnicodeString sentMessage;
-				sentMessage.format(
-					TheGameText->fetch("GUI:MoneySentToPlayer"),
-					transferAmount,
-					requester->getPlayerDisplayName().str());
-
-				TheInGameUI->message(sentMessage);
-			}
-
-			if (requester->isLocalPlayer())
-			{
-				UnicodeString receivedMessage;
-				receivedMessage.format(
-					TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+				// Reborn: Replay observers need a neutral transfer message that names both players.
+				UnicodeString replayMessage;
+				replayMessage.format(
+					TheGameText->fetch("GUI:ReplayMoneyTransferred"),
+					requester->getPlayerDisplayName().str(),
 					transferAmount,
 					target->getPlayerDisplayName().str());
 
-				TheInGameUI->message(receivedMessage);
+				TheInGameUI->message(replayMessage);
+			}
+			else
+			{
+				if (target->isLocalPlayer())
+				{
+					UnicodeString sentMessage;
+					sentMessage.format(
+						TheGameText->fetch("GUI:MoneySentToPlayer"),
+						transferAmount,
+						requester->getPlayerDisplayName().str());
+
+					TheInGameUI->message(sentMessage);
+				}
+
+				if (requester->isLocalPlayer())
+				{
+					UnicodeString receivedMessage;
+					receivedMessage.format(
+						TheGameText->fetch("GUI:MoneyReceivedFromPlayer"),
+						transferAmount,
+						target->getPlayerDisplayName().str());
+
+					TheInGameUI->message(receivedMessage);
+				}
 			}
 
 			clearPendingMoneyRequest();

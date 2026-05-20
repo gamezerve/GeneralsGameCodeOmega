@@ -1,4 +1,16 @@
 
+GUI:ReplayMoneyRequestSent
+"%ls requested money from %ls"
+END
+
+GUI:ReplayMoneyRequestRejected
+"%ls rejected the money request from %ls"
+END
+
+GUI:ReplayMoneyTransferred
+"%ls received $%d from %ls"
+END
+
 GUI:MoneyRequestRejected
 "Rejected money request from %ls"
 END

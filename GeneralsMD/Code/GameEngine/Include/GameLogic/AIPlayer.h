@@ -209,6 +209,7 @@ public:
 
 	void setScriptUpgradeListEnabled(Bool enabled)
 	{
+		// Reborn: Store the next absolute frame for script upgrades instead of using a countdown timer.
 		m_scriptUpgradeListEnabled = enabled;
 		if (enabled) {
 			m_scriptUpgradeTimer = 0;

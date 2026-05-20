@@ -1982,12 +1982,14 @@ void AIPlayer::updateScriptUpgradeList()
 		s_loggedAutoAIUpgrades = TRUE;
 	}
 
-	if (m_scriptUpgradeTimer > 0) {
-		--m_scriptUpgradeTimer;
+	// Reborn: Use absolute logic frames instead of decrementing per update so replay timing stays deterministic.
+	UnsignedInt currentFrame = TheGameLogic ? TheGameLogic->getFrame() : 0;
+
+	if (m_scriptUpgradeTimer > 0 && currentFrame < (UnsignedInt)m_scriptUpgradeTimer) {
 		return;
 	}
 
-	m_scriptUpgradeTimer = 180 * LOGICFRAMES_PER_SECOND; // Reborn: check for upgrades every 3 minutes.
+	m_scriptUpgradeTimer = currentFrame + (180 * LOGICFRAMES_PER_SECOND); // Reborn: check for upgrades every 3 minutes.
 
 	std::vector<const UpgradeTemplate*> availableUpgrades;
 
