@@ -34,6 +34,12 @@
 #include "Common/Debug.h"
 #include "GameLogic/GameLogic.h"
 
+#if defined(_DEBUG)
+#include <windows.h>
+#include <cstdio>
+#include <cstdarg>
+#endif
+
 #undef DEBUG_RANDOM_AUDIO
 #undef DEBUG_RANDOM_CLIENT
 #undef DEBUG_RANDOM_LOGIC
@@ -75,6 +81,30 @@ UnsignedInt GetGameLogicRandomSeedCRC()
 	c.computeCRC(theGameLogicSeed, sizeof(theGameLogicSeed));
 	return c.get();
 }
+
+#if defined(_DEBUG)
+static void RebornRandomCheckpointLog(const char* fmt, ...)
+{
+	static Bool firstWrite = TRUE;
+
+	char fname[MAX_PATH];
+	sprintf(fname, "RebornRandomCheckpoint_%lu.txt", GetCurrentProcessId());
+
+	FILE* fp = fopen(fname, firstWrite ? "wt" : "at");
+	firstWrite = FALSE;
+
+	if (!fp)
+		return;
+
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(fp, fmt, args);
+	va_end(args);
+
+	fprintf(fp, "\n");
+	fclose(fp);
+}
+#endif
 
 static void seedRandom(UnsignedInt SEED, UnsignedInt (&seed)[6])
 {
@@ -278,7 +308,26 @@ Int GetGameLogicRandomValue( int lo, int hi, const char *file, int line )
 	const UnsignedInt delta = hi - lo + 1;
 #endif
 
+#if defined(_DEBUG)
+	const UnsignedInt beforeCRC = GetGameLogicRandomSeedCRC();
+#endif
+
 	const Int rval = ((Int)(randomValue(theGameLogicSeed) % delta)) + lo;
+
+#if defined(_DEBUG)
+	const UnsignedInt afterCRC = GetGameLogicRandomSeedCRC();
+
+	RebornRandomCheckpointLog(
+		"RANDOM_INT frame=%d before=0x%08X after=0x%08X rval=%d lo=%d hi=%d file=%s line=%d",
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
+		beforeCRC,
+		afterCRC,
+		rval,
+		lo,
+		hi,
+		file,
+		line);
+#endif
 
 #ifdef DEBUG_RANDOM_LOGIC
 	DEBUG_LOG(( "%d: GetGameLogicRandomValue = %d (%d - %d), %s line %d",
@@ -305,7 +354,26 @@ Real GetGameLogicRandomValueReal( Real lo, Real hi, const char *file, int line )
 	const Real delta = hi - lo;
 #endif
 
+#if defined(_DEBUG)
+	const UnsignedInt beforeCRC = GetGameLogicRandomSeedCRC();
+#endif
+
 	const Real rval = ((Real)(randomValue(theGameLogicSeed)) * theMultFactor) * delta + lo;
+
+#if defined(_DEBUG)
+	const UnsignedInt afterCRC = GetGameLogicRandomSeedCRC();
+
+	RebornRandomCheckpointLog(
+		"RANDOM_REAL frame=%d before=0x%08X after=0x%08X rval=%f lo=%f hi=%f file=%s line=%d",
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
+		beforeCRC,
+		afterCRC,
+		rval,
+		lo,
+		hi,
+		file,
+		line);
+#endif
 
 #ifdef DEBUG_RANDOM_LOGIC
 	DEBUG_LOG(( "%d: GetGameLogicRandomValueReal = %f, %s line %d",
@@ -324,9 +392,11 @@ Real GetGameLogicRandomValueReal( Real lo, Real hi, const char *file, int line )
 //
 Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	return GetGameLogicRandomValue(lo, hi, file, line);
-#endif
+
+// Disabled by Reborn
+//#if RETAIL_COMPATIBLE_CRC
+//	return GetGameLogicRandomValue(lo, hi, file, line);
+//#endif
 
 	if (lo >= hi)
 		return hi;
@@ -354,9 +424,10 @@ Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line
 //
 Real GetGameLogicRandomValueRealUnchanged( Real lo, Real hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	return GetGameLogicRandomValueReal(lo, hi, file, line);
-#endif
+// Disabled by Reborn
+//#if RETAIL_COMPATIBLE_CRC
+//	return GetGameLogicRandomValueReal(lo, hi, file, line);
+//#endif
 
 	if (lo >= hi)
 		return hi;

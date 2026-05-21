@@ -663,9 +663,12 @@ Locomotor::Locomotor(const LocomotorTemplate* tmpl)
 	m_preferredHeight = m_template->m_preferredHeight;
 	m_preferredHeightDamping = m_template->m_preferredHeightDamping;
 
-	m_angleOffset = GameLogicRandomValueReal(-PI/6, PI/6);
-	m_offsetIncrement = (PI/40) * (GameLogicRandomValueReal(0.8f, 1.2f)/m_template->m_wanderLengthFactor);
-	setFlag(OFFSET_INCREASING, GameLogicRandomValue(0,1));
+	//m_angleOffset = GameLogicRandomValueReal(-PI/6, PI/6);
+	//m_offsetIncrement = (PI/40) * (GameLogicRandomValueReal(0.8f, 1.2f)/m_template->m_wanderLengthFactor);
+	//setFlag(OFFSET_INCREASING, GameLogicRandomValue(0,1));
+	m_angleOffset = GameLogicRandomValueRealUnchanged(-PI/6, PI/6);
+	m_offsetIncrement = (PI/40) * (GameLogicRandomValueRealUnchanged(0.8f, 1.2f)/m_template->m_wanderLengthFactor);
+	setFlag(OFFSET_INCREASING, GameLogicRandomValueUnchanged(0,1));
 	m_donutTimer = TheGameLogic->getFrame()+DONUT_TIME_DELAY_SECONDS*LOGICFRAMES_PER_SECOND;
 }
 
