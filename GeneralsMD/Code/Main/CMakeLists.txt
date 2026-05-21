@@ -10,9 +10,13 @@ set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING}")
 # Use a binary name that doesn't conflict with original game.
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
     if(RTS_BUILD_OPTION_REBORN)
-        set_target_properties(z_generals PROPERTIES OUTPUT_NAME "${REBORN_OMEGA_DISPLAY_NAME}${RTS_BUILD_OUTPUT_SUFFIX}")
+        set_target_properties(z_generals PROPERTIES
+            OUTPUT_NAME "$<$<CONFIG:Debug>:${REBORN_OMEGA_DISPLAY_NAME} (Debug)>$<$<NOT:$<CONFIG:Debug>>:${REBORN_OMEGA_DISPLAY_NAME}${RTS_BUILD_OUTPUT_SUFFIX}>"
+        )
     else()
-        set_target_properties(z_generals PROPERTIES OUTPUT_NAME "generalszh${RTS_BUILD_OUTPUT_SUFFIX}")
+        set_target_properties(z_generals PROPERTIES
+            OUTPUT_NAME "$<$<CONFIG:Debug>:generalszh (Debug)>$<$<NOT:$<CONFIG:Debug>>:generalszh${RTS_BUILD_OUTPUT_SUFFIX}>"
+        )
     endif()
 else()
     set_target_properties(z_generals PROPERTIES OUTPUT_NAME "generalszh${RTS_BUILD_OUTPUT_SUFFIX}")
