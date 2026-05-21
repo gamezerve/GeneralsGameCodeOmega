@@ -2120,7 +2120,7 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 
 	}
 
-	if (thingTemplate && thingTemplate->getDefaultOwningSide().isNotEmpty())
+	if (commandButton && thingTemplate && thingTemplate->getDefaultOwningSide().isNotEmpty())
 	{
 		UnicodeString sidePrefix;
 		AsciiString rawSide = thingTemplate->getDefaultOwningSide();
