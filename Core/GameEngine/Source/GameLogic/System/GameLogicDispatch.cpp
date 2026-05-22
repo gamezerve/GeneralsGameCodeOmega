@@ -95,6 +95,7 @@ extern Int s_pendingMoneyRequestRequesterIndex;
 extern Int s_pendingMoneyRequestTargetIndex;
 extern UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
 extern void clearPendingMoneyRequest();
+extern void clearMoneyRequestCooldowns();
 extern UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer);
 
 
@@ -408,6 +409,10 @@ void GameLogic::prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rank
 		TheWritableGlobalData->m_mapName = TheGlobalData->m_pendingFile;
 		TheWritableGlobalData->m_pendingFile.clear();
 	}
+
+	// Reborn: Reset money request state for new matches.
+	clearPendingMoneyRequest();
+	clearMoneyRequestCooldowns();
 
 	m_rankPointsToAddAtGameStart = rankPoints;
 	DEBUG_LOG(("GameLogic::prepareNewGame() - m_rankPointsToAddAtGameStart = %d", m_rankPointsToAddAtGameStart));

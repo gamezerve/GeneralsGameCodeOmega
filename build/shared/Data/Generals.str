@@ -40,7 +40,7 @@ GUI:CancelRequest
 END
 
 GUI:MoneyRequestIncoming
-"%ls - %hs requested money. Amount to send: $%d"
+"%ls - %1s requested money. Amount to send: $%d"
 END
 
 GUI:Send

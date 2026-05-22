@@ -199,6 +199,15 @@ static Int s_moneyPopupPlayerIndexByRow[MAX_SLOTS];
 // Reborn: Shared money request cooldown state used by UI and logic message handling.
 UnsignedInt s_moneyRequestCooldownEndFrameByPlayer[MAX_PLAYER_COUNT];
 
+// Reborn: Reset all money request cooldowns for a fresh game state.
+void clearMoneyRequestCooldowns()
+{
+	for (Int i = 0; i < MAX_PLAYER_COUNT; ++i)
+	{
+		s_moneyRequestCooldownEndFrameByPlayer[i] = 0;
+	}
+}
+
 // Reborn: Shared pending money request state used by UI and logic message handling.
 Int s_pendingMoneyRequestRequesterIndex = PLAYER_INDEX_INVALID;
 Int s_pendingMoneyRequestTargetIndex = PLAYER_INDEX_INVALID;
@@ -218,18 +227,15 @@ void clearPendingMoneyRequest()
 
 static void populateMoneyPopupAllies();
 
-// Reborn: Calculate the transferable money amount while preserving the target player's reserve.
+// Reborn: Calculate the transferable money amount. No transfer is allowed if player has less than 10000 se dont need to have a minimum reserve here.
 UnsignedInt getMoneyRequestTransferAmount(Player* targetPlayer)
 {
 	if (!targetPlayer)
 		return 0;
 
-	const UnsignedInt minimumMoneyReserve = 2000;
-
 	UnsignedInt targetMoney = targetPlayer->getMoney()->countMoney();
-	UnsignedInt availableMoney = targetMoney > minimumMoneyReserve ? targetMoney - minimumMoneyReserve : 0;
 
-	return availableMoney / 5;
+	return targetMoney / 5;
 }
 
 static Bool isMoneyRequestCooldownActive(Player* player, UnsignedInt* secondsRemaining = nullptr)
@@ -500,6 +506,23 @@ static void populateMoneyPopupAllies()
 			if (TheVictoryConditions)
 				isDefeated = TheVictoryConditions->hasSinglePlayerBeenDefeated(player);
 
+			// Reborn: Automatically cancel pending money requests if either participant is defeated.
+			if (isDefeated &&
+				hasPendingMoneyRequest() &&
+				(
+					s_pendingMoneyRequestTargetIndex == player->getPlayerIndex() ||
+					s_pendingMoneyRequestRequesterIndex == player->getPlayerIndex()
+					))
+			{
+				GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_CANCEL_MONEY_REQUEST);
+
+				if (msg)
+				{
+					msg->appendIntegerArgument(s_pendingMoneyRequestRequesterIndex);
+					msg->appendIntegerArgument(s_pendingMoneyRequestTargetIndex);
+				}
+			}
+
 			const UnsignedInt minimumMoneyReserve = 10000;
 
 			UnsignedInt playerMoney = player->getMoney()->countMoney();
@@ -525,9 +548,17 @@ static void populateMoneyPopupAllies()
 
 			Bool isCooldownActive = isLocalCooldownActive || isTargetCooldownActive;
 			UnsignedInt cooldownSeconds = localCooldownSeconds > targetCooldownSeconds ? localCooldownSeconds : targetCooldownSeconds;
-			buttonWin->winEnable(!isDefeated && !isLowOnMoney && !isCooldownActive &&
-				!isPendingRequestToLocalPlayer &&
-				(!isPendingRequestByLocalPlayer || isPendingRequestTarget));
+			Bool canCancelRequest = isPendingRequestTarget;
+
+			buttonWin->winEnable(
+				canCancelRequest ||
+				(
+					!isDefeated &&
+					!isLowOnMoney &&
+					!isCooldownActive &&
+					!isPendingRequestToLocalPlayer &&
+					!isPendingRequestByLocalPlayer
+					));
 
 			s_moneyPopupPlayerIndexByRow[rowNum] = player->getPlayerIndex();
 
@@ -535,9 +566,9 @@ static void populateMoneyPopupAllies()
 			{
 				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:Defeated"));
 			}
-			else if (isLowOnMoney)
+			else if (isPendingRequestTarget)
 			{
-				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:LowOnMoney"));
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:CancelRequest"));
 			}
 			else if (isCooldownActive)
 			{
@@ -545,9 +576,9 @@ static void populateMoneyPopupAllies()
 				cooldownText.format(TheGameText->fetch("GUI:MoneyRequestCooldown"), cooldownSeconds);
 				GadgetButtonSetText(buttonWin, cooldownText);
 			}
-			else if (isPendingRequestTarget)
+			else if (isLowOnMoney)
 			{
-				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:CancelRequest"));
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:LowOnMoney"));
 			}
 			else
 			{
@@ -608,11 +639,30 @@ static void populateMoneyPopupAllies()
 			{
 				UnsignedInt amount = getMoneyRequestTransferAmount(target);
 
+				UnicodeString requesterSideName;
+
+				for (Int slotNum = 0; slotNum < MAX_SLOTS; ++slotNum)
+				{
+					const GameSlot* slot = TheGameInfo->getConstSlot(slotNum);
+					if (!slot || !slot->isOccupied())
+						continue;
+
+					AsciiString playerName;
+					playerName.format("player%d", slotNum);
+
+					Player* slotPlayer = ThePlayerList->findPlayerWithNameKey(NAMEKEY(playerName));
+					if (slotPlayer == requester)
+					{
+						requesterSideName = slot->getApparentPlayerTemplateDisplayName();
+						break;
+					}
+				}
+
 				UnicodeString requestText;
 				requestText.format(
 					TheGameText->fetch("GUI:MoneyRequestIncoming"),
 					requester->getPlayerDisplayName().str(),
-					requester->getSide().str(),
+					requesterSideName.str(),
 					amount);
 
 				Color requesterColor = requester->getPlayerColor();
