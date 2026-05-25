@@ -144,6 +144,9 @@ jobs:
           - preset: "win32-debug"
             tools: true
             extras: true
+          - preset: "win32-reborn" # Reborn build control for Github
+            tools: true
+            extras: true
           #- preset: "win32-vcpkg"
           #  tools: true
           #  extras: true
