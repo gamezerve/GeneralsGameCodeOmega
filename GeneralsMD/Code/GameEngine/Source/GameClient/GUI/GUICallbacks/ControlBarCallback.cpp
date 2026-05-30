@@ -335,18 +335,32 @@ void HandleSelectedUnitCameoClick()
 {
 	DEBUG_LOG(("HandleSelectedUnitCameoClick entered"));
 
+	Bool usedMultiSelectPortraitObject = FALSE;
+
 	Drawable* draw = TheControlBar->getCurrentSelectedDrawable();
 	Object* obj = draw ? draw->getObject() : nullptr;
 
+	if (!obj)
+	{
+		ObjectID portraitObjectID = TheControlBar->getRightHUDPortraitObjectID();
+		if (portraitObjectID != INVALID_ID)
+		{
+			obj = TheGameLogic->findObjectByID(portraitObjectID);
+			usedMultiSelectPortraitObject = obj != nullptr;
+		}
+	}
+
 	if (obj && obj->getTemplate())
 	{
-		DEBUG_LOG(("SelectedUnitCameo click: internalName=%s obj=%p template=%p",
+		DEBUG_LOG(("SelectedUnitCameo click%s: internalName=%s obj=%p template=%p",
+			usedMultiSelectPortraitObject ? " in multiselect" : "",
 			obj->getTemplate()->getName().str(),
 			obj,
 			obj->getTemplate()));
 
 		DEBUG_ASSERTCRASH(false, (
-			"SelectedUnitCameo click: internalName=%s obj=%p template=%p",
+			"SelectedUnitCameo click%s: internalName=%s obj=%p template=%p",
+			usedMultiSelectPortraitObject ? " in multiselect" : "",
 			obj->getTemplate()->getName().str(),
 			obj,
 			obj->getTemplate()));

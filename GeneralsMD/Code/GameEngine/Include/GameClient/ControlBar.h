@@ -1038,6 +1038,7 @@ private:
 	void setCommandBarBorder( GameWindow *button, CommandButtonMappedBorderType type);
 public:
 	void updateCommandBarBorderColors(Color build, Color action, Color upgrade, Color system );
+	ObjectID getRightHUDPortraitObjectID() const { return m_rightHUDPortraitObjectID; }
 
 private:
 
@@ -1080,6 +1081,8 @@ private:
 	UnsignedInt m_consecutiveDirtyFrames;
 #endif
 //	ControlBarResizer *m_controlBarResizer;
+
+	ObjectID m_rightHUDPortraitObjectID;
 
 };
 
