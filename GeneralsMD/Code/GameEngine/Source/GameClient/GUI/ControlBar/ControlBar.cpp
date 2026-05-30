@@ -147,6 +147,14 @@ static void selectedUnitCameoTooltip(GameWindow* window,
 {
 	Drawable* draw = TheControlBar->getCurrentSelectedDrawable();
 	Object* obj = draw ? draw->getObject() : nullptr;
+
+	if (!obj)
+	{
+		ObjectID portraitObjectID = TheControlBar->getRightHUDPortraitObjectID();
+		if (portraitObjectID != INVALID_ID)
+			obj = TheGameLogic->findObjectByID(portraitObjectID);
+	}
+
 	if (!obj)
 		return;
 
@@ -1961,6 +1969,8 @@ ControlBar::ControlBar()
 
 	m_animateDownWindow = nullptr;
 	m_animTime = 0;
+
+	m_rightHUDPortraitObjectID = INVALID_ID;
 
 	for( i = 0; i < MAX_COMMANDS_PER_SET; i++)
 	{
@@ -3893,6 +3903,9 @@ void ControlBar::setPortraitByObject( Object *obj )
 
 	if( obj )
 	{
+
+		m_rightHUDPortraitObjectID = obj->getID();
+
 		if( obj->isKindOf( KINDOF_SHOW_PORTRAIT_WHEN_CONTROLLED ) && !obj->isLocallyControlled() )
 		{
 			//Handles civ vehicles without terrorists in them
@@ -3997,6 +4010,8 @@ void ControlBar::setPortraitByObject( Object *obj )
 	}
 	else
 	{
+		m_rightHUDPortraitObjectID = INVALID_ID;
+
 		m_rightHUDUnitSelectParent->winHide(TRUE);
 		m_rightHUDWindow->winSetStatus( WIN_STATUS_IMAGE );
 		m_rightHUDCameoWindow->winClearStatus( WIN_STATUS_IMAGE );
