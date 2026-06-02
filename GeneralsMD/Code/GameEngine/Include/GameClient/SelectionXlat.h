@@ -44,6 +44,10 @@ private:
 
 	Bool m_leftMouseButtonIsDown;
 	Bool m_dragSelecting;
+	Bool m_rebornLassoSelecting;
+	Bool m_rebornLassoHasMoved;
+	std::vector<ICoord2D> m_rebornLassoPoints;
+	Bool m_rebornLassoAddToGroup;
 	UnsignedInt m_lastGroupSelTime;
 	Int m_lastGroupSelGroup;
 	ICoord2D m_selectFeedbackAnchor;		// Note: Used for drawing feedback only.

@@ -1,5 +1,7 @@
 add_executable(z_generals WIN32)
 
+# target_link_options(z_generals PRIVATE /MAP)
+
 # Reborn Version number setter
 set(REBORN_OMEGA_VERSION_MAJOR 1)
 set(REBORN_OMEGA_VERSION_MINOR 0)

@@ -390,8 +390,14 @@ void W3DInGameUI::draw()
 	TheDisplay->beginBatch();
 	preDraw();
 
+	if (TheGameLogic->isGamePaused() && getRebornLassoPoints().size() >= 2)
+	{
+		std::vector<ICoord2D> emptyRebornLassoPoints;
+		setRebornLassoPoints(emptyRebornLassoPoints);
+	}
+
 	// draw selection region if drag selecting
-	if( m_isDragSelecting )
+	if (m_isDragSelecting || getRebornLassoPoints().size() >= 2)
 		drawSelectionRegion();
 
 	// for each view draw hints
@@ -450,15 +456,112 @@ void W3DInGameUI::draw()
 void W3DInGameUI::drawSelectionRegion()
 {
 	Real width = 2.0f;
-	UnsignedInt color = 0x9933FF33;  //0xAARRGGBB
+	UnsignedInt color = 0x9933FF33;
 
-	TheDisplay->drawOpenRect( m_dragSelectRegion.lo.x,
-														m_dragSelectRegion.lo.y,
-														m_dragSelectRegion.hi.x - m_dragSelectRegion.lo.x,
-														m_dragSelectRegion.hi.y - m_dragSelectRegion.lo.y,
-														width,
-														color );
+	const std::vector<ICoord2D>& points = getRebornLassoPoints();
 
+	if (points.size() >= 2)
+	{
+#if defined(RTS_DEBUG)
+		if (points.size() >= 3)
+		{
+			std::vector<Int> intersections;
+
+			Int minY = points[0].y;
+			Int maxY = points[0].y;
+
+			for (size_t i = 1; i < points.size(); ++i)
+			{
+				minY = min(minY, points[i].y);
+				maxY = max(maxY, points[i].y);
+			}
+
+			if (minY < 0)
+				minY = 0;
+
+			Int displayHeight = TheDisplay->getHeight() - 1;
+			if (maxY > displayHeight)
+				maxY = displayHeight;
+
+			const Int fillStep = 8;
+			const Int maxDebugFillLines = 80;
+			Int debugFillLines = 0;
+
+			for (Int y = minY; y <= maxY && debugFillLines < maxDebugFillLines; y += fillStep)
+			{
+				intersections.clear();
+
+				for (size_t i = 0, j = points.size() - 1; i < points.size(); j = i++)
+				{
+					const ICoord2D& a = points[j];
+					const ICoord2D& b = points[i];
+
+					if ((a.y <= y && b.y > y) || (b.y <= y && a.y > y))
+					{
+						Int x = a.x + (y - a.y) * (b.x - a.x) / (b.y - a.y);
+						intersections.push_back(x);
+					}
+				}
+
+				std::sort(intersections.begin(), intersections.end());
+
+				for (size_t i = 1; i < intersections.size(); i += 2)
+				{
+					Int x1 = intersections[i - 1];
+					Int x2 = intersections[i];
+
+					if (x1 < 0)
+						x1 = 0;
+
+					Int displayWidth = TheDisplay->getWidth() - 1;
+					if (x2 > displayWidth)
+						x2 = displayWidth;
+
+					if (x2 >= x1)
+					{
+						TheDisplay->drawFillRect(x1, y, x2 - x1 + 1, fillStep, 0x22FF0000);
+					}
+				}
+
+				++debugFillLines;
+			}
+		}
+#endif
+
+		for (size_t i = 1; i < points.size(); ++i)
+		{
+			TheDisplay->drawLine(
+				points[i - 1].x,
+				points[i - 1].y,
+				points[i].x,
+				points[i].y,
+				width,
+				color);
+		}
+
+#if defined(RTS_DEBUG)
+		if (points.size() >= 3)
+		{
+			TheDisplay->drawLine(
+				points.back().x,
+				points.back().y,
+				points.front().x,
+				points.front().y,
+				width,
+				0x99FFFF00);
+		}
+#endif
+
+		return;
+	}
+
+	TheDisplay->drawOpenRect(
+		m_dragSelectRegion.lo.x,
+		m_dragSelectRegion.lo.y,
+		m_dragSelectRegion.hi.x - m_dragSelectRegion.lo.x,
+		m_dragSelectRegion.hi.y - m_dragSelectRegion.lo.y,
+		width,
+		color);
 }
 
 //-------------------------------------------------------------------------------------------------

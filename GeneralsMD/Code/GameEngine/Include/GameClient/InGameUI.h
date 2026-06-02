@@ -393,6 +393,16 @@ public:  // ********************************************************************
 	virtual void militarySubtitle( const AsciiString& label, Int duration );			// time in milliseconds
 	virtual void removeMilitarySubtitle();
 
+	const std::vector<ICoord2D>& getRebornLassoPoints() const
+	{
+		return m_rebornLassoPoints;
+	}
+
+	void setRebornLassoPoints(const std::vector<ICoord2D>& points)
+	{
+		m_rebornLassoPoints = points;
+	}
+
 	// for can't build messages
 	virtual void displayCantBuildMessage( LegalBuildCode lbc ); ///< display message to use as to why they can't build here
 
@@ -730,6 +740,7 @@ protected:
 	DrawableList								m_selectedLocalDrawables;											///< A list of all selected drawables owned by the local player
 	Bool												m_isDragSelecting;														///< If TRUE, an area selection is in progress
 	IRegion2D										m_dragSelectRegion;														///< if isDragSelecting is TRUE, this contains select region
+	std::vector<ICoord2D>       m_rebornLassoPoints;
 	Bool												m_displayedMaxWarning;                        ///< keeps the warning from being shown over and over
 	MoveHintStruct							m_moveHint[ MAX_MOVE_HINTS ];
 	Int													m_nextMoveHint;

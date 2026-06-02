@@ -263,6 +263,10 @@ SelectionTranslator::SelectionTranslator()
 {
 	m_leftMouseButtonIsDown = FALSE;
 	m_dragSelecting = FALSE;
+	m_rebornLassoSelecting = FALSE;
+	m_rebornLassoHasMoved = FALSE;
+	m_rebornLassoPoints.clear();
+	m_rebornLassoAddToGroup = FALSE;
 	m_lastGroupSelTime = 0;
 	m_lastGroupSelGroup = -1;
 	m_selectFeedbackAnchor.x = 0;
@@ -358,6 +362,88 @@ Bool SelectionTranslator::killThemKillThemAll( Drawable *draw, GameMessage *kill
 	return false;
 }
 
+static Int rebornPointDistanceSqr(const ICoord2D* a, const ICoord2D* b)
+{
+	Int dx = a->x - b->x;
+	Int dy = a->y - b->y;
+	return dx * dx + dy * dy;
+}
+
+static Bool rebornPointInLassoPolygon(const ICoord2D* point, const std::vector<ICoord2D>* points)
+{
+	if (!point || !points || points->size() < 3)
+		return FALSE;
+
+	Bool inside = FALSE;
+	size_t count = points->size();
+
+	for (size_t i = 0, j = count - 1; i < count; j = i++)
+	{
+		const ICoord2D& pi = (*points)[i];
+		const ICoord2D& pj = (*points)[j];
+
+		if (((pi.y > point->y) != (pj.y > point->y)) &&
+			(point->x < (pj.x - pi.x) * (point->y - pi.y) / (pj.y - pi.y) + pi.x))
+		{
+			inside = !inside;
+		}
+	}
+
+	return inside;
+}
+
+static void rebornBuildLassoBoundingRegion(const std::vector<ICoord2D>* points, IRegion2D* region)
+{
+	if (!points || points->empty() || !region)
+		return;
+
+	region->lo = (*points)[0];
+	region->hi = (*points)[0];
+
+	for (size_t i = 1; i < points->size(); ++i)
+	{
+		region->lo.x = min(region->lo.x, (*points)[i].x);
+		region->lo.y = min(region->lo.y, (*points)[i].y);
+		region->hi.x = max(region->hi.x, (*points)[i].x);
+		region->hi.y = max(region->hi.y, (*points)[i].y);
+	}
+}
+
+struct RebornLassoPickDrawableStruct
+{
+	PickDrawableStruct basePds;
+	DrawableList* drawableListToFill;
+	const std::vector<ICoord2D>* lassoPoints;
+};
+
+static Bool addDrawableToRebornLassoList(Drawable* draw, void* userData)
+{
+	RebornLassoPickDrawableStruct* lpds = (RebornLassoPickDrawableStruct*)userData;
+
+	if (!lpds || !lpds->drawableListToFill || !lpds->lassoPoints)
+		return FALSE;
+
+	DrawableList tempList;
+	PickDrawableStruct basePds = lpds->basePds;
+	basePds.drawableListToFill = &tempList;
+	basePds.isPointSelection = TRUE;
+
+	if (!addDrawableToList(draw, &basePds))
+		return FALSE;
+
+	if (tempList.empty())
+		return FALSE;
+
+	ICoord2D screenPos;
+	TheTacticalView->worldToScreen(draw->getPosition(), &screenPos);
+
+	if (!rebornPointInLassoPolygon(&screenPos, lpds->lassoPoints))
+		return FALSE;
+
+	lpds->drawableListToFill->push_back(draw);
+	return TRUE;
+}
+
 //-----------------------------------------------------------------------------
 /**
  * The SelectionTranslator is responsible for all selection semantics,
@@ -407,6 +493,23 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 
 			if (m_leftMouseButtonIsDown)
 			{
+				if (m_rebornLassoSelecting && TheGameLogic->isGamePaused())
+				{
+					m_leftMouseButtonIsDown = FALSE;
+					m_dragSelecting = FALSE;
+					m_rebornLassoSelecting = FALSE;
+					m_rebornLassoHasMoved = FALSE;
+					m_rebornLassoAddToGroup = FALSE;
+					m_rebornLassoPoints.clear();
+
+					TheInGameUI->setSelecting(FALSE);
+					TheInGameUI->endAreaSelectHint(nullptr);
+					TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+					TheTacticalView->setMouseLock(FALSE);
+
+					break;
+				}
+
 				ICoord2D delta;
 
 				delta.x = abs(pixel.x - m_selectFeedbackAnchor.x);
@@ -427,12 +530,30 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				if (m_dragSelecting)
 				{
 					// insert area selection "hint" message into stream
-					GameMessage *hintMsg = TheMessageStream->appendMessage( GameMessage::MSG_BEGIN_AREA_SELECTION_HINT );
+					if (m_rebornLassoSelecting)
+					{
+						if (m_rebornLassoPoints.empty() ||
+							rebornPointDistanceSqr(&m_rebornLassoPoints.back(), &pixel) >= 16)
+						{
+							m_rebornLassoPoints.push_back(pixel);
+							TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+							m_rebornLassoHasMoved = TRUE;
+						}
 
-					// build rectangular region defined by the drag selection
-					IRegion2D pixelRegion;
-					buildRegion( &m_selectFeedbackAnchor, &pixel, &pixelRegion );
-					hintMsg->appendPixelRegionArgument( pixelRegion );
+						// Do not display the standard rectangular drag-selection hint while
+						// using lasso selection.
+						TheInGameUI->endAreaSelectHint(nullptr);
+					}
+					else
+					{
+						GameMessage* hintMsg = TheMessageStream->appendMessage(GameMessage::MSG_BEGIN_AREA_SELECTION_HINT);
+
+						// build rectangular region defined by the drag selection
+						IRegion2D pixelRegion;
+						buildRegion(&m_selectFeedbackAnchor, &pixel, &pixelRegion);
+
+						hintMsg->appendPixelRegionArgument(pixelRegion);
+					}
 				}
 			}
 			else //left button is not down (not drag select)
@@ -602,14 +723,53 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			IRegion2D selectionRegion = msg->getArgument(0)->pixelRegion;
 			Bool isPoint = (selectionRegion.height() == 0 && selectionRegion.width() == 0);
 
+			Bool rebornUseLassoSelection =
+				m_rebornLassoSelecting &&
+				m_rebornLassoHasMoved &&
+				m_rebornLassoPoints.size() >= 3;
+
+			if (rebornUseLassoSelection)
+			{
+				rebornBuildLassoBoundingRegion(&m_rebornLassoPoints, &selectionRegion);
+				isPoint = FALSE;
+			}
+
 			DrawableList drawablesThatWillSelect;
 			PickDrawableStruct pds;
 			pds.drawableListToFill = &drawablesThatWillSelect;
 			pds.isPointSelection = isPoint;
-			TheTacticalView->iterateDrawablesInRegion(&selectionRegion, addDrawableToList, &pds);
+
+			if (rebornUseLassoSelection)
+			{
+				RebornLassoPickDrawableStruct lpds;
+				lpds.basePds = pds;
+				lpds.drawableListToFill = &drawablesThatWillSelect;
+				lpds.lassoPoints = &m_rebornLassoPoints;
+
+				Drawable* draw = TheGameClient->getDrawableList();
+				while (draw)
+				{
+					Drawable* nextDraw = draw->getNextDrawable();
+					addDrawableToRebornLassoList(draw, &lpds);
+					draw = nextDraw;
+				}
+			}
+			else
+			{
+				TheTacticalView->iterateDrawablesInRegion(&selectionRegion, addDrawableToList, &pds);
+			}
 
 			if (drawablesThatWillSelect.empty())
 			{
+				if (rebornUseLassoSelection)
+				{
+					m_rebornLassoSelecting = FALSE;
+					m_rebornLassoHasMoved = FALSE;
+					m_rebornLassoAddToGroup = FALSE;
+					m_rebornLassoPoints.clear();
+					TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+				}
+
 				break;
 			}
 
@@ -621,17 +781,47 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				break;
 			}
 
-			SelectionInfo si;
-			if (contextCommandForNewSelection(currentList, &drawablesThatWillSelect, &si, isPoint))
+			Bool rebornRestoreForceAttackMode = FALSE;
+
+			if (rebornUseLassoSelection && TheInGameUI->isInForceAttackMode())
 			{
-				break;
+				TheInGameUI->setForceAttackMode(FALSE);
+				rebornRestoreForceAttackMode = TRUE;
+			}
+
+			SelectionInfo si;
+			Bool contextCommandHandled = contextCommandForNewSelection(
+				currentList,
+				&drawablesThatWillSelect,
+				&si,
+				isPoint);
+
+			DEBUG_LOG((
+				"REBORN LASSO TEST: handled=%d lasso=%d ctrl=%d shift=%d mine=%d mineBuildings=%d enemies=%d civilians=%d friends=%d",
+				contextCommandHandled,
+				rebornUseLassoSelection,
+				TheKeyboard->isCtrl(),
+				TheKeyboard->isShift(),
+				si.newCountMine,
+				si.newCountMineBuildings,
+				si.newCountEnemies,
+				si.newCountCivilians,
+				si.newCountFriends));
+
+			if (contextCommandHandled)
+			{
+				if (!rebornUseLassoSelection)
+				{
+					break;
+				}
 			}
 
 			// There isn't a context command, so this is a selection thing. Now, based on the keys,
 			// determine whether or not we should create a new group, or append these guys to our existing
 			// group.
 
-			Bool addToGroup = TheInGameUI->isInPreferSelectionMode();
+			Bool addToGroup = rebornUseLassoSelection ? m_rebornLassoAddToGroup : TheInGameUI->isInPreferSelectionMode();
+			
 
 			if (si.currentCountEnemies > 0 ||
 					si.currentCountCivilians > 0 ||
@@ -721,7 +911,8 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			// Whenever we manually select something, reset the last selected group.
 			m_lastGroupSelGroup = -1;
 
-			if (TheInGameUI->isInPreferSelectionMode() && isPoint && areAllSelected(drawablesThatWillSelect))
+
+			if (!rebornUseLassoSelection && TheInGameUI->isInPreferSelectionMode() && isPoint && areAllSelected(drawablesThatWillSelect))
 			{
 				// If this was a point, shift was pressed and we already have that unit selected, then we
 				// need to deselect those units.
@@ -900,6 +1091,20 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			if (disp == DESTROY_MESSAGE)
 				TheInGameUI->clearAttackMoveToMode();
 
+			if (rebornRestoreForceAttackMode && TheKeyboard->isCtrl())
+			{
+				TheInGameUI->setForceAttackMode(TRUE);
+			}
+
+			if (rebornUseLassoSelection)
+			{
+				m_rebornLassoSelecting = FALSE;
+				m_rebornLassoHasMoved = FALSE;
+				m_rebornLassoAddToGroup = FALSE;
+				m_rebornLassoPoints.clear();
+				TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+			}
+
 			break;
 		}
 
@@ -911,7 +1116,18 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 		{
 			// cannot actually start area selection yet - have to wait for cursor to move a bit
 			m_leftMouseButtonIsDown = true;
-			m_selectFeedbackAnchor = msg->getArgument( 0 )->pixel;
+			m_selectFeedbackAnchor = msg->getArgument(0)->pixel;
+
+			m_rebornLassoSelecting = TheKeyboard->isCtrl();
+			m_rebornLassoHasMoved = FALSE;
+			m_rebornLassoPoints.clear();
+			m_rebornLassoAddToGroup = m_rebornLassoSelecting && TheKeyboard->isShift();
+
+			if (m_rebornLassoSelecting)
+			{
+				m_rebornLassoPoints.push_back(m_selectFeedbackAnchor);
+			}
+
 			break;
 		}
 
@@ -935,8 +1151,26 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				GameMessage *dragMsg = TheMessageStream->appendMessage( GameMessage::MSG_END_AREA_SELECTION_HINT );
 
 				IRegion2D selectionRegion;
-				buildRegion( &m_selectFeedbackAnchor, &msg->getArgument(0)->pixel, &selectionRegion );
-				dragMsg->appendPixelRegionArgument( selectionRegion );
+
+				if (m_rebornLassoSelecting && m_rebornLassoHasMoved && m_rebornLassoPoints.size() >= 3)
+				{
+					ICoord2D pixel = msg->getArgument(0)->pixel;
+
+					if (m_rebornLassoPoints.empty() ||
+						rebornPointDistanceSqr(&m_rebornLassoPoints.back(), &pixel) >= 16)
+					{
+						m_rebornLassoPoints.push_back(pixel);
+						TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+					}
+
+					rebornBuildLassoBoundingRegion(&m_rebornLassoPoints, &selectionRegion);
+				}
+				else
+				{
+					buildRegion(&m_selectFeedbackAnchor, &msg->getArgument(0)->pixel, &selectionRegion);
+				}
+
+				dragMsg->appendPixelRegionArgument(selectionRegion);
 			}
 			else
 			{
