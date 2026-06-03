@@ -4126,47 +4126,146 @@ void GameLogic::destroyObject( Object *obj )
 
 }
 
-#if defined(_DEBUG)
-#include <windows.h>
-#include <cstdio>
-#include <cstdarg>
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
 
-static void RebornCRCCheckpointLog(const char* fmt, ...)
+static FILE* s_rebornCRCCheckpointFile = nullptr;
+static Bool s_rebornCRCCheckpointInitialized = FALSE;
+static Int s_rebornCRCCheckpointLastFrame = -1;
+
+static void RebornCRCCheckpointShutdown()
 {
-	static Bool firstWrite = TRUE;
+	if (s_rebornCRCCheckpointFile)
+	{
+		fclose(s_rebornCRCCheckpointFile);
+		s_rebornCRCCheckpointFile = nullptr;
+	}
+}
+
+static void RebornCRCCheckpointInit(Bool forceRotate)
+{
+	if (s_rebornCRCCheckpointInitialized && !forceRotate && s_rebornCRCCheckpointFile)
+		return;
+
+	if (s_rebornCRCCheckpointFile)
+	{
+		fclose(s_rebornCRCCheckpointFile);
+		s_rebornCRCCheckpointFile = nullptr;
+	}
+
+	char dirbuf[MAX_PATH];
+	::GetModuleFileName(nullptr, dirbuf, sizeof(dirbuf));
+
+	if (char* pEnd = strrchr(dirbuf, '\\'))
+	{
+		*(pEnd + 1) = 0;
+	}
+	else
+	{
+		dirbuf[0] = 0;
+	}
+	strlcat(dirbuf, "RebornStatus\\Logs\\", ARRAY_SIZE(dirbuf));
+	CreateDirectory("RebornStatus", nullptr);
+	CreateDirectory(dirbuf, nullptr);
 
 	char fname[MAX_PATH];
-	sprintf(fname, "RebornCRCCheckpoint_%lu.txt", GetCurrentProcessId());
+	char prevName[MAX_PATH];
 
-	FILE* fp = fopen(fname, firstWrite ? "wt" : "at");
-	firstWrite = FALSE;
+	snprintf(fname, sizeof(fname), "%sRebornCRCCheckpointD.txt", dirbuf);
+	snprintf(prevName, sizeof(prevName), "%sRebornCRCCheckpointPrevD.txt", dirbuf);
 
-	if (!fp)
+	remove(prevName);
+
+	if (rename(fname, prevName) != 0)
+	{
+		remove(fname);
+	}
+
+	s_rebornCRCCheckpointFile = fopen(fname, "w");
+
+	s_rebornCRCCheckpointInitialized = TRUE;
+
+	static Bool registeredShutdown = FALSE;
+	if (!registeredShutdown)
+	{
+		atexit(RebornCRCCheckpointShutdown);
+		registeredShutdown = TRUE;
+	}
+}
+
+static void RebornCRCCheckpointLog(Int frame, const char* fmt, ...)
+{
+	if (frame <= 0)
 		return;
+
+	Bool forceRotate = FALSE;
+
+	if (s_rebornCRCCheckpointLastFrame > 100 && frame < s_rebornCRCCheckpointLastFrame)
+	{
+		if (frame > 100)
+		{
+			forceRotate = TRUE;
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	s_rebornCRCCheckpointLastFrame = frame;
+
+	RebornCRCCheckpointInit(forceRotate);
+
+	if (!s_rebornCRCCheckpointFile)
+		return;
+
+	RebornSetRandomCheckpointLoggingEnabled(TRUE);
 
 	va_list args;
 	va_start(args, fmt);
-	vfprintf(fp, fmt, args);
+	vfprintf(s_rebornCRCCheckpointFile, fmt, args);
 	va_end(args);
 
-	fprintf(fp, "\n");
-	fclose(fp);
+	fprintf(s_rebornCRCCheckpointFile, "\n");
+	fflush(s_rebornCRCCheckpointFile);
 }
+
 #endif
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 Bool inCRCGen = FALSE;
-UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
+UnsignedInt GameLogic::getCRC(Int mode, AsciiString deepCRCFileName)
 {
 	if (mode != CRC_RECALC)
 		return m_CRC;
+
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+	Bool rebornLogCRCCheckpoint = TRUE;
+
+	if (TheGameState)
+	{
+		AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+		if (mapName.compareNoCase("ShellMap1.map") == 0 ||
+			mapName.compareNoCase("ShellMapMD.map") == 0)
+		{
+			rebornLogCRCCheckpoint = FALSE;
+		}
+	}
+#endif
+
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+	if (!rebornLogCRCCheckpoint)
+	{
+		RebornSetRandomCheckpointLoggingEnabled(FALSE);
+	}
+#endif
 
 	setFPMode();
 
 	LatchRestore<Bool> latch(inCRCGen, !isInGameLogicUpdate());
 
-	XferCRC *xferCRC;
+	XferCRC* xferCRC;
 	AsciiString marker;
 	if (deepCRCFileName.isNotEmpty())
 	{
@@ -4186,7 +4285,7 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 		if (isInGameLogicUpdate() && g_keepCRCSaves && m_frame < 5)
 		{
 			xferCRC = NEW XferDeepCRC;
-			crcName.format("logicFrame%d.crc", (m_frame%5));
+			crcName.format("logicFrame%d.crc", (m_frame % 5));
 		}
 		else
 #endif // DEBUG_CRC
@@ -4198,30 +4297,36 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 	}
 
 	// calculate CRCs
-	Object *obj;
+	Object* obj;
 	DEBUG_ASSERTCRASH(this == TheGameLogic, ("Not in GameLogic"));
 	if (isInGameLogicUpdate())
 	{
 		CRCGEN_LOG(("CRC at start of frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | START | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | START | 0x%08X", m_frame, xferCRC->getCRC());
+		}
 #endif
 	}
 
 	marker = "MARKER:Objects";
 	xferCRC->xferAsciiString(&marker);
-	for( obj = m_objList; obj; obj=obj->getNextObject() )
+	for (obj = m_objList; obj; obj = obj->getNextObject())
 	{
-		xferCRC->xferSnapshot( obj );
+		xferCRC->xferSnapshot(obj);
 	}
 	UnsignedInt seed = GetGameLogicRandomSeedCRC();
 	if (isInGameLogicUpdate())
 	{
 		CRCGEN_LOG(("CRC after objects for frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | AFTER_OBJECTS | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | AFTER_OBJECTS | 0x%08X", m_frame, xferCRC->getCRC());
+		}
 #endif
 	}
 
@@ -4229,23 +4334,29 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 	{
 		CRCGEN_LOG(("RandomSeed: %d", seed));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | RANDOM_SEED | 0x%08X", m_frame, seed);
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | RANDOM_SEED | 0x%08X", m_frame, seed);
+		}
 #endif
 	}
 	if (xferCRC->getXferMode() == XFER_CRC)
 	{
-		xferCRC->xferUnsignedInt( &seed );
+		xferCRC->xferUnsignedInt(&seed);
 	}
 	marker = "MARKER:ThePartitionManager";
 	xferCRC->xferAsciiString(&marker);
-	xferCRC->xferSnapshot( ThePartitionManager );
+	xferCRC->xferSnapshot(ThePartitionManager);
 	if (isInGameLogicUpdate())
 	{
 		CRCGEN_LOG(("CRC after partition manager for frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | AFTER_PARTITION | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | AFTER_PARTITION | 0x%08X", m_frame, xferCRC->getCRC());
+		}
 #endif
 	}
 
@@ -4255,13 +4366,16 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 	{
 		marker = "MARKER:TheModuleFactory";
 		xferCRC->xferAsciiString(&marker);
-		xferCRC->xferSnapshot( TheModuleFactory );
+		xferCRC->xferSnapshot(TheModuleFactory);
 		if (isInGameLogicUpdate())
 		{
 			CRCGEN_LOG(("CRC after module factory for frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-			RebornCRCCheckpointLog("Frame %d | AFTER_MODULE_FACTORY | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+			if (rebornLogCRCCheckpoint)
+			{
+				RebornCRCCheckpointLog(m_frame, "Frame %d | AFTER_MODULE_FACTORY | 0x%08X", m_frame, xferCRC->getCRC());
+			}
 #endif
 		}
 	}
@@ -4269,25 +4383,31 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 
 	marker = "MARKER:ThePlayerList";
 	xferCRC->xferAsciiString(&marker);
-	xferCRC->xferSnapshot( ThePlayerList );
+	xferCRC->xferSnapshot(ThePlayerList);
 	if (isInGameLogicUpdate())
 	{
 		CRCGEN_LOG(("CRC after PlayerList for frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | AFTER_PLAYERLIST | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | AFTER_PLAYERLIST | 0x%08X", m_frame, xferCRC->getCRC());
+		}
 #endif
 	}
 
 	marker = "MARKER:TheAI";
 	xferCRC->xferAsciiString(&marker);
-	xferCRC->xferSnapshot( TheAI );
+	xferCRC->xferSnapshot(TheAI);
 	if (isInGameLogicUpdate())
 	{
 		CRCGEN_LOG(("CRC after AI for frame %d is 0x%8.8X", m_frame, xferCRC->getCRC()));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | AFTER_AI | 0x%08X", m_frame, xferCRC->getCRC());
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | AFTER_AI | 0x%08X", m_frame, xferCRC->getCRC());
+		}
 #endif
 	}
 
@@ -4309,8 +4429,11 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 	{
 		CRCGEN_LOG(("CRC for frame %d is 0x%8.8X", m_frame, theCRC));
 
-#if defined(_DEBUG)
-		RebornCRCCheckpointLog("Frame %d | FINAL | 0x%08X", m_frame, theCRC);
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+		if (rebornLogCRCCheckpoint)
+		{
+			RebornCRCCheckpointLog(m_frame, "Frame %d | FINAL | 0x%08X", m_frame, theCRC);
+		}
 #endif
 	}
 	return theCRC;

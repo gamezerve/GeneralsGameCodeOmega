@@ -83,7 +83,7 @@ if(RTS_BUILD_OPTION_REBORN)
     target_compile_definitions(core_config INTERFACE REBORN_BUILD)
 endif()
 
-# Define a dummy Tracy target when the build option is disabled.
+# Define a dummy Tracy target when the build option is disabled. 
 if(RTS_BUILD_OPTION_PROFILE_TRACY)
     include(cmake/tracy.cmake)
 else()

@@ -51,6 +51,10 @@ struct ClientRandomValueClass final : RandomValueClass
 	virtual Real GetRandomValueReal( Real lo, Real hi, const char *file, Int line ) const override;
 };
 
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+void RebornSetRandomCheckpointLoggingEnabled(Bool enabled);
+#endif
+
 // use these macros to access the random value functions
 #define RandomValueInt(randomValueClass, lo, hi) randomValueClass.GetRandomValueInt( lo, hi, __FILE__, __LINE__ )
 #define RandomValueReal(randomValueClass, lo, hi) randomValueClass.GetRandomValueReal( lo, hi, __FILE__, __LINE__ )

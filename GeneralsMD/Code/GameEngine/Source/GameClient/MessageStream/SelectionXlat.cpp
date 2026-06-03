@@ -444,6 +444,19 @@ static Bool addDrawableToRebornLassoList(Drawable* draw, void* userData)
 	return TRUE;
 }
 
+static void clearRebornLassoSelectionPreview(std::vector<ICoord2D>* points)
+{
+	if (points)
+	{
+		points->clear();
+	}
+
+	if (TheInGameUI)
+	{
+		TheInGameUI->setRebornLassoPoints(points ? *points : std::vector<ICoord2D>());
+	}
+}
+
 //-----------------------------------------------------------------------------
 /**
  * The SelectionTranslator is responsible for all selection semantics,
@@ -766,8 +779,7 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 					m_rebornLassoSelecting = FALSE;
 					m_rebornLassoHasMoved = FALSE;
 					m_rebornLassoAddToGroup = FALSE;
-					m_rebornLassoPoints.clear();
-					TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+					clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
 				}
 
 				break;
@@ -778,6 +790,14 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			const DrawableList *currentList = TheInGameUI->getAllSelectedDrawables();
 			if (!currentlyLookingForSelection())
 			{
+				if (rebornUseLassoSelection)
+				{
+					m_rebornLassoSelecting = FALSE;
+					m_rebornLassoHasMoved = FALSE;
+					m_rebornLassoAddToGroup = FALSE;
+					clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
+				}
+
 				break;
 			}
 
@@ -881,6 +901,19 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			else if (si.newCountEnemies > 0 && si.newCountCivilians > 0 && si.newCountFriends > 0)
 			{
 				// No go here
+				if (rebornUseLassoSelection)
+				{
+					m_rebornLassoSelecting = FALSE;
+					m_rebornLassoHasMoved = FALSE;
+					m_rebornLassoAddToGroup = FALSE;
+					clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
+
+					if (rebornRestoreForceAttackMode && TheKeyboard->isCtrl())
+					{
+						TheInGameUI->setForceAttackMode(TRUE);
+					}
+				}
+
 				break;
 			}
 			else if (si.newCountEnemies == 1)
@@ -902,6 +935,14 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 			// If we're not going to select anything, just bail now.
 			if (!(si.selectMine || si.selectEnemies || si.selectCivilians || si.selectFriends))
 			{
+				if (rebornUseLassoSelection)
+				{
+					m_rebornLassoSelecting = FALSE;
+					m_rebornLassoHasMoved = FALSE;
+					m_rebornLassoAddToGroup = FALSE;
+					clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
+				}
+
 				break;
 			}
 

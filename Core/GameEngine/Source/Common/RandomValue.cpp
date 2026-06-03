@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// RandomValue.cpp
+// RandomValue.cpp    
 // Pseudo-random number generators
 // Author: Michael S. Booth, January 1998
 
@@ -82,28 +82,139 @@ UnsignedInt GetGameLogicRandomSeedCRC()
 	return c.get();
 }
 
-#if defined(_DEBUG)
-static void RebornRandomCheckpointLog(const char* fmt, ...)
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
+
+static FILE* s_rebornRandomCheckpointFile = nullptr;
+static Bool s_rebornRandomCheckpointInitialized = FALSE;
+static Int s_rebornRandomCheckpointLastFrame = -1;
+
+static Bool s_rebornRandomCheckpointLoggingEnabled = FALSE;
+
+static Bool s_rebornRandomCheckpointGameStarted = FALSE;
+
+void RebornSetRandomCheckpointLoggingEnabled(Bool enabled)
 {
-	static Bool firstWrite = TRUE;
+	s_rebornRandomCheckpointLoggingEnabled = enabled;
+}
+
+static void RebornRandomCheckpointShutdown()
+{
+	if (s_rebornRandomCheckpointFile)
+	{
+		fclose(s_rebornRandomCheckpointFile);
+		s_rebornRandomCheckpointFile = nullptr;
+	}
+}
+
+static void RebornRandomCheckpointInit(Bool forceRotate)
+{
+	if (s_rebornRandomCheckpointInitialized && !forceRotate && s_rebornRandomCheckpointFile)
+		return;
+
+	if (s_rebornRandomCheckpointFile)
+	{
+		fclose(s_rebornRandomCheckpointFile);
+		s_rebornRandomCheckpointFile = nullptr;
+	}
+
+	char dirbuf[MAX_PATH];
+	::GetModuleFileName(nullptr, dirbuf, sizeof(dirbuf));
+
+	if (char* pEnd = strrchr(dirbuf, '\\'))
+	{
+		*(pEnd + 1) = 0;
+	}
+	else
+	{
+		dirbuf[0] = 0;
+	}
+	strlcat(dirbuf, "RebornStatus\\Logs\\", ARRAY_SIZE(dirbuf));
+	CreateDirectory("RebornStatus", nullptr);
+	CreateDirectory(dirbuf, nullptr);
 
 	char fname[MAX_PATH];
-	sprintf(fname, "RebornRandomCheckpoint_%lu.txt", GetCurrentProcessId());
+	char prevName[MAX_PATH];
 
-	FILE* fp = fopen(fname, firstWrite ? "wt" : "at");
-	firstWrite = FALSE;
+	snprintf(fname, sizeof(fname), "%sRebornRandomCheckpointD.txt", dirbuf);
+	snprintf(prevName, sizeof(prevName), "%sRebornRandomCheckpointPrevD.txt", dirbuf);
 
-	if (!fp)
+	remove(prevName);
+
+	if (rename(fname, prevName) != 0)
+	{
+		if (GetFileAttributes(fname) != INVALID_FILE_ATTRIBUTES)
+		{
+			DeleteFile(fname);
+		}
+	}
+
+	s_rebornRandomCheckpointFile = fopen(fname, "w");
+
+	s_rebornRandomCheckpointInitialized = TRUE;
+
+	static Bool registeredShutdown = FALSE;
+	if (!registeredShutdown)
+	{
+		atexit(RebornRandomCheckpointShutdown);
+		registeredShutdown = TRUE;
+	}
+}
+
+static Bool ShouldLogRebornRandomCheckpoint(Int frame)
+{
+	if (!s_rebornRandomCheckpointLoggingEnabled)
+		return FALSE;
+
+	if (!TheGameLogic)
+		return FALSE;
+
+	if (frame <= 0)
+		return FALSE;
+
+	return TRUE;
+}
+
+
+static void RebornRandomCheckpointLog(Int frame, const char* fmt, ...)
+{
+	if (!s_rebornRandomCheckpointLoggingEnabled)
+		return;
+
+	if (!TheGameLogic)
+		return;
+
+	if (frame <= 0)
+		return;
+
+	Bool forceRotate = FALSE;
+
+	if (s_rebornRandomCheckpointLastFrame > 100 && frame < s_rebornRandomCheckpointLastFrame)
+	{
+		if (frame < 100)
+		{
+			s_rebornRandomCheckpointLoggingEnabled = FALSE;
+			return;
+		}
+
+		forceRotate = TRUE;
+	}
+
+	s_rebornRandomCheckpointLastFrame = frame;
+
+	RebornRandomCheckpointInit(forceRotate);
+
+	if (!s_rebornRandomCheckpointFile)
 		return;
 
 	va_list args;
 	va_start(args, fmt);
-	vfprintf(fp, fmt, args);
+	vfprintf(s_rebornRandomCheckpointFile, fmt, args);
 	va_end(args);
 
-	fprintf(fp, "\n");
-	fclose(fp);
+	fprintf(s_rebornRandomCheckpointFile, "\n");
+	fflush(s_rebornRandomCheckpointFile);
 }
+
 #endif
 
 static void seedRandom(UnsignedInt SEED, UnsignedInt (&seed)[6])
@@ -308,16 +419,17 @@ Int GetGameLogicRandomValue( int lo, int hi, const char *file, int line )
 	const UnsignedInt delta = hi - lo + 1;
 #endif
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
 	const UnsignedInt beforeCRC = GetGameLogicRandomSeedCRC();
 #endif
 
 	const Int rval = ((Int)(randomValue(theGameLogicSeed) % delta)) + lo;
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
 	const UnsignedInt afterCRC = GetGameLogicRandomSeedCRC();
 
 	RebornRandomCheckpointLog(
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
 		"RANDOM_INT frame=%d before=0x%08X after=0x%08X rval=%d lo=%d hi=%d file=%s line=%d",
 		TheGameLogic ? TheGameLogic->getFrame() : -1,
 		beforeCRC,
@@ -354,16 +466,17 @@ Real GetGameLogicRandomValueReal( Real lo, Real hi, const char *file, int line )
 	const Real delta = hi - lo;
 #endif
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
 	const UnsignedInt beforeCRC = GetGameLogicRandomSeedCRC();
 #endif
 
 	const Real rval = ((Real)(randomValue(theGameLogicSeed)) * theMultFactor) * delta + lo;
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(RELEASE_DEBUG_LOGGING)
 	const UnsignedInt afterCRC = GetGameLogicRandomSeedCRC();
 
 	RebornRandomCheckpointLog(
+		TheGameLogic ? TheGameLogic->getFrame() : -1,
 		"RANDOM_REAL frame=%d before=0x%08X after=0x%08X rval=%f lo=%f hi=%f file=%s line=%d",
 		TheGameLogic ? TheGameLogic->getFrame() : -1,
 		beforeCRC,
