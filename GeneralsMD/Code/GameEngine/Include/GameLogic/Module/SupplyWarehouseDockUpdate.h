@@ -66,6 +66,8 @@ public:
 
 	Int getBoxesStored() const { return m_boxesStored; }
 
+	Int getStartingBoxesForTooltip() const;
+
 	const SupplyWarehouseDockUpdateModuleData* getSupplyWarehouseDockUpdateModuleDataForTooltip() const
 	{
 		return getSupplyWarehouseDockUpdateModuleData();
@@ -78,5 +80,6 @@ protected:
 
 
 	Int m_boxesStored;
+	Int m_rebornStartingBoxesOverride;
 
 };

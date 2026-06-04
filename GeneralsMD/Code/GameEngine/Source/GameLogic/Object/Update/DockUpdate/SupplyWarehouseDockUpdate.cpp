@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// FILE: SupplyWarehouseDockUpdate.h /////////////////////////////////////////////////////////////////////////////
+// FILE: SupplyWarehouseDockUpdate.cpp /////////////////////////////////////////////////////////////////////////////
 // Author: Graham Smallwood Feb 2002
 // Desc:   The action of this dock update is identifying who is docking and either taking Boxes away or giving them
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,9 +67,18 @@ SupplyWarehouseDockUpdateModuleData::SupplyWarehouseDockUpdateModuleData()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-SupplyWarehouseDockUpdate::SupplyWarehouseDockUpdate( Thing *thing, const ModuleData* moduleData ) : DockUpdate( thing, moduleData )
+SupplyWarehouseDockUpdate::SupplyWarehouseDockUpdate(Thing* thing, const ModuleData* moduleData) : DockUpdate(thing, moduleData)
 {
 	m_boxesStored = getSupplyWarehouseDockUpdateModuleData()->m_startingBoxesData;
+	m_rebornStartingBoxesOverride = 0;
+}
+
+Int SupplyWarehouseDockUpdate::getStartingBoxesForTooltip() const
+{
+	if (m_rebornStartingBoxesOverride > 0)
+		return m_rebornStartingBoxesOverride;
+
+	return getSupplyWarehouseDockUpdateModuleData()->m_startingBoxesData;
 }
 
 SupplyWarehouseDockUpdate::~SupplyWarehouseDockUpdate()
@@ -81,7 +90,7 @@ void SupplyWarehouseDockUpdate::onObjectCreated()
 	Drawable *draw = getObject()->getDrawable();
 	if( draw )
 	{
-		draw->updateDrawableSupplyStatus( getSupplyWarehouseDockUpdateModuleData()->m_startingBoxesData, m_boxesStored );
+		draw->updateDrawableSupplyStatus(getStartingBoxesForTooltip(), m_boxesStored);
 	}
 }
 
@@ -120,7 +129,7 @@ Bool SupplyWarehouseDockUpdate::action( Object* docker, Object *drone )
 			Drawable *draw = getObject()->getDrawable();
 			if( draw )
 			{
-				draw->updateDrawableSupplyStatus( getSupplyWarehouseDockUpdateModuleData()->m_startingBoxesData, m_boxesStored );
+				draw->updateDrawableSupplyStatus(getStartingBoxesForTooltip(), m_boxesStored);
 			}
 		}
 
@@ -171,10 +180,12 @@ void SupplyWarehouseDockUpdate::setCashValue( Int cashValue )
 {
 	// A script can tell us our set value, and we need to figure out the boxes needed to provide that.
 	m_boxesStored = ceil(cashValue / (float)TheGlobalData->m_baseValuePerSupplyBox);
+	m_rebornStartingBoxesOverride = m_boxesStored;
+
 	Drawable *draw = getObject()->getDrawable();
 	if( draw )
 	{
-		draw->updateDrawableSupplyStatus( getSupplyWarehouseDockUpdateModuleData()->m_startingBoxesData, m_boxesStored );
+		draw->updateDrawableSupplyStatus( getStartingBoxesForTooltip(), m_boxesStored );
 	}
 }
 
@@ -198,7 +209,7 @@ void SupplyWarehouseDockUpdate::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -207,6 +218,10 @@ void SupplyWarehouseDockUpdate::xfer( Xfer *xfer )
 
 	// boxes stored
 	xfer->xferInt( &m_boxesStored );
+	if (version >= 2)
+	{
+		xfer->xferInt(&m_rebornStartingBoxesOverride);
+	}
 
 }
 
@@ -220,10 +235,10 @@ void SupplyWarehouseDockUpdate::loadPostProcess()
 	DockUpdate::loadPostProcess();
 
 	// update the drawable supply status
-	const SupplyWarehouseDockUpdateModuleData *modData = getSupplyWarehouseDockUpdateModuleData();
+	//const SupplyWarehouseDockUpdateModuleData *modData = getSupplyWarehouseDockUpdateModuleData();
 	Object *us = getObject();
 	Drawable *draw = us->getDrawable();
 	if( draw )
-		draw->updateDrawableSupplyStatus( modData->m_startingBoxesData, m_boxesStored );
+		draw->updateDrawableSupplyStatus(getStartingBoxesForTooltip(), m_boxesStored);
 
 }

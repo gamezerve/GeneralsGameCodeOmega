@@ -2531,9 +2531,9 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 			if (g_resourceMultiplierPercent != 100)
 				value = (value * g_resourceMultiplierPercent) / 100;
 
-			const SupplyWarehouseDockUpdateModuleData* warehouseData = warehouseModule->getSupplyWarehouseDockUpdateModuleDataForTooltip();
+			//const SupplyWarehouseDockUpdateModuleData* warehouseData = warehouseModule->getSupplyWarehouseDockUpdateModuleDataForTooltip();
 
-			Int initialBoxes = warehouseData ? warehouseData->m_startingBoxesData : boxes;
+			Int initialBoxes = warehouseModule->getStartingBoxesForTooltip();
 			Int initialValue = initialBoxes * TheGlobalData->m_baseValuePerSupplyBox;
 
 			if (g_resourceMultiplierPercent != 100)
