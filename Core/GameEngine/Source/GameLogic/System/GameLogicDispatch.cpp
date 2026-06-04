@@ -340,6 +340,8 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 
 		void FixupScoreScreenMovieWindow();
 		FixupScoreScreenMovieWindow();
+
+		destroyQuitMenu();
 	}
 
 	TheGameEngine->reset();
