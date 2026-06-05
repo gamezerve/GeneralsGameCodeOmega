@@ -160,6 +160,8 @@ FileClass * WB_W3DFileSystem::Get_File( char const *filename )
 static CWorldBuilderApp theApp;
 HWND ApplicationHWnd = nullptr;
 
+extern void RebornDeletePreviewSoundTempFile();
+
 /**
 	* The ApplicationHInstance is needed for the WOL code,
 	* which needs it for the COM initialization of WOLAPI.DLL.
@@ -274,6 +276,8 @@ static LONG WINAPI UnHandledExceptionFilter(struct _EXCEPTION_POINTERS* e_info)
 BOOL CWorldBuilderApp::InitInstance()
 {
 	ApplicationHWnd = GetDesktopWindow();
+
+	RebornDeletePreviewSoundTempFile();
 
 	// initialization
 	SetUnhandledExceptionFilter(UnHandledExceptionFilter);
@@ -627,6 +631,7 @@ void CWorldBuilderApp::OnAppAbout()
 
 int CWorldBuilderApp::ExitInstance()
 {
+	RebornDeletePreviewSoundTempFile();
 
 	WriteProfileString(APP_SECTION, OPEN_FILE_DIR, m_currentDirectory.str());
 	m_currentDirectory.clear();

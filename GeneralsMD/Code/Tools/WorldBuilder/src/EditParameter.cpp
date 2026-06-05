@@ -27,6 +27,7 @@
 
 // This is used to allow sounds to be played via PlaySound
 #include <mmsystem.h>
+#include <stdio.h>
 
 #define DEFINE_BUILDABLE_STATUS_NAMES
 #define DEFINE_OBJECT_STATUS_NAMES
@@ -2375,6 +2376,82 @@ void EditParameter::OnCancel()
 	CDialog::OnCancel();
 }
 
+static AsciiString RebornGetPreviewSoundTempFilePath()
+{
+	char modulePath[MAX_PATH];
+
+	if (!::GetModuleFileName(nullptr, modulePath, sizeof(modulePath))) {
+		return AsciiString::TheEmptyString;
+	}
+
+	char* fileName = strrchr(modulePath, '\\');
+	if (fileName == nullptr) {
+		return AsciiString::TheEmptyString;
+	}
+
+	*(fileName + 1) = 0;
+
+	AsciiString tempDir = modulePath;
+	tempDir.concat("RebornStatus\\Temp\\");
+
+	::CreateDirectory("RebornStatus", nullptr);
+	::CreateDirectory(tempDir.str(), nullptr);
+
+	tempDir.concat("WorldBuilderPreview.wav");
+
+	return tempDir;
+}
+
+void RebornDeletePreviewSoundTempFile()
+{
+	AsciiString tempFile = RebornGetPreviewSoundTempFilePath();
+
+	if (!tempFile.isEmpty()) {
+		::DeleteFile(tempFile.str());
+	}
+}
+
+static Bool RebornExtractPreviewSoundToTempFile(const AsciiString& sourcePath, AsciiString& outTempPath)
+{
+	File* sourceFile = TheFileSystem->openFile(sourcePath.str(), File::READ | File::BINARY);
+	if (sourceFile == nullptr) {
+		return FALSE;
+	}
+
+	outTempPath = RebornGetPreviewSoundTempFilePath();
+
+	if (outTempPath.isEmpty()) {
+		sourceFile->close();
+		return FALSE;
+	}
+
+	::DeleteFile(outTempPath.str());
+
+	FILE* outFile = fopen(outTempPath.str(), "wb");
+	if (outFile == nullptr) {
+		sourceFile->close();
+		return FALSE;
+	}
+
+	char buffer[8192];
+
+	while (!sourceFile->eof()) {
+		Int bytesRead = sourceFile->read(buffer, sizeof(buffer));
+
+		if (bytesRead > 0) {
+			fwrite(buffer, 1, bytesRead, outFile);
+		}
+		else {
+			break;
+		}
+	}
+
+	fclose(outFile);
+	sourceFile->close();
+
+	return TRUE;
+}
+
 /* This function handles a left click on
    the "preview sound" button */
 void EditParameter::OnPreviewSound()
@@ -2445,13 +2522,22 @@ void EditParameter::OnPreviewSound()
 		comboText = AsciiString(txt);
 
 		//acquire and play song based on the string in the combo box
+//acquire and play song based on the string in the combo box
 		AudioEventRTS event;
 		event.setEventName(comboText);
 		event.setAudioEventInfo(TheAudio->findAudioEventInfo(comboText));
 		event.generateFilename();
-		DEBUG_LOG(("Preview Sound filename: %s", event.getFilename().str()));
+
 		if (!event.getFilename().isEmpty()) {
-			PlaySound(event.getFilename().str(), nullptr, SND_ASYNC | SND_FILENAME | SND_PURGE);
+			AsciiString previewFilename;
+
+			if (RebornExtractPreviewSoundToTempFile(event.getFilename(), previewFilename)) {
+				DEBUG_LOG(("Preview temp file: %s", previewFilename.str()));
+				PlaySound(previewFilename.str(), nullptr, SND_ASYNC | SND_FILENAME | SND_PURGE);
+			}
+			else {
+				PlaySound(event.getFilename().str(), nullptr, SND_ASYNC | SND_FILENAME | SND_PURGE);
+			}
 		}
 	}
 }
