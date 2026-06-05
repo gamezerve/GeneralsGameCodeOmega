@@ -45,10 +45,33 @@ void COptionsPanel::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+static void RebornEnsureOptionsPanelVisible(CWnd* window)
+{
+	if (!window || !::IsWindow(window->GetSafeHwnd()))
+		return;
+
+	CRect frameRect;
+	window->GetWindowRect(&frameRect);
+
+	if (::MonitorFromRect(&frameRect, MONITOR_DEFAULTTONULL))
+		return;
+
+	CRect workArea;
+	::SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+
+	window->SetWindowPos(
+		nullptr,
+		workArea.left + 50,
+		workArea.top + 50,
+		0,
+		0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
 
 BEGIN_MESSAGE_MAP(COptionsPanel, CDialog)
 	//{{AFX_MSG_MAP(COptionsPanel)
 	ON_WM_MOVE()
+	ON_WM_SHOWWINDOW()
 	ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
 	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
@@ -72,6 +95,13 @@ void COptionsPanel::OnMove(int x, int y)
 
 }
 
+void COptionsPanel::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialog::OnShowWindow(bShow, nStatus);
+
+	if (bShow && !IsIconic())
+		RebornEnsureOptionsPanelVisible(this);
+}
 
 void COptionsPanel::OnEditRedo()
 {

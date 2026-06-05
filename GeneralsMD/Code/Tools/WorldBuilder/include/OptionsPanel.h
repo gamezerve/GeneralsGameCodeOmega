@@ -54,6 +54,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(COptionsPanel)
 	afx_msg void OnMove(int x, int y);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnEditRedo();
 	afx_msg void OnUpdateEditRedo(CCmdUI* pCmdUI);
 	afx_msg void OnEditUndo();
