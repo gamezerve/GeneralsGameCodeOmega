@@ -23,6 +23,7 @@
 
 #include "GameLogic/SidesList.h"
 #include <map>
+#include <vector>
 
 class ListType  {
 public:
@@ -42,8 +43,11 @@ public:
 class ScriptList;
 class ScriptGroup;
 class Script;
+class ScriptAction;
+class Condition;
 class Parameter;
 class SearchResultsDialog;
+class ScriptDialog;
 
 /** Class Definition for overridden Tree control that
     supports Right-click context sensitive menu.*/
@@ -65,6 +69,7 @@ class ScriptDialog : public CDialog
 public:
 	ScriptDialog(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~ScriptDialog() override;   //  destructor
+	void FormatSelectedScriptDescription();
 
 // Dialog Data
 	//{{AFX_DATA(ScriptDialog)
@@ -79,6 +84,29 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
+
+	struct ScriptDescriptionLink
+	{
+		enum LinkType
+		{
+			LINK_CONDITION,
+			LINK_ACTION
+		};
+
+		LinkType type;
+		Condition* condition;
+		ScriptAction* action;
+		Int parameterIndex;
+		CHARRANGE range;
+	};
+
+	CRichEditCtrl m_scriptDescriptionRich;
+	std::vector<ScriptDescriptionLink> m_scriptDescriptionLinks;
+
+	void AddConditionPreviewLine(CString& text, Condition* condition, const char* prefix);
+	void AddActionPreviewLine(CString& text, ScriptAction* action, const char* prefix);
+
+	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
 
 // Implementation
 public:

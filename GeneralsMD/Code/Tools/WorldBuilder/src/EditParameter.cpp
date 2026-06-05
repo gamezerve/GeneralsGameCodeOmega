@@ -22,6 +22,8 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "WorldBuilder.h"
+#include "WorldBuilderDoc.h"
+#include "wbview3d.h"
 
 // This is used to allow sounds to be played via PlaySound
 #include <mmsystem.h>
@@ -54,6 +56,7 @@
 #include "GameClient/VideoPlayer.h"
 #include "GameClient/Anim2D.h"
 #include "GameClient/ShellHooks.h"
+#include "GameClient/View.h"
 
 #include "GameLogic/AI.h"
 #include "GameLogic/PolygonTrigger.h"
@@ -1772,6 +1775,7 @@ BOOL EditParameter::OnInitDialog()
 		case Parameter::WAYPOINT:
 			captionText = "Waypoint named:";
 			showCombo = true;
+			showAudioButton = true;
 			loadWaypoints(pCombo);
 			break;
 
@@ -1823,6 +1827,7 @@ BOOL EditParameter::OnInitDialog()
 		case Parameter::UNIT:
 			captionText = "Unit named:";
 			showCombo = true;
+			showAudioButton = true;
 			loadUnits(pCombo);
 			break;
 		case Parameter::OBJECT_TYPE:
@@ -2147,10 +2152,19 @@ BOOL EditParameter::OnInitDialog()
 	}
 	pCaption->SetWindowText(captionText);
 
-	CButton *previewSound = (CButton*)GetDlgItem(IDPREVIEWSOUND);
-	if (previewSound) {
-		previewSound->ShowWindow(showAudioButton ? SW_SHOW : SW_HIDE);
-	}
+	CButton *previewSound = (CButton*)GetDlgItem(IDC_PREVIEWSOUND);
+			if (m_parameter->getParameterType() == Parameter::WAYPOINT) {
+				previewSound->SetWindowText("Jump to WP");
+			}
+			else if (m_parameter->getParameterType() == Parameter::UNIT) {
+				previewSound->SetWindowText("Jump to Unit");
+			}
+			else {
+				previewSound->SetWindowText("Preview Sound");
+			}
+
+			previewSound->ShowWindow(showAudioButton ? SW_SHOW : SW_HIDE);
+	
 
 	return FALSE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -2368,11 +2382,65 @@ void EditParameter::OnPreviewSound()
 	CString txt;
 	AsciiString comboText;
 
+	if (m_parameter->getParameterType() == Parameter::WAYPOINT) {
+		CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO);
+		pCombo->GetWindowText(txt);
+		comboText = AsciiString(txt);
+
+		for (MapObject* pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
+			if (pObj->isWaypoint() && pObj->getWaypointName() == comboText) {
+				Coord3D pos = *pObj->getLocation();
+
+				CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+				if (pDoc) {
+					WbView3d* p3View = pDoc->GetActive3DView();
+					if (p3View) {
+						p3View->setCenterInView(pos.x / MAP_XY_FACTOR, pos.y / MAP_XY_FACTOR);
+					}
+				}
+				return;
+			}
+		}
+
+		MessageBeep(MB_ICONEXCLAMATION);
+		return;
+	}
+
+
+	if (m_parameter->getParameterType() == Parameter::UNIT) {
+		CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO);
+		pCombo->GetWindowText(txt);
+		comboText = AsciiString(txt);
+
+		for (MapObject* pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
+			Bool exists;
+			AsciiString objName = pObj->getProperties()->getAsciiString(TheKey_objectName, &exists);
+
+			if (exists && objName == comboText) {
+				Coord3D pos = *pObj->getLocation();
+
+				CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+				if (pDoc) {
+					WbView3d* p3View = pDoc->GetActive3DView();
+					if (p3View) {
+						p3View->setCenterInView(pos.x / MAP_XY_FACTOR, pos.y / MAP_XY_FACTOR);
+					}
+				}
+
+				return;
+			}
+		}
+
+		MessageBeep(MB_ICONEXCLAMATION);
+		return;
+	}
+
+
 	//only execute if the script in the combo box deals with sound
 	if (m_parameter->getParameterType() == Parameter::SOUND ||
-		  m_parameter->getParameterType() == Parameter::DIALOG ||
-		  m_parameter->getParameterType() == Parameter::MUSIC) {
-		CComboBox *pCombo = (CComboBox*)GetDlgItem(IDC_COMBO);
+		m_parameter->getParameterType() == Parameter::DIALOG ||
+		m_parameter->getParameterType() == Parameter::MUSIC) {
+		CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO);
 		pCombo->GetWindowText(txt);
 		comboText = AsciiString(txt);
 
@@ -2381,7 +2449,7 @@ void EditParameter::OnPreviewSound()
 		event.setEventName(comboText);
 		event.setAudioEventInfo(TheAudio->findAudioEventInfo(comboText));
 		event.generateFilename();
-
+		DEBUG_LOG(("Preview Sound filename: %s", event.getFilename().str()));
 		if (!event.getFilename().isEmpty()) {
 			PlaySound(event.getFilename().str(), nullptr, SND_ASYNC | SND_FILENAME | SND_PURGE);
 		}

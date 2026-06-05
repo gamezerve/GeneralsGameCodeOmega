@@ -465,10 +465,171 @@ void ScriptDialog::OnSelchangedScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 	pWnd = GetDlgItem(IDC_SCRIPT_COMMENT);
 	pWnd->SetWindowText(scriptComment.str());
 
-	pWnd = GetDlgItem(IDC_SCRIPT_DESCRIPTION);
-	pWnd->SetWindowText(scriptText.str());
+	FormatSelectedScriptDescription();
+
+
 
 	*pResult = 0;
+}
+
+void ScriptDialog::AddConditionPreviewLine(CString& text, Condition* condition, const char* prefix)
+{
+	const int base = text.GetLength();
+	text += prefix;
+	text += condition->getUiText().str();
+	text += "\n";
+
+	AsciiString strings[MAX_PARMS];
+	Int curChar = base + strlen(prefix);
+	Int numStrings = condition->getUiStrings(strings);
+
+	for (Int i = 0; i < MAX_PARMS; ++i)
+	{
+		if (i < numStrings)
+			curChar += strings[i].getLength();
+
+		if (i < condition->getNumParameters())
+		{
+			Int numChars = condition->getParameter(i)->getUiText().getLength();
+
+			ScriptDescriptionLink link;
+			link.type = ScriptDescriptionLink::LINK_CONDITION;
+			link.condition = condition;
+			link.action = nullptr;
+			link.parameterIndex = i;
+			link.range.cpMin = curChar;
+			link.range.cpMax = curChar + numChars;
+			m_scriptDescriptionLinks.push_back(link);
+
+			curChar += numChars;
+		}
+	}
+}
+
+void ScriptDialog::AddActionPreviewLine(CString& text, ScriptAction* action, const char* prefix)
+{
+	const int base = text.GetLength();
+	text += prefix;
+	text += action->getUiText().str();
+	text += "\n";
+
+	AsciiString strings[MAX_PARMS];
+	Int curChar = base + strlen(prefix);
+	Int numStrings = action->getUiStrings(strings);
+
+	for (Int i = 0; i < MAX_PARMS; ++i)
+	{
+		if (i < numStrings)
+			curChar += strings[i].getLength();
+
+		if (i < action->getNumParameters())
+		{
+			Int numChars = action->getParameter(i)->getUiText().getLength();
+
+			ScriptDescriptionLink link;
+			link.type = ScriptDescriptionLink::LINK_ACTION;
+			link.condition = nullptr;
+			link.action = action;
+			link.parameterIndex = i;
+			link.range.cpMin = curChar;
+			link.range.cpMax = curChar + numChars;
+			m_scriptDescriptionLinks.push_back(link);
+
+			curChar += numChars;
+		}
+	}
+}
+
+void ScriptDialog::FormatSelectedScriptDescription()
+{
+	m_scriptDescriptionLinks.clear();
+
+	Script* script = getCurScript();
+	CString text;
+
+	if (script)
+	{
+		text += "*** IF ***\n";
+
+		for (OrCondition* pOr = script->getOrCondition(); pOr; pOr = pOr->getNextOrCondition())
+		{
+			for (Condition* condition = pOr->getFirstAndCondition(); condition; condition = condition->getNext())
+				AddConditionPreviewLine(text, condition, "    ");
+		}
+
+		text += "*** THEN ***\n";
+
+		for (ScriptAction* action = script->getAction(); action; action = action->getNext())
+			AddActionPreviewLine(text, action, "    ");
+	}
+
+	m_scriptDescriptionRich.SetWindowText(text);
+	m_scriptDescriptionRich.SetSel(0, -1);
+
+	CHARFORMAT2 cf;
+	memset(&cf, 0, sizeof(cf));
+	cf.cbSize = sizeof(cf);
+	cf.dwMask = CFM_FACE | CFM_SIZE | CFM_CHARSET | CFM_BOLD | CFM_LINK | CFM_COLOR;
+	cf.bCharSet = DEFAULT_CHARSET;
+	cf.yHeight = 18;
+	cf.dwEffects = 0;
+	cf.crTextColor = RGB(0, 0, 0);
+	strcpy(cf.szFaceName, "MS Sans Serif");
+	m_scriptDescriptionRich.SetSelectionCharFormat(cf);
+
+	cf.dwMask = CFM_LINK | CFM_COLOR | CFM_UNDERLINE;
+	cf.dwEffects = CFE_LINK | CFE_UNDERLINE;
+	cf.crTextColor = RGB(0, 0, 255);
+
+	for (size_t i = 0; i < m_scriptDescriptionLinks.size(); ++i)
+	{
+		m_scriptDescriptionRich.SetSel(
+			m_scriptDescriptionLinks[i].range.cpMin,
+			m_scriptDescriptionLinks[i].range.cpMax);
+		m_scriptDescriptionRich.SetSelectionCharFormat(cf);
+	}
+
+	m_scriptDescriptionRich.SetSel(-1, -1);
+}
+
+BOOL ScriptDialog::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	NMHDR* hdr = (NMHDR*)lParam;
+
+	if (hdr && hdr->hwndFrom == m_scriptDescriptionRich.m_hWnd && hdr->code == EN_LINK)
+	{
+		ENLINK* link = (ENLINK*)lParam;
+
+		if (link->msg == WM_LBUTTONDOWN)
+		{
+			for (size_t i = 0; i < m_scriptDescriptionLinks.size(); ++i)
+			{
+				ScriptDescriptionLink& item = m_scriptDescriptionLinks[i];
+
+				if (link->chrg.cpMin >= item.range.cpMin && link->chrg.cpMin < item.range.cpMax)
+				{
+					if (item.type == ScriptDescriptionLink::LINK_CONDITION && item.condition)
+					{
+						EditParameter::edit(item.condition->getParameter(item.parameterIndex), 0);
+					}
+					else if (item.type == ScriptDescriptionLink::LINK_ACTION && item.action)
+					{
+						if (item.action->getParameter(item.parameterIndex)->getParameterType() == Parameter::COMMANDBUTTON_ABILITY)
+							EditParameter::edit(item.action->getParameter(item.parameterIndex), 0, item.action->getParameter(0)->getString());
+						else
+							EditParameter::edit(item.action->getParameter(item.parameterIndex), 0);
+					}
+
+					FormatSelectedScriptDescription();
+					updateWarnings();
+					updateIcons(TVI_ROOT);
+					return TRUE;
+				}
+			}
+		}
+	}
+
+	return CDialog::OnNotify(wParam, lParam, pResult);
 }
 
 /* The purpose of these two functions is to allow
@@ -965,6 +1126,23 @@ BOOL ScriptDialog::OnInitDialog()
 	//if user wants to check warnings manually, enable the verify button
 	CWnd *pWnd = GetDlgItem(IDC_VERIFY);
 	pWnd->EnableWindow(!m_autoUpdateWarnings);
+
+	CRect descRect;
+	CWnd* descWnd = GetDlgItem(IDC_SCRIPT_DESCRIPTION);
+	descWnd->GetWindowRect(&descRect);
+	ScreenToClient(&descRect);
+	descWnd->DestroyWindow();
+
+	m_scriptDescriptionRich.Create(
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+		descRect,
+		this,
+		IDC_SCRIPT_DESCRIPTION);
+
+	m_scriptDescriptionRich.SetBackgroundColor(FALSE, ::GetSysColor(COLOR_BTNFACE));
+	m_scriptDescriptionRich.SetFont(GetFont());
+	m_scriptDescriptionRich.SetEventMask(m_scriptDescriptionRich.GetEventMask() | ENM_LINK | ENM_SELCHANGE);
+	m_scriptDescriptionRich.SetReadOnly(TRUE);
 
 	m_staticThis = this;
 	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
