@@ -810,6 +810,8 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 		if (way->getName() == waypoint) {
 			Coord3D destination = *way->getLocation();
 			TheTacticalView->moveCameraTo(&destination, sec*1000, cameraStutterSec*1000, true, easeIn*1000.0f, easeOut*1000.0f);
+			DEBUG_LOG(("doMoveCameraTo: waypoint=%s destination=(%.2f, %.2f, %.2f), sec=%.2f",
+				waypoint.str(), destination.x, destination.y, destination.z, sec));
 			break;
 		}
 	}
@@ -865,16 +867,55 @@ static Bool shouldForceSetupCameraAngleForMap(const AsciiString& mapName)
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real pitch, const AsciiString& lookAtWaypoint)
 {
-	Waypoint *way = TheTerrainLogic->getWaypointByName(waypoint);
-	if (way==nullptr) return;
+	Waypoint* way = TheTerrainLogic->getWaypointByName(waypoint);
+	if (way == nullptr) return;
 	Coord3D	pos = *way->getLocation();
-	Waypoint *lookat = TheTerrainLogic->getWaypointByName(lookAtWaypoint);
-	if (lookat==nullptr) return;
+	Waypoint* lookat = TheTerrainLogic->getWaypointByName(lookAtWaypoint);
+	if (lookat == nullptr) return;
 	Coord3D destination = *lookat->getLocation();
+
+
+	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+	// CHI04 ending specific fix here
+	Bool rebornCHI04CameraFix =
+		!mapName.compareNoCase("CHI04.map") &&
+		!waypoint.compareNoCase("ENDING_cameraherobehind_pt1") &&
+		!lookAtWaypoint.compareNoCase("ENDING_cameraherobehind_lookat");
+
+	TheTacticalView->moveCameraTo(&pos, 0, 0, !rebornCHI04CameraFix, 0.0f, 0.0f);
+
+	if (rebornCHI04CameraFix)
+	{
+		TheTacticalView->moveCameraTo(&pos, 0, 0, false, 0.0f, 0.0f);
+
+		Vector2 dir(destination.x - pos.x, destination.y - pos.y);
+		Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+		}
+
+		TheTacticalView->pitchCamera(pitch, 1, 0.0f, 0.0f);
+		TheTacticalView->zoomCamera(zoom, 1, 0.0f, 0.0f);
+		return;
+	}
+	// CHI04 ending specific fix ends here
+
 	TheTacticalView->moveCameraTo(&pos, 0, 0, true, 0.0f, 0.0f);
 	TheTacticalView->cameraModLookToward(&destination);
 
-	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
 
 	if (shouldForceSetupCameraAngleForMap(mapName))  // Reborn: Gets the list from RebornCamera.ini
 	{
@@ -902,6 +943,8 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 
 	TheTacticalView->cameraModFinalPitch(pitch, 0.0f, 0.0f);
 	TheTacticalView->cameraModFinalZoom(zoom, 0.0f, 0.0f);
+
+
 }
 
 //-------------------------------------------------------------------------------------------------
