@@ -1845,6 +1845,12 @@ void W3DModelDraw::doStartOrStopParticleSys()
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::setHidden(Bool hidden)
 {
+	if (hidden)
+	{
+		hideAllMuzzleFlashes(m_curState, m_renderObject);
+		rebuildWeaponRecoilInfo(m_curState);
+	}
+
 	if (m_renderObject)
 		m_renderObject->Set_Hidden(hidden);
 
@@ -1857,8 +1863,9 @@ void W3DModelDraw::setHidden(Bool hidden)
 		m_terrainDecal->enableShadowRender(!hidden);
 
 	if (m_trackRenderObject && hidden)
-	{	const Coord3D* pos = getDrawable()->getPosition();
-		m_trackRenderObject->addCapEdgeToTrack(pos->x,pos->y);
+	{
+		const Coord3D* pos = getDrawable()->getPosition();
+		m_trackRenderObject->addCapEdgeToTrack(pos->x, pos->y);
 	}
 
 	doStartOrStopParticleSys();
@@ -2978,6 +2985,14 @@ static Bool textureSwapDiffers(
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 {
+	if (getDrawable() &&
+		getDrawable()->getTemplate() &&
+		!stricmp(getDrawable()->getTemplate()->getName().str(), "GLAVehicleCombatBike"))
+	{
+		DEBUG_LOG(("CombatBike setModelState -> %s",
+			newState ? newState->m_description.str() : "<null>"));
+	}
+
 	DEBUG_ASSERTCRASH(newState, ("invalid state in W3DModelDraw::setModelState"));
 
 #ifdef DEBUG_OBJECT_ID_EXISTS
@@ -3074,7 +3089,7 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 	stopClientParticleSystems();
 
 	// and always hide muzzle flashes, in case modelstate and model have crossed at the same time
-	hideAllMuzzleFlashes(newState, m_renderObject);
+	//hideAllMuzzleFlashes(newState, m_renderObject);
 
 	// note that different states might use the same model; for these, don't go thru the
 	// expense of creating a new render-object. (exception: if color is changing, or subobjs are changing,
@@ -3119,7 +3134,7 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 
 		newState->validateStuff(m_renderObject, draw->getScale(), getW3DModelDrawModuleData()->m_extraPublicBones);
 		// ensure that any muzzle flashes from the *new* state, start out hidden...
-//		hideAllMuzzleFlashes(newState, m_renderObject);//moved to above
+		hideAllMuzzleFlashes(newState, m_renderObject);//moved to above
 		rebuildWeaponRecoilInfo(newState);
 		doHideShowSubObjs(&newState->m_hideShowVec);
 
@@ -3244,6 +3259,7 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		//BONEPOS_DUMPREAL(getDrawable()->getScale());
 
 		newState->validateStuff(m_renderObject, getDrawable()->getScale(), getW3DModelDrawModuleData()->m_extraPublicBones);
+		hideAllMuzzleFlashes(newState, m_renderObject);
 		rebuildWeaponRecoilInfo(newState);
 
 		// ensure that any muzzle flashes from the *previous* state, are hidden...
@@ -3955,6 +3971,11 @@ Real W3DModelDraw::getAnimationScrubScalar() const
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::rebuildWeaponRecoilInfo(const ModelConditionInfo* state)
 {
+	if (m_curState != nullptr && m_renderObject != nullptr)
+	{
+		hideAllMuzzleFlashes(m_curState, m_renderObject);
+	}
+
 	Int wslot;
 
 	if (state == nullptr)
