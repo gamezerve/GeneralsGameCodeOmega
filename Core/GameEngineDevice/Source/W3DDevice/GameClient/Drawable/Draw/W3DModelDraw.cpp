@@ -3250,6 +3250,14 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 			//
 			m_renderObject->Set_Transform(transform);
 			onRenderObjRecreated();
+
+			TerrainDecalType decalType = draw->getTerrainDecalType();
+			if (decalType != TERRAIN_DECAL_NONE)
+			{
+				setTerrainDecal(decalType);
+				setTerrainDecalOpacity(1.0f);
+			}
+
 		}
 	}
 	else
