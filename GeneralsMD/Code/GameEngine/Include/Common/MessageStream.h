@@ -253,6 +253,8 @@ public:
 		MSG_META_END_FORCEMOVE,											///< exit force-move mode
 		MSG_META_BEGIN_WAYPOINTS,										///< enter waypoint mode
 		MSG_META_END_WAYPOINTS,											///< exit waypoint mode
+		MSG_META_BEGIN_POWER_MODE,									///< Reborn: enter Power Mode while the Z key is held
+		MSG_META_END_POWER_MODE,										///< Reborn: leave Power Mode when the Z key is released
 		MSG_META_BEGIN_PREFER_SELECTION,						///< The Shift key has been depressed alone
 		MSG_META_END_PREFER_SELECTION,							///< The Shift key has been released.
 

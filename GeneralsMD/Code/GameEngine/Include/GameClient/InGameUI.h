@@ -545,12 +545,15 @@ public:  // ********************************************************************
 
 	Bool isClientQuiet() const			{ return m_clientQuiet; }
 	Bool isInWaypointMode() const			{ return m_waypointMode; }
+	Bool isInPowerMode() const { return m_powerMode; }
 	Bool isInForceAttackMode() const	{ return m_forceAttackMode; }
 	Bool isInForceMoveToMode() const	{ return m_forceMoveToMode; }
 	Bool isInPreferSelectionMode() const { return m_preferSelection; }
 
 	void setClientQuiet( Bool enabled )  { m_clientQuiet = enabled; }
 	void setWaypointMode( Bool enabled )		{ m_waypointMode = enabled; }
+	void setPowerMode(Bool enabled);
+	void setMouseCursorForMode(Mouse::MouseCursor c) { setMouseCursor(c); }
 	void setForceMoveMode( Bool enabled )		{ m_forceMoveToMode = enabled; }
 	void setForceAttackMode( Bool enabled )		{ m_forceAttackMode = enabled; }
 	void setPreferSelectionMode( Bool enabled )		{ m_preferSelection = enabled; }
@@ -954,6 +957,7 @@ protected:
 	Color												m_popupMessageColor;
 
  	Bool												m_waypointMode;			///< are we in waypoint plotting mode?
+ 	Bool												m_powerMode;			///< Reborn: are we in temporary Power Mode while the Z key is held?
 	Bool												m_forceAttackMode;		///< are we in force attack mode?
 	Bool												m_forceMoveToMode;		///< are we in force move mode?
 	Bool												m_attackMoveToMode;	///< are we in attack move mode?

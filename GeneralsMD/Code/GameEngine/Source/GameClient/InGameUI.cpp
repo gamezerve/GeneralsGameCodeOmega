@@ -660,17 +660,21 @@ void InGameUI::loadPostProcess()
 }
 
 // ------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------
 void InGameUI::setMouseCursor(Mouse::MouseCursor c)
 {
 	if (!TheMouse)
 		return;
 
+	// Reborn: Never replace the RMB scrolling cursor.
+	if (m_powerMode && !m_isScrolling && c != Mouse::SCROLL)
+	{
+		c = Mouse::CANT_POWER;
+	}
+
 	TheMouse->setCursor(c);
 
 	if (m_mouseMode == MOUSEMODE_GUI_COMMAND && c != Mouse::ARROW && c != Mouse::SCROLL)
 		m_mouseModeCursor = c;
-
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1162,6 +1166,7 @@ InGameUI::InGameUI()
 	m_militarySubtitle = nullptr;
 	m_popupMessageData = nullptr;
 	m_waypointMode = FALSE;
+	m_powerMode = FALSE;
 	m_clientQuiet = FALSE;
 
 	m_messageColor1 = GameMakeColor( 255, 255, 255, 255 );
@@ -1350,6 +1355,7 @@ InGameUI::InGameUI()
 	m_currentIdleWorkerDisplay = -1;
 
 	m_waypointMode			= false;
+	m_powerMode         = false;
 	m_forceAttackMode		= false;
 	m_forceMoveToMode		= false;
 	m_attackMoveToMode	= false;
@@ -2965,6 +2971,29 @@ void InGameUI::createMouseoverHint( const GameMessage *msg )
 	else if (m_mouseMode != MOUSEMODE_DEFAULT && m_mouseMode != MOUSEMODE_BUILD_PLACE )
 	{
 		setMouseCursor((Mouse::MouseCursor)m_mouseModeCursor);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Enable or disable temporary Power Mode. */
+//-------------------------------------------------------------------------------------------------
+void InGameUI::setPowerMode(Bool enabled)
+{
+	m_powerMode = enabled;
+
+	// Reborn: Never override the RMB scroll cursor while scrolling is active.
+	if (m_isScrolling)
+	{
+		return;
+	}
+
+	if (m_powerMode)
+	{
+		setMouseCursor(Mouse::CANT_POWER);
+	}
+	else
+	{
+		setMouseCursor(Mouse::ARROW);
 	}
 }
 

@@ -484,6 +484,35 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 	}
 
 	GameMessage::Type t = msg->getType();
+
+	// Reborn: While Power Mode is active, block normal mouse selection actions.
+// Power Mode should be global and should not allow selecting, deselecting, or drag selecting objects.
+	if (TheInGameUI->isInPowerMode())
+	{
+		switch (t)
+		{
+		case GameMessage::MSG_MOUSE_LEFT_CLICK:
+		case GameMessage::MSG_MOUSE_LEFT_DOUBLE_CLICK:
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP:
+		case GameMessage::MSG_BEGIN_AREA_SELECTION_HINT:
+		case GameMessage::MSG_END_AREA_SELECTION_HINT:
+			m_leftMouseButtonIsDown = FALSE;
+			m_dragSelecting = FALSE;
+			m_rebornLassoSelecting = FALSE;
+			m_rebornLassoHasMoved = FALSE;
+			m_rebornLassoAddToGroup = FALSE;
+			m_rebornLassoPoints.clear();
+
+			TheInGameUI->setSelecting(FALSE);
+			TheInGameUI->endAreaSelectHint(nullptr);
+			TheInGameUI->setRebornLassoPoints(m_rebornLassoPoints);
+			TheTacticalView->setMouseLock(FALSE);
+
+			return DESTROY_MESSAGE;
+		}
+	}
+
 	switch (t)
 	{
 		case GameMessage::MSG_META_BEGIN_FORCEATTACK:
@@ -705,15 +734,15 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 						ignoreCommand = TRUE;
 					}
 				}
-				if( !ignoreCommand && !draw->getTemplate()->isKindOf( KINDOF_SHRUBBERY ) )
+				if (!ignoreCommand && !draw->getTemplate()->isKindOf(KINDOF_SHRUBBERY))
 				{
-					if( CanSelectDrawable( draw, FALSE ) )
+					if (CanSelectDrawable(draw, FALSE))
 					{
-						TheMouse->setCursor(Mouse::SELECTING);
+						TheInGameUI->setMouseCursorForMode(Mouse::SELECTING);
 					}
 					else
 					{
-						TheMouse->setCursor( Mouse::ARROW );
+						TheInGameUI->setMouseCursorForMode(Mouse::ARROW);
 					}
 				}
 			}

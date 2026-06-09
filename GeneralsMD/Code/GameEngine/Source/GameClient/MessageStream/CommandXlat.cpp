@@ -2492,6 +2492,19 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 	Real extentModAmount = 0.0f;
 #endif
 
+	// Reborn: While Power Mode is active, suppress normal gameplay mouse commands.
+	// Power Mode is a global targeting mode and should not issue move, attack,
+	// repair, rally point, or other context-sensitive orders.
+	if (TheInGameUI->isInPowerMode())
+	{
+		switch (t)
+		{
+		case GameMessage::MSG_MOUSE_LEFT_CLICK:
+		case GameMessage::MSG_MOUSE_LEFT_DOUBLE_CLICK:
+			return DESTROY_MESSAGE;
+		}
+	}
+
 	switch (t)
 	{
 		//-----------------------------------------------------------------------------------------
@@ -3717,6 +3730,18 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			TheInGameUI->setWaypointMode( false );
 			break;
 
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_BEGIN_POWER_MODE:
+			// Reborn: Test whether the Z down Power Mode event reaches CommandXlat.
+			DEBUG_LOG(("Reborn test: BEGIN_POWER_MODE reached."));
+			TheInGameUI->setPowerMode(TRUE);
+			break;
+
+		case GameMessage::MSG_META_END_POWER_MODE:
+			// Reborn: Test whether the Z up Power Mode event reaches CommandXlat.
+			DEBUG_LOG(("Reborn test: END_POWER_MODE reached."));
+			TheInGameUI->setPowerMode(FALSE);
+			break;
 
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_BEGIN_FORCEATTACK:

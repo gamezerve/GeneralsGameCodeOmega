@@ -237,6 +237,7 @@ public:
 		// ***** dont forget to update CursorININames[] *****
 		DISGUISE_AS_VEHICLE,
 		WAYPOINT,
+		CANT_POWER,    ///< Reborn: cursor shown while temporary Power Mode is active
 		OUTRANGE,
 		STAB_ATTACK_INVALID,
 		PLACE_CHARGE_INVALID,

@@ -1291,6 +1291,7 @@ Int Mouse::getCursorIndex(const AsciiString& name)
 		"PlaceBeacon",
 		"DisguiseAsVehicle",
 		"Waypoint",
+		"CantPower",    // Reborn: cursor shown while temporary Power Mode is active.
 		"OutRange",
 		"StabAttackInvalid",
 		"PlaceChargeInvalid",

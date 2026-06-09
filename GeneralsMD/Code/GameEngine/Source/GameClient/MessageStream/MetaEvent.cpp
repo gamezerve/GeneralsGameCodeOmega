@@ -167,6 +167,8 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "END_FORCEMOVE",														GameMessage::MSG_META_END_FORCEMOVE },
 	{ "BEGIN_WAYPOINTS",													GameMessage::MSG_META_BEGIN_WAYPOINTS },
 	{ "END_WAYPOINTS",														GameMessage::MSG_META_END_WAYPOINTS },
+	{ "BEGIN_POWER_MODE",													GameMessage::MSG_META_BEGIN_POWER_MODE },
+	{ "END_POWER_MODE",														GameMessage::MSG_META_END_POWER_MODE },
 	{ "BEGIN_PREFER_SELECTION",										GameMessage::MSG_META_BEGIN_PREFER_SELECTION },
 	{ "END_PREFER_SELECTION",											GameMessage::MSG_META_END_PREFER_SELECTION },
 
