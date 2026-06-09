@@ -97,6 +97,7 @@ static const char *const TheDrawableIconNames[] =
 	"BombTimed",
 	"BombRemote",
 	"Disabled",
+	"RebornPowerMode",
 	"BattlePlanIcon_Bombard",
 	"BattlePlanIcon_HoldTheLine",
 	"BattlePlanIcon_SeekAndDestroy",
@@ -285,6 +286,7 @@ const Int MAX_ENABLED_MODULES								= 16;
 	s_animationTemplates[ICON_BOMB_TIMED]				= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_BOMB_TIMED]);
 	s_animationTemplates[ICON_BOMB_REMOTE]			= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_BOMB_REMOTE]);
 	s_animationTemplates[ICON_DISABLED]					= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_DISABLED]);
+	s_animationTemplates[ICON_REBORN_POWER_MODE]            =	TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_REBORN_POWER_MODE]);
 	s_animationTemplates[ICON_BATTLEPLAN_BOMBARD]						= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_BATTLEPLAN_BOMBARD]);
 	s_animationTemplates[ICON_BATTLEPLAN_HOLDTHELINE]				= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_BATTLEPLAN_HOLDTHELINE]);
 	s_animationTemplates[ICON_BATTLEPLAN_SEARCHANDDESTROY]	= TheAnim2DCollection->findTemplate(TheDrawableIconNames[ICON_BATTLEPLAN_SEARCHANDDESTROY]);
@@ -3568,38 +3570,55 @@ void Drawable::drawBombed(const IRegion2D* healthBarRegion)
 void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 {
 
-	const Object *obj = getObject();
+	const Object* obj = getObject();
 
+	DrawableIconType iconType = ICON_INVALID;
 
 	//
 	// Disabled Emoticon /Lightning
 	//                   7/
-	if( obj->isDisabledByType( DISABLED_HACKED )
-		|| obj->isDisabledByType( DISABLED_PARALYZED )
-		|| obj->isDisabledByType( DISABLED_EMP )
-		|| obj->isDisabledByType( DISABLED_SUBDUED )
-		|| obj->isDisabledByType( DISABLED_UNDERPOWERED )
+	if (obj->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+	{
+		iconType = ICON_REBORN_POWER_MODE;
+	}
+	else if (obj->isDisabledByType(DISABLED_HACKED)
+		|| obj->isDisabledByType(DISABLED_PARALYZED)
+		|| obj->isDisabledByType(DISABLED_EMP)
+		|| obj->isDisabledByType(DISABLED_SUBDUED)
+		|| obj->isDisabledByType(DISABLED_UNDERPOWERED)
 		)
 	{
+		iconType = ICON_DISABLED;
+	}
+
+	if (iconType != ICON_INVALID)
+	{
 		// create icon if necessary
-		if( getIconInfo()->m_icon[ ICON_DISABLED ] == nullptr )
+		if (getIconInfo()->m_icon[iconType] == nullptr)
 		{
-			getIconInfo()->m_icon[ ICON_DISABLED ] = newInstance(Anim2D)
-			( s_animationTemplates[ ICON_DISABLED ], TheAnim2DCollection );
+			if (s_animationTemplates[iconType] == nullptr)
+			{
+				DEBUG_CRASH(("Drawable::drawDisabled - missing Anim2D template for icon '%s'",
+					drawableIconIndexToName(iconType)));
+				return;
+			}
+
+			getIconInfo()->m_icon[iconType] = newInstance(Anim2D)
+				(s_animationTemplates[iconType], TheAnim2DCollection);
 		}
 
 		// draw the icon
-		if( healthBarRegion )
+		if (healthBarRegion)
 		{
 			Int barHeight = healthBarRegion->hi.y - healthBarRegion->lo.y;
 
-			Int frameWidth = getIconInfo()->m_icon[ ICON_DISABLED ]->getCurrentFrameWidth();
-			Int frameHeight = getIconInfo()->m_icon[ ICON_DISABLED ]->getCurrentFrameHeight();
+			Int frameWidth = getIconInfo()->m_icon[iconType]->getCurrentFrameWidth();
+			Int frameHeight = getIconInfo()->m_icon[iconType]->getCurrentFrameHeight();
 
 #ifdef SCALE_ICONS_WITH_ZOOM_ML
 			// adjust the width to be a % of the health bar region size
 			Int barWidth = healthBarRegion->hi.x - healthBarRegion->lo.x;
-			Int size = REAL_TO_INT( barWidth * 0.3f );
+			Int size = REAL_TO_INT(barWidth * 0.3f);
 			frameHeight = REAL_TO_INT((INT_TO_REAL(size) / INT_TO_REAL(frameWidth)) * frameHeight);
 			frameWidth = size;
 #endif
@@ -3607,14 +3626,24 @@ void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 			ICoord2D screen;
 			screen.x = healthBarRegion->lo.x;
 			screen.y = healthBarRegion->hi.y - (frameHeight + barHeight);
-			getIconInfo()->m_icon[ ICON_DISABLED ]->draw( screen.x, screen.y, frameWidth, frameHeight );
+			getIconInfo()->m_icon[iconType]->draw(screen.x, screen.y, frameWidth, frameHeight);
 
+		}
+
+		if (iconType == ICON_DISABLED)
+		{
+			killIcon(ICON_REBORN_POWER_MODE);
+		}
+		else
+		{
+			killIcon(ICON_DISABLED);
 		}
 	}
 	else
 	{
 		// delete icon if necessary
 		killIcon(ICON_DISABLED);
+		killIcon(ICON_REBORN_POWER_MODE);
 
 	}
 
