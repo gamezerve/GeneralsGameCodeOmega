@@ -714,6 +714,21 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				break;
 			}
 
+			Object* obj = draw->getObject();
+
+			// Reborn: While Power Mode is active, show the valid Power Mode cursor when hovering
+			// one of our own completed power-producing objects. This does not change the existing power logic.
+			if (TheInGameUI->isInPowerMode() &&
+				obj &&
+				obj->isLocallyControlled() &&
+				!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+				obj->getTemplate()->getEnergyProduction() < 0)
+			{
+				TheInGameUI->setMouseCursorForMode(Mouse::POWER_MODE);
+				disp = DESTROY_MESSAGE;
+				break;
+			}
+
 			GameMessage::Type msgType = TheGameClient->evaluateContextCommand(draw, draw->getPosition(), CommandTranslator::EVALUATE_ONLY);
 			if( msgType == GameMessage::MSG_INVALID )
 			{

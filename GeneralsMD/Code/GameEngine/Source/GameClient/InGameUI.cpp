@@ -665,8 +665,9 @@ void InGameUI::setMouseCursor(Mouse::MouseCursor c)
 	if (!TheMouse)
 		return;
 
-	// Reborn: Never replace the RMB scrolling cursor.
-	if (m_powerMode && !m_isScrolling && c != Mouse::SCROLL)
+	// Reborn: Power Mode overrides normal cursors, but allows its own valid/invalid
+	// Power Mode cursors and preserves the RMB scrolling cursor.
+	if (m_powerMode && !m_isScrolling && c != Mouse::SCROLL && c != Mouse::POWER_MODE)
 	{
 		c = Mouse::CANT_POWER;
 	}
@@ -3071,6 +3072,15 @@ void InGameUI::createCommandHint( const GameMessage *msg )
 	//Add basic logic to determine if we can select a unit (or hint)
 	const Object *obj = draw ? draw->getObject() : nullptr;
 	Bool drawSelectable = CanSelectDrawable(draw, FALSE);
+
+	// Reborn: Show the valid Power Mode cursor over our own power-producing objects.
+// This only changes cursor feedback and does not modify the existing power logic.
+	if (isInPowerMode() && obj && obj->isLocallyControlled() && obj->getTemplate()->getEnergyProduction() < 0)
+	{
+		setMouseCursor(Mouse::POWER_MODE);
+		return;
+	}
+
 	if( !obj )
 	{
 		drawSelectable = false;

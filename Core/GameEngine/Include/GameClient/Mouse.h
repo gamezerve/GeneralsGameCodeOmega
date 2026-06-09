@@ -238,6 +238,7 @@ public:
 		DISGUISE_AS_VEHICLE,
 		WAYPOINT,
 		CANT_POWER,    ///< Reborn: cursor shown while temporary Power Mode is active
+		POWER_MODE,    ///< Reborn: cursor shown over valid Power Mode targets.
 		OUTRANGE,
 		STAB_ATTACK_INVALID,
 		PLACE_CHARGE_INVALID,
