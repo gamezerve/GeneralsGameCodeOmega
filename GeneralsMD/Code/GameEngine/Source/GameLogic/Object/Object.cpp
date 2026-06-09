@@ -2166,11 +2166,12 @@ void Object::setDisabledUntil( DisabledType type, UnsignedInt frame )
 		sound.setPosition( getPosition() );
 		TheAudio->addAudioEvent( &sound );
 	}
-	else if( type == DISABLED_UNDERPOWERED || type == DISABLED_EMP || type == DISABLED_SUBDUED || type == DISABLED_HACKED )
+	else if( type == DISABLED_UNDERPOWERED || type == DISABLED_REBORN_POWER_MODE || type == DISABLED_EMP || type == DISABLED_SUBDUED || type == DISABLED_HACKED )
 	{
 		//We've lost power -- make sure we aren't already out of power as the sounds shouldn't happen
 		//if you were already disabled.
 		if( !isDisabledByType( DISABLED_UNDERPOWERED ) &&
+				!isDisabledByType( DISABLED_REBORN_POWER_MODE) &&
 				!isDisabledByType( DISABLED_EMP ) &&
 				!isDisabledByType( DISABLED_SUBDUED ) &&
 				!isDisabledByType( DISABLED_HACKED ) )
@@ -2325,11 +2326,12 @@ Bool Object::clearDisabled( DisabledType type )
 		return FALSE;
 	}
 
-	if( type == DISABLED_UNDERPOWERED || type == DISABLED_EMP || type == DISABLED_SUBDUED || type == DISABLED_HACKED )
+	if( type == DISABLED_UNDERPOWERED || type == DISABLED_REBORN_POWER_MODE || type == DISABLED_EMP || type == DISABLED_SUBDUED || type == DISABLED_HACKED )
 	{
 		//We've regained power-- make sure we aren't still disabled by another type.
 	 	AudioEventRTS sound;
 		if( (!isDisabledByType( DISABLED_UNDERPOWERED ) || type == DISABLED_UNDERPOWERED ) &&
+				(!isDisabledByType( DISABLED_REBORN_POWER_MODE) || type == DISABLED_REBORN_POWER_MODE) &&
 				(!isDisabledByType( DISABLED_EMP ) || type == DISABLED_EMP ) &&
 				(!isDisabledByType( DISABLED_SUBDUED ) || type == DISABLED_SUBDUED ) &&
 				(!isDisabledByType( DISABLED_HACKED ) || type == DISABLED_HACKED ) )
@@ -3871,17 +3873,27 @@ void Object::updateObjValuesFromMapProperties(Dict* properties)
 }
 
 //-------------------------------------------------------------------------------------------------
-void Object::friend_adjustPowerForPlayer( Bool incoming )
+void Object::friend_adjustPowerForPlayer(Bool incoming)
 {
+	// Reborn: Objects manually disabled by Power Mode should not contribute to
+	// the player's energy pool. This also prevents save/load rebuilds from
+	// re-adding their energy consumption while the disabled flag is still active.
+	if (isDisabledByType(DISABLED_REBORN_POWER_MODE))
+	{
+		return;
+	}
+
 	if (isDisabled() && getTemplate()->getEnergyProduction() > 0)
 	{
 		// Disabledness only affects Producers, not Consumers.
+		// Reborn: Wrong comment above?
 		return;
 	}
 
 	if (incoming) {
 		getControllingPlayer()->getEnergy()->objectEnteringInfluence(this);
-	} else {
+	}
+	else {
 		getControllingPlayer()->getEnergy()->objectLeavingInfluence(this);
 	}
 }

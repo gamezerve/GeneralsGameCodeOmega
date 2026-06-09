@@ -3073,14 +3073,6 @@ void InGameUI::createCommandHint( const GameMessage *msg )
 	const Object *obj = draw ? draw->getObject() : nullptr;
 	Bool drawSelectable = CanSelectDrawable(draw, FALSE);
 
-	// Reborn: Show the valid Power Mode cursor over our own power-producing objects.
-// This only changes cursor feedback and does not modify the existing power logic.
-	if (isInPowerMode() && obj && obj->isLocallyControlled() && obj->getTemplate()->getEnergyProduction() < 0)
-	{
-		setMouseCursor(Mouse::POWER_MODE);
-		return;
-	}
-
 	if( !obj )
 	{
 		drawSelectable = false;

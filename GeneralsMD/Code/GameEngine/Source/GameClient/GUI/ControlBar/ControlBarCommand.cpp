@@ -1140,10 +1140,10 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 	Bool disabled = obj->isDisabled();
 
 	// if we are only disabled by being underpowered, and this button doesn't care, well, fix it
-	if (disabled
-			&& BitIsSet(command->getOptions(), IGNORES_UNDERPOWERED)
-			&& obj->getDisabledFlags().test(DISABLED_UNDERPOWERED)
-			&& obj->getDisabledFlags().count() == 1)
+	if (BitIsSet(command->getOptions(), IGNORES_UNDERPOWERED)
+		&& (obj->getDisabledFlags().test(DISABLED_UNDERPOWERED)
+			|| obj->getDisabledFlags().test(DISABLED_REBORN_POWER_MODE))
+		&& obj->getDisabledFlags().count() == 1)
 	{
 		disabled = false;
 	}
@@ -1157,6 +1157,7 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 				commandType != GUI_COMMAND_EXIT_CONTAINER &&
 				commandType != GUI_COMMAND_BEACON_DELETE &&
 				commandType != GUI_COMMAND_SET_RALLY_POINT &&
+				commandType != GUI_COMMAND_RESET_RALLY_POINT &&
 				commandType != GUI_COMMAND_STOP &&
 				commandType != GUI_COMMAND_SWITCH_WEAPON )
 		{

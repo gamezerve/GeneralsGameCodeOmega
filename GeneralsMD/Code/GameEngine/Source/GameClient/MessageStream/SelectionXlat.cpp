@@ -491,7 +491,6 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 	{
 		switch (t)
 		{
-		case GameMessage::MSG_MOUSE_LEFT_CLICK:
 		case GameMessage::MSG_MOUSE_LEFT_DOUBLE_CLICK:
 		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
 		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP:
@@ -716,8 +715,10 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 
 			Object* obj = draw->getObject();
 
+			GameMessage::Type msgType = TheGameClient->evaluateContextCommand(draw, draw->getPosition(), CommandTranslator::EVALUATE_ONLY);
+
 			// Reborn: While Power Mode is active, show the valid Power Mode cursor when hovering
-			// one of our own completed power-producing objects. This does not change the existing power logic.
+      // one of our own completed power-producing objects. This does not change the existing power logic.
 			if (TheInGameUI->isInPowerMode() &&
 				obj &&
 				obj->isLocallyControlled() &&
@@ -729,7 +730,6 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				break;
 			}
 
-			GameMessage::Type msgType = TheGameClient->evaluateContextCommand(draw, draw->getPosition(), CommandTranslator::EVALUATE_ONLY);
 			if( msgType == GameMessage::MSG_INVALID )
 			{
 				TheInGameUI->createMouseoverHint(msg); // this sets the cursor
@@ -768,6 +768,42 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_MOUSE_LEFT_CLICK:
 		{
+			if (TheInGameUI->isInPowerMode())
+			{
+				const IRegion2D& selectionRegion = msg->getArgument(0)->pixelRegion;
+				const ICoord2D& pixel = selectionRegion.lo;
+
+				UnsignedInt pickType = getPickTypesForContext(false);
+				Drawable* draw = TheTacticalView->pickDrawable(&pixel, false, (PickType)pickType);
+
+				if (draw)
+				{
+					Object* obj = draw->getObject();
+
+					if (obj &&
+						obj->isLocallyControlled() &&
+						!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+						obj->getTemplate()->getEnergyProduction() < 0)
+					{
+						// Reborn: Toggle manual Power Mode disabled state independently from player low power.
+						if (obj->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+						{
+							obj->clearDisabled(DISABLED_REBORN_POWER_MODE);
+							obj->friend_adjustPowerForPlayer(TRUE);
+						}
+						else
+						{
+							obj->friend_adjustPowerForPlayer(FALSE);
+							obj->setDisabled(DISABLED_REBORN_POWER_MODE);
+						}
+
+						return DESTROY_MESSAGE;
+					}
+				}
+
+				return DESTROY_MESSAGE;
+			}
+
 			// If the quit menu is visible, we need to not process left clicks through the selection translator.
 			if (TheInGameUI->isQuitMenuVisible())
 			{

@@ -47,6 +47,7 @@ enum DisabledType CPP_11(: Int)
 	DISABLED_PARALYZED,   //Battle plans have changed, and unit is confused/paralyzed
 	DISABLED_UNMANNED,		//Vehicle is unmanned
 	DISABLED_UNDERPOWERED,//Separate from ScriptUnderpowered, the owning player has insufficient power.  Energy status controls this
+	DISABLED_REBORN_POWER_MODE,    ///< Reborn: disabled by manual Power Mode, independent from player low power.
 	DISABLED_FREEFALL,    //This unit has been disabled via being in free fall
 
   DISABLED_AWESTRUCK,
