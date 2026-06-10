@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// MessageStream.cpp
+// MessageStream.cpp 
 // Implementation of the message stream
 // Author: Michael S. Booth, February 2001
 
@@ -595,6 +595,7 @@ const char *GameMessage::getCommandTypeAsString(GameMessage::Type t)
 	CASE_LABEL(MSG_DO_SPECIAL_POWER_AT_OBJECT)
 	CASE_LABEL(MSG_SET_RALLY_POINT)
 	CASE_LABEL(MSG_RESET_RALLY_POINT) // Reborn: Reset rally point to default
+	CASE_LABEL(MSG_REBORN_TOGGLE_POWER_MODE) // Reborn: Toggle Power Mode
 	CASE_LABEL(MSG_PURCHASE_SCIENCE)
 	CASE_LABEL(MSG_QUEUE_UPGRADE)
 	CASE_LABEL(MSG_CANCEL_UPGRADE)

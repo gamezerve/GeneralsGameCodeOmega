@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// SelectionXlat.cpp
+// SelectionXlat.cpp 
 // Message stream translator
 // Author: Michael S. Booth, January 2001
 
@@ -785,17 +785,9 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 						!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
 						obj->getTemplate()->getEnergyProduction() < 0)
 					{
-						// Reborn: Toggle manual Power Mode disabled state independently from player low power.
-						if (obj->isDisabledByType(DISABLED_REBORN_POWER_MODE))
-						{
-							obj->clearDisabled(DISABLED_REBORN_POWER_MODE);
-							obj->friend_adjustPowerForPlayer(TRUE);
-						}
-						else
-						{
-							obj->friend_adjustPowerForPlayer(FALSE);
-							obj->setDisabled(DISABLED_REBORN_POWER_MODE);
-						}
+						// Reborn: Send the Power Mode toggle through the logic message stream so it is replay-safe.
+						GameMessage* newMsg = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_TOGGLE_POWER_MODE);
+						newMsg->appendObjectIDArgument(obj->getID());
 
 						return DESTROY_MESSAGE;
 					}

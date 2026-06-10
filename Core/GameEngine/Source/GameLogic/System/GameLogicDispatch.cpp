@@ -565,6 +565,47 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
+
+		case GameMessage::MSG_REBORN_TOGGLE_POWER_MODE:
+		{
+			Object* obj = findObjectByID(msg->getArgument(0)->objectID);
+
+			if (!obj)
+				break;
+
+#if !RETAIL_COMPATIBLE_CRC
+			if (obj->getControllingPlayer() != msgPlayer)
+			{
+				DEBUG_CRASH(("MSG_REBORN_TOGGLE_POWER_MODE: Player '%ls' attempted to toggle Power Mode on object '%s' owned by player '%ls'.",
+					msgPlayer->getPlayerDisplayName().str(),
+					obj->getTemplate()->getName().str(),
+					obj->getControllingPlayer()->getPlayerDisplayName().str()));
+				break;
+			}
+#endif
+
+			if (obj->getControllingPlayer() != msgPlayer ||
+				obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) ||
+				obj->getTemplate()->getEnergyProduction() >= 0)
+			{
+				break;
+			}
+
+			if (obj->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+			{
+				obj->clearDisabled(DISABLED_REBORN_POWER_MODE);
+				obj->friend_adjustPowerForPlayer(TRUE);
+			}
+			else
+			{
+				obj->friend_adjustPowerForPlayer(FALSE);
+				obj->setDisabled(DISABLED_REBORN_POWER_MODE);
+			}
+
+			break;
+		}
+
+
 		// Reborn: The following messages are for the money request system. They are processed through the logic message stream to ensure that the resulting state changes are deterministic and properly synchronized in multiplayer and replay scenarios.
 		case GameMessage::MSG_REBORN_REQUEST_MONEY:
 		{
