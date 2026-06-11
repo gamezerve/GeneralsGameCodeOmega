@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// FILE: RepairDockUpdate.h ///////////////////////////////////////////////////////////////////////
+// FILE: RepairDockUpdate.cpp ///////////////////////////////////////////////////////////////////////
 // Author: Colin Day, June 2002
 // Desc:   The action of docking with a structure for repairs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,6 +94,9 @@ Bool RepairDockUpdate::action( Object *docker, Object *drone )
 	// sanity
 	if( docker == nullptr )
 		return FALSE;
+
+	if (getObject()->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+		return TRUE;
 
 	// get our module data
 	const RepairDockUpdateModuleData *modData = getRepairDockUpdateModuleData();

@@ -723,6 +723,7 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 				obj &&
 				obj->isLocallyControlled() &&
 				!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+				!obj->testStatus(OBJECT_STATUS_SOLD) &&
 				obj->getTemplate()->getEnergyProduction() < 0)
 			{
 				TheInGameUI->setMouseCursorForMode(Mouse::POWER_MODE);
@@ -783,6 +784,7 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 					if (obj &&
 						obj->isLocallyControlled() &&
 						!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+						!obj->testStatus(OBJECT_STATUS_SOLD) &&
 						obj->getTemplate()->getEnergyProduction() < 0)
 					{
 						// Reborn: Send the Power Mode toggle through the logic message stream so it is replay-safe.

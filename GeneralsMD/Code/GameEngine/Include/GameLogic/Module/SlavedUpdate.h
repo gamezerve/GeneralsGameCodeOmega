@@ -176,9 +176,13 @@ public:
 
 	virtual UpdateSleepTime update() override;	///< Deciding whether or not to make new guys
 
+	Bool isRebornExtention() const { return getSlavedUpdateModuleData()->m_isRebornExtention; }
+
 private:
 	void startSlavedEffects( const Object *slaver );	///< We have been marked as Slaved, so we can't be selected or move too far or other stuff
 	void stopSlavedEffects();		///< We are no longer slaved.
+
+	void syncRebornExtensionPowerMode(const Object* master);
 
 	ObjectID m_slaver;			///< To whom we are enslaved
 	Coord3D m_guardPointOffset;	///< Where we should go when not busy and still enslaved

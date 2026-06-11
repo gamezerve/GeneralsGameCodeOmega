@@ -61,6 +61,7 @@
 #include "GameLogic/Module/BodyModule.h"
 #include "GameLogic/Module/OpenContain.h"
 #include "GameLogic/Module/ProductionUpdate.h"
+#include "GameLogic/Module/SlavedUpdate.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/ScriptActions.h"
 #include "GameLogic/ScriptEngine.h"
@@ -278,6 +279,50 @@ static void doResetRallyPoint(Object* obj)
 	DEBUG_LOG(("Reset rally point requested for object '%s' (id=%d)",
 		obj->getTemplate()->getName().str(),
 		obj->getID()));
+}
+
+static void doSyncRebornPowerModeToExtentions(Object* obj, Bool enablePowerMode)
+{
+	if (!obj)
+		return;
+
+	for (Object* other = TheGameLogic->getFirstObject(); other; other = other->getNextObject())
+	{
+		if (other == obj)
+			continue;
+
+		for (BehaviorModule** module = other->getBehaviorModules(); *module; ++module)
+		{
+			SlavedUpdateInterface* sdu = (*module)->getSlavedUpdateInterface();
+
+			if (!sdu || sdu->getSlaverID() != obj->getID())
+				continue;
+
+			SlavedUpdate* slaved = static_cast<SlavedUpdate*>(sdu);
+
+			if (!slaved->isRebornExtention())
+				continue;
+
+			if (enablePowerMode)
+			{
+				if (other->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+				{
+					other->clearDisabled(DISABLED_REBORN_POWER_MODE);
+					other->friend_adjustPowerForPlayer(TRUE);
+				}
+			}
+			else
+			{
+				if (!other->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+				{
+					other->friend_adjustPowerForPlayer(FALSE);
+					other->setDisabled(DISABLED_REBORN_POWER_MODE);
+				}
+			}
+
+			break;
+		}
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -586,12 +631,15 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 
 			if (obj->getControllingPlayer() != msgPlayer ||
 				obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) ||
+				obj->testStatus(OBJECT_STATUS_SOLD) ||
 				obj->getTemplate()->getEnergyProduction() >= 0)
 			{
 				break;
 			}
 
-			if (obj->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+			Bool enablePowerMode = obj->isDisabledByType(DISABLED_REBORN_POWER_MODE);
+
+			if (enablePowerMode)
 			{
 				obj->clearDisabled(DISABLED_REBORN_POWER_MODE);
 				obj->friend_adjustPowerForPlayer(TRUE);
@@ -601,6 +649,8 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 				obj->friend_adjustPowerForPlayer(FALSE);
 				obj->setDisabled(DISABLED_REBORN_POWER_MODE);
 			}
+
+			doSyncRebornPowerModeToExtentions(obj, enablePowerMode);
 
 			break;
 		}

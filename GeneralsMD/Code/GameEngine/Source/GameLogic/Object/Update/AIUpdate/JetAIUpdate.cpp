@@ -1615,6 +1615,18 @@ public:
 	virtual StateReturnType update() override
 	{
 		Object* jet = getMachineOwner();
+
+		Object* airfield = TheGameLogic->findObjectByID(jet->getProducerID());
+
+		if (!airfield ||
+			airfield->isEffectivelyDead() ||
+			airfield->testStatus(OBJECT_STATUS_SOLD) ||
+			airfield->isDisabledByType(DISABLED_REBORN_POWER_MODE))
+		{
+			++m_reloadDoneFrame;
+			return STATE_CONTINUE;
+		}
+
 		UnsignedInt now = TheGameLogic->getFrame();
 		Bool allDone = true;
 		for (Int i = 0; i < WEAPONSLOT_COUNT;	++i)
