@@ -317,55 +317,57 @@ Bool SpecialPowerModule::isReady() const
 	* 0.5f = 50% ready
 	* 0.2f = 20% ready
 	* etc ... */
-//-------------------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------------------
 Real SpecialPowerModule::getPercentReady() const
 {
-	if( m_pausedCount > 0 && m_pausedPercent == 1.0f )
+	// get the module data
+	const SpecialPowerModuleData* modData = getSpecialPowerModuleData();
+
+	// sanity
+	if (modData->m_specialPowerTemplate == nullptr)
+		return 0.0f;
+
+	const Bool isSharedNSync = modData->m_specialPowerTemplate->isSharedNSync();
+
+	if (!isSharedNSync && m_pausedCount > 0 && m_pausedPercent == 1.0f)
 	{
-			//Don't consider it ready if paused.
+		//Don't consider it ready if paused.
 		return 0.99999f;
 	}
 
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
-	if( TheGlobalData->m_specialPowerUsesDelay == FALSE )
+	if (TheGlobalData->m_specialPowerUsesDelay == FALSE)
 		return 1.0f;
 #endif
 
 	// easy case ... is ready
-	if( isReady() )
+	if (isReady())
 		return 1.0f;
 
-	if( m_pausedCount > 0 )
+	if (!isSharedNSync && m_pausedCount > 0)
 	{
 		return m_pausedPercent;
 	}
-
-	// get the module data
-	const SpecialPowerModuleData *modData = getSpecialPowerModuleData();
-
-	// sanity
-	if( modData->m_specialPowerTemplate == nullptr )
-		return 0.0f;
 
 	UnsignedInt readyFrame = m_availableOnFrame;
 
 	//unless
 	const Object* obj = getObject();
-	if ( obj )
+	if (obj)
 	{
-		Player *player = getObject()->getControllingPlayer();
-		if ( player )
+		Player* player = getObject()->getControllingPlayer();
+		if (player)
 		{
-			if ( modData->m_specialPowerTemplate->isSharedNSync())
+			if (isSharedNSync)
 			{
-				readyFrame = player->getOrStartSpecialPowerReadyFrame( getSpecialPowerTemplate() );
+				readyFrame = player->getOrStartSpecialPowerReadyFrame(getSpecialPowerTemplate());
 			}
 		}
 	}
 
 	// calculate the percent
 	Real percent = 1.0f - ((readyFrame - TheGameLogic->getFrame()) /
-												 (Real)modData->m_specialPowerTemplate->getReloadTime());
+		(Real)modData->m_specialPowerTemplate->getReloadTime());
 
 	return percent;
 }
