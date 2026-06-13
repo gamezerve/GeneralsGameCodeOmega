@@ -1610,18 +1610,31 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			}
 			else if (bodyData)
 			{
+				Real displayMaxHealth = bodyData->m_maxHealth;
+
+				if (player && TheGameLogic->isInSinglePlayerGame())
+				{
+					Real healthFactor =
+						TheGlobalData->m_soloPlayerHealthBonusForDifficulty
+						[player->getPlayerType()]
+						[player->getPlayerDifficulty()];
+
+					displayMaxHealth *= healthFactor;
+				}
+
 				if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 				{
 					UnicodeString triggerUpgradeDisplay = getMaxHealthTriggerUpgradeDisplay(maxHealthUpgradeData);
 
-					healthText.format(L"Health: %.0f (+%.0f with %ls)",
-						bodyData->m_maxHealth,
+					healthText.format(
+						L"Health: %.0f (+%.0f with %ls)",
+						displayMaxHealth,
 						maxHealthUpgradeData->m_addMaxHealth,
 						triggerUpgradeDisplay.str());
 				}
 				else
 				{
-					healthText.format(L"Health: %.0f", bodyData->m_maxHealth);
+					healthText.format(L"Health: %.0f", displayMaxHealth);
 				}
 			}
 
