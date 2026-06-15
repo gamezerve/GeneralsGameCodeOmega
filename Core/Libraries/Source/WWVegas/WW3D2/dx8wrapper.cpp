@@ -292,7 +292,14 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
-		D3D8Lib = LoadLibrary("D3D8.DLL");
+#ifdef REBORN_BUILD
+		char d3d8Path[MAX_PATH];
+		GetSystemDirectoryA(d3d8Path, MAX_PATH);
+		strcat(d3d8Path, "\\D3D8.DLL");
+		D3D8Lib = LoadLibraryA(d3d8Path);
+#else
+		D3D8Lib = LoadLibraryA("D3D8.DLL");
+#endif
 
 		if (D3D8Lib == nullptr) return false;	// Return false at this point if init failed
 
