@@ -383,9 +383,9 @@ void DebugInit(int flags)
 			*(pEnd + 1) = 0;
 		}
 
-		strlcat(dirbuf, "RebornStatus\\Logs\\", ARRAY_SIZE(dirbuf));
+		strlcat(dirbuf, "RebornOmegaStatus\\Logs\\", ARRAY_SIZE(dirbuf));
 
-		CreateDirectory("RebornStatus", nullptr);
+		CreateDirectory("RebornOmegaStatus", nullptr);
 		CreateDirectory(dirbuf, nullptr);
 
 		static_assert(ARRAY_SIZE(theLogFileNamePrev) >= ARRAY_SIZE(dirbuf), "Incorrect array size");

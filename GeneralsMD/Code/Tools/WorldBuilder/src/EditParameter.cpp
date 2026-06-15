@@ -2392,9 +2392,9 @@ static AsciiString RebornGetPreviewSoundTempFilePath()
 	*(fileName + 1) = 0;
 
 	AsciiString tempDir = modulePath;
-	tempDir.concat("RebornStatus\\Temp\\");
+	tempDir.concat("RebornOmegaStatus\\Temp\\");
 
-	::CreateDirectory("RebornStatus", nullptr);
+	::CreateDirectory("RebornOmegaStatus", nullptr);
 	::CreateDirectory(tempDir.str(), nullptr);
 
 	tempDir.concat("WorldBuilderPreview.wav");

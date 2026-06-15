@@ -4163,8 +4163,8 @@ static void RebornCRCCheckpointInit(Bool forceRotate)
 	{
 		dirbuf[0] = 0;
 	}
-	strlcat(dirbuf, "RebornStatus\\Logs\\", ARRAY_SIZE(dirbuf));
-	CreateDirectory("RebornStatus", nullptr);
+	strlcat(dirbuf, "RebornOmegaStatus\\Logs\\", ARRAY_SIZE(dirbuf));
+	CreateDirectory("RebornOmegaStatus", nullptr);
 	CreateDirectory(dirbuf, nullptr);
 
 	char fname[MAX_PATH];

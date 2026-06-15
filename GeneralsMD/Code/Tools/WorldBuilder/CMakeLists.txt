@@ -235,7 +235,7 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     target_sources(z_worldbuilder PRIVATE res/WorldBuilder.rc)
 
     if(RTS_BUILD_OPTION_REBORN)
-        set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "Reborn Omega WorldBuilder 1.01${RTS_BUILD_OUTPUT_SUFFIX}")
+        set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "Reborn Omega WorldBuilder 1.02${RTS_BUILD_OUTPUT_SUFFIX}")
     else()
         set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "WorldBuilderZH${RTS_BUILD_OUTPUT_SUFFIX}")
     endif()

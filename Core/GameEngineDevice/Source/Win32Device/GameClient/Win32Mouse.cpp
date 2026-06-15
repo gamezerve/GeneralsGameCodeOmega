@@ -396,6 +396,33 @@ void Win32Mouse::initCursorResources()
 					}
 				}
 
+#ifdef REBORN_BUILD
+				if (!loaded)
+				{
+					AsciiString fname;
+
+					if (m_cursorInfo[cursor].numDirections > 1)
+						fname.format(
+							"RebornOmegaData\\Data\\Cursors\\%s%d.ANI",
+							m_cursorInfo[cursor].textureName.str(),
+							direction
+						);
+					else
+						fname.format(
+							"RebornOmegaData\\Data\\Cursors\\%s.ANI",
+							m_cursorInfo[cursor].textureName.str()
+						);
+
+					if (TheLocalFileSystem->doesFileExist(fname.str()))
+					{
+						cursorResources[cursor][direction] =
+							LoadCursorFromFile(fname.str());
+
+						loaded = TRUE;
+					}
+				}
+#endif
+
 				if (!loaded)
 					cursorResources[cursor][direction]=LoadCursorFromFile(resourcePath);
 				DEBUG_ASSERTCRASH(cursorResources[cursor][direction], ("MissingCursor %s",resourcePath));

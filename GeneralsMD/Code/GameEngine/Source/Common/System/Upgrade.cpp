@@ -261,13 +261,13 @@ void FlushThingTemplateUpgradeReport()
 	if (!g_upgradeReportDirty)
 		return;
 
-	CreateDirectoryA("RebornStatus", nullptr);
+	CreateDirectoryA("RebornOmegaStatus", nullptr);
 
-	FILE* fp = fopen("RebornStatus\\ThingTemplateUpgradeRefs.txt", "wt");
+	FILE* fp = fopen("RebornOmegaStatus\\ThingTemplateUpgradeRefs.txt", "wt");
 	if (fp == nullptr)
 		return;
 
-	FILE* overflowFp = fopen("RebornStatus\\ThingTemplateUpgradeRefs_TooManyEffectiveReferences.txt", "wt");
+	FILE* overflowFp = fopen("RebornOmegaStatus\\ThingTemplateUpgradeRefs_TooManyEffectiveReferences.txt", "wt");
 
 	for (std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator it = g_thingTemplateUpgradeReport.begin(); it != g_thingTemplateUpgradeReport.end(); ++it)
 	{
@@ -368,9 +368,9 @@ void FlushThingTemplateUpgradeReport()
 
 static void WriteUpgradeListFile(const UpgradeTemplate* head) // Reborn: writes a text file with the list of all upgrades
 {
-	CreateDirectoryA("RebornStatus", nullptr);
+	CreateDirectoryA("RebornOmegaStatus", nullptr);
 
-	FILE* fp = fopen("RebornStatus\\UpgradeList.txt", "wt");
+	FILE* fp = fopen("RebornOmegaStatus\\UpgradeList.txt", "wt");
 	if (!fp)
 		return;
 

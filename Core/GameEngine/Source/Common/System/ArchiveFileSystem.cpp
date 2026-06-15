@@ -218,7 +218,7 @@ void ArchiveFileSystem::loadMods()
 	const char* rebornArchives[] =
 	{
 		"RebornOmegaData\\RebornOmega_Art.pak",
-		"RebornOmegaData\\RebornOmega_Audio.pak",
+		//"RebornOmegaData\\RebornOmega_Audio.pak",
 		"RebornOmegaData\\RebornOmega_Data.pak",
 		"RebornOmegaData\\RebornOmega_Maps.pak",
 		"RebornOmegaData\\RebornOmega_Window.pak"
