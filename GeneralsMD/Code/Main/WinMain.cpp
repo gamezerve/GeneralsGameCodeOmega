@@ -870,7 +870,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// in release, the file only ever lives in the root dir
 #ifdef REBORN_BUILD
-			const char* loadScreenBitmapFile = "Install_Final_RO.bmp";
+			const char* loadScreenBitmapFile = "RebornOmegaData\\Install_Final_RO.bmp";
 #else
 			const char* loadScreenBitmapFile = "Install_Final.bmp";
 #endif

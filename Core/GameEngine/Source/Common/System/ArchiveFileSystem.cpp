@@ -212,6 +212,51 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 
 void ArchiveFileSystem::loadMods()
 {
+
+#ifdef REBORN_BUILD
+
+	const char* rebornArchives[] =
+	{
+		"RebornOmegaData\\RebornOmega_Art.pak",
+		"RebornOmegaData\\RebornOmega_Audio.pak",
+		"RebornOmegaData\\RebornOmega_Data.pak",
+		"RebornOmegaData\\RebornOmega_Maps.pak",
+		"RebornOmegaData\\RebornOmega_Window.pak"
+	};
+
+	for (int i = 0; i < ARRAY_SIZE(rebornArchives); ++i)
+	{
+		ArchiveFile* archiveFile = openArchiveFile(rebornArchives[i]);
+
+		if (archiveFile == nullptr)
+		{
+			char msg[512];
+
+			snprintf(
+				msg,
+				sizeof(msg),
+				"Required Reborn Omega archive is missing:\n\n%s",
+				rebornArchives[i]
+			);
+
+			MessageBoxA(
+				nullptr,
+				msg,
+				"Reborn Omega",
+				MB_OK | MB_ICONERROR
+			);
+
+			ExitProcess(1);
+		}
+
+		loadIntoDirectoryTree(archiveFile, TRUE);
+		m_archiveFileMap[rebornArchives[i]] = archiveFile;
+	}
+
+	return;
+
+#endif
+
 	if (TheGlobalData->m_modBIG.isNotEmpty())
 	{
 		ArchiveFile *archiveFile = openArchiveFile(TheGlobalData->m_modBIG.str());

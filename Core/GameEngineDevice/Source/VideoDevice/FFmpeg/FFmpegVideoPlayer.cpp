@@ -232,6 +232,43 @@ VideoStreamInterface*	FFmpegVideoPlayer::open( AsciiString movieTitle )
 	if (pVideo) {
 		DEBUG_LOG(("FFmpegVideoPlayer::createStream() - About to open bink file"));
 
+#ifdef REBORN_BUILD
+		{
+			char rebornLocalizedPath[_MAX_PATH];
+
+			snprintf(
+				rebornLocalizedPath,
+				ARRAY_SIZE(rebornLocalizedPath),
+				"RebornOmegaData/Data/%s/Movies/%s.%s",
+				GetRegistryLanguage().str(),
+				pVideo->m_filename.str(),
+				VIDEO_EXT
+			);
+
+			File* file = TheFileSystem->openFile(rebornLocalizedPath);
+
+			if (!file)
+			{
+				char rebornPath[_MAX_PATH];
+
+				snprintf(
+					rebornPath,
+					ARRAY_SIZE(rebornPath),
+					"RebornOmegaData/Data/Movies/%s.%s",
+					pVideo->m_filename.str(),
+					VIDEO_EXT
+				);
+
+				file = TheFileSystem->openFile(rebornPath);
+			}
+
+			if (file)
+			{
+				return createStream(file);
+			}
+		}
+#endif
+
 		if (TheGlobalData->m_modDir.isNotEmpty())
 		{
 			char filePath[ _MAX_PATH ];

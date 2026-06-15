@@ -224,6 +224,44 @@ VideoStreamInterface*	BinkVideoPlayer::open( AsciiString movieTitle )
 
 	const Video* pVideo = getVideo(movieTitle);
 	if (pVideo) {
+
+#ifdef REBORN_BUILD
+		{
+			char rebornLocalizedPath[_MAX_PATH];
+
+			snprintf(
+				rebornLocalizedPath,
+				ARRAY_SIZE(rebornLocalizedPath),
+				"RebornOmegaData/Data/%s/Movies/%s.%s",
+				GetRegistryLanguage().str(),
+				pVideo->m_filename.str(),
+				VIDEO_EXT
+			);
+
+			HBINK handle = BinkOpen(rebornLocalizedPath, BINKPRELOADALL);
+
+			if (!handle)
+			{
+				char rebornPath[_MAX_PATH];
+
+				snprintf(
+					rebornPath,
+					ARRAY_SIZE(rebornPath),
+					"RebornOmegaData/Data/Movies/%s.%s",
+					pVideo->m_filename.str(),
+					VIDEO_EXT
+				);
+
+				handle = BinkOpen(rebornPath, BINKPRELOADALL);
+			}
+
+			if (handle)
+			{
+				return createStream(handle);
+			}
+		}
+#endif
+
 		DEBUG_LOG(("BinkVideoPlayer::createStream() - About to open bink file"));
 
 		if (TheGlobalData->m_modDir.isNotEmpty())
