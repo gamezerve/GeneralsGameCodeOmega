@@ -332,6 +332,8 @@ BOOL CWorldBuilderApp::InitInstance()
 	initSubsystem(TheLocalFileSystem, (LocalFileSystem*)new Win32LocalFileSystem);
 	initSubsystem(TheArchiveFileSystem, (ArchiveFileSystem*)new Win32BIGFileSystem);
 
+	TheArchiveFileSystem->loadMods();
+
 	// Just for kicks, get the HINSTANCE that WOL would need
 	// if we were going to use it, which we aren't.
 	ApplicationHInstance = AfxGetInstanceHandle();
