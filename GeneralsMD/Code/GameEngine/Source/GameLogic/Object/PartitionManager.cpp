@@ -5504,6 +5504,18 @@ Bool PartitionFilterPossibleToAttack::allow(Object *objOther)
 		DEBUG_ASSERTCRASH(false, ("if the object is unable to attack at all, you should filter that out ahead of time!"));
 		return false;
 	}
+
+	// Reborn: Restored retail attack-target validation logic removed during a
+	// previous merge. Without this check, AI target acquisition systems could
+	// select invalid targets such as projectiles, poison fields, missiles, and
+	// other transient objects, causing Attack-Move and Guard behaviors to fail.
+	CanAttackResult result = m_obj->getAbleToAttackSpecificObject(m_attackType, objOther, m_commandSource);
+	if (result == ATTACKRESULT_POSSIBLE || result == ATTACKRESULT_POSSIBLE_AFTER_MOVING)
+	{
+		return TRUE;
+	}
+	// Reborn: End of restored retail target validation logic.
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
