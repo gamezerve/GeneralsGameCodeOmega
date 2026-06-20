@@ -321,8 +321,23 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 				
 				TheTacticalView->userSetAngleToDefault();
 				TheTacticalView->userSetPitchToDefault();
-				//TheTacticalView->userSetZoomToDefault();
-				TheTacticalView->userSetZoom(1.45f);
+
+				OptionPreferences prefs;
+				Bool useZoomOut = (prefs["UseMiddleMouseCameraZoomOut"] == "yes");
+
+				if (TheGameLogic)
+				{
+					GameMode mode = TheGameLogic->getGameMode();
+
+					if (mode == GAME_LAN || mode == GAME_INTERNET)
+						useZoomOut = FALSE;
+				}
+
+				if (useZoomOut)
+					TheTacticalView->userSetZoom(1.45f);
+				else
+					TheTacticalView->userSetZoomToDefault();
+
 			}
 
 			break;

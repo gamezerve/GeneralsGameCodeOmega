@@ -191,6 +191,7 @@ public:
 #endif
 	Real m_maxCameraHeight;
 	Real m_defaultMaxCameraHeight;
+	Bool m_middleMouseCameraZoomOut;
 	Real m_minCameraHeight;
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;

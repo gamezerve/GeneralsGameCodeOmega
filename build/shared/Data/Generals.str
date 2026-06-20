@@ -17274,6 +17274,10 @@ GUI:MaxCameraHeight
 "Camera Height"
 END
 
+GUI:ZoomFactor
+"MMB Camera Zoomout"
+END
+
 GUI:DownloadBytesRatio
 "%d / %d bytes"
 END
@@ -26172,6 +26176,10 @@ END
 
 TOOLTIP:CheckMaxCameraHeight
 "Override default camera height"
+END
+
+TOOLTIP:CheckZoomFactor
+"Enable middle mouse button zoomout which will increase the camera height about 1.45x (disabled by default in network games)"
 END
 
 TOOLTIP:DownloadProgress

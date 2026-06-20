@@ -108,6 +108,9 @@ static GameWindow *		checkRetaliation		= nullptr;
 static NameKeyType		checkMaxCameraHeightID = NAMEKEY_INVALID;
 static GameWindow* checkMaxCameraHeight = nullptr;
 
+static NameKeyType checkZoomFactorID = NAMEKEY_INVALID;
+static GameWindow* checkZoomFactor = nullptr;
+
 static NameKeyType		textEntryMaxCameraHeightID = NAMEKEY_INVALID;
 static GameWindow* textEntryMaxCameraHeight = nullptr;
 
@@ -601,13 +604,14 @@ static void saveOptions()
 			AsciiString aStr;
 			aStr.translate(uStr);
 
+			Real oldValue = TheGlobalData->m_maxCameraHeight;
 			Real value = (Real)atof(aStr.str());
 
 			value = clamp(310.0f, value, 750.0f);
 
 			TheWritableGlobalData->m_maxCameraHeight = value;
 
-			if (TheTacticalView)
+			if (oldValue != value && TheTacticalView)
 			{
 				TheTacticalView->setMaxHeightAboveGround(value);
 				TheTacticalView->setHeightAboveGround(value);
@@ -624,12 +628,16 @@ static void saveOptions()
 		}
 		else
 		{
-			TheWritableGlobalData->m_maxCameraHeight = TheGlobalData->m_defaultMaxCameraHeight;
 
-			if (TheTacticalView)
+			Real oldValue = TheGlobalData->m_maxCameraHeight;
+			Real value = TheGlobalData->m_defaultMaxCameraHeight;
+
+			TheWritableGlobalData->m_maxCameraHeight = value;
+
+			if (oldValue != value && TheTacticalView)
 			{
-				TheTacticalView->setMaxHeightAboveGround(TheGlobalData->m_defaultMaxCameraHeight);
-				TheTacticalView->setHeightAboveGround(TheGlobalData->m_defaultMaxCameraHeight);
+				TheTacticalView->setMaxHeightAboveGround(value);
+				TheTacticalView->setHeightAboveGround(value);
 				TheTacticalView->setZoom(1.0f);
 			}
 
@@ -639,6 +647,13 @@ static void saveOptions()
 			uStr.translate(aStr);
 			GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 		}
+	}
+
+	if (checkZoomFactor)
+	{
+		Bool enabled = GadgetCheckBoxIsChecked(checkZoomFactor);
+		(*pref)["UseMiddleMouseCameraZoomOut"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
 	}
 
 	//-------------------------------------------------------------------------------------------------
@@ -1054,6 +1069,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkRetaliationID = GetOptionsMenuChildKey("Retaliation");
 	checkMaxCameraHeightID = GetOptionsMenuChildKey("CheckMaxCameraHeight");
 	textEntryMaxCameraHeightID = GetOptionsMenuChildKey("TextEntryMaxCameraHeight");
+	checkZoomFactorID = GetOptionsMenuChildKey("CheckZoomFactor");
 	checkDoubleClickAttackMoveID = GetOptionsMenuChildKey("CheckDoubleClickAttackMove");
 	sliderScrollSpeedID = GetOptionsMenuChildKey("SliderScrollSpeed");
 	comboBoxAntiAliasingID = GetOptionsMenuChildKey("ComboBoxAntiAliasing");
@@ -1105,6 +1121,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, checkMaxCameraHeightID);
 	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, textEntryMaxCameraHeightID);
+	checkZoomFactor = TheWindowManager->winGetWindowFromId(nullptr, checkZoomFactorID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1326,6 +1343,11 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 		textEntryMaxCameraHeight->winEnable(useCustomMaxCameraHeight);
 	}
+
+	Bool useZoomFactor = ((*pref)["UseMiddleMouseCameraZoomOut"] == "yes");
+
+	if (checkZoomFactor)
+		GadgetCheckBoxSetChecked(checkZoomFactor, useZoomFactor);
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];

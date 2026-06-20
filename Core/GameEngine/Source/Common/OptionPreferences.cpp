@@ -57,6 +57,9 @@ OptionPreferences::OptionPreferences()
 		value = clamp(310.0f, value, 750.0f);
 		TheWritableGlobalData->m_maxCameraHeight = value;
 	}
+
+	TheWritableGlobalData->m_middleMouseCameraZoomOut =
+		((*this)["UseMiddleMouseCameraZoomOut"] == "yes");
 }
 
 OptionPreferences::~OptionPreferences()
