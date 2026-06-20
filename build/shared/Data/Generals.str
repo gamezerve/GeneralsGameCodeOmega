@@ -15998,6 +15998,10 @@ GUI:Accept
 "ACCEPT"
 END
 
+GUI:RandomMap
+"Random Map"
+END
+
 GUI:AcceptSm
 "ACCEPT"
 END

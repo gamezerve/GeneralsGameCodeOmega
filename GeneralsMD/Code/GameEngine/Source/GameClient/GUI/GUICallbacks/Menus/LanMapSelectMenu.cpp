@@ -48,6 +48,7 @@
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonBack = NAMEKEY_INVALID;
 static NameKeyType buttonOK = NAMEKEY_INVALID;
+static NameKeyType buttonRandomMap = NAMEKEY_INVALID;
 static NameKeyType listboxMap = NAMEKEY_INVALID;
 static NameKeyType winMapPreviewID = NAMEKEY_INVALID;
 static GameWindow *parent = nullptr;
@@ -138,6 +139,7 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 
 	buttonBack = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonBack" );
 	buttonOK = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonOK" );
+	buttonRandomMap = TheNameKeyGenerator->nameToKey("LanMapSelectMenu.wnd:ButtonRandomMap");
 	listboxMap = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ListboxMap" );
 	winMapPreviewID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:WinMapPreview" );
 
@@ -402,6 +404,45 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					showLANGameOptionsUnderlyingGUIElements(TRUE);
 					PostToLanGameOptions(SEND_GAME_OPTS);
 
+				}
+			}
+			else if (controlID == buttonRandomMap)
+			{
+				Int playerCount = TheLAN->GetMyGame()->getNumPlayers();
+
+				std::vector<AsciiString> validMaps;
+
+				for (std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+				{
+					const MapMetaData& mmd = it->second;
+
+					if (mmd.m_numPlayers >= playerCount)
+						validMaps.push_back(it->first);
+				}
+
+				if (!validMaps.empty())
+				{
+					Int randomIndex = GameClientRandomValue(0, validMaps.size() - 1);
+					AsciiString randomMap = validMaps[randomIndex];
+
+					const MapMetaData* md = TheMapCache->findMap(randomMap);
+					if (md)
+					{
+						if (md->m_isOfficial)
+						{
+							GameWindow* radioButtonSystemMaps = TheWindowManager->winGetWindowFromId(parent, radioButtonSystemMapsID);
+							GadgetRadioSetSelection(radioButtonSystemMaps, FALSE);
+
+							populateMapListbox(mapList, TRUE, TRUE, randomMap);
+						}
+						else
+						{
+							GameWindow* radioButtonUserMaps = TheWindowManager->winGetWindowFromId(parent, radioButtonUserMapsID);
+							GadgetRadioSetSelection(radioButtonUserMaps, FALSE);
+
+							populateMapListbox(mapList, FALSE, TRUE, randomMap);
+						}
+					}
 				}
 			}
 
