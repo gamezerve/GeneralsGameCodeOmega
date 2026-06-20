@@ -105,6 +105,12 @@ static GameWindow *		checkAlternateMouse		= nullptr;
 static NameKeyType		checkRetaliationID	= NAMEKEY_INVALID;
 static GameWindow *		checkRetaliation		= nullptr;
 
+static NameKeyType		checkMaxCameraHeightID = NAMEKEY_INVALID;
+static GameWindow* checkMaxCameraHeight = nullptr;
+
+static NameKeyType		textEntryMaxCameraHeightID = NAMEKEY_INVALID;
+static GameWindow* textEntryMaxCameraHeight = nullptr;
+
 static NameKeyType		checkDoubleClickAttackMoveID	= NAMEKEY_INVALID;
 static GameWindow *		checkDoubleClickAttackMove		= nullptr;
 
@@ -583,6 +589,59 @@ static void saveOptions()
 	}
 
 	//-------------------------------------------------------------------------------------------------
+	// Max Camera Height
+	if (checkMaxCameraHeight && textEntryMaxCameraHeight)
+	{
+		Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+		(*pref)["UseCustomMaxCameraHeight"] = enabled ? "yes" : "no";
+
+		if (enabled)
+		{
+			UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+			AsciiString aStr;
+			aStr.translate(uStr);
+
+			Real value = (Real)atof(aStr.str());
+
+			value = clamp(310.0f, value, 750.0f);
+
+			TheWritableGlobalData->m_maxCameraHeight = value;
+
+			if (TheTacticalView)
+			{
+				TheTacticalView->setMaxHeightAboveGround(value);
+				TheTacticalView->setHeightAboveGround(value);
+				TheTacticalView->setZoom(1.0f);
+			}
+
+			AsciiString prefString;
+			prefString.format("%.0f", value);
+			(*pref)["MaxCameraHeight"] = prefString;
+
+			UnicodeString correctedUStr;
+			correctedUStr.translate(prefString);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, correctedUStr);
+		}
+		else
+		{
+			TheWritableGlobalData->m_maxCameraHeight = TheGlobalData->m_defaultMaxCameraHeight;
+
+			if (TheTacticalView)
+			{
+				TheTacticalView->setMaxHeightAboveGround(TheGlobalData->m_defaultMaxCameraHeight);
+				TheTacticalView->setHeightAboveGround(TheGlobalData->m_defaultMaxCameraHeight);
+				TheTacticalView->setZoom(1.0f);
+			}
+
+			UnicodeString uStr;
+			AsciiString aStr;
+			aStr.format("%.0f", TheGlobalData->m_defaultMaxCameraHeight);
+			uStr.translate(aStr);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+		}
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	// antialiasing
   GadgetComboBoxGetSelectedPos(comboBoxAntiAliasing, &index);
   if( index >= 0 )
@@ -993,6 +1052,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	comboBoxOnlineIPID = GetOptionsMenuChildKey("ComboBoxOnlineIP");
 	checkAlternateMouseID = GetOptionsMenuChildKey("CheckAlternateMouse");
 	checkRetaliationID = GetOptionsMenuChildKey("Retaliation");
+	checkMaxCameraHeightID = GetOptionsMenuChildKey("CheckMaxCameraHeight");
+	textEntryMaxCameraHeightID = GetOptionsMenuChildKey("TextEntryMaxCameraHeight");
 	checkDoubleClickAttackMoveID = GetOptionsMenuChildKey("CheckDoubleClickAttackMove");
 	sliderScrollSpeedID = GetOptionsMenuChildKey("SliderScrollSpeed");
 	comboBoxAntiAliasingID = GetOptionsMenuChildKey("ComboBoxAntiAliasing");
@@ -1041,6 +1102,10 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkAlternateMouse	   = TheWindowManager->winGetWindowFromId( nullptr, checkAlternateMouseID);
 	//checkRetaliationID		 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Retaliation" );
 	checkRetaliation	     = TheWindowManager->winGetWindowFromId( nullptr, checkRetaliationID);
+
+	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, checkMaxCameraHeightID);
+	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, textEntryMaxCameraHeightID);
+
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
 	//sliderScrollSpeedID	   = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderScrollSpeed" );
@@ -1238,6 +1303,28 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 				uStr.translate(aStr);
 			}
 			GadgetTextEntrySetText(textEntryFirewallPortOverride,uStr);
+	}
+
+	// Max Camera Height
+
+	Bool useCustomMaxCameraHeight = ((*pref)["UseCustomMaxCameraHeight"] == "yes");
+
+	if (checkMaxCameraHeight)
+		GadgetCheckBoxSetChecked(checkMaxCameraHeight, useCustomMaxCameraHeight);
+
+	if (textEntryMaxCameraHeight)
+	{
+		UnicodeString uStr;
+		AsciiString aStr;
+
+		if (useCustomMaxCameraHeight && !(*pref)["MaxCameraHeight"].isEmpty())
+			aStr = (*pref)["MaxCameraHeight"];
+		else
+			aStr.format("%.0f", TheGlobalData->m_maxCameraHeight);
+
+		uStr.translate(aStr);
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+		textEntryMaxCameraHeight->winEnable(useCustomMaxCameraHeight);
 	}
 
 	// populate anti aliasing modes
@@ -1506,6 +1593,18 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 //
 //		if (checkAudioHardware)
 //			checkAudioHardware->winEnable(FALSE);
+
+		GameMode mode = TheGameLogic->getGameMode();
+
+		if (mode == GAME_LAN || mode == GAME_INTERNET)
+		{
+			if (checkMaxCameraHeight)
+				checkMaxCameraHeight->winEnable(FALSE);
+
+			if (textEntryMaxCameraHeight)
+				textEntryMaxCameraHeight->winEnable(FALSE);
+		}
+
 	}
 
 
@@ -1745,6 +1844,26 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				//TheShell->push( "Menus/KeyboardOptionsMenu.wnd" );
 				TheShell->push(GetOptionsMenuLayoutPath());
+			}
+			else if (controlID == checkMaxCameraHeightID)
+			{
+				Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+
+				if (textEntryMaxCameraHeight)
+				{
+					textEntryMaxCameraHeight->winEnable(enabled);
+
+					UnicodeString uStr;
+					AsciiString aStr;
+
+					if (enabled && !(*pref)["MaxCameraHeight"].isEmpty())
+						aStr = (*pref)["MaxCameraHeight"];
+					else
+						aStr.format("%.0f", TheGlobalData->m_defaultMaxCameraHeight);
+
+					uStr.translate(aStr);
+					GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+				}
 			}
 			else if(controlID == checkDrawAnchorID )
       {

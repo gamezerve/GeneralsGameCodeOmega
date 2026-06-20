@@ -1932,8 +1932,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = COMBOBOX;
-          SCREENRECT = UPPERLEFT: 159 182,
-                       BOTTOMRIGHT: 303 206,
+          SCREENRECT = UPPERLEFT: 284 128,
+                       BOTTOMRIGHT: 381 152,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:ComboBoxDetail";
           STATUS = ENABLED+IMAGE;
@@ -2172,9 +2172,112 @@ WINDOW
         END
         CHILD
         WINDOW
+          WINDOWTYPE = CHECKBOX;
+          SCREENRECT = UPPERLEFT: 160 184,
+                       BOTTOMRIGHT: 344 208,
+                       CREATIONRESOLUTION: 800 600;
+          NAME = "OptionsMenuGen.wnd:CheckMaxCameraHeight";
+          STATUS = ENABLED+IMAGE+BORDER;
+          STYLE = CHECKBOX+MOUSETRACK;
+          SYSTEMCALLBACK = "[None]";
+          INPUTCALLBACK = "[None]";
+          TOOLTIPCALLBACK = "[None]";
+          DRAWCALLBACK = "[None]";
+          FONT = NAME: "Times New Roman", SIZE: 5, BOLD: 0;
+          HEADERTEMPLATE = "MinorTitle";
+          TOOLTIPTEXT = "TOOLTIP:CheckMaxCameraHeight";
+          TOOLTIPDELAY = -1;
+          TEXT = "GUI:MaxCameraHeight";
+          TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                      HILITE:   186 255 12 255, HILITEBORDER:   0 0 0 255;
+          ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                            IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-CheckedGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
+                           IMAGE: Active-HiLightedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                           IMAGE: Active-CheckedGen, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        END
+        CHILD
+        WINDOW
+          WINDOWTYPE = ENTRYFIELD;
+          SCREENRECT = UPPERLEFT: 348 184,
+                       BOTTOMRIGHT: 380 208,
+                       CREATIONRESOLUTION: 800 600;
+          NAME = "OptionsMenuGen.wnd:TextEntryMaxCameraHeight";
+          STATUS = ENABLED+IMAGE;
+          STYLE = ENTRYFIELD+MOUSETRACK;
+          SYSTEMCALLBACK = "[None]";
+          INPUTCALLBACK = "[None]";
+          TOOLTIPCALLBACK = "[None]";
+          DRAWCALLBACK = "[None]";
+          FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+          HEADERTEMPLATE = "TextEntry";
+          TOOLTIPTEXT = "TOOLTIP:MaxCameraHeight";
+          TOOLTIPDELAY = -1;
+          TEXT = "Entry";
+          TEXTCOLOR = ENABLED:  254 254 254 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                      HILITE:   168 255 12 255, HILITEBORDER:   0 0 128 255;
+          ENABLEDDRAWDATA = IMAGE: TextEntryEnabledLeftEndGen, COLOR: 0 0 0 255, BORDERCOLOR: 0 0 0 255,
+                            IMAGE: TextEntryEnabledRightEndGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: TextEntryEnabledRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: TextEntryEnabledSmallRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          DISABLEDDRAWDATA = IMAGE: TextEntryDisabledLeftEndGen, COLOR: 0 0 128 255, BORDERCOLOR: 0 0 0 255,
+                             IMAGE: TextEntryDisabledRightEndGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: TextEntryDisabledRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: TextEntryDisabledSmallRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          HILITEDRAWDATA = IMAGE: TextEntryHiliteLeftEndGen, COLOR: 0 0 0 255, BORDERCOLOR: 0 0 0 255,
+                           IMAGE: TextEntryHiliteRightEndGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: TextEntryHiliteRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: TextEntryHiliteSmallRepeatingCenterGen, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          TEXTENTRYDATA = MAXLEN: 64,
+                          SECRETTEXT: 0,
+                          NUMERICALONLY: 1,
+                          ALPHANUMERICALONLY: 0,
+                          ASCIIONLY: 1;
+        END
+        CHILD
+        WINDOW
           WINDOWTYPE = STATICTEXT;
-          SCREENRECT = UPPERLEFT: 156 160,
-                       BOTTOMRIGHT: 300 184,
+          SCREENRECT = UPPERLEFT: 280 104,
+                       BOTTOMRIGHT: 387 128,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:DetailLabel";
           STATUS = ENABLED;
@@ -2223,7 +2326,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = COMBOBOX;
           SCREENRECT = UPPERLEFT: 160 128,
-                       BOTTOMRIGHT: 304 152,
+                       BOTTOMRIGHT: 256 152,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:ComboBoxResolution";
           STATUS = ENABLED+IMAGE;
@@ -2464,7 +2567,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = STATICTEXT;
           SCREENRECT = UPPERLEFT: 156 104,
-                       BOTTOMRIGHT: 300 128,
+                       BOTTOMRIGHT: 264 128,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:ResolutionLabel";
           STATUS = ENABLED;
@@ -2659,7 +2762,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = CHECKBOX;
           SCREENRECT = UPPERLEFT: 160 302,
-                       BOTTOMRIGHT: 352 326,
+                       BOTTOMRIGHT: 376 326,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:CheckAlternateMouse";
           STATUS = ENABLED+IMAGE+BORDER;
@@ -2834,7 +2937,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = CHECKBOX;
           SCREENRECT = UPPERLEFT: 387 302,
-                       BOTTOMRIGHT: 633 326,
+                       BOTTOMRIGHT: 576 326,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenuGen.wnd:CheckDoubleClickAttackMove";
           STATUS = ENABLED+IMAGE+BORDER;

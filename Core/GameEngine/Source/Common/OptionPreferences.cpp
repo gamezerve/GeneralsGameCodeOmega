@@ -47,7 +47,16 @@
 
 OptionPreferences::OptionPreferences()
 {
+	TheWritableGlobalData->m_defaultMaxCameraHeight = 310.0f;
+
 	loadFromIniFile();
+
+	if ((*this)["UseCustomMaxCameraHeight"] == "yes" && !(*this)["MaxCameraHeight"].isEmpty())
+	{
+		Real value = (Real)atof((*this)["MaxCameraHeight"].str());
+		value = clamp(310.0f, value, 750.0f);
+		TheWritableGlobalData->m_maxCameraHeight = value;
+	}
 }
 
 OptionPreferences::~OptionPreferences()

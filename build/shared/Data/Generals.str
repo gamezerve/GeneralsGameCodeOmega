@@ -17270,6 +17270,10 @@ GUI:DoubleClickAttackMove
 "Double Click Guard"
 END
 
+GUI:MaxCameraHeight
+"Camera Height"
+END
+
 GUI:DownloadBytesRatio
 "%d / %d bytes"
 END
@@ -26166,6 +26170,10 @@ TOOLTIP:DoubleClickAttackMove
 "Player units will move and then guard their destination area when action button is double clicked"
 END
 
+TOOLTIP:CheckMaxCameraHeight
+"Override default camera height"
+END
+
 TOOLTIP:DownloadProgress
 "Download Progress"
 END
@@ -26276,6 +26284,10 @@ END
 
 TOOLTIP:HTTPProxy
 "Set an HTTP Proxy to use for C&C Generals Zero Hour Online"
+END
+
+TOOLTIP:MaxCameraHeight
+"Maximum camera height (allowed value range is between 310 and 750)"
 END
 
 TOOLTIP:IgnoreButton
