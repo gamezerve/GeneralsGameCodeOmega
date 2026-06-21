@@ -126,6 +126,7 @@ public:
 
 	void mute( Bool isMuted ) { m_isMuted = isMuted; }
 	Bool isMuted() const { return m_isMuted; }
+
 protected:
 	SlotState m_state;
 	Bool m_isAccepted;
@@ -235,6 +236,12 @@ public:
 	inline Int getResourceMultiplierPercent() const;
 	inline void setResourceMultiplierPercent(Int value);
 
+	inline Bool getUseCustomMaxCameraHeight() const;
+	inline void setUseCustomMaxCameraHeight(Bool value);
+
+	inline Int getLanMaxCameraHeight() const;
+	inline void setLanMaxCameraHeight(Int value);
+
 protected:
 	Int m_preorderMask;
 	Int m_crcInterval;
@@ -256,6 +263,8 @@ protected:
   Money         m_startingCash;
   UnsignedShort m_superweaponRestriction;
 	Int m_resourceMultiplierPercent; // Reborn
+	Bool m_useCustomMaxCameraHeight;
+	Int m_lanMaxCameraHeight;
   Bool m_oldFactionsOnly; // Only USA, China, GLA -- not USA Air Force General, GLA Toxic General, et al
 };
 
@@ -278,6 +287,25 @@ const Money&GameInfo::getStartingCash() const         { return m_startingCash; }
 UnsignedShort GameInfo::getSuperweaponRestriction() const { return m_superweaponRestriction; }
 Int GameInfo::getResourceMultiplierPercent() const { return m_resourceMultiplierPercent; } // Reborn
 void GameInfo::setResourceMultiplierPercent(Int value) { m_resourceMultiplierPercent = value; } // Reborn
+Bool GameInfo::getUseCustomMaxCameraHeight() const
+{
+	return m_useCustomMaxCameraHeight;
+}
+
+void GameInfo::setUseCustomMaxCameraHeight(Bool value)
+{
+	m_useCustomMaxCameraHeight = value;
+}
+
+Int GameInfo::getLanMaxCameraHeight() const
+{
+	return m_lanMaxCameraHeight;
+}
+
+void GameInfo::setLanMaxCameraHeight(Int value)
+{
+	m_lanMaxCameraHeight = value;
+}
 Bool        GameInfo::oldFactionsOnly() const           { return m_oldFactionsOnly; }
 void        GameInfo::setOldFactionsOnly( Bool oldFactionsOnly ) { m_oldFactionsOnly = oldFactionsOnly; }
 

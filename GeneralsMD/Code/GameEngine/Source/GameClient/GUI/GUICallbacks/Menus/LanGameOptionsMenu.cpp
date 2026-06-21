@@ -32,8 +32,10 @@
 
 #include "Common/PlayerTemplate.h"
 #include "Common/GameEngine.h"
+#include "Common/GlobalData.h"
 #include "Common/UserPreferences.h"
 #include "Common/QuotedPrintable.h"
+#include "Common/OptionPreferences.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
@@ -50,6 +52,7 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/ChallengeGenerals.h"
+#include "GameClient/View.h"
 #include "GameNetwork/GameSpy/LobbyUtils.h"
 
 #include "GameNetwork/FirewallHelper.h"
@@ -115,6 +118,8 @@ static NameKeyType buttonSelectMapID = NAMEKEY_INVALID;
 //static NameKeyType checkboxLimitSuperweaponsID = NAMEKEY_INVALID;
 static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
 static NameKeyType comboBoxResourceMultiplierID = NAMEKEY_INVALID; //Reborn
+static NameKeyType checkMaxCameraHeightID = NAMEKEY_INVALID;
+static NameKeyType textEntryMaxCameraHeightID = NAMEKEY_INVALID;
 static NameKeyType windowMapID = NAMEKEY_INVALID;
 
 static NameKeyType checkboxLimitSuperweaponsUnlimitedID = NAMEKEY_INVALID;
@@ -133,6 +138,8 @@ static GameWindow *textEntryMapDisplay = nullptr;
 //static GameWindow *checkboxLimitSuperweapons = nullptr;
 static GameWindow *comboBoxStartingCash = nullptr;
 static GameWindow* comboBoxResourceMultiplier = nullptr; // Reborn
+static GameWindow* checkMaxCameraHeight = nullptr;
+static GameWindow* textEntryMaxCameraHeight = nullptr;
 static GameWindow *windowMap = nullptr;
 
 static GameWindow* checkboxLimitSuperweaponsUnlimited = nullptr;
@@ -162,6 +169,11 @@ WindowLayout *mapSelectLayout = nullptr;
 
 
 extern Int g_resourceMultiplierPercent; // Reborn
+
+static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText);
+static UnsignedInt lastLanMaxCameraHeightEditTime = 0;
+static Int lastSentLanMaxCameraHeight = 310;
+static Bool lastSentUseLanMaxCameraHeight = FALSE;
 
 static Int getNextSelectablePlayer(Int start)
 {
@@ -238,7 +250,10 @@ static void playerTooltip(GameWindow *window,
 
 void StartPressed()
 {
-	LANGameInfo *myGame = TheLAN->GetMyGame();
+	LANGameInfo* myGame = TheLAN->GetMyGame();
+
+	if (myGame && myGame->amIHost())
+		handleLanMaxCameraHeightChanged(FALSE, TRUE);
 
 	Bool isReady = true;
 	Bool allHaveMap = true;
@@ -670,6 +685,35 @@ static void handleStartingCashSelection()
   }
 }
 
+static Real getLanMaxCameraHeightValue()
+{
+	Real value = 310.0f;
+
+	if (checkMaxCameraHeight && GadgetCheckBoxIsChecked(checkMaxCameraHeight) && textEntryMaxCameraHeight)
+	{
+		UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+		AsciiString aStr;
+		aStr.translate(uStr);
+
+		value = (Real)atof(aStr.str());
+		value = clamp(310.0f, value, 750.0f);
+	}
+
+	return value;
+}
+
+static void updateLanMaxCameraHeightText()
+{
+	if (!textEntryMaxCameraHeight)
+		return;
+
+	Real value = getLanMaxCameraHeightValue();
+
+	UnicodeString uStr;
+	uStr.format(L"%.0f", value);
+	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+}
+
 static void handleResourceMultiplierSelection()
 {
 	LANGameInfo* myGame = TheLAN->GetMyGame();
@@ -768,6 +812,81 @@ void lanUpdateSlotList()
 	updateMapStartSpots(TheLAN->GetMyGame(), buttonMapStartPosition);
 }
 
+static void clampLanMaxCameraHeightText()
+{
+	if (!textEntryMaxCameraHeight)
+		return;
+
+	UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+	AsciiString aStr;
+	aStr.translate(uStr);
+
+	if (aStr.getLength() < 3)
+		return;
+
+	Int value = atoi(aStr.str());
+	value = clamp(310, value, 750);
+
+	uStr.format(L"%d", value);
+	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+}
+
+static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
+{
+	LANGameInfo* myGame = TheLAN->GetMyGame();
+
+	if (!myGame || !myGame->amIHost())
+		return;
+
+	Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+	Int value = 310;
+
+	if (enabled)
+	{
+		UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+		AsciiString aStr;
+		aStr.translate(uStr);
+
+		value = atoi(aStr.str());
+		value = clamp(310, value, 750);
+	}
+
+	if (myGame->getUseCustomMaxCameraHeight() == enabled &&
+		myGame->getLanMaxCameraHeight() == value)
+	{
+		if (clampText)
+		{
+			UnicodeString uStr;
+			uStr.format(L"%d", value);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+		}
+
+		textEntryMaxCameraHeight->winEnable(enabled);
+		return;
+	}
+
+	myGame->setUseCustomMaxCameraHeight(enabled);
+	myGame->setLanMaxCameraHeight(value);
+
+	if (resetAccepted)
+		myGame->resetAccepted();
+
+	if (clampText)
+	{
+		UnicodeString uStr;
+		uStr.format(L"%d", value);
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+	}
+
+	textEntryMaxCameraHeight->winEnable(enabled);
+
+	if (!s_isIniting)
+	{
+		TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
+		lanUpdateSlotList();
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Initialize the Gadgets Options Menu */
 //-------------------------------------------------------------------------------------------------
@@ -789,6 +908,8 @@ void InitLanGameGadgets()
 	checkboxLimitSuperweapons3ID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons3");
   comboBoxStartingCashID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ComboBoxStartingCash" );
 	comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier"); // Reborn: resource multiplier combo box
+	checkMaxCameraHeightID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckMaxCameraHeight");
+	textEntryMaxCameraHeightID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:TextEntryMaxCameraHeight");
 	windowMapID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:MapWindow" );
 
 	// Initialize the pointers to our gadgets
@@ -833,6 +954,12 @@ void InitLanGameGadgets()
 	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentLanGameOptions, comboBoxResourceMultiplierID);	// Reborn: resource multiplier combo box
 	DEBUG_ASSERTCRASH(comboBoxResourceMultiplier, ("Could not find the comboBoxResourceMultiplier"));
 	PopulateLANResourceMultiplierComboBox(comboBoxResourceMultiplier);
+
+	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentLanGameOptions, checkMaxCameraHeightID);
+	DEBUG_ASSERTCRASH(checkMaxCameraHeight, ("Could not find the checkMaxCameraHeight"));
+
+	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentLanGameOptions, textEntryMaxCameraHeightID);
+	DEBUG_ASSERTCRASH(textEntryMaxCameraHeight, ("Could not find the textEntryMaxCameraHeight"));
 
 	Int localSlotNum = TheLAN->GetMyGame()->getLocalSlotNum();
 	DEBUG_ASSERTCRASH(localSlotNum >= 0, ("Bad slot number!"));
@@ -930,6 +1057,8 @@ void DeinitLanGameGadgets()
 	checkboxLimitSuperweapons3 = nullptr;
   comboBoxStartingCash = nullptr;
 	comboBoxResourceMultiplier = nullptr;
+	checkMaxCameraHeight = nullptr;
+	textEntryMaxCameraHeight = nullptr;
 	if (windowMap)
 	{
 		windowMap->winSetUserData(nullptr);
@@ -954,6 +1083,24 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 {
 	if (TheLAN->GetMyGame() && TheLAN->GetMyGame()->isGameInProgress())
 	{
+		Real value = 310.0f;
+
+		OptionPreferences prefs;
+		if (prefs["UseCustomMaxCameraHeight"] == "yes" && !prefs["MaxCameraHeight"].isEmpty())
+		{
+			value = (Real)atof(prefs["MaxCameraHeight"].str());
+			value = clamp(310.0f, value, 750.0f);
+		}
+
+		TheWritableGlobalData->m_maxCameraHeight = value;
+
+		if (TheTacticalView)
+		{
+			TheTacticalView->setMaxHeightAboveGround(value);
+			TheTacticalView->setHeightAboveGround(value);
+			TheTacticalView->setZoom(1.0f);
+		}
+
 		// If we init while the game is in progress, we are really returning to the menu
 		// after the game.  So, we pop the menu and go back to the lobby.  Whee!
 		DEBUG_LOG(("Popping to lobby after a game!"));
@@ -991,6 +1138,8 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		game->setResourceMultiplierPercent(g_resourceMultiplierPercent); // Reborn
     //game->setSuperweaponRestriction( pref.getSuperweaponRestricted() ? 1 : 0 );
 		game->setSuperweaponRestriction(0);
+		game->setUseCustomMaxCameraHeight(FALSE);
+		game->setLanMaxCameraHeight(310);
 		AsciiString lowerMap = pref.getPreferredMap();
 		lowerMap.toLower();
 		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
@@ -1007,6 +1156,13 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		lanUpdateSlotList();
 		updateGameOptions();
 		start = 1; // leave my combo boxes usable
+
+		GadgetCheckBoxSetChecked(checkMaxCameraHeight, FALSE);
+
+		UnicodeString uStr;
+		uStr.format(L"310");
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+		textEntryMaxCameraHeight->winEnable(FALSE);
 
 		// TheSuperHackers @tweak disable the combo box for the host's player name
 		comboBoxPlayer[0]->winEnable(FALSE);
@@ -1030,6 +1186,8 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		TheLAN->RequestHasMap();
 		lanUpdateSlotList();
 		updateGameOptions();
+		checkMaxCameraHeight->winEnable(FALSE);
+		textEntryMaxCameraHeight->winEnable(FALSE);
 	}
 	for (Int i = start; i < MAX_SLOTS; ++i)
 	{
@@ -1131,6 +1289,22 @@ void updateGameOptions()
 			}
 		}
 
+		if (checkMaxCameraHeight && textEntryMaxCameraHeight)
+		{
+			Bool enabled = theGame->getUseCustomMaxCameraHeight();
+			Int value = enabled ? theGame->getLanMaxCameraHeight() : 310;
+
+			GadgetCheckBoxSetChecked(checkMaxCameraHeight, enabled);
+
+			UnicodeString uStr;
+			uStr.format(L"%d", value);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+
+			Bool isHost = TheLAN->AmIHost();
+			checkMaxCameraHeight->winEnable(isHost);
+			textEntryMaxCameraHeight->winEnable(isHost && enabled);
+		}
+
 	}
 }
 
@@ -1157,7 +1331,6 @@ void setLANPlayerTooltip(LANPlayer* player)
 		TheMouse->setCursorTooltip( tooltip );
 	}
 }
-
 
 //-------------------------------------------------------------------------------------------------
 /** This is called when a shutdown is complete for this menu */
@@ -1229,6 +1402,65 @@ void LanGameOptionsMenuUpdate( WindowLayout * layout, void *userData)
 	if(LANisShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);
 	//TheLAN->update(); // this is handled in the lobby
+
+	if (TheLAN && TheLAN->AmIHost() && checkMaxCameraHeight && textEntryMaxCameraHeight && !s_isIniting)
+	{
+		Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+		Int value = 310;
+
+		if (enabled)
+		{
+			UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+			AsciiString aStr;
+			aStr.translate(uStr);
+
+			value = atoi(aStr.str());
+		}
+
+		if (enabled != lastSentUseLanMaxCameraHeight || value != lastSentLanMaxCameraHeight)
+		{
+			lastSentUseLanMaxCameraHeight = enabled;
+			lastSentLanMaxCameraHeight = value;
+
+			lastLanMaxCameraHeightEditTime = timeGetTime();
+			handleLanMaxCameraHeightChanged(TRUE, FALSE);
+		}
+
+		if (enabled && lastLanMaxCameraHeightEditTime != 0)
+		{
+			UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+			AsciiString aStr;
+			aStr.translate(uStr);
+
+			if (aStr.getLength() >= 3 &&
+				timeGetTime() - lastLanMaxCameraHeightEditTime > 750)
+			{
+				lastLanMaxCameraHeightEditTime = 0;
+				handleLanMaxCameraHeightChanged(TRUE, TRUE);
+			}
+		}
+	}
+
+}
+
+WindowMsgHandledType LanMaxCameraHeightInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
+{
+	if (msg == GWM_CHAR)
+	{
+		UnsignedByte key = mData1;
+		UnsignedByte state = mData2;
+
+		if (key == KEY_ENTER && BitIsSet(state, KEY_STATE_UP))
+		{
+			if (TheLAN && TheLAN->AmIHost())
+			{
+				handleLanMaxCameraHeightChanged(TRUE, TRUE);
+				return MSG_HANDLED;
+			}
+		}
+	}
+
+	return MSG_IGNORED;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1245,11 +1477,29 @@ WindowMsgHandledType LanGameOptionsMenuInput( GameWindow *window, UnsignedInt ms
 		{
 			UnsignedByte key = mData1;
 			UnsignedByte state = mData2;
+
+			GameWindow* focus = TheWindowManager->winGetFocus();
+
+			if (focus == textEntryMaxCameraHeight)
+			{
+				DEBUG_LOG(("MAX CAMERA ENTRY KEY=%d STATE=%d", key, state));
+
+				if (TheLAN->AmIHost())
+				{
+					if (key == KEY_ENTER && BitIsSet(state, KEY_STATE_UP))
+					{
+						handleLanMaxCameraHeightChanged(TRUE, TRUE);
+						return MSG_HANDLED;
+					}
+				}
+			}
+
 			if (LANbuttonPushed)
 				break;
 
 			switch( key )
 			{
+
 				// ----------------------------------------------------------------------------------------
 				case KEY_ESC:
 				{
@@ -1383,6 +1633,17 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
 
+				if (TheLAN->AmIHost() && checkMaxCameraHeight && textEntryMaxCameraHeight && controlID != checkMaxCameraHeightID)
+				{
+					handleLanMaxCameraHeightChanged(TRUE, TRUE);
+					clampLanMaxCameraHeightText();
+				}
+				if (controlID == checkMaxCameraHeightID)
+				{
+					handleLanMaxCameraHeightChanged(TRUE, TRUE);
+					clampLanMaxCameraHeightText();
+					return MSG_HANDLED;
+				}
 				if ( controlID == buttonBackID )
 				{
 					if( mapSelectLayout )
@@ -1570,7 +1831,7 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Utility FUnction used as a bridge from other windows to this one */
+/** Utility Function used as a bridge from other windows to this one */
 //-------------------------------------------------------------------------------------------------
 void PostToLanGameOptions( PostToLanGameType post )
 {

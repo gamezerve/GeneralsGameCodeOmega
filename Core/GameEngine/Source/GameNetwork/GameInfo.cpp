@@ -34,7 +34,10 @@
 #include "Common/GameState.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
+#include "GameClient/View.h"
+#include "Common/GlobalData.h"
 #include "Common/MultiplayerSettings.h"
+#include "Common/OptionPreferences.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/Xfer.h"
 #include "GameNetwork/FileTransfer.h"
@@ -317,6 +320,8 @@ void GameInfo::reset()
   m_superweaponRestriction = 0;
   m_startingCash = TheGlobalData->m_defaultStartingCash;
 	m_resourceMultiplierPercent = 100; // Reborn
+	m_useCustomMaxCameraHeight = FALSE;
+	m_lanMaxCameraHeight = 310;
 
 	for (Int i=0; i<MAX_SLOTS; ++i)
 	{
@@ -386,6 +391,27 @@ Int GameInfo::getMaxPlayers() const
 	return data.m_numPlayers;
 }
 
+static void RestorePersonalMaxCameraHeight()
+{
+	Real value = 310.0f;
+
+	OptionPreferences prefs;
+	if (prefs["UseCustomMaxCameraHeight"] == "yes" && !prefs["MaxCameraHeight"].isEmpty())
+	{
+		value = (Real)atof(prefs["MaxCameraHeight"].str());
+		value = clamp(310.0f, value, 750.0f);
+	}
+
+	TheWritableGlobalData->m_maxCameraHeight = value;
+
+	if (TheTacticalView)
+	{
+		TheTacticalView->setMaxHeightAboveGround(value);
+		TheTacticalView->setHeightAboveGround(value);
+		TheTacticalView->setZoom(1.0f);
+	}
+}
+
 void GameInfo::enterGame()
 {
 	DEBUG_ASSERTCRASH(!m_inGame && !m_inProgress, ("Entering game at a bad time!"));
@@ -397,13 +423,25 @@ void GameInfo::enterGame()
 void GameInfo::leaveGame()
 {
 	DEBUG_ASSERTCRASH(m_inGame && !m_inProgress, ("Leaving game at a bad time!"));
+	RestorePersonalMaxCameraHeight();
 	reset();
 }
 
-void GameInfo::startGame( Int gameID )
+void GameInfo::startGame(Int gameID)
 {
 	DEBUG_ASSERTCRASH(m_inGame && !m_inProgress, ("Starting game at a bad time!"));
 	m_gameID = gameID;
+
+	Real maxCameraHeight = m_useCustomMaxCameraHeight ? (Real)m_lanMaxCameraHeight : 310.0f;
+
+	TheWritableGlobalData->m_maxCameraHeight = maxCameraHeight;
+
+	if (TheTacticalView)
+	{
+		TheTacticalView->setMaxHeightAboveGround(maxCameraHeight);
+		TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
+	}
+
 	closeOpenSlots();
 	m_inProgress = true;
 }
@@ -411,6 +449,7 @@ void GameInfo::startGame( Int gameID )
 void GameInfo::endGame()
 {
 	DEBUG_ASSERTCRASH(m_inGame && m_inProgress, ("Ending game without playing one!"));
+	RestorePersonalMaxCameraHeight();
 	m_inGame = false;
 	m_inProgress = false;
 }
@@ -926,9 +965,21 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), newMapName.str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval());
 #else
-	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;RM=%d;O=%c;", game->getUseStats(), game->getMapContentsMask(), newMapName.str(),
-		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval(), game->getSuperweaponRestriction(),
-		game->getStartingCash().countMoney(), game->getResourceMultiplierPercent(), game->oldFactionsOnly() ? 'Y' : 'N');
+	optionsString.format(
+		"US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;RM=%d;CM=%d;CH=%d;O=%c;",
+		game->getUseStats(),
+		game->getMapContentsMask(),
+		newMapName.str(),
+		game->getMapCRC(),
+		game->getMapSize(),
+		game->getSeed(),
+		game->getCRCInterval(),
+		game->getSuperweaponRestriction(),
+		game->getStartingCash().countMoney(),
+		game->getResourceMultiplierPercent(),
+		game->getUseCustomMaxCameraHeight() ? 1 : 0,
+		game->getLanMaxCameraHeight(),
+		game->oldFactionsOnly() ? 'Y' : 'N');
 #endif
 
 	//add player info for each slot
@@ -1025,6 +1076,8 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
   Money startingCash = TheGlobalData->m_defaultStartingCash;
   UnsignedShort restriction = 0; // Always the default
 	Int resourceMultiplierPercent = 100; // Reborn
+	Bool useCustomMaxCameraHeight = FALSE;
+	Int lanMaxCameraHeight = 310;
 
 	Bool sawMap = FALSE;
 	Bool sawMapCRC = FALSE;
@@ -1144,6 +1197,15 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 		{
 			resourceMultiplierPercent = atoi(val.str());
 			sawResourceMultiplier = TRUE;
+		}
+		else if (key.compare("CM") == 0)
+		{
+			useCustomMaxCameraHeight = atoi(val.str()) != 0;
+		}
+		else if (key.compare("CH") == 0)
+		{
+			lanMaxCameraHeight = atoi(val.str());
+			lanMaxCameraHeight = clamp(310, lanMaxCameraHeight, 750);
 		}
     else if (key.compare("O") == 0 )
     {
@@ -1518,6 +1580,8 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 		game->setSuperweaponRestriction(restriction);
 		game->setStartingCash(startingCash);
 		game->setResourceMultiplierPercent(resourceMultiplierPercent); // Reborn
+		game->setUseCustomMaxCameraHeight(useCustomMaxCameraHeight);
+		game->setLanMaxCameraHeight(lanMaxCameraHeight);
 		game->setOldFactionsOnly(oldFactionsOnly);
 
 		return true;

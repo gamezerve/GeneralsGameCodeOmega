@@ -1337,7 +1337,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		if (useCustomMaxCameraHeight && !(*pref)["MaxCameraHeight"].isEmpty())
 			aStr = (*pref)["MaxCameraHeight"];
 		else
-			aStr.format("%.0f", TheGlobalData->m_maxCameraHeight);
+			aStr.format("%.0f", 310.0f);
 
 		uStr.translate(aStr);
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
@@ -1625,6 +1625,9 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 			if (textEntryMaxCameraHeight)
 				textEntryMaxCameraHeight->winEnable(FALSE);
+
+			if (checkZoomFactor)
+				checkZoomFactor->winEnable(FALSE);
 		}
 
 	}
