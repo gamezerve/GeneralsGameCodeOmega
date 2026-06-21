@@ -5,9 +5,24 @@ add_executable(z_generals WIN32)
 # Reborn Version number setter
 set(REBORN_OMEGA_VERSION_MAJOR 1)
 set(REBORN_OMEGA_VERSION_MINOR 0)
-set(REBORN_OMEGA_VERSION_PATCH 3)  # 1.02 by Gamezerve
+set(REBORN_OMEGA_VERSION_PATCH 3)  # 1.03 by Gamezerve
 set(REBORN_OMEGA_VERSION_STRING "${REBORN_OMEGA_VERSION_MAJOR}.${REBORN_OMEGA_VERSION_MINOR}${REBORN_OMEGA_VERSION_PATCH}")
 set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING} (Beta 1)")
+
+if(RTS_BUILD_OPTION_REBORN)
+    add_custom_target(PrepareRebornOmegaData
+        COMMAND cmd /c powershell -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/scripts/PrepareRebornOmegaData.ps1"
+            "${REBORN_OMEGA_DISPLAY_NAME}"
+        USES_TERMINAL
+        COMMENT "Preparing RebornOmegaData"
+    )
+
+    add_dependencies(PrepareRebornOmegaData
+        z_generals
+        z_worldbuilder
+    )
+endif()
 
 # Use a binary name that doesn't conflict with original game.
 if("${CMAKE_SYSTEM}" MATCHES "Windows")

@@ -44,6 +44,7 @@
 
 
 static const char *BIGFileIdentifier = "BIGF";
+static const char *BIGRFileIdentifier = "BIGR";
 
 Win32BIGFileSystem::Win32BIGFileSystem() : ArchiveFileSystem() {
 }
@@ -98,7 +99,7 @@ ArchiveFile * Win32BIGFileSystem::openArchiveFile(const Char *filename) {
 	char buffer[_MAX_PATH];
 	fp->read(buffer, 4); // read the "BIG" at the beginning of the file.
 	buffer[4] = 0;
-	if (strcmp(buffer, BIGFileIdentifier) != 0) {
+	if (strcmp(buffer, BIGFileIdentifier) != 0 && strcmp(buffer, BIGRFileIdentifier) != 0) {
 		DEBUG_CRASH(("Error reading BIG file identifier in file %s", filename));
 		fp->close();
 		fp = nullptr;
