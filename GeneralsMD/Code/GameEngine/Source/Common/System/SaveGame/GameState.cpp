@@ -797,7 +797,11 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 AsciiString GameState::getSaveDirectory() const
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
+#ifdef REBORN_BUILD
+	tmp.concat("RebornOmegaSave\\");
+#else
 	tmp.concat("Save\\");
+#endif
 	return tmp;
 }
 

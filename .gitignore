@@ -96,3 +96,6 @@ __pycache__/
 !/build/shared/Window/**
 
 /build/shared/Maps/MapCache.ini
+
+# CMake build output
+/out/
