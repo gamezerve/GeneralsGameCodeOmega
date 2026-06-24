@@ -168,10 +168,10 @@ static Int getSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcu
 	else if (shortcutBarName == "GenPowersShortcutBarGLA.wnd")
 	{
 		if (visibleShortcutButtons >= 22) return 1;
-		if (visibleShortcutButtons >= 21) return 4;
+		if (visibleShortcutButtons >= 21) return 3;
 		if (visibleShortcutButtons >= 20) return 6;
-		if (visibleShortcutButtons >= 19) return 6;
-		if (visibleShortcutButtons >= 18) return 9;
+		if (visibleShortcutButtons >= 19) return 8;
+		if (visibleShortcutButtons >= 18) return 10;
 		if (visibleShortcutButtons >= 17) return 12;
 		if (visibleShortcutButtons >= 16) return 15;
 		if (visibleShortcutButtons >= 15) return 17;
@@ -181,8 +181,8 @@ static Int getSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcu
 	}
 	else if (shortcutBarName == "GenPowersShortcutBarChina.wnd")
 	{
-		if (visibleShortcutButtons >= 22) return 2;
-		if (visibleShortcutButtons >= 21) return 4;
+		if (visibleShortcutButtons >= 22) return 1;
+		if (visibleShortcutButtons >= 21) return 3;
 		if (visibleShortcutButtons >= 20) return 6;
 		if (visibleShortcutButtons >= 19) return 8;
 		if (visibleShortcutButtons >= 18) return 10;
@@ -4075,10 +4075,10 @@ void InGameUI::postDraw()
 		}
 
 		Int leftShiftStartIndex = getSuperweaponLeftShiftStartIndexForLayout(shortcutBarName, visibleShortcutButtons);
+		Int secondLeftShiftStartIndex = getSuperweaponLeftShiftStartIndexForLayout(shortcutBarName, visibleShortcutButtons - 11);
 
 		Int drawnVisibleSuperweaponIndex = 0;
 		const Int shiftedTimerOffsetX = getShortcutDrivenHorizontalShift(visibleShortcutButtons);
-
 
 		for (Int i=0; i<MAX_PLAYER_COUNT; ++i)
 		{
@@ -4106,7 +4106,11 @@ void InGameUI::postDraw()
 							info->setFont(m_superweaponReadyFont, m_superweaponNormalPointSize, m_superweaponNormalBold);
 
 							Int drawX = startX;
+
 							if (leftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= leftShiftStartIndex)
+								drawX -= shiftedTimerOffsetX;
+
+							if (secondLeftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= secondLeftShiftStartIndex)
 								drawX -= shiftedTimerOffsetX;
 
 							info->drawTime(drawX, startY, m_superweaponFlashColor, bgColor);
@@ -4242,7 +4246,11 @@ void InGameUI::postDraw()
                   }
 
 									Int drawX = startX;
+
 									if (leftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= leftShiftStartIndex)
+										drawX -= shiftedTimerOffsetX;
+
+									if (secondLeftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= secondLeftShiftStartIndex)
 										drawX -= shiftedTimerOffsetX;
 
                   if (isReady)
@@ -4413,6 +4421,8 @@ void InGameUI::postDraw()
 	TheControlBar->drawSpecialPowerShortcutMultiplierText();
 
 }
+
+
 
 //-------------------------------------------------------------------------------------------------
 /** Expire a hint of the specified type with the corresponding hint index */

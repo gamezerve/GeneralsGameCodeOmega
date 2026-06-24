@@ -1799,6 +1799,10 @@ const FieldParse CommandSet::m_commandSetFieldParseTable[] =
 	{ "20",			CommandSet::parseCommandButton, (void *)19,		offsetof( CommandSet, m_command ) },
 	{ "21",			CommandSet::parseCommandButton, (void *)20,		offsetof( CommandSet, m_command ) },
 	{ "22",			CommandSet::parseCommandButton, (void *)21,		offsetof( CommandSet, m_command ) },
+	{ "23",			CommandSet::parseCommandButton, (void *)22,		offsetof( CommandSet, m_command ) },
+	{ "24",			CommandSet::parseCommandButton, (void *)23,		offsetof( CommandSet, m_command ) },
+	{ "25",			CommandSet::parseCommandButton, (void *)24,		offsetof( CommandSet, m_command ) },
+	{ "26",			CommandSet::parseCommandButton, (void *)25,		offsetof( CommandSet, m_command ) },
 	{ nullptr,			nullptr,														 nullptr,				0	}
 
 };
@@ -1901,6 +1905,23 @@ void CommandSet::parseCommandButton( INI* ini, void *instance, void *store, cons
 	// sanity
 	DEBUG_ASSERTCRASH( buttonIndex < MAX_COMMANDS_PER_SET, ("parseCommandButton: button index '%d' out of range",
 										 buttonIndex) );
+
+	// Reborn: Duplicate check
+	for (Int i = 0; i < MAX_COMMANDS_PER_SET; ++i)
+	{
+		if (i != buttonIndex && buttonArray[i] != nullptr)
+		{
+			if (buttonArray[i] == commandButton)
+			{
+				if (commandButton->getCommandType() != GUI_COMMAND_EXIT_CONTAINER)
+				{
+					DEBUG_CRASH(("[LINE: %d - FILE: '%s'] Duplicate command '%s' found in command set at slots %d and %d",
+						ini->getLineNum(), ini->getFilename().str(), token, i + 1, buttonIndex + 1));
+				}
+				break;
+			}
+		}
+	}
 
 	// save it
 	buttonArray[ buttonIndex ] = commandButton;
@@ -4999,8 +5020,18 @@ void ControlBar::updateSpecialPowerShortcut()
 		// enable/disable the window control
 		switch( availability )
 		{
+			//case COMMAND_HIDDEN:
+			//	win->winHide( TRUE );
+			//	break;
+			// Reborn: Refresh the shortcut bar when a shortcut disappears. Some objects remain
+			// alive during death animations, which can otherwise leave empty shortcut slots
+			// until the object is fully removed from the world.
 			case COMMAND_HIDDEN:
-				win->winHide( TRUE );
+				if (!win->winIsHidden())
+				{
+					win->winHide(TRUE);
+					markUIDirty();
+				}
 				break;
 			case COMMAND_RESTRICTED:
 				win->winEnable( FALSE );

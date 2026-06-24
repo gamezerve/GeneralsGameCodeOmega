@@ -1618,7 +1618,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 		GameMode mode = TheGameLogic->getGameMode();
 
-		if (mode == GAME_LAN || mode == GAME_INTERNET)
+		if (mode == GAME_LAN || mode == GAME_INTERNET || mode == GAME_REPLAY)
 		{
 			if (checkMaxCameraHeight)
 				checkMaxCameraHeight->winEnable(FALSE);

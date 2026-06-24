@@ -987,8 +987,16 @@ CONTROLBAR:RPGAmbush
 "&RPG Ambush"
 END
 
+CONTROLBAR:RPGAmbushShortcut
+"RPG Ambush"
+END
+
 CONTROLBAR:ToxinRPGAmbush
 "Toxin &RPG Ambush"
+END
+
+CONTROLBAR:ToxinRPGAmbushShortcut
+"Toxin RPG Ambush"
 END
 
 CONTROLBAR:ToolTipGLAInfantryOfficer
@@ -1483,6 +1491,10 @@ END
 
 CONTROLBAR:AirStrike
 "Air S&trike"
+END
+
+CONTROLBAR:AirStrikeShortcut
+"Air Strike"
 END
 
 CONTROLBAR:ToolTipUpgradeUSAC4Charges
@@ -3094,6 +3106,10 @@ END
 
 CONTROLBAR:NapalmStrike
 "&Napalm Strike"
+END
+
+CONTROLBAR:NapalmStrikeShortcut
+"Napalm Strike"
 END
 
 CONTROLBAR:NeutronMissile
@@ -27167,7 +27183,7 @@ Version:BuildUser
 END
 
 Version:Format2
-"Version %d.%02d Reborn 1.03 (Beta 1) by Gamezerve"
+"Version %d.%02d Reborn 1.03 (Beta 2) by Gamezerve"
 END
 
 Version:Format3
@@ -27696,6 +27712,10 @@ END
 
 CONTROLBAR:DemoRPGAmbush
 "&RPG Ambush"
+END
+
+CONTROLBAR:DemoRPGAmbushShortcut
+"RPG Ambush"
 END
 
 OBJECT:StealthRebel
