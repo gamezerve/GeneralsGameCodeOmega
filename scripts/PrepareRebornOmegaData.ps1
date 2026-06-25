@@ -237,7 +237,7 @@ $ReleaseDir = "D:\OneDrive\Documents\GitHub\Reborn-Omega\build\win32-reborn\Gene
 
 $Executables = @(
     "$DisplayName.exe",
-    "Reborn Omega WorldBuilder 1.03.exe"
+    "$DisplayName WorldBuilder.exe"
 )
 
 foreach ($Exe in $Executables)

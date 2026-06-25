@@ -204,6 +204,7 @@ target_sources(z_worldbuilder PRIVATE ${WORLDBUILDER_SRC})
 
 target_include_directories(z_worldbuilder PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}/GeneralsMD/Code/Main
     include
     res
 )
@@ -234,11 +235,11 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     target_compile_definitions(z_worldbuilder PRIVATE _AFXDLL)
     target_sources(z_worldbuilder PRIVATE res/WorldBuilder.rc)
 
-    if(RTS_BUILD_OPTION_REBORN)
-        set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "Reborn Omega WorldBuilder 1.03${RTS_BUILD_OUTPUT_SUFFIX}")
-    else()
-        set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "WorldBuilderZH${RTS_BUILD_OUTPUT_SUFFIX}")
-    endif()
+if(RTS_BUILD_OPTION_REBORN)
+    set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "${REBORN_OMEGA_DISPLAY_NAME} WorldBuilder${RTS_BUILD_OUTPUT_SUFFIX}")
+else()
+    set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "WorldBuilderZH${RTS_BUILD_OUTPUT_SUFFIX}")
+endif()
 else()
     set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "worldbuilderzh${RTS_BUILD_OUTPUT_SUFFIX}")
 endif()

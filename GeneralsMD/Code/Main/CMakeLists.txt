@@ -2,12 +2,14 @@ add_executable(z_generals WIN32)
 
 # target_link_options(z_generals PRIVATE /MAP)
 
-# Reborn Version number setter
-set(REBORN_OMEGA_VERSION_MAJOR 1)
-set(REBORN_OMEGA_VERSION_MINOR 0)
-set(REBORN_OMEGA_VERSION_PATCH 3)  # 1.03 by Gamezerve
-set(REBORN_OMEGA_VERSION_STRING "${REBORN_OMEGA_VERSION_MAJOR}.${REBORN_OMEGA_VERSION_MINOR}${REBORN_OMEGA_VERSION_PATCH}")
-set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING} (Beta 2)")
+math(EXPR REBORN_OMEGA_BUILD_RANK
+    "${REBORN_OMEGA_VERSION_MAJOR} * 10000 + ${REBORN_OMEGA_VERSION_MINOR} * 1000 + ${REBORN_OMEGA_VERSION_PATCH} * 100")
+
+if(REBORN_OMEGA_BETA GREATER 0)
+    math(EXPR REBORN_OMEGA_BUILD_RANK "${REBORN_OMEGA_BUILD_RANK} + ${REBORN_OMEGA_BETA}")
+else()
+    math(EXPR REBORN_OMEGA_BUILD_RANK "${REBORN_OMEGA_BUILD_RANK} + 99")
+endif()
 
 if(RTS_BUILD_OPTION_REBORN)
     add_custom_target(PrepareRebornOmegaData
@@ -23,6 +25,16 @@ if(RTS_BUILD_OPTION_REBORN)
         z_worldbuilder
     )
 endif()
+
+add_custom_target(BuildRebornOmegaInstaller
+    COMMAND cmd /c powershell -NoProfile -ExecutionPolicy Bypass
+        -File "${CMAKE_SOURCE_DIR}/scripts/BuildRebornOmegaInstaller.ps1"
+        "${REBORN_OMEGA_DISPLAY_NAME}"
+        "${REBORN_OMEGA_BUILD_RANK}"
+    DEPENDS z_generals z_worldbuilder
+    USES_TERMINAL
+    COMMENT "Building Reborn Omega installer"
+)
 
 # Use a binary name that doesn't conflict with original game.
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
@@ -68,13 +80,14 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
 )
 
 # Based on original binary values for these variables.
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
+file(WRITE ${CMAKE_BINARY_DIR}/BuildVersion.h
 "#pragma once
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 4
 #define VERSION_BUILDNUM 601
 #define REBORN_OMEGA_VERSION_TEXT L\"${REBORN_OMEGA_DISPLAY_NAME}\"
+#define REBORN_OMEGA_VERSION_TEXT_RC \"${REBORN_OMEGA_DISPLAY_NAME}\"
 "
 )
 

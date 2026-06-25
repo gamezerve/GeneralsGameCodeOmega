@@ -30,6 +30,7 @@
 
 #include "GameClient/GameText.h"
 #include "Common/version.h"
+#include "BuildVersion.h"
 
 #include "gitinfo.h"
 
@@ -134,7 +135,10 @@ UnicodeString Version::getUnicodeVersion() const
 	else
 	{
 #ifdef REBORN_BUILD
-		version.format(L"Version %d.%02d Reborn Omega 1.03 (Beta 2) by Gamezerve", m_major, m_minor);
+		version.format(L"Version %d.%02d %ls by Gamezerve",
+			m_major,
+			m_minor,
+			REBORN_OMEGA_VERSION_TEXT);
 #else
 		version.format(TheGameText->fetch("Version:Format2").str(), m_major, m_minor);
 #endif

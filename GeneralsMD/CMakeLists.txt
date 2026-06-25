@@ -10,6 +10,20 @@ endif()
 # Set where the build results will end up
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
+# Reborn Version number setter
+set(REBORN_OMEGA_VERSION_MAJOR 1)
+set(REBORN_OMEGA_VERSION_MINOR 0)
+set(REBORN_OMEGA_VERSION_PATCH 3)  # 1.03 by Gamezerve
+set(REBORN_OMEGA_BETA 3) # 0 = full release
+
+set(REBORN_OMEGA_VERSION_STRING "${REBORN_OMEGA_VERSION_MAJOR}.${REBORN_OMEGA_VERSION_MINOR}${REBORN_OMEGA_VERSION_PATCH}")
+
+if(REBORN_OMEGA_BETA GREATER 0)
+    set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING} (Beta ${REBORN_OMEGA_BETA})")
+else()
+    set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING}")
+endif()
+
 # Add main build targets
 add_subdirectory(Code)
 
@@ -87,3 +101,6 @@ else()
                    "Zero Hour targets will be built, but not installed. "
                    "You can specify the path manually by setting RTS_INSTALL_PREFIX_ZEROHOUR.")
 endif()
+
+
+
