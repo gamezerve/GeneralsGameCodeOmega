@@ -45,7 +45,8 @@
 void INI::parseObjectDefinition( INI* ini )
 {
 	AsciiString name = ini->getNextToken();
-	ThingFactory::parseObjectDefinition(ini, name, AsciiString::TheEmptyString);
+	//ThingFactory::parseObjectDefinition(ini, name, AsciiString::TheEmptyString);
+	ThingFactory::parseObjectDefinition(ini, name, AsciiString::TheEmptyString, false);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -55,7 +56,18 @@ void INI::parseObjectReskinDefinition( INI* ini )
 {
 	AsciiString name = ini->getNextToken();
 	AsciiString reskinFrom = ini->getNextToken();
-	ThingFactory::parseObjectDefinition(ini, name, reskinFrom);
+	//ThingFactory::parseObjectDefinition(ini, name, reskinFrom);
+	ThingFactory::parseObjectDefinition(ini, name, reskinFrom, true);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Parse Inheriting Object entry */
+//-------------------------------------------------------------------------------------------------
+void INI::parseObjectInheritDefinition(INI* ini)
+{
+	AsciiString name = ini->getNextToken();
+	AsciiString inheritFrom = ini->getNextToken();
+	ThingFactory::parseObjectDefinition(ini, name, inheritFrom, false);
 }
 
 

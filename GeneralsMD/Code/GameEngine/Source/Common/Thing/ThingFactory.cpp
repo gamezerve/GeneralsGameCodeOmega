@@ -374,7 +374,8 @@ AsciiString TheThingTemplateBeingParsedName;
 //-------------------------------------------------------------------------------------------------
 /** Parse Object entry */
 //-------------------------------------------------------------------------------------------------
-/*static*/ void ThingFactory::parseObjectDefinition( INI* ini, const AsciiString& name, const AsciiString& reskinFrom )
+/*static*/ /*void ThingFactory::parseObjectDefinition( INI* ini, const AsciiString& name, const AsciiString& reskinFrom )*/
+void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, const AsciiString& inheritFrom, Bool reskinOnly)
 {
 #if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
 	TheThingTemplateBeingParsedName = name;
@@ -407,25 +408,34 @@ AsciiString TheThingTemplateBeingParsedName;
 		thingTemplate = TheThingFactory->newOverride( thingTemplate );
 	}
 
-	if (reskinFrom.isNotEmpty())
+	if (inheritFrom.isNotEmpty())
 	{
-		const ThingTemplate* reskinTmpl = TheThingFactory->findTemplate(reskinFrom);
-		if (reskinTmpl)
+		const ThingTemplate* parentTemplate = TheThingFactory->findTemplate(inheritFrom);
+
+		if (parentTemplate)
 		{
-			thingTemplate->copyFrom(reskinTmpl);
+			thingTemplate->copyFrom(parentTemplate);
 			thingTemplate->setCopiedFromDefault();
-			thingTemplate->setReskinnedFrom(reskinTmpl);
-			ini->initFromINI( thingTemplate, thingTemplate->getReskinFieldParse() );
+
+			if (reskinOnly)
+			{
+				thingTemplate->setReskinnedFrom(parentTemplate);
+				ini->initFromINI(thingTemplate, thingTemplate->getReskinFieldParse());
+			}
+			else
+			{
+				ini->initFromINI(thingTemplate, thingTemplate->getFieldParse());
+			}
 		}
 		else
 		{
-			DEBUG_CRASH(("ObjectReskin must come after the original Object (%s, %s).",reskinFrom.str(),name.str()));
+			DEBUG_CRASH(("Inherited Object must come after the original Object (%s, %s).", inheritFrom.str(), name.str()));
 			throw INI_INVALID_DATA;
 		}
 	}
 	else
 	{
-		ini->initFromINI( thingTemplate, thingTemplate->getFieldParse() );
+		ini->initFromINI(thingTemplate, thingTemplate->getFieldParse());
 	}
 
 	thingTemplate->validate();

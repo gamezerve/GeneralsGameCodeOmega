@@ -75,7 +75,17 @@ robocopy `
     "AI Mod Changelog.txt" `
     "AI Mod Changelog.txt.bak" `
     "GC_Background.bik" `
-    "VS_small.bik"
+    "VS_small.bik" `
+    "*.ani"
+
+Write-Host "Copying selected loose cursors..."
+
+New-Item -ItemType Directory -Force -Path "$Target\Data\Cursors" | Out-Null
+
+Copy-Item "$Source\Data\Cursors\SCCCantPower.ani" "$Target\Data\Cursors\" -Force
+Copy-Item "$Source\Data\Cursors\SCCPowerMode.ani" "$Target\Data\Cursors\" -Force
+
+Write-Host "Selected loose cursors copied successfully."
 
 if ($LASTEXITCODE -ge 8)
 {

@@ -89,6 +89,8 @@ begin
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  DataDir: String;
 begin
   Result := True;
 
@@ -102,6 +104,23 @@ begin
         MB_OK);
 
       Result := False;
+      Exit;
+    end;
+
+    DataDir := WizardDirValue + '\RebornOmegaData';
+
+    if DirExists(DataDir) then
+    begin
+      if MsgBox(
+        'The existing RebornOmegaData folder will be deleted before installation:' + #13#10 + #13#10 +
+        DataDir + #13#10 + #13#10 +
+        'Do you want to continue?',
+        mbConfirmation,
+        MB_YESNO) <> IDYES then
+      begin
+        Result := False;
+        Exit;
+      end;
     end;
   end;
 end;
@@ -125,6 +144,19 @@ begin
   end;
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  DataDir: String;
+begin
+  if CurStep = ssInstall then
+  begin
+    DataDir := ExpandConstant('{app}\RebornOmegaData');
+
+    if DirExists(DataDir) then
+      DelTree(DataDir, True, True, True);
+  end;
+end;
+
 [Messages]
 ReadyLabel1=Setup is now ready to begin installing {#RebornDisplayName} on your computer.
 ReadyLabel2a=Click Install to continue with the installation, or click Back if you want to review or change any settings.
@@ -132,6 +164,6 @@ SelectDirDesc=Where should {#RebornDisplayName} be installed?
 SelectDirLabel3=Setup will install {#RebornDisplayName} into the following folder.
 FinishedHeadingLabel=Installation Complete
 FinishedLabel=Zero Hour {#RebornDisplayName} has been installed successfully.
-TasksPageTitle=Additional Tasks
-TasksPageDescription=Choose any optional tasks to perform during installation.
-TasksPageSubTitle=
+
+[Run]
+Filename: "{app}\{#RebornDisplayName}.exe"; Description: "Launch {#RebornDisplayName}"; Flags: postinstall nowait skipifsilent; Tasks: launch
