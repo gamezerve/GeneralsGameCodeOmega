@@ -134,7 +134,8 @@ Real SoundManager::getCameraAudibleDistance()
 //-------------------------------------------------------------------------------------------------
 void SoundManager::addAudioEvent(AudioEventRTS *&eventToAdd)
 {
-	if (canPlayNow(eventToAdd)) {
+	//if (canPlayNow(eventToAdd)) {
+	if (eventToAdd->getAudioEventInfo()->m_soundType == AT_Streaming || canPlayNow(eventToAdd)) {
 #ifdef INTENSIVE_AUDIO_DEBUG
 		DEBUG_LOG((" - appended to request list with handle '%d'.", (UnsignedInt) eventToAdd->getPlayingHandle()));
 #endif
