@@ -50,6 +50,9 @@
 
 extern Int g_resourceMultiplierPercent; // Reborn
 
+// Reborn: suppress camera side effects while ReplayMenu is reading replay metadata
+Bool g_rebornSuppressReplayHeaderCamera = FALSE;
+
 GameInfo *TheGameInfo = nullptr;
 
 // GameSlot ----------------------------------------
@@ -406,8 +409,12 @@ static void RestorePersonalMaxCameraHeight()
 
 	if (TheTacticalView)
 	{
-		TheTacticalView->setMaxHeightAboveGround(value);
-		TheTacticalView->setHeightAboveGround(value);
+		// Reborn: do not apply replay header camera height while only reading replay metadata
+		if (!g_rebornSuppressReplayHeaderCamera)
+		{
+			TheTacticalView->setMaxHeightAboveGround(value);
+			TheTacticalView->setHeightAboveGround(value);
+		}
 		TheTacticalView->setZoom(1.0f);
 	}
 }
@@ -438,8 +445,12 @@ void GameInfo::startGame(Int gameID)
 
 	if (TheTacticalView)
 	{
-		TheTacticalView->setMaxHeightAboveGround(maxCameraHeight);
-		TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
+		// Reborn: do not restore replay header camera height while only reading replay metadata
+		if (!g_rebornSuppressReplayHeaderCamera)
+		{
+			TheTacticalView->setMaxHeightAboveGround(maxCameraHeight);
+			TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
+		}
 	}
 
 	closeOpenSlots();
