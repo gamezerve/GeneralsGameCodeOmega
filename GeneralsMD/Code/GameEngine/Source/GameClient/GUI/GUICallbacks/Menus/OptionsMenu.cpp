@@ -241,14 +241,21 @@ static OptionPreferences *pref = nullptr;
 //		|| camp->m_name.compare("china_gen") == 0;
 //}
 
+static Bool s_optionsMenuUsesRebornLayout = FALSE;
+
+void SetOptionsMenuUsesRebornLayout(Bool useReborn)
+{
+	s_optionsMenuUsesRebornLayout = useReborn;
+}
+
 static const char* GetOptionsMenuLayoutPath()
 {
-	return IsRebornCampaign() ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd";
+	return s_optionsMenuUsesRebornLayout ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd";
 }
 
 static const char* GetOptionsMenuWindowName()
 {
-	return IsRebornCampaign() ? "OptionsMenuGen.wnd" : "OptionsMenu.wnd";
+	return s_optionsMenuUsesRebornLayout ? "OptionsMenuGen.wnd" : "OptionsMenu.wnd";
 }
 
 static NameKeyType GetOptionsMenuChildKey(const char* childName)
@@ -993,6 +1000,8 @@ static void saveOptions()
 
 				TheInGameUI->recreateControlBar();
 				TheInGameUI->refreshCustomUiResources();
+
+				return;
 			}
 		}
 	}
@@ -1218,7 +1227,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	//sliderParticleCapID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ParticleCapSlider" );
   sliderParticleCap = TheWindowManager->winGetWindowFromId( nullptr, sliderParticleCapID );
 
-	WinAdvancedDisplay->winHide(TRUE);
+	if (WinAdvancedDisplay)
+		WinAdvancedDisplay->winHide(TRUE);
 
 	Color color =  GameMakeColor(255,255,255,255);
 

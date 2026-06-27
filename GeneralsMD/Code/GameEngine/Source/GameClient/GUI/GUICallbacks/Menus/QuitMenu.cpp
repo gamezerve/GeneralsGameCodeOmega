@@ -97,10 +97,17 @@ static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 //		|| camp->m_name.compare("china_gen") == 0;
 //}
 
+static Bool UseRebornQuitMenu()
+{
+	return TheGameLogic
+		&& TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER
+		&& IsRebornCampaign();
+}
+
 static NameKeyType GetPopupSaveLoadBackKey()
 {
 	return TheNameKeyGenerator->nameToKey(
-		IsRebornCampaign() ? "PopupSaveLoadGen.wnd:ButtonBack" : "PopupSaveLoad.wnd:ButtonBack"
+		UseRebornQuitMenu() ? "PopupSaveLoadGen.wnd:ButtonBack" : "PopupSaveLoad.wnd:ButtonBack"
 	);
 }
 
@@ -335,7 +342,7 @@ void ToggleQuitMenu()
 		DEBUG_ASSERTCRASH(optionsParent != nullptr, ("Not able to get the options layout parent window"));
 		//GameWindow *optionsBack = TheWindowManager->winGetWindowFromId(optionsParent, TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" ));
 		NameKeyType optionsBackID = TheNameKeyGenerator->nameToKey(
-			IsRebornCampaign() ? "OptionsMenuGen.wnd:ButtonBack" : "OptionsMenu.wnd:ButtonBack"
+			UseRebornQuitMenu() ? "OptionsMenuGen.wnd:ButtonBack" : "OptionsMenu.wnd:ButtonBack"
 		);
 		GameWindow* optionsBack = TheWindowManager->winGetWindowFromId(optionsParent, optionsBackID);
 		DEBUG_ASSERTCRASH(optionsBack != nullptr, ("Not able to get the back button window from the options menu"));
@@ -347,7 +354,13 @@ void ToggleQuitMenu()
 		GameWindow *saveLoadParent = saveLoadMenuLayout->getFirstWindow();
 		DEBUG_ASSERTCRASH(saveLoadParent != nullptr, ("Not able to get the save/load layout parent window"));
 		//GameWindow *saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, TheNameKeyGenerator->nameToKey( "PopupSaveLoad.wnd:ButtonBack" ));
-		GameWindow* saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, GetPopupSaveLoadBackKey());
+		//GameWindow* saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, GetPopupSaveLoadBackKey());
+		GameWindow* saveLoadBack = TheWindowManager->winGetWindowFromId(
+			saveLoadParent,
+			TheNameKeyGenerator->nameToKey(
+				UseRebornQuitMenu() ? "PopupSaveLoadGen.wnd:ButtonBack" : "PopupSaveLoad.wnd:ButtonBack"
+			)
+		);
 		DEBUG_ASSERTCRASH(saveLoadBack != nullptr, ("Not able to get the back button window from the save/load menu"));
 		TheWindowManager->winSendSystemMsg(saveLoadMenuLayout->getFirstWindow(), GBM_SELECTED, (WindowMsgData)saveLoadBack, 0);
 		saveLoadMenuLayout = nullptr;
@@ -406,7 +419,10 @@ void ToggleQuitMenu()
 		}
 		else
 		{
-			if (IsRebornCampaign()) // Reborn
+
+			Bool useRebornQuitMenu = TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER && IsRebornCampaign();
+
+			if (useRebornQuitMenu) // Reborn
 			{
 				if (!quitMenuGenLayout)
 					quitMenuGenLayout = TheWindowManager->winCreateLayout("Menus/QuitMenuGen.wnd");
@@ -421,7 +437,7 @@ void ToggleQuitMenu()
 				initGadgetsFullQuit(FALSE);
 			}
 
-			if (IsRebornCampaign()) // Reborn
+			if (useRebornQuitMenu) // Reborn
 			{
 				TheTransitionHandler->remove("QuitFullGen");
 				TheTransitionHandler->setGroup("QuitFullGen");
@@ -556,15 +572,26 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 //				if( TheGameLogic->getInputEnabledMemory() == FALSE )
 //					layoutType = SLLT_LOAD_ONLY;
 
-        saveLoadMenuLayout = TheShell->getSaveLoadMenuLayout();
+        //saveLoadMenuLayout = TheShell->getSaveLoadMenuLayout();
+				//saveLoadMenuLayout = TheShell->getSaveLoadMenuLayout(UseRebornQuitMenu());
+				Bool useRebornSaveLoadLayout = UseRebornQuitMenu();
+
+				SetPopupSaveLoadUsesRebornLayout(useRebornSaveLoadLayout);
+				saveLoadMenuLayout = TheShell->getSaveLoadMenuLayout(useRebornSaveLoadLayout);
 //				saveLoadMenuLayout->runInit( &layoutType );
 				saveLoadMenuLayout->runInit();
 				saveLoadMenuLayout->hide( FALSE );
 				saveLoadMenuLayout->bringForward();
       }
-			else if( controlID == buttonExit )
+			else if (controlID == buttonExit)
 			{
-        quitConfirmationWindow = QuitMessageBoxYesNo(TheGameText->fetch("GUI:QuitPopupTitle"), TheGameText->fetch("GUI:QuitPopupMessage"),/*quitCallback*/exitQuitMenu,noExitQuitMenu);
+				SetPopupMessageUsesRebornLayout(UseRebornQuitMenu());
+
+				quitConfirmationWindow = QuitMessageBoxYesNo(
+					TheGameText->fetch("GUI:QuitPopupTitle"),
+					TheGameText->fetch("GUI:QuitPopupMessage"),
+					exitQuitMenu,
+					noExitQuitMenu);
 			}
 			else if( controlID == buttonReturn )
 			{
@@ -575,7 +602,12 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if( buttonOptions == controlID )
 			{
-				WindowLayout *optLayout = TheShell->getOptionsLayout(TRUE);
+				//WindowLayout *optLayout = TheShell->getOptionsLayout(TRUE);
+				Bool useRebornOptionsLayout = UseRebornQuitMenu();
+
+				SetOptionsMenuUsesRebornLayout(useRebornOptionsLayout);
+
+				WindowLayout* optLayout = TheShell->getOptionsLayout(TRUE, useRebornOptionsLayout);
 				DEBUG_ASSERTCRASH(optLayout != nullptr, ("options menu layout is null"));
 				optLayout->runInit();
 				optLayout->hide(FALSE);
@@ -590,6 +622,7 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				if ( TheGameLogic->isInMultiplayerGame() )
 				{
+					SetPopupMessageUsesRebornLayout(UseRebornQuitMenu());
 					// we really want to surrender
 					quitConfirmationWindow = MessageBoxYesNo(TheGameText->fetch("GUI:SurrenderConfirmationTitle"),
 																			TheGameText->fetch("GUI:SurrenderConfirmation"),
@@ -597,6 +630,7 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 				}
 				else
 				{
+					SetPopupMessageUsesRebornLayout(UseRebornQuitMenu());
 					//we really want to restart
 					quitConfirmationWindow = MessageBoxYesNo(TheGameText->fetch("GUI:RestartConfirmationTitle"),
 																			TheGameText->fetch("GUI:RestartConfirmation"),
