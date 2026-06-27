@@ -22,6 +22,8 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
+// Recorder.cpp //////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Recorder.h"
@@ -903,6 +905,7 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 
 	// Read in the GameInfo
 	header.gameOptions = readAsciiString();
+
 	m_gameInfo.reset();
 	m_gameInfo.enterGame();
 	DEBUG_LOG(("RecorderClass::readReplayHeader - GameInfo = %s", header.gameOptions.str()));
@@ -913,19 +916,31 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 		m_file = nullptr;
 		return FALSE;
 	}
-	m_gameInfo.startGame(0);
+
+	// Reborn: only start/apply GameInfo when actually playing the replay, not when ReplayMenu reads metadata
+	if (header.forPlayback)
+	{
+		m_gameInfo.startGame(0);
+	}
+
 
 	AsciiString playerIndex = readAsciiString();
 	header.localPlayerIndex = atoi(playerIndex.str());
+
 	if (header.localPlayerIndex < -1 || header.localPlayerIndex >= MAX_SLOTS)
 	{
 		DEBUG_LOG(("RecorderClass::readReplayHeader - invalid local slot number."));
-		m_gameInfo.endGame();
+
+		// Reborn: only end GameInfo if it was started for real replay playback
+		if (header.forPlayback)
+			m_gameInfo.endGame();
+
 		m_gameInfo.reset();
 		m_file->close();
 		m_file = nullptr;
 		return FALSE;
 	}
+
 	if (header.localPlayerIndex >= 0)
 	{
 		Int localIP = m_gameInfo.getSlot(header.localPlayerIndex)->getIP();
@@ -934,11 +949,13 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 
 	if (!header.forPlayback)
 	{
-		m_gameInfo.endGame();
+		//m_gameInfo.endGame();
+		// Reborn: metadata reads does not call startGame anymore, so only reset and close the replay file
 		m_gameInfo.reset();
 		m_file->close();
 		m_file = nullptr;
 	}
+
 
 	return TRUE;
 }

@@ -55,6 +55,9 @@ typedef std::map<ReplayName, TooltipString> ReplayTooltipMap;
 
 static ReplayTooltipMap replayTooltipCache;
 
+// Reborn: defined in GameInfo.cpp, used to suppress camera changes during replay metadata reads
+extern Bool g_rebornSuppressReplayHeaderCamera;
+
 // window ids -------------------------------------------------------------------------------------
 static NameKeyType parentReplayMenuID = NAMEKEY_INVALID;
 static NameKeyType buttonLoadID = NAMEKEY_INVALID;
@@ -105,10 +108,13 @@ UnicodeString GetReplayFilenameFromListbox(GameWindow *listbox, Int index)
 
 //-------------------------------------------------------------------------------------------------
 
-static Bool readReplayMapInfo(const AsciiString& filename, RecorderClass::ReplayHeader &header, ReplayGameInfo &info, const MapMetaData *&mapData)
+static Bool readReplayMapInfo(const AsciiString& filename, RecorderClass::ReplayHeader& header, ReplayGameInfo& info, const MapMetaData*& mapData)
 {
 	header.forPlayback = FALSE;
 	header.filename = filename;
+
+	// Reborn: ReplayMenu only needs replay metadata, prevent camera side effects during header read
+	g_rebornSuppressReplayHeaderCamera = TRUE;
 
 	if (TheRecorder != nullptr && TheRecorder->readReplayHeader(header))
 	{
@@ -119,9 +125,16 @@ static Bool readReplayMapInfo(const AsciiString& filename, RecorderClass::Replay
 			else
 				mapData = nullptr;
 
+			// Reborn: restore camera behavior after metadata read
+			g_rebornSuppressReplayHeaderCamera = FALSE;
+
 			return true;
 		}
 	}
+
+	// Reborn: restore camera behavior if header read failed
+	g_rebornSuppressReplayHeaderCamera = FALSE;
+
 	return false;
 }
 
