@@ -152,9 +152,10 @@ public:
 	Int getScreenCount() const { return m_screenCount; } ///< Return the current number of screens
 	WindowLayout *getScreenLayout( Int index ) const;
 
-	WindowLayout *getSaveLoadMenuLayout();		///< create if necessary and return layout for save load menu
+	WindowLayout* getSaveLoadMenuLayout(Bool useRebornLayout = FALSE);		///< create if necessary and return layout for save load menu
 	WindowLayout *getPopupReplayLayout();			///< create if necessary and return layout for replay save menu
-	WindowLayout *getOptionsLayout( Bool create );	///< return layout for options menu, create if necessary and we are allowed to.
+	//WindowLayout *getOptionsLayout( Bool create );	///< return layout for options menu, create if necessary and we are allowed to.
+	WindowLayout* getOptionsLayout(Bool create, Bool useRebornLayout = FALSE);	///< return layout for options menu, create if necessary and we are allowed to.
 	void destroyOptionsLayout();							///< destroy the shell's options layout.
 
 protected:

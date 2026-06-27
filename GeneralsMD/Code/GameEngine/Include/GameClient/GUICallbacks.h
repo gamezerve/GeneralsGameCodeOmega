@@ -58,6 +58,7 @@ extern void OptionsMenuUpdate( WindowLayout *layout, void *userData );
 extern void OptionsMenuShutdown( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType OptionsMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern void SetOptionsMenuUsesRebornLayout(Bool useReborn);
 
 // Map Select Menu --------------------------------------------------------------------------------
 extern void MapSelectMenuInit( WindowLayout *layout, void *userData );
@@ -95,6 +96,7 @@ extern void SaveLoadMenuUpdate( WindowLayout *layout, void *userData );
 extern void SaveLoadMenuShutdown( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType SaveLoadMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern void SetPopupSaveLoadUsesRebornLayout(Bool useReborn);
 
 // Popup Communicator ------------------------------------------------------------------------------
 extern void PopupCommunicatorInit( WindowLayout *layout, void *userData );
@@ -385,3 +387,4 @@ extern WindowMsgHandledType MOTDSystem( GameWindow *window, UnsignedInt msg, Win
 // Message Box --------------------------------------------------------------------------------
 extern WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType QuitMessageBoxSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern void SetPopupMessageUsesRebornLayout(Bool useReborn);

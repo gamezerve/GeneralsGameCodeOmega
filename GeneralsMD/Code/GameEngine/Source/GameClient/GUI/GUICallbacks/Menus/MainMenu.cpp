@@ -56,6 +56,7 @@
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetStaticText.h"
+#include "GameClient/GUICallbacks.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/WindowVideoManager.h"
 #include "GameClient/CampaignManager.h"
@@ -75,7 +76,6 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 
 #include "GameClient/InGameUI.h"
-
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -1581,7 +1581,9 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_OPTIONS_SELECTED]);
 
 				// load the options menu
-				WindowLayout *optLayout = TheShell->getOptionsLayout(TRUE);
+				//WindowLayout *optLayout = TheShell->getOptionsLayout(TRUE);
+				SetOptionsMenuUsesRebornLayout(FALSE);
+				WindowLayout* optLayout = TheShell->getOptionsLayout(TRUE, FALSE);
 				DEBUG_ASSERTCRASH(optLayout != nullptr, ("unable to get options menu layout"));
 				optLayout->runInit();
 				optLayout->hide(FALSE);

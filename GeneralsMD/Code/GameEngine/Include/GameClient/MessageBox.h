@@ -44,3 +44,6 @@ GameWindow *MessageBoxOk(UnicodeString titleString,UnicodeString bodyString,Game
 
 
 GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc cancelCallback);///< convenience function for displaying a Message box with Cancel button
+
+void SetPopupMessageUsesRebornLayout(Bool useReborn);
+Bool GetPopupMessageUsesRebornLayout();

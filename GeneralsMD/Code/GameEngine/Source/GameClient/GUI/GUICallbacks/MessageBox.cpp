@@ -59,6 +59,17 @@
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/MessageBox.h"
 
+static Bool s_popupMessageUsesRebornLayout = FALSE;
+
+void SetPopupMessageUsesRebornLayout(Bool useReborn)
+{
+	s_popupMessageUsesRebornLayout = useReborn;
+}
+
+Bool GetPopupMessageUsesRebornLayout()
+{
+	return s_popupMessageUsesRebornLayout;
+}
 
 GameWindow *MessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback)  ///< convenience function for displaying a Message box with Yes and No buttons
 {
@@ -145,7 +156,8 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 			GameWindow* control = (GameWindow*)mData1;
 			Int controlID = control->winGetWindowId();
 
-			const Bool useGen = IsRebornCampaign();
+			//const Bool useGen = IsRebornCampaign();
+			const Bool useGen = s_popupMessageUsesRebornLayout;
 
 			NameKeyType buttonOkID;
 			NameKeyType buttonYesID;
@@ -247,7 +259,8 @@ WindowMsgHandledType QuitMessageBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
-			const Bool useGen = IsRebornCampaign();
+			//const Bool useGen = IsRebornCampaign();
+			const Bool useGen = s_popupMessageUsesRebornLayout;
 
 			const NameKeyType buttonOkID =
 				TheNameKeyGenerator->nameToKey(useGen ? "QuitMessageBoxGen.wnd:ButtonOk"

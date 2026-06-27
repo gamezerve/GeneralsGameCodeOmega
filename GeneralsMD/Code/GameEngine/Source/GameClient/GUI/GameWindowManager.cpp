@@ -54,6 +54,7 @@
 #include "GameClient/GadgetCheckBox.h"
 #include "GameClient/GlobalLanguage.h"
 #include "GameClient/GameWindowTransitions.h"
+#include "GameClient/MessageBox.h"
 #include "Common/NameKeyGenerator.h"
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -1624,43 +1625,27 @@ GameWindow *GameWindowManager::gogoMessageBox(Int x, Int y, Int width, Int heigh
                         GameWinMsgBoxFunc cancelCallback, Bool useLogo )
 
 {
+
+	const Bool useGen = GetPopupMessageUsesRebornLayout();
+
 	// first check to make sure we have some buttons to display
 	if(buttonFlags == 0 )
 	{
 		return nullptr;
 	}
 	GameWindow *trueParent = nullptr;
-	//Changed by Chris
-	if(useLogo)
-	{
-		if (IsRebornCampaign()) // Reborn campaign needs to use Generals theme, so we need to load a different script for it
-			trueParent = winCreateFromScript("Menus/QuitMessageBoxGen.wnd");
-		else
-			trueParent = winCreateFromScript("Menus/QuitMessageBox.wnd");
-	}
-	else
-	{
-		if (IsRebornCampaign())
-			trueParent = winCreateFromScript("Menus/MessageBoxGen.wnd");
-		else
-			trueParent = winCreateFromScript("Menus/MessageBox.wnd");
-	}
-	//Added By Chris
 	AsciiString menuName;
-	if(useLogo)
+	if (useLogo)
 	{
-		if (IsRebornCampaign()) // Reborn campaign needs to use Generals theme, so we need to load a different script for it
-			menuName.set("QuitMessageBoxGen.wnd:");
-		else
-			menuName.set("QuitMessageBox.wnd:");
+		trueParent = winCreateFromScript(useGen ? "Menus/QuitMessageBoxGen.wnd" : "Menus/QuitMessageBox.wnd");
+		menuName.set(useGen ? "QuitMessageBoxGen.wnd:" : "QuitMessageBox.wnd:");
 	}
 	else
 	{
-		if (IsRebornCampaign())
-			menuName.set("MessageBoxGen.wnd:");
-		else
-			menuName.set("MessageBox.wnd:");
+		trueParent = winCreateFromScript(useGen ? "Menus/MessageBoxGen.wnd" : "Menus/MessageBox.wnd");
+		menuName.set(useGen ? "MessageBoxGen.wnd:" : "MessageBox.wnd:");
 	}
+
 
 	AsciiString tempName;
 	GameWindow *parent = nullptr;

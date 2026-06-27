@@ -880,9 +880,11 @@ void Shell::loadScheme( AsciiString name )
 //	return m_saveLoadMenuLayout;
 //
 //}
-WindowLayout* Shell::getSaveLoadMenuLayout()
+WindowLayout* Shell::getSaveLoadMenuLayout(Bool useRebornLayout)
 {
-	const char* layoutName = GetPopupSaveLoadLayoutName();
+	const char* layoutName = useRebornLayout
+		? "Menus/PopupSaveLoadGen.wnd"
+		: "Menus/PopupSaveLoad.wnd";
 
 	if (m_saveLoadMenuLayout != nullptr)
 	{
@@ -921,21 +923,45 @@ WindowLayout *Shell::getPopupReplayLayout()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-WindowLayout *Shell::getOptionsLayout( Bool create )
+//WindowLayout* Shell::getOptionsLayout(Bool create, Bool useRebornLayout)
+//{
+//	// if layout has not been created, create it now
+//	if ((m_optionsLayout == nullptr) && (create == TRUE))
+//	{
+//		//m_optionsLayout = TheWindowManager->winCreateLayout( "Menus/OptionsMenu.wnd" );
+//		m_optionsLayout = TheWindowManager->winCreateLayout(
+//			IsRebornCampaign() ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd"
+//		);
+//
+//		// sanity
+//		DEBUG_ASSERTCRASH( m_optionsLayout, ("Unable to create options menu layout") );
+//	}
+//
+//	// return the layout
+//	return m_optionsLayout;
+//}
+WindowLayout* Shell::getOptionsLayout(Bool create, Bool useRebornLayout)
 {
-	// if layout has not been created, create it now
-	if ((m_optionsLayout == nullptr) && (create == TRUE))
-	{
-		//m_optionsLayout = TheWindowManager->winCreateLayout( "Menus/OptionsMenu.wnd" );
-		m_optionsLayout = TheWindowManager->winCreateLayout(
-			IsRebornCampaign() ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd"
-		);
+	const char* layoutName = useRebornLayout
+		? "Menus/OptionsMenuGen.wnd"
+		: "Menus/OptionsMenu.wnd";
 
-		// sanity
-		DEBUG_ASSERTCRASH( m_optionsLayout, ("Unable to create options menu layout") );
+	if (m_optionsLayout != nullptr)
+	{
+		if (m_optionsLayout->getFilename().compareNoCase(layoutName) != 0)
+		{
+			m_optionsLayout->destroyWindows();
+			deleteInstance(m_optionsLayout);
+			m_optionsLayout = nullptr;
+		}
 	}
 
-	// return the layout
+	if (m_optionsLayout == nullptr && create)
+	{
+		m_optionsLayout = TheWindowManager->winCreateLayout(layoutName);
+		DEBUG_ASSERTCRASH(m_optionsLayout, ("Unable to create options menu layout"));
+	}
+
 	return m_optionsLayout;
 }
 

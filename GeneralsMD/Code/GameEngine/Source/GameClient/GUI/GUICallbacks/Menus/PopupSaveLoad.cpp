@@ -74,19 +74,16 @@
 //		|| camp->m_name.compare("china_gen") == 0;
 //}
 
+static Bool s_popupSaveLoadUsesRebornLayout = FALSE;
+
+void SetPopupSaveLoadUsesRebornLayout(Bool useReborn)
+{
+	s_popupSaveLoadUsesRebornLayout = useReborn;
+}
+
 static const char* GetPopupSaveLoadWndName()
 {
-	const Campaign* campaign = TheCampaignManager->getCurrentCampaign();
-
-	if (campaign == nullptr)
-		return "PopupSaveLoad.wnd";
-
-	const AsciiString& campaignName = campaign->m_name;
-
-	if (campaignName.isEmpty())
-		return "PopupSaveLoad.wnd";
-
-	return IsRebornCampaign() ? "PopupSaveLoadGen.wnd" : "PopupSaveLoad.wnd";
+	return s_popupSaveLoadUsesRebornLayout ? "PopupSaveLoadGen.wnd" : "PopupSaveLoad.wnd";
 }
 
 static const char* GetSaveLoadWndName()
@@ -211,7 +208,7 @@ static void refreshSaveGameList()
 
 	// populate the listbox with save games from the selected directory
 	//TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType);
-	TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType, isPopup && IsRebornCampaign());
+	TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType, isPopup && s_popupSaveLoadUsesRebornLayout);
 
 	// update button availability
 	updateMenuActions();
