@@ -16170,6 +16170,14 @@ GUI:Back
 "BACK"
 END
 
+GUI:ModSaves
+"Reborn Omega Saves"
+END
+
+GUI:BaseSaves
+"Zero Hour Saves"
+END
+
 GUI:BattleHonors
 "Battle Honors"
 END
@@ -27183,7 +27191,7 @@ Version:BuildUser
 END
 
 Version:Format2
-"Version %d.%02d Reborn 1.03 (Beta 3) by Gamezerve"
+"Version %d.%02d Reborn 1.03 by Gamezerve"
 END
 
 Version:Format3

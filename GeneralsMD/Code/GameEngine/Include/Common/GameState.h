@@ -169,7 +169,8 @@ public:
 
 	// manipulating files
 	Bool doesSaveGameExist( AsciiString filename );							///< does the save file exist
-	void populateSaveGameListbox( GameWindow *listbox, SaveLoadLayoutType layoutType );	///< populate listbox with available save games
+	//void populateSaveGameListbox( GameWindow *listbox, SaveLoadLayoutType layoutType );	///< populate listbox with available save games
+	void populateSaveGameListbox(GameWindow* listbox, SaveLoadLayoutType layoutType, Bool useRebornColors = FALSE);
 	void getSaveGameInfoFromFile( AsciiString filename, SaveGameInfo *saveGameInfo );		///< get save game info from file
 
 	void friend_xferSaveDataForCRC( Xfer *xfer, SnapshotType which );		///< This should only be called to DeepCRC sanity checking
@@ -182,6 +183,16 @@ public:
 	AsciiString getSaveDirectory() const;
 	AsciiString getFilePathInSaveDirectory(const AsciiString& leaf) const;
 	Bool isInSaveDirectory(const AsciiString& path) const;
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Select which save directory should be used */
+	//-------------------------------------------------------------------------------------------------
+	void setUseBaseSaveDirectory(Bool useBase) { m_useBaseSaveDirectory = useBase; }
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Are we using the base game's save directory? */
+	//-------------------------------------------------------------------------------------------------
+	Bool isUsingBaseSaveDirectory() const { return m_useBaseSaveDirectory; }
 
 	AsciiString realMapPathToPortableMapPath(const AsciiString& in) const;
 	AsciiString portableMapPathToRealMapPath(const AsciiString& in) const;
@@ -227,6 +238,8 @@ private:
 	AvailableGameInfo *m_availableGames;		///< list of available games we can save over or load from
 
 	Bool m_isInLoadGame; // Brutal hack to allow bone pos validation while loading games
+
+	Bool m_useBaseSaveDirectory;		///< Reborn: use the base game's save directory instead of the mod save directory
 };
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////

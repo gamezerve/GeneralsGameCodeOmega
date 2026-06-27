@@ -53,6 +53,7 @@
 #include "Common/PlayerTemplate.h" // Reborn
 #include "GameClient/CampaignManager.h"
 #include "GameClient/GadgetListBox.h"
+#include "GameClient/GadgetRadioButton.h"
 #include "GameClient/GadgetTextEntry.h"
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
@@ -100,7 +101,9 @@ static const char* GetSaveLoadWndName()
 	if (campaignName.isEmpty())
 		return "SaveLoad.wnd";
 
-	return IsRebornCampaign() ? "SaveLoadGen.wnd" : "SaveLoad.wnd";
+	//return IsRebornCampaign() ? "SaveLoadGen.wnd" : "SaveLoad.wnd";
+	// Reborn: Disabled for now, since the SaveLoadGen.wnd may cause issues when a corrupt save file opened.
+	return IsRebornCampaign() ? "SaveLoad.wnd" : "SaveLoad.wnd";
 }
 
 static NameKeyType MakeWndKey(const char* wndName, const char* controlName)
@@ -134,6 +137,16 @@ static NameKeyType buttonSaveDescCancel		= NAMEKEY_INVALID;
 static NameKeyType buttonSaveDescConfirm	= NAMEKEY_INVALID;
 static NameKeyType buttonDeleteConfirm		= NAMEKEY_INVALID;
 static NameKeyType buttonDeleteCancel			= NAMEKEY_INVALID;
+static NameKeyType buttonBaseSavesKey     = NAMEKEY_INVALID;
+static NameKeyType buttonModSavesKey      = NAMEKEY_INVALID;
+
+enum SaveListSource
+{
+	SAVE_LIST_MOD,
+	SAVE_LIST_BASE
+};
+
+static SaveListSource currentSaveListSource = SAVE_LIST_MOD;
 
 static GameWindow *buttonFrame = nullptr;
 static GameWindow *overwriteConfirm = nullptr;
@@ -184,6 +197,41 @@ static void updateMenuActions()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Refresh the save game list using the currently selected save directory */
+//-------------------------------------------------------------------------------------------------
+static void refreshSaveGameList()
+{
+
+	// sanity
+	DEBUG_ASSERTCRASH(listboxGames != nullptr,
+		("refreshSaveGameList - Unable to find games listbox"));
+
+	// select which save directory we are displaying
+	TheGameState->setUseBaseSaveDirectory(currentSaveListSource == SAVE_LIST_BASE);
+
+	// populate the listbox with save games from the selected directory
+	//TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType);
+	TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType, isPopup && IsRebornCampaign());
+
+	// update button availability
+	updateMenuActions();
+
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the mod saves radio button by default */
+//-------------------------------------------------------------------------------------------------
+static void selectDefaultSaveDirectoryButton()
+{
+
+	GameWindow* buttonModSaves = TheWindowManager->winGetWindowFromId(parent, buttonModSavesKey);
+
+	if (buttonModSaves)
+		GadgetRadioSetSelection(buttonModSaves, TRUE);
+
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Initialize the SaveLoad menu */
 //-------------------------------------------------------------------------------------------------
 void SaveLoadMenuInit( WindowLayout *layout, void *userData )
@@ -223,6 +271,9 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 	buttonSaveDescConfirm = GetPopupSaveLoadKey("ButtonSaveDescConfirm");
 	buttonDeleteConfirm = GetPopupSaveLoadKey("ButtonDeleteConfirm");
 	buttonDeleteCancel = GetPopupSaveLoadKey("ButtonDeleteCancel");
+	buttonBaseSavesKey = GetPopupSaveLoadKey("ButtonBaseSaves");
+	buttonModSavesKey = GetPopupSaveLoadKey("ButtonModSaves");
+	currentSaveListSource = SAVE_LIST_MOD;
 
 	//set keyboard focus to main parent and set modal
 	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("PopupSaveLoad.wnd:SaveLoadMenu");
@@ -231,6 +282,8 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 	TheWindowManager->winSetModal( parent );
+
+	selectDefaultSaveDirectoryButton();
 
 	// enable the menu action buttons
 	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:MenuButtonFrame" ) );
@@ -275,7 +328,9 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );
 
 	// populate the listbox with the save games on disk
-	TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+	//TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+	// Reborn: Changed to Support Mod Saves Lists
+	refreshSaveGameList();
 
 	// update the availability of the menu buttons
 	updateMenuActions();
@@ -338,7 +393,9 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	buttonSaveDescConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonSaveDescConfirm");
 	buttonDeleteConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonDeleteConfirm");
 	buttonDeleteCancel = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonDeleteCancel");
-
+	buttonBaseSavesKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonBaseSaves");
+	buttonModSavesKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonModSaves");
+	currentSaveListSource = SAVE_LIST_MOD;
 
 	//set keyboard focus to main parent and set modal
 	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
@@ -366,6 +423,8 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	//	TheWindowManager->winSetModal( parent );
 	//	TheWindowManager->winSetModal( parent );
 //	TheWindowManager->winSetModal( parent );
+
+	selectDefaultSaveDirectoryButton();
 
 	// enable the menu action buttons
 	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:MenuButtonFrame" ) );
@@ -412,7 +471,9 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );
 
 	// populate the listbox with the save games on disk
-	TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+	//TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+	// Reborn: Changed to Support Mod Saves Lists
+	refreshSaveGameList();
 
 	// update the availability of the menu buttons
 	updateMenuActions();
@@ -795,7 +856,24 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
 
-      if( controlID == buttonLoadKey )
+			//
+			// Reborn: switch between the base game and mod save directories
+			//
+			if (controlID == buttonBaseSavesKey)
+			{
+
+				currentSaveListSource = SAVE_LIST_BASE;
+				refreshSaveGameList();
+
+			}
+			else if (controlID == buttonModSavesKey)
+			{
+
+				currentSaveListSource = SAVE_LIST_MOD;
+				refreshSaveGameList();
+
+			}
+			else if (controlID == buttonLoadKey)
       {
 				processLoadButtonPress(window);
       }
@@ -914,7 +992,9 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 					DeleteFile( filepath.str() );
 
 					// repopulate the listbox
-					TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+					// TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
+					// Reborn: Changed to Support Mod Saves Lists
+					refreshSaveGameList();
 
 				}
 
@@ -983,6 +1063,12 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 					// save the game
 					AsciiString filename;
 					filename = selectedGameInfo->filename;
+
+					//
+					// Reborn: Save games are always written to the mod save directory.
+					//
+					TheGameState->setUseBaseSaveDirectory(FALSE);
+
 					TheGameState->saveGame( filename, selectedGameInfo->saveGameInfo.description, fileType );
 
 /*
@@ -1047,6 +1133,13 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 				AsciiString filename;
 				if( selectedGameInfo )
 					filename = selectedGameInfo->filename;
+
+				//
+				// Reborn: Save games are always written to the mod save directory.
+				//
+				TheGameState->setUseBaseSaveDirectory(FALSE);
+				//
+
 				TheGameState->saveGame( filename, desc, fileType );
 
 			}

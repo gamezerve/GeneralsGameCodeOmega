@@ -290,6 +290,7 @@ GameState::GameState()
 
 	m_availableGames = nullptr;
 	m_isInLoadGame = FALSE;
+	m_useBaseSaveDirectory = FALSE;
 
 }
 
@@ -798,7 +799,10 @@ AsciiString GameState::getSaveDirectory() const
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
 #ifdef REBORN_BUILD
-	tmp.concat("RebornOmegaSave\\");
+	if (m_useBaseSaveDirectory)
+		tmp.concat("Save\\");
+	else
+		tmp.concat("RebornOmegaSave\\");
 #else
 	tmp.concat("Save\\");
 #endif
@@ -1179,7 +1183,8 @@ static void addGameToAvailableList( AsciiString filename, void *userData )
 // ------------------------------------------------------------------------------------------------
 /** Populate the listbox passed in with a list of the save games present on the hard drive */
 // ------------------------------------------------------------------------------------------------
-void GameState::populateSaveGameListbox( GameWindow *listbox, SaveLoadLayoutType layoutType )
+//void GameState::populateSaveGameListbox( GameWindow *listbox, SaveLoadLayoutType layoutType )
+void GameState::populateSaveGameListbox(GameWindow* listbox, SaveLoadLayoutType layoutType, Bool useRebornColors)
 {
 	Int index;
 
@@ -1255,7 +1260,7 @@ void GameState::populateSaveGameListbox( GameWindow *listbox, SaveLoadLayoutType
 		//else
 		//	color = GameMakeColor( 170, 170, 235, 255 );
 		Color color;
-		if (IsRebornCampaign())
+		if (useRebornColors)
 		{
 			if (saveGameInfo->saveFileType == SAVE_FILE_TYPE_MISSION)
 				color = GameMakeColor(200, 255, 200, 255);

@@ -116,7 +116,9 @@ void DoCompressTest();
 
 static const char* GetSaveLoadMenuFile()
 {
-	return IsRebornCampaign() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd";
+	//return IsRebornCampaign() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd";
+	// Reborn: Disabled for now, since the SaveLoadGen.wnd may cause issues when a corrupt save file opened.
+	return IsRebornCampaign() ? "Menus/SaveLoad.wnd" : "Menus/SaveLoad.wnd";
 }
 
 // window ids -------------------------------------------------------------------------------------

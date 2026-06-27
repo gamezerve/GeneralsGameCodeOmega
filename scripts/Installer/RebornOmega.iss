@@ -88,6 +88,19 @@ begin
   end;
 end;
 
+function HasOldRebornExecutables: Boolean;
+var
+  FindRec: TFindRec;
+begin
+  Result := False;
+
+  if FindFirst(WizardDirValue + '\Reborn Omega*.exe', FindRec) then
+  begin
+    Result := True;
+    FindClose(FindRec);
+  end;
+end;
+
 function NextButtonClick(CurPageID: Integer): Boolean;
 var
   DataDir: String;
@@ -109,11 +122,15 @@ begin
 
     DataDir := WizardDirValue + '\RebornOmegaData';
 
-    if DirExists(DataDir) then
+    if DirExists(DataDir) or HasOldRebornExecutables then
     begin
       if MsgBox(
-        'The existing RebornOmegaData folder will be deleted before installation:' + #13#10 + #13#10 +
-        DataDir + #13#10 + #13#10 +
+        'The existing Reborn Omega installation will be replaced.' + #13#10 + #13#10 +
+        'The following will be removed before installation:' + #13#10 +
+        '- RebornOmegaData' + #13#10 +
+        '- Previous Reborn Omega executable files' + #13#10 + #13#10 +
+        'Installation folder:' + #13#10 +
+        WizardDirValue + #13#10 + #13#10 +
         'Do you want to continue?',
         mbConfirmation,
         MB_YESNO) <> IDYES then
@@ -144,6 +161,22 @@ begin
   end;
 end;
 
+procedure DeleteOldRebornExecutables;
+var
+  FindRec: TFindRec;
+begin
+  if FindFirst(ExpandConstant('{app}\Reborn Omega*.exe'), FindRec) then
+  begin
+    try
+      repeat
+        DeleteFile(ExpandConstant('{app}\') + FindRec.Name);
+      until not FindNext(FindRec);
+    finally
+      FindClose(FindRec);
+    end;
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   DataDir: String;
@@ -154,6 +187,8 @@ begin
 
     if DirExists(DataDir) then
       DelTree(DataDir, True, True, True);
+
+    DeleteOldRebornExecutables;
   end;
 end;
 
@@ -166,4 +201,4 @@ FinishedHeadingLabel=Installation Complete
 FinishedLabel=Zero Hour {#RebornDisplayName} has been installed successfully.
 
 [Run]
-Filename: "{app}\{#RebornDisplayName}.exe"; Description: "Launch {#RebornDisplayName}"; Flags: postinstall nowait skipifsilent; Tasks: launch
+Filename: "{app}\{#RebornDisplayName}.exe"; Description: "Launch {#RebornDisplayName}"; Flags: postinstall nowait skipifsilent

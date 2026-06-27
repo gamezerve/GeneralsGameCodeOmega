@@ -386,6 +386,104 @@ WINDOW
     END
     CHILD
     WINDOW
+      WINDOWTYPE = RADIOBUTTON;
+      SCREENRECT = UPPERLEFT: 575 46,
+                   BOTTOMRIGHT: 732 78,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "SaveLoadGen.wnd:ButtonModSaves";
+      STATUS = ENABLED+IMAGE;
+    STYLE = RADIOBUTTON+MOUSETRACK;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+    HEADERTEMPLATE = "LabelRegular";
+      TOOLTIPDELAY = -1;
+      TEXT = "GUI:ModSaves";
+    TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                HILITE:   168 255 12 255, HILITEBORDER:   0 1 1 255;
+    ENABLEDDRAWDATA = IMAGE: RadioButtonEnabledLeftGen, COLOR: 1 1 1 160, BORDERCOLOR: 47 55 168 255,
+                      IMAGE: RadioButtonEnabledMiddleGen, COLOR: 128 0 0 0, BORDERCOLOR: 0 0 0 0,
+                      IMAGE: RadioButtonEnabledRightGen, COLOR: 117 43 1 200, BORDERCOLOR: 128 128 255 255,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    DISABLEDDRAWDATA = IMAGE: RadioButtonDisabledLeftGen, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                       IMAGE: RadioButtonDisabledMiddleGen, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                       IMAGE: RadioButtonDisabledRightGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    HILITEDRAWDATA = IMAGE: RadioButtonEnabledLeftGen, COLOR: 1 1 1 160, BORDERCOLOR: 47 55 168 255,
+                     IMAGE: RadioButtonEnabledMiddleGen, COLOR: 128 0 0 0, BORDERCOLOR: 0 0 0 0,
+                     IMAGE: RadioButtonEnabledRightGen, COLOR: 117 43 1 200, BORDERCOLOR: 128 128 255 255,
+                     IMAGE: RadioButtonHilightedLeftGen, COLOR: 0 1 0 160, BORDERCOLOR: 47 55 168 255,
+                     IMAGE: RadioButtonHilightedMiddleGen, COLOR: 0 128 0 0, BORDERCOLOR: 128 255 128 255,
+                     IMAGE: RadioButtonHilightedRightGen, COLOR: 117 43 0 200, BORDERCOLOR: 254 254 254 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    RADIOBUTTONDATA = GROUP: 1;
+    END
+    CHILD
+    WINDOW
+      WINDOWTYPE = RADIOBUTTON;
+      SCREENRECT = UPPERLEFT: 404 46,
+                   BOTTOMRIGHT: 561 78,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "SaveLoadGen.wnd:ButtonBaseSaves";
+      STATUS = ENABLED+IMAGE;
+      STYLE = RADIOBUTTON+MOUSETRACK;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+    FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+    HEADERTEMPLATE = "LabelRegular";
+      TOOLTIPDELAY = -1;
+      TEXT = "GUI:BaseSaves";
+    TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                HILITE:   168 255 12 255, HILITEBORDER:   0 1 1 255;
+    ENABLEDDRAWDATA = IMAGE: RadioButtonEnabledLeftGen, COLOR: 1 1 1 160, BORDERCOLOR: 47 55 168 255,
+                      IMAGE: RadioButtonEnabledMiddleGen, COLOR: 128 0 0 0, BORDERCOLOR: 0 0 0 0,
+                      IMAGE: RadioButtonEnabledRightGen, COLOR: 117 43 1 200, BORDERCOLOR: 128 128 255 255,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                      IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    DISABLEDDRAWDATA = IMAGE: RadioButtonDisabledLeftGen, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                       IMAGE: RadioButtonDisabledMiddleGen, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                       IMAGE: RadioButtonDisabledRightGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    HILITEDRAWDATA = IMAGE: RadioButtonEnabledLeftGen, COLOR: 1 1 1 160, BORDERCOLOR: 47 55 168 255,
+                     IMAGE: RadioButtonEnabledMiddleGen, COLOR: 128 0 0 0, BORDERCOLOR: 0 0 0 0,
+                     IMAGE: RadioButtonEnabledRightGen, COLOR: 117 43 1 200, BORDERCOLOR: 128 128 255 255,
+                     IMAGE: RadioButtonHilightedLeftGen, COLOR: 0 1 0 160, BORDERCOLOR: 47 55 168 255,
+                     IMAGE: RadioButtonHilightedMiddleGen, COLOR: 0 128 0 0, BORDERCOLOR: 128 255 128 255,
+                     IMAGE: RadioButtonHilightedRightGen, COLOR: 117 43 0 200, BORDERCOLOR: 254 254 254 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                     IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    RADIOBUTTONDATA = GROUP: 1;
+    END
+    CHILD
+    WINDOW
       WINDOWTYPE = SCROLLLISTBOX;
       SCREENRECT = UPPERLEFT: 60 100,
                    BOTTOMRIGHT: 732 492,
