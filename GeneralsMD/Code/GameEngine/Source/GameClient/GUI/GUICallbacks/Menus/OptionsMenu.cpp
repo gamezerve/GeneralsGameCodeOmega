@@ -258,6 +258,10 @@ static const char* GetOptionsMenuWindowName()
 	return s_optionsMenuUsesRebornLayout ? "OptionsMenuGen.wnd" : "OptionsMenu.wnd";
 }
 
+static UnsignedInt lastOptionsMaxCameraHeightEditTime = 0;
+static Int lastOptionsMaxCameraHeightValue = 310;
+static Bool lastOptionsMaxCameraHeightWasEnabled = FALSE;
+
 static NameKeyType GetOptionsMenuChildKey(const char* childName)
 {
 	AsciiString fullName;
@@ -420,6 +424,25 @@ static void setDefaults()
 		GadgetCheckBoxSetChecked( checkProps, TheGlobalData->m_useTrees);
 	}
 	}
+}
+
+static void clampOptionsMaxCameraHeightText()
+{
+	if (!textEntryMaxCameraHeight)
+		return;
+
+	UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+	AsciiString aStr;
+	aStr.translate(uStr);
+
+	if (aStr.getLength() < 3)
+		return;
+
+	Int value = atoi(aStr.str());
+	value = clamp(310, value, 750);
+
+	uStr.format(L"%d", value);
+	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 }
 
 static void saveOptions()
@@ -1652,6 +1675,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 {
+	DEBUG_LOG(("OptionsMenuShutdown\n"));
 /* moved into the back button stuff
 	if (pref)
 	{
@@ -1676,7 +1700,39 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
+	if (!checkMaxCameraHeight || !textEntryMaxCameraHeight)
+		return;
 
+	Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+	Int value = 310;
+
+	if (enabled)
+	{
+		UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+		AsciiString aStr;
+		aStr.translate(uStr);
+		value = atoi(aStr.str());
+	}
+
+	if (enabled != lastOptionsMaxCameraHeightWasEnabled || value != lastOptionsMaxCameraHeightValue)
+	{
+		lastOptionsMaxCameraHeightWasEnabled = enabled;
+		lastOptionsMaxCameraHeightValue = value;
+		lastOptionsMaxCameraHeightEditTime = timeGetTime();
+	}
+
+	if (enabled && lastOptionsMaxCameraHeightEditTime != 0)
+	{
+		UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+		AsciiString aStr;
+		aStr.translate(uStr);
+
+		if (aStr.getLength() >= 3 && timeGetTime() - lastOptionsMaxCameraHeightEditTime > 750)
+		{
+			lastOptionsMaxCameraHeightEditTime = 0;
+			clampOptionsMaxCameraHeightText();
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
