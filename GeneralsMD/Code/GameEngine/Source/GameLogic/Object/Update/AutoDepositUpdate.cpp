@@ -155,10 +155,10 @@ void AutoDepositUpdate::awardInitialCaptureBonus( Player *player )
 		UnicodeString moneyString;
 		moneyString.format(TheGameText->fetch("GUI:AddCash"), initialBonus);
 		Coord3D pos;
-		pos.set(getObject()->getPosition());
-		pos.z += 10.0f;
-		Color color = player->getPlayerColor() | GameMakeColor(0, 0, 0, 230);
-		TheInGameUI->addFloatingText(moneyString, &pos, color);
+		pos.set( *getObject()->getPosition() );
+		pos.z += 10.0f; //add a little z to make it show up above the unit.
+		Color color = player->getPlayerColor() | GameMakeColor( 0, 0, 0, 230 );
+		TheInGameUI->addFloatingText( moneyString, &pos, color );
 	}
 
 	m_awardInitialCaptureBonus = FALSE;
@@ -226,7 +226,7 @@ UpdateSleepTime AutoDepositUpdate::update()
 			  UnicodeString moneyString;
 			  moneyString.format( TheGameText->fetch( "GUI:AddCash" ), moneyAmount );
 			  Coord3D pos;
-			  pos.set( getObject()->getPosition() );
+			  pos.set( *getObject()->getPosition() );
 			  pos.z += 10.0f; //add a little z to make it show up above the unit.
 
         if ( owner->isKindOf( KINDOF_STRUCTURE ) )
