@@ -213,6 +213,8 @@ void Shell::update()
 			m_screenStack[ i ]->runUpdate( nullptr );
 
 		}
+		if (m_optionsLayout)
+			m_optionsLayout->runUpdate(nullptr);
 		if(TheGlobalData->m_shellMapOn && m_shellMapOn &&m_background)
 		{
 
