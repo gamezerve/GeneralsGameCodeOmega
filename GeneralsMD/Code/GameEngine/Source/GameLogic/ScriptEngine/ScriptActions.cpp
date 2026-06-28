@@ -6806,7 +6806,7 @@ static void RebornScoreGPSScramblerCenter(Object* centerObj, void* userData)
 				return;
 
 			Coord3D delta = *otherPos;
-			delta.sub(local->centerPos);
+			delta.sub(*local->centerPos);
 
 			const Real distSq = delta.x * delta.x + delta.y * delta.y;
 			if (distSq <= local->radiusSq)

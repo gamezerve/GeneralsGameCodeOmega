@@ -16042,6 +16042,10 @@ GUI:AdjustGameSpeed
 "Adjust Game Speed"
 END
 
+GUI:AdjustTransferPercentage
+"Adjust Transfer Percentage"
+END
+
 GUI:AdvanceDisplayOptions
 "ADVANCED DISPLAY OPTIONS"
 END
@@ -17516,6 +17520,10 @@ END
 
 GUI:GameSpeed
 "Game Speed"
+END
+
+GUI:TransferPercentage
+"Transfer Percentage"
 END
 
 GUI:GamesPlayed

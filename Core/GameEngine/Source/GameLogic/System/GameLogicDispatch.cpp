@@ -770,6 +770,16 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			Int requesterIndex = msg->getArgument(0)->integer;
 			Int targetIndex = msg->getArgument(1)->integer;
 
+			Int transferPercentage = 20;
+
+			if (msg->getArgumentCount() >= 3)
+				transferPercentage = msg->getArgument(2)->integer;
+
+			if (transferPercentage < 20)
+				transferPercentage = 20;
+			else if (transferPercentage > 80)
+				transferPercentage = 80;
+
 			Player* requester = ThePlayerList->getNthPlayer(requesterIndex);
 			Player* target = ThePlayerList->getNthPlayer(targetIndex);
 
@@ -825,13 +835,24 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			Int requesterIndex = msg->getArgument(0)->integer;
 			Int targetIndex = msg->getArgument(1)->integer;
 
+			Int transferPercentage = 20;
+
+			if (msg->getArgumentCount() >= 3)
+				transferPercentage = msg->getArgument(2)->integer;
+
+			if (transferPercentage < 20)
+				transferPercentage = 20;
+			else if (transferPercentage > 80)
+				transferPercentage = 80;
+
 			Player* requester = ThePlayerList->getNthPlayer(requesterIndex);
 			Player* target = ThePlayerList->getNthPlayer(targetIndex);
 
 			if (!requester || !target)
 				break;
 
-			UnsignedInt transferAmount = getMoneyRequestTransferAmount(target);
+			UnsignedInt targetMoney = target->getMoney()->countMoney();
+			UnsignedInt transferAmount = (targetMoney * transferPercentage) / 100;
 
 			if (transferAmount == 0)
 				break;

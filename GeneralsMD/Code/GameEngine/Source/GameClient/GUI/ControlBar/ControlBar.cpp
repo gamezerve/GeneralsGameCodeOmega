@@ -80,6 +80,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetProgressBar.h"
+#include "GameClient/GadgetSlider.h"
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GadgetTextEntry.h"
 #include "GameClient/InGameUI.h"
@@ -173,6 +174,8 @@ static void unitUpgradeTooltip(GameWindow* window,
 }
 
 static WindowLayout* s_moneyPopupLayout = nullptr;
+
+static Int s_moneyPopupTransferPercentage = 20; // Reborn: Default transfer percentage for money requests.
 
 static Int getMoneyPopupFontSize()
 {
@@ -274,20 +277,100 @@ static Bool isMoneyRequestCooldownActive(Player* player, UnsignedInt* secondsRem
 	return TRUE;
 }
 
+static void updateMoneyPopupTransferText(Int transferPercentage)
+{
+	if (!s_moneyPopupLayout || !ThePlayerList || !TheGameText)
+		return;
+
+	if (transferPercentage < 20)
+		transferPercentage = 20;
+	else if (transferPercentage > 80)
+		transferPercentage = 80;
+
+	GameWindow* root = s_moneyPopupLayout->getFirstWindow();
+	if (!root)
+		return;
+
+	GameWindow* requestTextWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY("MoneyPopup.wnd:StaticTextPlayer7"));
+	GameWindow* percentTextWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY("MoneyPopup.wnd:StaticTextTransferPercentage"));
+
+	if (percentTextWin)
+	{
+		UnicodeString text;
+		text.format(L"%d%%", transferPercentage);
+		GadgetStaticTextSetText(percentTextWin, text);
+	}
+
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+	if (!localPlayer || s_pendingMoneyRequestTargetIndex != localPlayer->getPlayerIndex())
+		return;
+
+	Player* requester = ThePlayerList->getNthPlayer(s_pendingMoneyRequestRequesterIndex);
+	Player* target = ThePlayerList->getNthPlayer(s_pendingMoneyRequestTargetIndex);
+	if (!requester || !target || !requestTextWin)
+		return;
+
+	UnsignedInt amount = (target->getMoney()->countMoney() * transferPercentage) / 100;
+
+	UnicodeString requesterSideName;
+
+	for (Int slotNum = 0; slotNum < MAX_SLOTS; ++slotNum)
+	{
+		const GameSlot* slot = TheGameInfo->getConstSlot(slotNum);
+		if (!slot || !slot->isOccupied())
+			continue;
+
+		AsciiString playerName;
+		playerName.format("player%d", slotNum);
+
+		Player* slotPlayer = ThePlayerList->findPlayerWithNameKey(NAMEKEY(playerName));
+		if (slotPlayer == requester)
+		{
+			requesterSideName = slot->getApparentPlayerTemplateDisplayName();
+			break;
+		}
+	}
+
+	UnicodeString requestText;
+	requestText.format(
+		TheGameText->fetch("GUI:MoneyRequestIncoming"),
+		requester->getPlayerDisplayName().str(),
+		requesterSideName.str(),
+		amount);
+
+	GadgetStaticTextSetText(requestTextWin, requestText);
+}
+
 static WindowMsgHandledType moneyRequestButtonSystem(
 	GameWindow* window,
 	UnsignedInt msg,
 	WindowMsgData mData1,
 	WindowMsgData mData2)
 {
+	GameWindow* control = (GameWindow*)mData1;
+	if (!control || !ThePlayerList)
+		return MSG_HANDLED;
+
+	if (msg == GSM_SLIDER_TRACK && control->winGetWindowId() == NAMEKEY("MoneyPopup.wnd:SliderTransferPercentage"))
+	{
+		s_moneyPopupTransferPercentage = (Int)mData2;
+
+		if (s_moneyPopupTransferPercentage < 20)
+			s_moneyPopupTransferPercentage = 20;
+		else if (s_moneyPopupTransferPercentage > 80)
+			s_moneyPopupTransferPercentage = 80;
+
+		return MSG_HANDLED;
+	}
+
 	if (msg != GBM_SELECTED)
 		return MSG_IGNORED;
 
 	const UnsignedInt minimumMoneyReserve = 10000;
 
-	GameWindow* control = (GameWindow*)mData1;
-	if (!control || !ThePlayerList)
-		return MSG_HANDLED;
+	//GameWindow* control = (GameWindow*)mData1;
+	//if (!control || !ThePlayerList)
+	//	return MSG_HANDLED;
 
 	Int rowNum = -1;
 
@@ -353,9 +436,26 @@ static WindowMsgHandledType moneyRequestButtonSystem(
 			GameMessage::MSG_REBORN_ACCEPT_MONEY_REQUEST,
 			requester->getPlayerIndex(),
 			target->getPlayerIndex()));
+		Int transferPercentage = s_moneyPopupTransferPercentage;
+
+		if (s_moneyPopupLayout)
+		{
+			GameWindow* root = s_moneyPopupLayout->getFirstWindow();
+			GameWindow* sliderWin = root ? TheWindowManager->winGetWindowFromId(root, NAMEKEY("MoneyPopup.wnd:SliderTransferPercentage")) : nullptr;
+
+			if (sliderWin)
+				transferPercentage = GadgetSliderGetPosition(sliderWin);
+		}
+
+		if (transferPercentage < 20)
+			transferPercentage = 20;
+		else if (transferPercentage > 80)
+			transferPercentage = 80;
+
 		GameMessage* acceptMessage = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_ACCEPT_MONEY_REQUEST);
 		acceptMessage->appendIntegerArgument(requester->getPlayerIndex());
 		acceptMessage->appendIntegerArgument(target->getPlayerIndex());
+		acceptMessage->appendIntegerArgument(transferPercentage);
 
 		return MSG_HANDLED;
 	}
@@ -632,6 +732,14 @@ static void populateMoneyPopupAllies()
 		root,
 		NAMEKEY("MoneyPopup.wnd:ButtonReject"));
 
+	GameWindow* sliderWin = TheWindowManager->winGetWindowFromId(
+		root,
+		NAMEKEY("MoneyPopup.wnd:SliderTransferPercentage"));
+
+	GameWindow* percentTextWin = TheWindowManager->winGetWindowFromId(
+		root,
+		NAMEKEY("MoneyPopup.wnd:StaticTextTransferPercentage"));
+
 	if (requestTextWin && requestButtonWin && requestRejectButtonWin)
 	{
 		Player* localPlayer = ThePlayerList->getLocalPlayer();
@@ -645,7 +753,22 @@ static void populateMoneyPopupAllies()
 
 			if (requester && target)
 			{
-				UnsignedInt amount = getMoneyRequestTransferAmount(target);
+				Int transferPercentage = s_moneyPopupTransferPercentage;
+
+				if (transferPercentage < 20)
+					transferPercentage = 20;
+				else if (transferPercentage > 80)
+					transferPercentage = 80;
+
+				if (sliderWin)
+				{
+					Int currentSliderPos = GadgetSliderGetPosition(sliderWin);
+
+					if (currentSliderPos < 20 || currentSliderPos > 80)
+						GadgetSliderSetPosition(sliderWin, transferPercentage);
+				}
+
+				UnsignedInt amount = (target->getMoney()->countMoney() * transferPercentage) / 100;
 
 				UnicodeString requesterSideName;
 
@@ -685,6 +808,18 @@ static void populateMoneyPopupAllies()
 				requestRejectButtonWin->winHide(FALSE);
 				requestRejectButtonWin->winEnable(TRUE);
 				GadgetButtonSetText(requestButtonWin, TheGameText->fetch("GUI:Send"));
+
+				if (sliderWin)
+					sliderWin->winEnable(amount > 0);
+
+				if (percentTextWin)
+					percentTextWin->winEnable(amount > 0);
+				if (percentTextWin)
+				{
+					UnicodeString percentText;
+					percentText.format(L"%d%%", transferPercentage);
+					GadgetStaticTextSetText(percentTextWin, percentText);
+				}
 			}
 		}
 		else
@@ -702,6 +837,30 @@ static void populateMoneyPopupAllies()
 			requestRejectButtonWin->winHide(FALSE);
 			requestRejectButtonWin->winEnable(FALSE);
 			GadgetButtonSetText(requestRejectButtonWin, TheGameText->fetch("GUI:Deny"));
+
+			GameWindow* sliderWin = TheWindowManager->winGetWindowFromId(
+				root,
+				NAMEKEY("MoneyPopup.wnd:SliderTransferPercentage"));
+
+			GameWindow* percentTextWin = TheWindowManager->winGetWindowFromId(
+				root,
+				NAMEKEY("MoneyPopup.wnd:StaticTextTransferPercentage"));
+
+			if (sliderWin)
+				sliderWin->winEnable(FALSE);
+
+			if (percentTextWin)
+				percentTextWin->winEnable(FALSE);
+
+			if (sliderWin)
+				GadgetSliderSetPosition(sliderWin, s_moneyPopupTransferPercentage);
+
+			if (percentTextWin)
+			{
+				UnicodeString percentText;
+				percentText.format(L"%d%%", s_moneyPopupTransferPercentage);
+				GadgetStaticTextSetText(percentTextWin, percentText);
+			}
 		}
 	}
 
@@ -711,6 +870,21 @@ static void closeMoneyPopup()
 {
 	if (s_moneyPopupLayout)
 	{
+		GameWindow* root = s_moneyPopupLayout->getFirstWindow();
+		GameWindow* sliderWin = root ? TheWindowManager->winGetWindowFromId(
+			root,
+			NAMEKEY("MoneyPopup.wnd:SliderTransferPercentage")) : nullptr;
+
+		if (sliderWin)
+		{
+			s_moneyPopupTransferPercentage = GadgetSliderGetPosition(sliderWin);
+
+			if (s_moneyPopupTransferPercentage < 20)
+				s_moneyPopupTransferPercentage = 20;
+			else if (s_moneyPopupTransferPercentage > 80)
+				s_moneyPopupTransferPercentage = 80;
+		}
+
 		s_moneyPopupLayout->destroyWindows();
 		deleteInstance(s_moneyPopupLayout);
 		s_moneyPopupLayout = nullptr;
@@ -779,7 +953,11 @@ static WindowMsgHandledType moneyDisplayInput(
 			{
 				GameWindow* root = s_moneyPopupLayout->getFirstWindow();
 				if (root)
+				{
 					root->winSetSystemFunc(moneyRequestButtonSystem);
+					s_moneyPopupLayout->bringForward();
+					TheWindowManager->winSetFocus(root);
+				}
 			}
 
 			populateMoneyPopupAllies();
