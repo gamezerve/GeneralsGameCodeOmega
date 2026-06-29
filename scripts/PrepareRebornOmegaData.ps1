@@ -1,3 +1,6 @@
+
+#PrepareRebornOmegaData.ps1
+
 param(
     [string]$DisplayName
 )
@@ -106,7 +109,15 @@ robocopy "$Target\Data\Audio" "$DataBigTemp\Data\Audio" /E /NFL
 robocopy "$Target\Data\English" "$DataBigTemp\Data\English" /E /NFL
 robocopy "$Target\Data\INI" "$DataBigTemp\Data\INI" /E /NFL
 robocopy "$Target\Data\INIold" "$DataBigTemp\Data\INIold" /E /NFL
-robocopy "$Target\Data\Scripts" "$DataBigTemp\Data\Scripts" /E /NFL
+New-Item -ItemType Directory -Force -Path "$DataBigTemp\Data\Scripts" | Out-Null
+robocopy `
+    "$Target\Data\Scripts" `
+    "$DataBigTemp\Data\Scripts" `
+    /E `
+    /NFL `
+    /XF `
+    "SkirmishScripts.scb" `
+    "MultiplayerScripts.scb"
 robocopy "$Target\Data\WaterPlane" "$DataBigTemp\Data\WaterPlane" /E /NFL
 
 Copy-Item `
@@ -133,7 +144,10 @@ Remove-Item "$Target\Data\Audio" -Recurse -Force
 Remove-Item "$Target\Data\English" -Recurse -Force
 Remove-Item "$Target\Data\INI" -Recurse -Force
 Remove-Item "$Target\Data\INIold" -Recurse -Force
-Remove-Item "$Target\Data\Scripts" -Recurse -Force
+Get-ChildItem "$Target\Data\Scripts" -Recurse | Where-Object {
+    $_.Name -ne "SkirmishScripts.scb" -and
+    $_.Name -ne "MultiplayerScripts.scb"
+} | Remove-Item -Force
 Remove-Item "$Target\Data\WaterPlane" -Recurse -Force
 Remove-Item "$Target\Data\Generals.str" -Force
 
@@ -266,6 +280,23 @@ foreach ($Exe in $Executables)
 
     Write-Host "$Exe copied successfully."
 }
+
+# Copy Dependencies Installer ----------------------------------------------
+
+$VCRedistSource = "$PSScriptRoot\..\tools\VC_redist.x86.exe"
+$ToolsDir = "$Target\Tools"
+
+Write-Host "Copying VC_redist.x86.exe..."
+
+if (!(Test-Path $VCRedistSource))
+{
+    throw "VC_redist.x86.exe not found: $VCRedistSource"
+}
+
+New-Item -ItemType Directory -Force -Path $ToolsDir | Out-Null
+Copy-Item $VCRedistSource "$ToolsDir\VC_redist.x86.exe" -Force
+
+Write-Host "VC_redist.x86.exe copied successfully."
 
 # Convert BIG4 archives to BIGR --------------------------------------------
 

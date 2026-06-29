@@ -1593,7 +1593,11 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		if (numTeams > 1)
 		{
 			// add in the multiplayer victory/defeat scripts
+#ifdef REBORN_BUILD
+			AsciiString path = "RebornOmegaData\\Data\\Scripts\\MultiplayerScripts.scb";
+#else
 			AsciiString path = "Data\\Scripts\\MultiplayerScripts.scb";
+#endif
 			CachedFileInputStream theInputStream;
 			if (theInputStream.open(path))
 			{

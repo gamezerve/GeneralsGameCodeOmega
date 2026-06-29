@@ -538,7 +538,11 @@ void SidesList::prepareForMP_or_Skirmish()
 		}
 	}
 	if (!gotScripts) {
-		AsciiString path = "data\\Scripts\\SkirmishScripts.scb";
+#ifdef REBORN_BUILD
+		AsciiString path = "RebornOmegaData\\Data\\Scripts\\SkirmishScripts.scb";
+#else
+		AsciiString path = "Data\\Scripts\\SkirmishScripts.scb";
+#endif
 		DEBUG_LOG(("Skirmish map using standard scripts"));
 		m_skirmishTeamrec.clear();
 		CachedFileInputStream theInputStream;

@@ -1312,7 +1312,11 @@ UnsignedInt GlobalData::generateExeCRC()
 		exeCRC.computeCRC( &version, sizeof(UnsignedInt) );
 	}
 	// Add in MP scripts to the EXE CRC, since the game will go out of sync if they change
+#ifdef REBORN_BUILD
+	fp = TheFileSystem->openFile("RebornOmegaData\\Data\\Scripts\\SkirmishScripts.scb", File::READ | File::BINARY);
+#else
 	fp = TheFileSystem->openFile("Data\\Scripts\\SkirmishScripts.scb", File::READ | File::BINARY);
+#endif
 	if (fp != nullptr) {
 		unsigned char crcBlock[blockSize];
 		Int amtRead = 0;
@@ -1323,7 +1327,11 @@ UnsignedInt GlobalData::generateExeCRC()
 		fp->close();
 		fp = nullptr;
 	}
+#ifdef REBORN_BUILD
+	fp = TheFileSystem->openFile("RebornOmegaData\\Data\\Scripts\\MultiplayerScripts.scb", File::READ | File::BINARY);
+#else
 	fp = TheFileSystem->openFile("Data\\Scripts\\MultiplayerScripts.scb", File::READ | File::BINARY);
+#endif
 	if (fp != nullptr) {
 		unsigned char crcBlock[blockSize];
 		Int amtRead = 0;

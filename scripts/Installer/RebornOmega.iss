@@ -201,4 +201,11 @@ FinishedHeadingLabel=Installation Complete
 FinishedLabel=Zero Hour {#RebornDisplayName} has been installed successfully.
 
 [Run]
-Filename: "{app}\{#RebornDisplayName}.exe"; Description: "Launch {#RebornDisplayName}"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\RebornOmegaData\Tools\VC_redist.x86.exe"; \
+    Description: "Install/Update Microsoft Visual C++ Runtime (Recommended)"; \
+    Parameters: "/install /passive /norestart"; \
+    Flags: postinstall unchecked skipifsilent
+
+Filename: "{app}\{#RebornDisplayName}.exe"; \
+    Description: "Launch {#RebornDisplayName}"; \
+    Flags: postinstall nowait skipifsilent
