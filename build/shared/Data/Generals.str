@@ -4289,6 +4289,10 @@ CONTROLBAR:ToolTipGLAUpgradeToxinShells
 "Scorpion and Marauder shells carry a small amount of Anthrax"
 END
 
+CONTROLBAR:ToolTipGLAUpgradeRocketBuggyToxinUpgrade
+"Rocket Buggy missiles carry a small amount of Anthrax"
+END
+
 CONTROLBAR:ToolTipGLAUpgradeTranqDarts
 "Rebels may try to capture enemy soldiers"
 END
@@ -5128,6 +5132,10 @@ END
 
 CONTROLBAR:UpgradeGLAToxinShells
 "&Toxin Shells"
+END
+
+CONTROLBAR:Chem_UpgradeGLARocketBuggyToxinUpgrade
+"Rocket Buggy &Toxin Missiles"
 END
 
 CONTROLBAR:UpgradeGLATranqDarts
@@ -26931,7 +26939,7 @@ UPGRADE:BuggyAmmo
 END
 
 UPGRADE:RocketBuggyToxinUpgrade
-"Rocket Buggy Toxin Shells"
+"Rocket Buggy Toxin Missiles"
 END
 
 UPGRADE:CamoNetting
