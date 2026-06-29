@@ -112,6 +112,13 @@ extern void SkirmishGameOptionsMenuShutdown( WindowLayout *layout, void *userDat
 extern WindowMsgHandledType SkirmishGameOptionsMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType SkirmishGameOptionsMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 
+// ChaptersMenu
+extern void ChaptersMenuInit(WindowLayout* layout, void* userData);
+extern void ChaptersMenuUpdate(WindowLayout* layout, void* userData);
+extern void ChaptersMenuShutdown(WindowLayout* layout, void* userData);
+extern WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+extern WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+
 // SkirmishMapSelectMenu
 extern void SkirmishMapSelectMenuInit( WindowLayout *layout, void *userData );
 extern void SkirmishMapSelectMenuUpdate( WindowLayout *layout, void *userData );

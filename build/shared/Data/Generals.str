@@ -19150,6 +19150,10 @@ GUI:Skirmish
 "SKIRMISH"
 END
 
+GUI:Chapters
+"CHAPTERS"
+END
+
 GUI:SkirmishLower
 "Skirmish"
 END

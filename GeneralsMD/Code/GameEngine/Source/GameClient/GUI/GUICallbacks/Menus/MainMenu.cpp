@@ -158,6 +158,7 @@ static NameKeyType buttonEasyID = NAMEKEY_INVALID;
 static NameKeyType buttonMediumID = NAMEKEY_INVALID;
 static NameKeyType buttonHardID = NAMEKEY_INVALID;
 static NameKeyType buttonDiffBackID = NAMEKEY_INVALID;
+static NameKeyType buttonChaptersID = NAMEKEY_INVALID;
 
 
 // window pointers --------------------------------------------------------------------------------
@@ -195,6 +196,7 @@ static GameWindow *buttonEasy = nullptr;
 static GameWindow *buttonMedium = nullptr;
 static GameWindow *buttonHard = nullptr;
 static GameWindow *buttonDiffBack = nullptr;
+static GameWindow *buttonChapters = nullptr;
 static GameWindow *dropDownWindows[DROPDOWN_COUNT];
 
 static Bool buttonPushed = FALSE;
@@ -487,6 +489,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	mainMenuID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuParent" );
 //	campaignID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCampaign" );
 	skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
+	buttonChaptersID = TheNameKeyGenerator->nameToKey("MainMenu.wnd:ButtonChapters");
 	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
@@ -529,6 +532,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonSinglePlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonSinglePlayerID );
 	buttonMultiPlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonMultiPlayerID );
 	buttonSkirmish = TheWindowManager->winGetWindowFromId( parentMainMenu, skirmishID );
+	buttonChapters = TheWindowManager->winGetWindowFromId(parentMainMenu, buttonChaptersID);
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
@@ -1546,6 +1550,20 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheShell->push( "Menus/SkirmishGameOptionsMenu.wnd" );
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_SKIRMISH_SELECTED]);
 			}
+			else if (controlID == buttonChaptersID)
+			{
+				if (campaignSelected || dontAllowTransitions)
+					break;
+
+				buttonPushed = TRUE;
+				campaignSelected = TRUE;
+
+				dropDownWindows[DROPDOWN_SINGLE]->winHide(FALSE);
+				TheTransitionHandler->remove("MainMenuFactionSkirmish");
+				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
+
+				TheShell->push("Menus/ChaptersMenu.wnd");
+				}
 			else if( controlID == onlineID )
 			{
 				if(dontAllowTransitions)
