@@ -439,7 +439,14 @@ void GameInfo::startGame(Int gameID)
 	DEBUG_ASSERTCRASH(m_inGame && !m_inProgress, ("Starting game at a bad time!"));
 	m_gameID = gameID;
 
-	Real maxCameraHeight = m_useCustomMaxCameraHeight ? (Real)m_lanMaxCameraHeight : 310.0f;
+	RestorePersonalMaxCameraHeight();
+
+	const Bool forceSharedCameraHeight = isMultiPlayer();
+
+	Real maxCameraHeight = TheGlobalData->m_maxCameraHeight;
+
+	if (forceSharedCameraHeight)
+		maxCameraHeight = m_useCustomMaxCameraHeight ? (Real)m_lanMaxCameraHeight : 310.0f;
 
 	TheWritableGlobalData->m_maxCameraHeight = maxCameraHeight;
 
