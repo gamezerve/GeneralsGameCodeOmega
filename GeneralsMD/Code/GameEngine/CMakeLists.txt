@@ -469,6 +469,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/Module/WaveGuideUpdate.h
     Include/GameLogic/Module/WeaponBonusUpdate.h
     Include/GameLogic/Module/WeaponBonusUpgrade.h
+    Include/GameLogic/Module/WeaponConditionUpgrade.h
     Include/GameLogic/Module/WeaponSetUpgrade.h
     Include/GameLogic/Module/WorkerAIUpdate.h
     Include/GameLogic/Reborn/ImageUpgradeReborn.h 
@@ -1068,6 +1069,7 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Upgrade/UnpauseSpecialPowerUpgrade.cpp
     Source/GameLogic/Object/Upgrade/UpgradeModule.cpp
     Source/GameLogic/Object/Upgrade/WeaponBonusUpgrade.cpp
+    Source/GameLogic/Object/Upgrade/WeaponConditionUpgrade.cpp
     Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
     Source/GameLogic/Object/Weapon.cpp
     Source/GameLogic/Object/WeaponSet.cpp

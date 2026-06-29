@@ -26930,6 +26930,10 @@ UPGRADE:BuggyAmmo
 "Rocket Buggy Ammo"
 END
 
+UPGRADE:RocketBuggyToxinUpgrade
+"Rocket Buggy Toxin Shells"
+END
+
 UPGRADE:CamoNetting
 "Camo Netting"
 END

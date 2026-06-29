@@ -208,6 +208,7 @@
 #include "GameLogic/Module/StealthUpgrade.h"
 #include "GameLogic/Module/UnpauseSpecialPowerUpgrade.h"
 #include "GameLogic/Module/WeaponBonusUpgrade.h"
+#include "GameLogic/Module/WeaponConditionUpgrade.h"
 #include "GameLogic/Module/WeaponSetUpgrade.h"
 #include "GameLogic/Module/CostModifierUpgrade.h"
 #include "GameLogic/Module/ExperienceScalarUpgrade.h"
@@ -489,6 +490,7 @@ void ModuleFactory::init()
 	addModule( ModelConditionUpgrade );
 	addModule( UnpauseSpecialPowerUpgrade );
 	addModule( WeaponBonusUpgrade );
+	addModule( WeaponConditionUpgrade );
 	addModule( WeaponSetUpgrade );
 	addModule( WeaponBonusUpgrade );
 	addModule( ExperienceScalarUpgrade );
