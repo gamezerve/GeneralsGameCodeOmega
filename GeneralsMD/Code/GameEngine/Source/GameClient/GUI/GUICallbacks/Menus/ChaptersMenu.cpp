@@ -32,14 +32,211 @@
 
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/Gadget.h"
+#include "GameClient/GadgetListBox.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameWindowTransitions.h"
+#include "GameClient/MapUtil.h"
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
 
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cctype>
+
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
 static Bool buttonPushed = FALSE;
+static GameWindow* chapterButtons[8];
+static Int selectedChapter = 0;
+
+static const Image* normalImages[8][3];
+static const Image* selectedImages[8][3];
+
+static Color normalTextColor[8];
+static Color normalTextBorderColor[8];
+static Color normalHiliteTextColor[8];
+static Color normalHiliteTextBorderColor[8];
+
+static Color selectedTextColor[8];
+static Color selectedTextBorderColor[8];
+
+static const Image* normalHiliteImages[8][3];
+
+static std::vector<std::string> campaignMapItemData;
+
+static void ListboxClear(GameWindow* listbox)
+{
+  GadgetListBoxReset(listbox);
+}
+
+static void ListboxAdd(GameWindow* listbox, const char* text, Int row)
+{
+  UnicodeString utext;
+  utext.translate(text);
+
+  GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
+}
+
+
+static void LoadCampaignMaps(const char* campaignName)
+{
+  campaignMapItemData.clear();
+
+  NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
+
+  if (!listbox)
+    return;
+
+  ListboxClear(listbox);
+
+  std::ifstream file("Data\\INI\\Campaign.ini");
+  if (!file.is_open())
+    return;
+
+  std::string line;
+  bool inCorrectCampaign = false;
+  Int row = 0;
+  int depth = 0;
+
+  while (std::getline(file, line))
+  {
+    // campaign start
+    if (line.rfind("Campaign ", 0) == 0)
+    {
+      size_t pos = line.find("Campaign ");
+      std::string foundName = line.substr(pos + 9);
+
+      while (!foundName.empty() && isspace(foundName.back()))
+        foundName.pop_back();
+
+      while (!foundName.empty() && isspace(foundName.front()))
+        foundName.erase(0, 1);
+
+      if (foundName == campaignName)
+      {
+        inCorrectCampaign = true;
+        depth = 0;
+      }
+      else
+      {
+        inCorrectCampaign = false;
+      }
+
+      continue;
+    }
+
+    if (!inCorrectCampaign)
+      continue;
+
+    // track blocks
+    if (line.find("Mission") != std::string::npos)
+      depth++;
+
+    if (line.find("END") != std::string::npos)
+    {
+      if (depth > 0)
+        depth--;        // mission end
+      else
+        break;          // campaign end ✅
+    }
+
+    // map parse
+    size_t pos = line.find("Map ");
+    if (pos != std::string::npos)
+    {
+      std::string mapPath = line.substr(pos + 4);
+
+      while (!mapPath.empty() && isspace(mapPath.back()))
+        mapPath.pop_back();
+
+      UnicodeString utext;
+      utext.translate(mapPath.c_str());
+
+      GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
+
+      campaignMapItemData.push_back(mapPath);
+      GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
+
+      row++;
+    }
+  }
+
+  file.close();
+}
+
+static void SelectChapter(Int index)
+{
+
+  selectedChapter = index;
+
+  for (Int i = 0; i < 8; ++i)
+  {
+    if (!chapterButtons[i])
+      continue;
+
+    if (!chapterButtons[i]->winGetEnabled())
+      continue;
+
+    if (i == index)
+    {
+      chapterButtons[i]->winSetEnabledImage(0, selectedImages[i][0]);
+      chapterButtons[i]->winSetEnabledImage(5, selectedImages[i][1]);
+      chapterButtons[i]->winSetEnabledImage(6, selectedImages[i][2]);
+
+      chapterButtons[i]->winSetHiliteImage(0, selectedImages[i][0]);
+      chapterButtons[i]->winSetHiliteImage(5, selectedImages[i][1]);
+      chapterButtons[i]->winSetHiliteImage(6, selectedImages[i][2]);
+
+      chapterButtons[i]->winSetEnabledTextColors(
+        selectedTextColor[i],
+        selectedTextBorderColor[i]
+      );
+
+      chapterButtons[i]->winSetHiliteTextColors(
+        selectedTextColor[i],
+        selectedTextBorderColor[i]
+      );
+    }
+    else
+    {
+      chapterButtons[i]->winSetEnabledImage(0, normalImages[i][0]);
+      chapterButtons[i]->winSetEnabledImage(5, normalImages[i][1]);
+      chapterButtons[i]->winSetEnabledImage(6, normalImages[i][2]);
+
+      chapterButtons[i]->winSetHiliteImage(0, normalHiliteImages[i][0]);
+      chapterButtons[i]->winSetHiliteImage(5, normalHiliteImages[i][1]);
+      chapterButtons[i]->winSetHiliteImage(6, normalHiliteImages[i][2]);
+
+      chapterButtons[i]->winSetEnabledTextColors(
+        normalTextColor[i],
+        normalTextBorderColor[i]
+      );
+
+      chapterButtons[i]->winSetHiliteTextColors(
+        normalHiliteTextColor[i],
+        normalHiliteTextBorderColor[i]
+      );
+    }
+  }
+
+
+	// Reborn: Fill map listbox with maps for the selected chapter
+  if (index == 0) // TRAINING
+  {
+    LoadCampaignMaps("TRAINING");
+  }
+  else if (index == 2) // ChinaGen
+  {
+    LoadCampaignMaps("China_Gen");
+  }
+
+
+}
+
+
+
 
 void ChaptersMenuInit(WindowLayout* layout, void* userData)
 {
@@ -48,6 +245,78 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   layout->hide(FALSE);
   layout->bringForward();
+
+  if (TheMapCache)
+    TheMapCache->updateCache();
+
+  for (Int i = 0; i < 8; ++i)
+  {
+    AsciiString name;
+    name.format("ChaptersMenu.wnd:ButtonMapStartPosition%d", i);
+
+    GameWindow* button = TheWindowManager->winGetWindowFromId(
+      nullptr,
+      TheNameKeyGenerator->nameToKey(name));
+
+    if (button)
+      button->winHide(TRUE);
+  }
+
+  const char* names[8] =
+  {
+      "ChaptersMenu.wnd:ButtonTRAINING",   // 0
+      "ChaptersMenu.wnd:ButtonChallenge",  // 1
+      "ChaptersMenu.wnd:ButtonChinaGen",   // 2
+      "ChaptersMenu.wnd:ButtonChina",      // 3
+      "ChaptersMenu.wnd:ButtonGLAGen",     // 4
+      "ChaptersMenu.wnd:ButtonGLA",        // 5
+      "ChaptersMenu.wnd:ButtonUSAGen",     // 6
+      "ChaptersMenu.wnd:ButtonUSA"         // 7
+  };
+
+
+  for (Int i = 0; i < 8; ++i)
+  {
+    chapterButtons[i] = TheWindowManager->winGetWindowFromId(
+      nullptr,
+      TheNameKeyGenerator->nameToKey(names[i]));
+
+    if (chapterButtons[i])
+    {
+      normalImages[i][0] = chapterButtons[i]->winGetEnabledImage(0);
+      normalImages[i][1] = chapterButtons[i]->winGetEnabledImage(5);
+      normalImages[i][2] = chapterButtons[i]->winGetEnabledImage(6);
+
+      normalHiliteImages[i][0] = chapterButtons[i]->winGetHiliteImage(0);
+      normalHiliteImages[i][1] = chapterButtons[i]->winGetHiliteImage(5);
+      normalHiliteImages[i][2] = chapterButtons[i]->winGetHiliteImage(6);
+
+      selectedImages[i][0] = chapterButtons[i]->winGetHiliteImage(1);
+      selectedImages[i][1] = chapterButtons[i]->winGetHiliteImage(3);
+      selectedImages[i][2] = chapterButtons[i]->winGetHiliteImage(4);
+
+      normalTextColor[i] = chapterButtons[i]->winGetEnabledTextColor();
+      normalTextBorderColor[i] = chapterButtons[i]->winGetEnabledTextBorderColor();
+
+      normalHiliteTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
+      normalHiliteTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
+
+      selectedTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
+      selectedTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
+
+
+      // Reborn: Only Training (0) and ChinaGen (2) will be active atm.
+      if (i == 0 || i == 2)
+        chapterButtons[i]->winEnable(TRUE);
+      else
+        chapterButtons[i]->winEnable(FALSE);
+
+    }
+  }
+
+  SelectChapter(0);
+
+  LoadCampaignMaps("TRAINING");
 
   TheTransitionHandler->setGroup("ChaptersMenuFade");
 }
@@ -90,6 +359,15 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
     if (!control)
       break;
 
+    for (Int i = 0; i < 8; ++i)
+    {
+      if (control == chapterButtons[i])
+      {
+        SelectChapter(i);
+        return MSG_HANDLED;
+      }
+    }
+
     Int controlID = control->winGetWindowId();
 
     if (buttonPushed)
@@ -104,6 +382,70 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
     break;
   }
+
+  case GLM_SELECTED:
+  {
+    GameWindow* control = (GameWindow*)mData1;
+    if (!control)
+      break;
+
+    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+
+    if (control->winGetWindowId() == listID)
+    {
+      int rowSelected = mData2;
+
+      if (rowSelected < 0)
+        break;
+
+      GameWindow* listbox = control;
+
+      const char* mapFname = (const char*)GadgetListBoxGetItemData(listbox, rowSelected);
+
+      if (!mapFname)
+        break;
+
+      std::string fixedPath = mapFname;
+
+      for (size_t i = 0; i < fixedPath.size(); ++i)
+      {
+        if (fixedPath[i] == '\\')
+          fixedPath[i] = '/';
+      }
+
+      for (size_t i = 0; i < fixedPath.size(); ++i)
+      {
+        fixedPath[i] = (char)tolower(fixedPath[i]);
+      }
+
+      AsciiString asciiMap = fixedPath.c_str();
+      asciiMap.toLower();
+
+      NameKeyType previewID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MapWindow");
+      GameWindow* preview = TheWindowManager->winGetWindowFromId(nullptr, previewID);
+
+      if (!preview)
+        break;
+
+      preview->winSetStatus(WIN_STATUS_IMAGE);
+
+      Image* image = getMapPreviewImage(asciiMap);
+      preview->winSetUserData((void*)TheMapCache->findMap(asciiMap));
+
+      if (image)
+      {
+        preview->winSetEnabledImage(0, image);
+      }
+      else
+      {
+        preview->winClearStatus(WIN_STATUS_IMAGE);
+      }
+
+    }
+
+    break;
+  }
+
   }
 
   return MSG_IGNORED;
