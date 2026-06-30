@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/NameKeyGenerator.h"
+#include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetListBox.h"
 #include "GameClient/GameWindow.h"
@@ -65,6 +66,8 @@ static const Image* normalHiliteImages[8][3];
 
 static std::vector<std::string> campaignMapItemData;
 
+static Int lastSelectedMapRow = 0;
+
 static void ListboxClear(GameWindow* listbox)
 {
   GadgetListBoxReset(listbox);
@@ -78,6 +81,83 @@ static void ListboxAdd(GameWindow* listbox, const char* text, Int row)
   GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
 }
 
+static void DrawMapListboxDividers(GameWindow* window, WinInstanceData* instData)
+{
+  if (!window)
+    return;
+
+  NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
+
+  if (!listbox)
+    return;
+
+  Int winx;
+  Int winy;
+  listbox->winGetScreenPosition(&winx, &winy);
+
+  ICoord2D size;
+  listbox->winGetSize(&size.x, &size.y);
+
+  const Int lineLeft = winx + 2;
+  const Int lineRight = winx + size.x - 22;
+  const Color lineColor = GameMakeColor(255, 255, 255, 55);
+
+  Int lastDividerY = -1;
+
+  // İlk iki divider'ı bulmak için
+  Int firstDividerY = -1;
+  Int secondDividerY = -1;
+
+  for (Int y = 1; y < size.y; ++y)
+  {
+    Int rowA = -1;
+    Int colA = -1;
+    Int rowB = -1;
+    Int colB = -1;
+
+    GadgetListBoxGetEntryBasedOnXY(listbox, winx + 4, winy + y - 1, rowA, colA);
+    GadgetListBoxGetEntryBasedOnXY(listbox, winx + 4, winy + y, rowB, colB);
+
+    if (rowA >= 0 && rowB >= 0 && rowA != rowB)
+    {
+      Int drawY = winy + y + 4;
+
+      // Çizgiyi çiz
+      TheDisplay->drawLine(
+        lineLeft,
+        drawY,
+        lineRight,
+        drawY,
+        1,
+        lineColor
+      );
+
+      // Divider'ları kaydet
+      if (firstDividerY == -1)
+        firstDividerY = drawY;
+      else if (secondDividerY == -1)
+        secondDividerY = drawY;
+
+      lastDividerY = drawY;
+    }
+  }
+
+  // ✅ Ekstra çizgi (doğru hizalı)
+  if (lastDividerY != -1 && firstDividerY != -1 && secondDividerY != -1)
+  {
+    Int rowHeight = secondDividerY - firstDividerY;
+
+    TheDisplay->drawLine(
+      lineLeft,
+      lastDividerY + rowHeight,
+      lineRight,
+      lastDividerY + rowHeight,
+      1,
+      lineColor
+    );
+  }
+}
 
 static void LoadCampaignMaps(const char* campaignName)
 {
@@ -163,6 +243,18 @@ static void LoadCampaignMaps(const char* campaignName)
     }
   }
 
+  if (row > 0)
+  {
+    GadgetListBoxSetSelected(listbox, 0);
+
+    TheWindowManager->winSendSystemMsg(
+      listbox,
+      GLM_SELECTED,
+      (WindowMsgData)listbox,
+      0
+    );
+  }
+
   file.close();
 }
 
@@ -235,8 +327,10 @@ static void SelectChapter(Int index)
 
 }
 
-
-
+WindowMsgHandledType ChaptersMenuDividerInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
+{
+  return MSG_IGNORED;
+}
 
 void ChaptersMenuInit(WindowLayout* layout, void* userData)
 {
@@ -245,6 +339,19 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   layout->hide(FALSE);
   layout->bringForward();
+
+  //NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  //GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
+
+  NameKeyType dividerID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxDividerOverlay");
+  GameWindow* divider = TheWindowManager->winGetWindowFromId(nullptr, dividerID);
+
+  if (divider)
+  {
+    divider->winEnable(FALSE);
+    divider->winHide(FALSE);
+    divider->winSetDrawFunc(DrawMapListboxDividers);
+  }
 
   if (TheMapCache)
     TheMapCache->updateCache();
@@ -396,7 +503,12 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       int rowSelected = mData2;
 
       if (rowSelected < 0)
-        break;
+      {
+        GadgetListBoxSetSelected(control, lastSelectedMapRow);
+        return MSG_HANDLED;
+      }
+
+      lastSelectedMapRow = rowSelected;
 
       GameWindow* listbox = control;
 
