@@ -335,6 +335,7 @@ typedef struct _ListEntryRow
 	Int							listHeight;		// calculated total Height at the bottom of this entry
 	Int							height;				// Maintain the height of the row
 	ListEntryCell		*cell;				// Holds the array of ListEntry Cells
+	Bool						enabled;
 
 } ListEntryRow;
 

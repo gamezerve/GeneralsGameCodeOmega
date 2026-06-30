@@ -239,6 +239,9 @@ static void LoadCampaignMaps(const char* campaignName)
       campaignMapItemData.push_back(mapPath);
       GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
 
+      if (row > 0)
+        GadgetListBoxSetItemEnabled(listbox, row, FALSE);
+
       row++;
     }
   }

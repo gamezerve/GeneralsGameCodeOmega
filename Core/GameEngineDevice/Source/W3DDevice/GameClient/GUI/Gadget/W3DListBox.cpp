@@ -410,7 +410,10 @@ static void drawListBoxText( GameWindow *window, WinInstanceData *instData,
 				// Display the Text Case;
 				if(cells[j].cellType == LISTBOX_TEXT)
 				{
-					textColor = cells[j].color;
+					if (list->listData[i].enabled)
+						textColor = cells[j].color;
+					else
+						textColor = TheWindowManager->winMakeColor(120, 120, 120, 255);
 					string = (DisplayString *)cells[j].data;
 					if( BitIsSet( window->winGetStatus(), WIN_STATUS_ONE_LINE ) == TRUE )
 					{

@@ -103,6 +103,9 @@ extern void GadgetListBoxSetTopVisibleEntry( GameWindow *window, Int newPos );
 
 extern void GadgetListBoxSetAudioFeedback( GameWindow *listbox, Bool enable );
 
+extern void GadgetListBoxSetItemEnabled(GameWindow* listbox, Int row, Bool enabled);
+extern Bool GadgetListBoxIsItemEnabled(GameWindow* listbox, Int row);
+
 //
 // you can use this to set the colors for the list box all at once, note that
 // it will also automatically change the colors for any attached slider

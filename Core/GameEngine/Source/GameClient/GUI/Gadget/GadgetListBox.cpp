@@ -359,12 +359,14 @@ static Int addImageEntry( const Image *image, Color color, Int row, Int column, 
 		column = 0;
 
 	ListEntryRow *listRow = &list->listData[row];
+	listRow->enabled = TRUE;
 
 	// Check and see if we have allocated cells for that row yet, if not, allocate them
 	if(!listRow->cell)
 	{
 		listRow->cell = NEW ListEntryCell[list->columns];
 		memset(listRow->cell,0,list->columns * sizeof(ListEntryCell));
+		listRow->enabled = TRUE;
 	}
 	// if we're copying over strings, then lets first deallocate them.
 	if(listRow->cell[column].cellType == LISTBOX_TEXT)
@@ -466,6 +468,8 @@ static Int addEntry( UnicodeString *string, Int color, Int row, Int column, Game
 	Int rowsAdded = 0;
 
 	ListEntryRow *listRow = &list->listData[row];
+	listRow->enabled = TRUE;
+
 	// Here I've decided to just overwrite what's in the row, if that's not what we want, change it here
 	// Check and see if we have allocated cells for that row yet, if not, allocate them
 	if(!listRow->cell)
@@ -473,6 +477,7 @@ static Int addEntry( UnicodeString *string, Int color, Int row, Int column, Game
 		listRow->cell = NEW ListEntryCell[list->columns];
 		memset(listRow->cell,0,list->columns * sizeof(ListEntryCell));
 		rowsAdded = 1;
+		listRow->enabled = TRUE;
 	}
 	else if (!overwrite)
 	{
@@ -480,6 +485,7 @@ static Int addEntry( UnicodeString *string, Int color, Int row, Int column, Game
 		moveRowsDown(list, row);
 		listRow->cell = NEW ListEntryCell[list->columns];
 		memset(listRow->cell,0,list->columns * sizeof(ListEntryCell));
+		listRow->enabled = TRUE;
 		rowsAdded = 1;
 	}
 
@@ -582,7 +588,6 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 				// --------------------------------------------------------------------
 				case KEY_DOWN:
 				{
-
 					if( BitIsSet( mData2, KEY_STATE_DOWN ) )
 					{
 
@@ -595,6 +600,9 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 						{
 
 							list->selectPos++;
+
+							while (list->selectPos < list->endPos - 1 && !list->listData[list->selectPos].enabled)
+								list->selectPos++;
 
 							while (1)
 							{
@@ -844,6 +852,12 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 			if( (list->selectPos == -2) && (i < list->endPos) )
 			{
 				list->selectPos = i;
+			}
+
+			if (list->selectPos >= 0 &&	!list->listData[list->selectPos].enabled)
+			{
+				list->selectPos = oldPos;
+				return MSG_HANDLED;
 			}
 
 			if( (list->selectPos < 0) && (list->forceSelect) )
@@ -1369,6 +1383,8 @@ WindowMsgHandledType GadgetListBoxSystem( GameWindow *window, UnsignedInt msg,
 			}
 			//zero out the header structure
 			memset(list->listData,0,list->listLength * sizeof(ListEntryRow));
+			for (Int i = 0; i < list->listLength; ++i)
+				list->listData[i].enabled = TRUE;
 
 			if( mData1 != GP_DONT_UPDATE )
 			{
@@ -2409,6 +2425,38 @@ void GadgetListboxCreateScrollbar( GameWindow *listbox )
 	// we now have all the scrollbar parts, this better be set :)
 	listData->scrollBar = TRUE;
 
+}
+
+void GadgetListBoxSetItemEnabled(GameWindow* listbox, Int row, Bool enabled)
+{
+	if (!listbox)
+		return;
+
+	ListboxData* list = (ListboxData*)listbox->winGetUserData();
+
+	if (!list)
+		return;
+
+	if (row < 0 || row >= list->endPos)
+		return;
+
+	list->listData[row].enabled = enabled;
+}
+
+Bool GadgetListBoxIsItemEnabled(GameWindow* listbox, Int row)
+{
+	if (!listbox)
+		return FALSE;
+
+	ListboxData* list = (ListboxData*)listbox->winGetUserData();
+
+	if (!list)
+		return FALSE;
+
+	if (row < 0 || row >= list->endPos)
+		return FALSE;
+
+	return list->listData[row].enabled;
 }
 
 // GadgetListBoxAddMultiSelect ================================================
