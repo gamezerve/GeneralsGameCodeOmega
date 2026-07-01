@@ -147,8 +147,10 @@ WINDOW
                     AUTOPURGE: 0,
                     SCROLLBAR: 1,
                     MULTISELECT: 0,
-                    COLUMNS: 1,
-                    FORCESELECT: 0;
+                    COLUMNS: 2,
+                    COLUMNSWIDTH: 96,
+                    COLUMNSWIDTH: 4,
+                    FORCESELECT: 1;
       LISTBOXENABLEDUPBUTTONDRAWDATA = IMAGE: VSliderUpButtonEnabled, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
                                        IMAGE: VSliderUpButtonHiliteSelected, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
                                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
@@ -749,8 +751,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = RADIOBUTTON;
-      SCREENRECT = UPPERLEFT: 192 459,
-                   BOTTOMRIGHT: 304 483,
+      SCREENRECT = UPPERLEFT: 184 459,
+                   BOTTOMRIGHT: 312 483,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:RadioButtonEasyAI";
       STATUS = ENABLED+IMAGE;
@@ -762,7 +764,7 @@ WINDOW
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "LabelRegular";
       TOOLTIPDELAY = -1;
-      TEXT = "GUI:EasyAI";
+      TEXT = "GUI:Easy";
       TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                   DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                   HILITE:   168 255 12 255, HILITEBORDER:   0 1 1 255;
@@ -797,9 +799,101 @@ WINDOW
     END
     CHILD
     WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 196 463,
+                   BOTTOMRIGHT: 212 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:EasyLeftStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+    END
+    CHILD
+    WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 283 463,
+                   BOTTOMRIGHT: 299 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:EasyRightStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: Star-Silver, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+    END
+    CHILD
+    WINDOW
       WINDOWTYPE = RADIOBUTTON;
-      SCREENRECT = UPPERLEFT: 496 459,
-                   BOTTOMRIGHT: 608 483,
+      SCREENRECT = UPPERLEFT: 488 459,
+                   BOTTOMRIGHT: 616 483,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:RadioButtonHardAI";
       STATUS = ENABLED+IMAGE;
@@ -811,7 +905,7 @@ WINDOW
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "LabelRegular";
       TOOLTIPDELAY = -1;
-      TEXT = "GUI:HardAI";
+      TEXT = "GUI:Hard";
       TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                   DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                   HILITE:   168 255 12 255, HILITEBORDER:   0 1 1 255;
@@ -846,9 +940,101 @@ WINDOW
     END
     CHILD
     WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 500 463,
+                   BOTTOMRIGHT: 516 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:HardLeftStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+    END
+    CHILD
+    WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 587 463,
+                   BOTTOMRIGHT: 603 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:HardRightStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: RedYell_Star, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+    END
+    CHILD
+    WINDOW
       WINDOWTYPE = RADIOBUTTON;
-      SCREENRECT = UPPERLEFT: 344 459,
-                   BOTTOMRIGHT: 456 483,
+      SCREENRECT = UPPERLEFT: 336 459,
+                   BOTTOMRIGHT: 464 483,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:RadioButtonMediumAI";
       STATUS = ENABLED+IMAGE;
@@ -860,7 +1046,7 @@ WINDOW
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "LabelRegular";
       TOOLTIPDELAY = -1;
-      TEXT = "GUI:MediumAI";
+      TEXT = "GUI:Medium";
       TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                   DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                   HILITE:   168 255 12 255, HILITEBORDER:   0 1 1 255;
@@ -892,6 +1078,98 @@ WINDOW
                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
       RADIOBUTTONDATA = GROUP: 1;
+    END
+    CHILD
+    WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 348 463,
+                   BOTTOMRIGHT: 364 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:MediumLeftStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+    END
+    CHILD
+    WINDOW
+      WINDOWTYPE = USER;
+      SCREENRECT = UPPERLEFT: 435 463,
+                   BOTTOMRIGHT: 451 479,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "ChaptersMenu.wnd:MediumRightStar";
+      STATUS = ENABLED+IMAGE;
+      STYLE = USER;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      HEADERTEMPLATE = "[None]";
+      TOOLTIPDELAY = -1;
+      TEXTCOLOR = ENABLED:  255 255 255 0, ENABLEDBORDER:  255 255 255 0,
+                  DISABLED: 255 255 255 0, DISABLEDBORDER: 255 255 255 0,
+                  HILITE:   255 255 255 0, HILITEBORDER:   255 255 255 0;
+      ENABLEDDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      DISABLEDDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 128, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+      HILITEDRAWDATA = IMAGE: Star-Gold, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
     END
     CHILD
     WINDOW

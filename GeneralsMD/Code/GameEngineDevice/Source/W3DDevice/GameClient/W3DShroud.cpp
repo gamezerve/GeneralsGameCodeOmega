@@ -264,30 +264,25 @@ W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 {
 	DEBUG_ASSERTCRASH(m_pSrcTexture != nullptr, ("Reading empty shroud"));
 
-	if (m_pSrcTexture == nullptr || m_srcTextureData == nullptr)
+	if (m_pSrcTexture == nullptr || m_srcTextureData == nullptr || m_srcTexturePitch == 0)
 	{
 		DEBUG_LOG(("W3DShroud::getShroudLevel called with invalid shroud texture."));
 		return 0;
 	}
 
-	if (x < 0 || y < 0)
+	if (x < 0 || y < 0 || x >= m_numCellsX || y >= m_numCellsY)
 		return 0;
 
-	if (x < m_numCellsX && y < m_numCellsY)
-	{
-		UnsignedShort pixel = *(UnsignedShort*)((Byte*)m_srcTextureData + x * 2 + y * m_srcTexturePitch);
+	UnsignedShort pixel = *(UnsignedShort*)((Byte*)m_srcTextureData + x * 2 + y * m_srcTexturePitch);
 
 #if defined(RTS_DEBUG)
-		if (TheGlobalData && TheGlobalData->m_fogOfWarOn)
-			//in this mode, alpha channel holds intensity
-			return (W3DShroudLevel)((1.0f - ((Real)(pixel >> 12) / 15.0f)) * 255.0f);
-		else
+	if (TheGlobalData && TheGlobalData->m_fogOfWarOn)
+		//in this mode, alpha channel holds intensity
+		return (W3DShroudLevel)((1.0f - ((Real)(pixel >> 12) / 15.0f)) * 255.0f);
+	else
 #endif
-			//in this mode, green has the best precision at 6 bits.
-			return (W3DShroudLevel)((Real)((pixel >> 5) & 0x3f) / 63.0f * 255.0f);
-	}
-
-	return 0;
+		//in this mode, green has the best precision at 6 bits.
+		return (W3DShroudLevel)((Real)((pixel >> 5) & 0x3f) / 63.0f * 255.0f);
 }
 
 //-----------------------------------------------------------------------------

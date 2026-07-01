@@ -77,6 +77,7 @@ public:
 	AsciiString m_mapName;
 	AsciiString m_nextMission;
 	AsciiString m_movieLabel;
+	AsciiString m_displayNameLabel;
 	AsciiString m_missionObjectivesLabel[MAX_OBJECTIVE_LINES];
 	AudioEventRTS m_briefingVoice;
 	AsciiString m_locationNameLabel;

@@ -42,6 +42,7 @@
 #include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetListBox.h"
+#include "GameClient/GameText.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameWindowTransitions.h"
@@ -214,6 +215,17 @@ static void DrawMapListboxDividers(GameWindow* window, WinInstanceData* instData
   }
 }
 
+static std::string TrimCopy(std::string text)
+{
+  while (!text.empty() && isspace((unsigned char)text.back()))
+    text.pop_back();
+
+  while (!text.empty() && isspace((unsigned char)text.front()))
+    text.erase(0, 1);
+
+  return text;
+}
+
 static void LoadCampaignMaps(const char* campaignName)
 {
   campaignMapItemData.clear();
@@ -232,16 +244,21 @@ static void LoadCampaignMaps(const char* campaignName)
 
   std::string line;
   bool inCorrectCampaign = false;
+  bool inMission = false;
   Int row = 0;
-  int depth = 0;
+  std::string mapPath;
+  std::string displayNameLabel;
 
   while (std::getline(file, line))
   {
-    // campaign start
-    if (line.rfind("Campaign ", 0) == 0)
+    std::string trimmed = TrimCopy(line);
+
+    if (trimmed.empty() || trimmed[0] == ';')
+      continue;
+
+    if (trimmed.rfind("Campaign ", 0) == 0)
     {
-      size_t pos = line.find("Campaign ");
-      std::string foundName = line.substr(pos + 9);
+      std::string foundName = TrimCopy(trimmed.substr(9));
 
       while (!foundName.empty() && isspace(foundName.back()))
         foundName.pop_back();
@@ -249,66 +266,120 @@ static void LoadCampaignMaps(const char* campaignName)
       while (!foundName.empty() && isspace(foundName.front()))
         foundName.erase(0, 1);
 
-      if (foundName == campaignName)
-      {
-        inCorrectCampaign = true;
-        depth = 0;
-      }
-      else
-      {
-        inCorrectCampaign = false;
-      }
-
+      inCorrectCampaign = (foundName == campaignName);
+      inMission = false;
+      mapPath.clear();
+      displayNameLabel.clear();
       continue;
     }
 
     if (!inCorrectCampaign)
       continue;
 
-    // track blocks
-    if (line.find("Mission") != std::string::npos)
-      depth++;
-
-    if (line.find("END") != std::string::npos)
+    if (trimmed.rfind("Mission ", 0) == 0)
     {
-      if (depth > 0)
-        depth--;        // mission end
-      else
-        break;          // campaign end ✅
+      inMission = true;
+      mapPath.clear();
+      displayNameLabel.clear();
+      continue;
     }
 
-    // map parse
-    size_t pos = line.find("Map ");
-    if (pos != std::string::npos)
+    if(trimmed == "END")
     {
-      std::string mapPath = line.substr(pos + 4);
+      if (inMission)
+      {
+        if (!mapPath.empty())
+        {
+          UnicodeString utext;
+
+          if (!displayNameLabel.empty())
+            utext = TheGameText->fetch(displayNameLabel.c_str());
+          else
+            utext.translate(mapPath.c_str());
+
+          GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
+
+          campaignMapItemData.push_back(mapPath);
+          GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
+
+          ChapterProgress progress;
+
+          AsciiString campaign;
+          campaign.set(campaignName);
+          campaign.toLower();
+
+          Int missionNumber = row + 1;
+          Int completedDifficulty = progress.getMissionCompletedDifficulty(campaign, missionNumber);
+
+          if (row > 0)
+          {
+            Int previousMissionNumber = row;
+
+            if (progress.getMissionCompletedDifficulty(campaign, previousMissionNumber) <= 0)
+              GadgetListBoxSetItemEnabled(listbox, row, FALSE);
+          }
+
+          const Image* completedImage = nullptr;
+
+          if (completedDifficulty == 1)
+            completedImage = TheMappedImageCollection->findImageByName("Star-Silver");
+          else if (completedDifficulty == 2)
+            completedImage = TheMappedImageCollection->findImageByName("Star-Gold");
+          else if (completedDifficulty >= 3)
+            completedImage = TheMappedImageCollection->findImageByName("RedYell_Star"); 
+
+          if (completedImage)
+          {
+            GadgetListBoxAddEntryImage(listbox, completedImage, row, 1);
+            GadgetListBoxSetItemData(listbox, (void*)completedDifficulty, row, 1);
+          }
+          else
+          {
+            GadgetListBoxSetItemData(listbox, (void*)0, row, 1);
+          }
+
+          row++;
+        }
+
+        inMission = false;
+        mapPath.clear();
+        displayNameLabel.clear();
+      }
+      else
+      {
+        break;
+      }
+
+      continue;
+    }
+
+    if (!inMission)
+      continue;
+
+    if (trimmed.rfind("Map ", 0) == 0)
+    {
+      mapPath = TrimCopy(trimmed.substr(4));
 
       while (!mapPath.empty() && isspace(mapPath.back()))
         mapPath.pop_back();
 
-      UnicodeString utext;
-      utext.translate(mapPath.c_str());
+      while (!mapPath.empty() && isspace(mapPath.front()))
+        mapPath.erase(0, 1);
 
-      GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
+      continue;
+    }
 
-      campaignMapItemData.push_back(mapPath);
-      GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
+    if (trimmed.rfind("DisplayName ", 0) == 0)
+    {
+      displayNameLabel = TrimCopy(trimmed.substr(12));
 
-      if (row > 0)
-      {
-        ChapterProgress progress;
+      while (!displayNameLabel.empty() && isspace(displayNameLabel.back()))
+        displayNameLabel.pop_back();
 
-        AsciiString campaign;
-        campaign.set(campaignName);
-        campaign.toLower();
+      while (!displayNameLabel.empty() && isspace(displayNameLabel.front()))
+        displayNameLabel.erase(0, 1);
 
-        Int previousMissionNumber = row;
-
-        if (progress.getMissionCompletedDifficulty(campaign, previousMissionNumber) <= 0)
-          GadgetListBoxSetItemEnabled(listbox, row, FALSE);
-      }
-
-      row++;
+      continue;
     }
   }
 
