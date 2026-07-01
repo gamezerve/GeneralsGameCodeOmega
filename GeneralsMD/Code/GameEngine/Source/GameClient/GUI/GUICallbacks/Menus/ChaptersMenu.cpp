@@ -314,7 +314,16 @@ static void LoadCampaignMaps(const char* campaignName)
 
   if (row > 0)
   {
-    GadgetListBoxSetSelected(listbox, 0);
+    Int rowToSelect = lastSelectedMapRow;
+
+    if (rowToSelect < 0 || rowToSelect >= row)
+      rowToSelect = 0;
+
+    if (!GadgetListBoxIsItemEnabled(listbox, rowToSelect))
+      rowToSelect = 0;
+
+    GadgetListBoxSetSelected(listbox, rowToSelect);
+    TheWindowManager->winSetFocus(listbox);
 
     ignoreNextMapSelectionForDoubleClick = TRUE;
 
@@ -322,7 +331,7 @@ static void LoadCampaignMaps(const char* campaignName)
       listbox,
       GLM_SELECTED,
       (WindowMsgData)listbox,
-      0
+      rowToSelect
     );
   }
 
@@ -331,6 +340,8 @@ static void LoadCampaignMaps(const char* campaignName)
 
 static void SelectChapter(Int index)
 {
+  if (selectedChapter != index)
+    lastSelectedMapRow = 0;
 
   DEBUG_LOG(("SelectChapter(%d)\n", index));
 
@@ -627,6 +638,32 @@ void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
     shutdownComplete(layout);
 }
 
+static Bool LaunchSelectedChapterMission(GameWindow* listbox)
+{
+  if (!listbox)
+    return FALSE;
+
+  Int selected = -1;
+  GadgetListBoxGetSelected(listbox, &selected);
+
+  if (selected < 0)
+    return FALSE;
+
+  if (!GadgetListBoxIsItemEnabled(listbox, selected))
+    return FALSE;
+
+  const char* mapFname = (const char*)GadgetListBoxGetItemData(listbox, selected);
+
+  if (!mapFname)
+    return FALSE;
+
+  AsciiString mapName = mapFname;
+  mapName.toLower();
+
+  StartChapterMission(mapName, selectedDifficulty);
+  return TRUE;
+}
+
 WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
 {
   DEBUG_LOG(("ChaptersMenuSystem: msg=%u\n", msg));
@@ -662,27 +699,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
       GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
 
-      if (!listbox)
-        return MSG_HANDLED;
-
-      Int selected = -1;
-      GadgetListBoxGetSelected(listbox, &selected);
-
-      if (selected < 0)
-        return MSG_HANDLED;
-
-      if (!GadgetListBoxIsItemEnabled(listbox, selected))
-        return MSG_HANDLED;
-
-      const char* mapFname = (const char*)GadgetListBoxGetItemData(listbox, selected);
-
-      if (!mapFname)
-        return MSG_HANDLED;
-
-      AsciiString mapName = mapFname;
-      mapName.toLower();
-
-      StartChapterMission(mapName, selectedDifficulty);
+      LaunchSelectedChapterMission(listbox);
       return MSG_HANDLED;
     }
     if (controlID == buttonBackID)
@@ -730,37 +747,19 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
         return MSG_HANDLED;
       }
 
+      if (!GadgetListBoxIsItemEnabled(control, rowSelected))
+      {
+        GadgetListBoxSetSelected(control, lastSelectedMapRow);
+        return MSG_HANDLED;
+      }
+
       if (ignoreNextMapSelectionForDoubleClick)
       {
         ignoreNextMapSelectionForDoubleClick = FALSE;
-        lastMapClickTime = 0;
-        lastMapClickRow = -1;
       }
-      else
-      {
-        UnsignedInt now = timeGetTime();
 
-        if (rowSelected == lastMapClickRow &&
-          now - lastMapClickTime <= GetDoubleClickTime() &&
-          GadgetListBoxIsItemEnabled(control, rowSelected))
-        {
-          const char* mapFname = (const char*)GadgetListBoxGetItemData(control, rowSelected);
-
-          if (mapFname)
-          {
-            AsciiString mapName = mapFname;
-            mapName.toLower();
-            StartChapterMission(mapName, selectedDifficulty);
-          }
-
-          lastMapClickTime = 0;
-          lastMapClickRow = -1;
-          return MSG_HANDLED;
-        }
-
-        lastMapClickTime = now;
-        lastMapClickRow = rowSelected;
-      }
+      lastMapClickTime = 0;
+      lastMapClickRow = -1;
 
       lastSelectedMapRow = rowSelected;
 
@@ -815,20 +814,22 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
   case GLM_DOUBLE_CLICKED:
   {
-
-    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+    DEBUG_LOG(("ChaptersMenuSystem: GLM_DOUBLE_CLICKED mData2=%d\n", (Int)mData2));
 
     GameWindow* listbox = (GameWindow*)mData1;
-
-    if (listbox->winGetWindowId() != listID)
-      return MSG_HANDLED;
-
 
     if (!listbox)
       return MSG_HANDLED;
 
-    Int selected = -1;
-    GadgetListBoxGetSelected(listbox, &selected);
+    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+
+    if (listbox->winGetWindowId() != listID)
+      return MSG_HANDLED;
+
+    Int selected = (Int)mData2;
+
+    if (selected < 0)
+      GadgetListBoxGetSelected(listbox, &selected);
 
     if (selected < 0)
       return MSG_HANDLED;
@@ -840,6 +841,8 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
     if (!mapFname)
       return MSG_HANDLED;
+
+    GadgetListBoxSetSelected(listbox, selected);
 
     AsciiString mapName = mapFname;
     mapName.toLower();
