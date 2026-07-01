@@ -30,6 +30,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/ChapterProgress.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -294,7 +295,18 @@ static void LoadCampaignMaps(const char* campaignName)
       GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
 
       if (row > 0)
-        GadgetListBoxSetItemEnabled(listbox, row, FALSE);
+      {
+        ChapterProgress progress;
+
+        AsciiString campaign;
+        campaign.set(campaignName);
+        campaign.toLower();
+
+        Int previousMissionNumber = row;
+
+        if (progress.getMissionCompletedDifficulty(campaign, previousMissionNumber) <= 0)
+          GadgetListBoxSetItemEnabled(listbox, row, FALSE);
+      }
 
       row++;
     }

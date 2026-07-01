@@ -18,6 +18,7 @@ set(GAMEENGINE_SRC
     Include/Common/BitFlagsIO.h
     Include/Common/BorderColors.h
     Include/Common/BuildAssistant.h
+    Include/Common/ChapterProgress.h
     Include/Common/ClientUpdateModule.h
     Include/Common/CommandLine.h
 #    Include/Common/crc.h
@@ -632,6 +633,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/System/ArchiveFileSystem.cpp
 #    Source/Common/System/AsciiString.cpp
     Source/Common/System/BuildAssistant.cpp
+    Source/Common/System/ChapterProgress.cpp
     Source/Common/System/CriticalSection.cpp
     Source/Common/System/DataChunk.cpp
 #    Source/Common/System/Debug.cpp
