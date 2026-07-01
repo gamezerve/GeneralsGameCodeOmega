@@ -30,7 +30,14 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameEngine.h"
+#include "Common/GameState.h"
+#include "Common/GlobalData.h"
+#include "Common/MessageStream.h"
 #include "Common/NameKeyGenerator.h"
+#include "Common/OptionPreferences.h"
+#include "Common/RandomValue.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetListBox.h"
@@ -40,6 +47,8 @@
 #include "GameClient/MapUtil.h"
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
+#include "GameLogic/GameLogic.h"
+#include "GameLogic/ScriptEngine.h"
 
 #include <fstream>
 #include <string>
@@ -47,9 +56,30 @@
 #include <cctype>
 
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
+static NameKeyType buttonStartID = NAMEKEY_INVALID;
+static NameKeyType radioEasyID = NAMEKEY_INVALID;
+static NameKeyType radioMediumID = NAMEKEY_INVALID;
+static NameKeyType radioHardID = NAMEKEY_INVALID;
+
+static GameDifficulty selectedDifficulty = DIFFICULTY_NORMAL;
+
+
+static Int initialGadgetDelay = 2;
+static Bool justEntered = FALSE;
 static Bool buttonPushed = FALSE;
+static Bool chapterImagesCached = FALSE;
+static Bool startGame = FALSE;
+static Bool isShuttingDown = FALSE;
+static Bool ignoreNextMapSelectionForDoubleClick = FALSE;
+static Bool resetDifficultyOnNextInit = FALSE;
+static Bool resetChapterImagesOnNextInit = FALSE;
+static Bool missionLaunchPending = FALSE;
+
+static UnsignedInt lastMapClickTime = 0;
+static Int lastMapClickRow = -1;
+
 static GameWindow* chapterButtons[8];
-static Int selectedChapter = 0;
+static Int selectedChapter = -1;
 
 static const Image* normalImages[8][3];
 static const Image* selectedImages[8][3];
@@ -67,6 +97,30 @@ static const Image* normalHiliteImages[8][3];
 static std::vector<std::string> campaignMapItemData;
 
 static Int lastSelectedMapRow = 0;
+
+static void StartChapterMission(AsciiString mapName, GameDifficulty diff)
+{
+
+  if (missionLaunchPending || startGame)
+    return;
+
+  missionLaunchPending = TRUE;
+
+  startGame = TRUE;
+
+  TheCampaignManager->setGameDifficulty(diff);
+
+  OptionPreferences pref;
+  pref.setCampaignDifficulty(diff);
+  pref.write();
+
+  TheScriptEngine->setGlobalDifficulty(diff);
+
+  TheWritableGlobalData->m_pendingFile = mapName;
+
+  TheShell->reverseAnimatewindow();
+  TheTransitionHandler->setGroup("FadeWholeScreen");
+}
 
 static void ListboxClear(GameWindow* listbox)
 {
@@ -250,6 +304,8 @@ static void LoadCampaignMaps(const char* campaignName)
   {
     GadgetListBoxSetSelected(listbox, 0);
 
+    ignoreNextMapSelectionForDoubleClick = TRUE;
+
     TheWindowManager->winSendSystemMsg(
       listbox,
       GLM_SELECTED,
@@ -264,10 +320,14 @@ static void LoadCampaignMaps(const char* campaignName)
 static void SelectChapter(Int index)
 {
 
+  DEBUG_LOG(("SelectChapter(%d)\n", index));
+
   selectedChapter = index;
 
   for (Int i = 0; i < 8; ++i)
   {
+    DEBUG_LOG(("Reset %d\n", i));
+
     if (!chapterButtons[i])
       continue;
 
@@ -320,10 +380,12 @@ static void SelectChapter(Int index)
 	// Reborn: Fill map listbox with maps for the selected chapter
   if (index == 0) // TRAINING
   {
+    TheCampaignManager->setCampaign("TRAINING");
     LoadCampaignMaps("TRAINING");
   }
   else if (index == 2) // ChinaGen
   {
+    TheCampaignManager->setCampaign("China_Gen");
     LoadCampaignMaps("China_Gen");
   }
 
@@ -337,11 +399,59 @@ WindowMsgHandledType ChaptersMenuDividerInput(GameWindow* window, UnsignedInt ms
 
 void ChaptersMenuInit(WindowLayout* layout, void* userData)
 {
+
+  missionLaunchPending = FALSE;
+  startGame = FALSE;
+
+  if (resetChapterImagesOnNextInit)
+  {
+		memset(chapterButtons, 0, sizeof(chapterButtons));
+    chapterImagesCached = FALSE;
+    resetChapterImagesOnNextInit = FALSE;
+	}
+
+  if (selectedChapter < 0)
+  {
+    memset(chapterButtons, 0, sizeof(chapterButtons));
+  }
+
+  TheShell->showShellMap(TRUE);
+
+  radioEasyID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonEasyAI");
+  radioMediumID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonMediumAI");
+  radioHardID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonHardAI");
   buttonBackID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonBack");
+  buttonStartID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonStart");
   buttonPushed = FALSE;
+
+  isShuttingDown = FALSE;
+
+  NameKeyType selectedRadioID = radioMediumID;
+
+  if (selectedDifficulty == DIFFICULTY_EASY)
+    selectedRadioID = radioEasyID;
+  else if (selectedDifficulty == DIFFICULTY_HARD)
+    selectedRadioID = radioHardID;
+
+  GameWindow* radio = TheWindowManager->winGetWindowFromId(nullptr, selectedRadioID);
+  if (radio)
+    TheWindowManager->winSendSystemMsg(radio, GBM_SET_SELECTION, TRUE, 0);
 
   layout->hide(FALSE);
   layout->bringForward();
+
+  GameWindow* subParent = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:SubParent")
+  );
+
+  if (subParent)
+  {
+    subParent->winHide(TRUE);
+  }
+
+  justEntered = TRUE;
+  initialGadgetDelay = 2;
 
   //NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
   //GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
@@ -385,6 +495,10 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   };
 
 
+  Int chapterToSelect = selectedChapter;
+  if (chapterToSelect < 0)
+    chapterToSelect = 0;
+
   for (Int i = 0; i < 8; ++i)
   {
     chapterButtons[i] = TheWindowManager->winGetWindowFromId(
@@ -393,26 +507,29 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
     if (chapterButtons[i])
     {
-      normalImages[i][0] = chapterButtons[i]->winGetEnabledImage(0);
-      normalImages[i][1] = chapterButtons[i]->winGetEnabledImage(5);
-      normalImages[i][2] = chapterButtons[i]->winGetEnabledImage(6);
+      if (!chapterImagesCached)
+      {
+        normalImages[i][0] = chapterButtons[i]->winGetEnabledImage(0);
+        normalImages[i][1] = chapterButtons[i]->winGetEnabledImage(5);
+        normalImages[i][2] = chapterButtons[i]->winGetEnabledImage(6);
 
-      normalHiliteImages[i][0] = chapterButtons[i]->winGetHiliteImage(0);
-      normalHiliteImages[i][1] = chapterButtons[i]->winGetHiliteImage(5);
-      normalHiliteImages[i][2] = chapterButtons[i]->winGetHiliteImage(6);
+        normalHiliteImages[i][0] = chapterButtons[i]->winGetHiliteImage(0);
+        normalHiliteImages[i][1] = chapterButtons[i]->winGetHiliteImage(5);
+        normalHiliteImages[i][2] = chapterButtons[i]->winGetHiliteImage(6);
 
-      selectedImages[i][0] = chapterButtons[i]->winGetHiliteImage(1);
-      selectedImages[i][1] = chapterButtons[i]->winGetHiliteImage(3);
-      selectedImages[i][2] = chapterButtons[i]->winGetHiliteImage(4);
+        selectedImages[i][0] = chapterButtons[i]->winGetHiliteImage(1);
+        selectedImages[i][1] = chapterButtons[i]->winGetHiliteImage(3);
+        selectedImages[i][2] = chapterButtons[i]->winGetHiliteImage(4);
 
-      normalTextColor[i] = chapterButtons[i]->winGetEnabledTextColor();
-      normalTextBorderColor[i] = chapterButtons[i]->winGetEnabledTextBorderColor();
+        normalTextColor[i] = chapterButtons[i]->winGetEnabledTextColor();
+        normalTextBorderColor[i] = chapterButtons[i]->winGetEnabledTextBorderColor();
 
-      normalHiliteTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
-      normalHiliteTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
+        normalHiliteTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
+        normalHiliteTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
 
-      selectedTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
-      selectedTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
+        selectedTextColor[i] = chapterButtons[i]->winGetHiliteTextColor();
+        selectedTextBorderColor[i] = chapterButtons[i]->winGetHiliteTextBorderColor();
+      }
 
 
       // Reborn: Only Training (0) and ChinaGen (2) will be active atm.
@@ -423,12 +540,12 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
     }
   }
+  chapterImagesCached = TRUE;
 
-  SelectChapter(0);
 
-  LoadCampaignMaps("TRAINING");
+  SelectChapter(chapterToSelect);
 
-  TheTransitionHandler->setGroup("ChaptersMenuFade");
+  //TheTransitionHandler->setGroup("ChaptersMenuFade");
 }
 
 static void shutdownComplete(WindowLayout* layout)
@@ -439,6 +556,7 @@ static void shutdownComplete(WindowLayout* layout)
 
 void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
 {
+
   Bool popImmediate = *(Bool*)userData;
 
   if (popImmediate)
@@ -447,19 +565,63 @@ void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
     return;
   }
 
+  isShuttingDown = TRUE;
   TheShell->reverseAnimatewindow();
   TheTransitionHandler->reverse("ChaptersMenuFade");
 }
 
 void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
 {
-  if (TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
+  if (justEntered)
+  {
+    if (initialGadgetDelay == 1)
+    {
+      GameWindow* subParent = TheWindowManager->winGetWindowFromId(
+        nullptr,
+        TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:SubParent")
+      );
+
+      if (subParent)
+        subParent->winHide(FALSE);
+
+      TheTransitionHandler->setGroup("ChaptersMenuFade");
+      initialGadgetDelay = 2;
+      justEntered = FALSE;
+    }
+    else
+    {
+      initialGadgetDelay--;
+    }
+  }
+
+  if (startGame && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
+  {
+    startGame = FALSE;
+
+    if (TheGameLogic->isInGame())
+      TheGameLogic->clearGameData();
+
+    GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_NEW_GAME);
+    msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
+    msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
+    msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
+    InitRandom(0);
+
     TheShell->shutdownComplete(layout);
+    return;
+  }
+
+  if (isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
+    shutdownComplete(layout);
 }
 
 WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
 {
   DEBUG_LOG(("ChaptersMenuSystem: msg=%u\n", msg));
+
+  if (missionLaunchPending)
+    return MSG_HANDLED;
+
   switch (msg)
   {
   case GBM_SELECTED:
@@ -483,10 +645,55 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
     if (buttonPushed)
       break;
 
+    if (controlID == buttonStartID)
+    {
+      NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+      GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
+
+      if (!listbox)
+        return MSG_HANDLED;
+
+      Int selected = -1;
+      GadgetListBoxGetSelected(listbox, &selected);
+
+      if (selected < 0)
+        return MSG_HANDLED;
+
+      if (!GadgetListBoxIsItemEnabled(listbox, selected))
+        return MSG_HANDLED;
+
+      const char* mapFname = (const char*)GadgetListBoxGetItemData(listbox, selected);
+
+      if (!mapFname)
+        return MSG_HANDLED;
+
+      AsciiString mapName = mapFname;
+      mapName.toLower();
+
+      StartChapterMission(mapName, selectedDifficulty);
+      return MSG_HANDLED;
+    }
     if (controlID == buttonBackID)
     {
       buttonPushed = TRUE;
+			resetChapterImagesOnNextInit = TRUE;
+      resetDifficultyOnNextInit = TRUE;
       TheShell->pop();
+      return MSG_HANDLED;
+    }
+    if (controlID == radioEasyID)
+    {
+      selectedDifficulty = DIFFICULTY_EASY;
+      return MSG_HANDLED;
+    }
+    else if (controlID == radioMediumID)
+    {
+      selectedDifficulty = DIFFICULTY_NORMAL;
+      return MSG_HANDLED;
+    }
+    else if (controlID == radioHardID)
+    {
+      selectedDifficulty = DIFFICULTY_HARD;
       return MSG_HANDLED;
     }
 
@@ -509,6 +716,38 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       {
         GadgetListBoxSetSelected(control, lastSelectedMapRow);
         return MSG_HANDLED;
+      }
+
+      if (ignoreNextMapSelectionForDoubleClick)
+      {
+        ignoreNextMapSelectionForDoubleClick = FALSE;
+        lastMapClickTime = 0;
+        lastMapClickRow = -1;
+      }
+      else
+      {
+        UnsignedInt now = timeGetTime();
+
+        if (rowSelected == lastMapClickRow &&
+          now - lastMapClickTime <= GetDoubleClickTime() &&
+          GadgetListBoxIsItemEnabled(control, rowSelected))
+        {
+          const char* mapFname = (const char*)GadgetListBoxGetItemData(control, rowSelected);
+
+          if (mapFname)
+          {
+            AsciiString mapName = mapFname;
+            mapName.toLower();
+            StartChapterMission(mapName, selectedDifficulty);
+          }
+
+          lastMapClickTime = 0;
+          lastMapClickRow = -1;
+          return MSG_HANDLED;
+        }
+
+        lastMapClickTime = now;
+        lastMapClickRow = rowSelected;
       }
 
       lastSelectedMapRow = rowSelected;
@@ -560,6 +799,44 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
     break;
   }
+
+
+  case GLM_DOUBLE_CLICKED:
+  {
+
+    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+
+    GameWindow* listbox = (GameWindow*)mData1;
+
+    if (listbox->winGetWindowId() != listID)
+      return MSG_HANDLED;
+
+
+    if (!listbox)
+      return MSG_HANDLED;
+
+    Int selected = -1;
+    GadgetListBoxGetSelected(listbox, &selected);
+
+    if (selected < 0)
+      return MSG_HANDLED;
+
+    if (!GadgetListBoxIsItemEnabled(listbox, selected))
+      return MSG_HANDLED;
+
+    const char* mapFname = (const char*)GadgetListBoxGetItemData(listbox, selected);
+
+    if (!mapFname)
+      return MSG_HANDLED;
+
+    AsciiString mapName = mapFname;
+    mapName.toLower();
+
+    StartChapterMission(mapName, selectedDifficulty);
+
+    return MSG_HANDLED;
+  }
+
 
   }
 
