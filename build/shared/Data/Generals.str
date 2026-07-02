@@ -3,6 +3,14 @@ GUI:Training01
 "Operation: Silent Dawn"
 END
 
+GUI:Versus
+"VS"
+END
+
+GUI:Location
+"Location"
+END
+
 GUI:ReplayMoneyRequestSent
 "%ls requested money from %ls"
 END

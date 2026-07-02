@@ -37,11 +37,13 @@
 #include "Common/MessageStream.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/OptionPreferences.h"
+#include "Common/PlayerTemplate.h"
 #include "Common/RandomValue.h"
 #include "GameClient/CampaignManager.h"
 #include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetListBox.h"
+#include "GameClient/GadgetStaticText.h"
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
@@ -96,9 +98,157 @@ static Color selectedTextBorderColor[8];
 
 static const Image* normalHiliteImages[8][3];
 
-static std::vector<std::string> campaignMapItemData;
+struct CampaignMissionInfo
+{
+  std::string mapPath;
+  std::string displayNameLabel;
+  std::string missionName;
+  std::string playerFaction;
+  std::string enemyFaction1;
+};
+
+static std::vector<CampaignMissionInfo> campaignMissionData;
 
 static Int lastSelectedMapRow = 0;
+
+static GameWindow* worldMapMarker = nullptr;
+static UnsignedInt worldMapMarkerLastFrameTime = 0;
+static Int worldMapMarkerFrame = 0;
+static const Image* worldMapMarkerImages[20] = { nullptr };
+
+static const Image* GetFactionIcon(const std::string& factionName)
+{
+  if (factionName.empty())
+    return nullptr;
+
+  const PlayerTemplate* playerTemplate = ThePlayerTemplateStore->findPlayerTemplate(TheNameKeyGenerator->nameToKey(factionName.c_str()));
+
+  if (!playerTemplate)
+    return nullptr;
+
+  return playerTemplate->getSideIconImage();
+}
+
+static void SetWindowImage(const char* windowName, const Image* image)
+{
+  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windowName));
+
+  if (!window)
+    return;
+
+  if (image)
+  {
+    window->winSetStatus(WIN_STATUS_IMAGE);
+    window->winSetEnabledImage(0, image);
+    window->winHide(FALSE);
+  }
+  else
+  {
+    window->winHide(TRUE);
+  }
+}
+
+static void SetWindowVisible(const char* windowName, Bool visible)
+{
+  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windowName));
+
+  if (window)
+    window->winHide(!visible);
+}
+
+static void UpdateMissionFactionIcons(Int row)
+{
+  if (row < 0 || row >= (Int)campaignMissionData.size())
+  {
+    SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", nullptr);
+    SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", nullptr);
+    SetWindowVisible("ChaptersMenu.wnd:VsText", FALSE);
+    return;
+  }
+
+  const CampaignMissionInfo& mission = campaignMissionData[row];
+
+  const Image* playerIcon = GetFactionIcon(mission.playerFaction);
+  const Image* enemyIcon = GetFactionIcon(mission.enemyFaction1);
+
+  SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", playerIcon);
+  SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", enemyIcon);
+
+  SetWindowVisible("ChaptersMenu.wnd:VsText", playerIcon || enemyIcon);
+}
+
+static void NormalizeMapPath(AsciiString& path)
+{
+  std::string s = path.str();
+
+  for (size_t i = 0; i < s.size(); ++i)
+  {
+    s[i] = (char)tolower((unsigned char)s[i]);
+
+    if (s[i] == '/')
+      s[i] = '\\';
+  }
+
+  path.set(s.c_str());
+}
+
+static Mission* FindMissionByMapPath(Campaign* campaign, const std::string& mapPath)
+{
+  if (!campaign)
+    return nullptr;
+
+  AsciiString wantedMap;
+  wantedMap.set(mapPath.c_str());
+  NormalizeMapPath(wantedMap);
+
+  for (Campaign::MissionListIt it = campaign->m_missions.begin(); it != campaign->m_missions.end(); ++it)
+  {
+    Mission* mission = *it;
+
+    if (!mission)
+      continue;
+
+    AsciiString missionMap = mission->m_mapName;
+    NormalizeMapPath(missionMap);
+
+    if (missionMap.compare(wantedMap) == 0)
+      return mission;
+  }
+
+  return nullptr;
+}
+
+static void UpdateMissionLocation(Int row)
+{
+  GameWindow* window = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:BattleLocationText")
+  );
+
+  if (!window)
+    return;
+
+  if (row < 0 || row >= (Int)campaignMissionData.size())
+    return;
+
+  Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+  Mission* mission = FindMissionByMapPath(campaign, campaignMissionData[row].mapPath);
+
+  if (!mission || mission->m_locationNameLabel.isEmpty())
+    return;
+
+  GadgetStaticTextSetText(window, TheGameText->fetch(mission->m_locationNameLabel));
+
+  DEBUG_LOG(("UpdateMissionLocation row=%d map=%s campaign=%p mission=%p\n",
+    row,
+    campaignMissionData[row].mapPath.c_str(),
+    campaign,
+    mission));
+
+  if (mission)
+    DEBUG_LOG(("LocationNameLabel=%s\n", mission->m_locationNameLabel.str()));
+
+}
 
 static void StartChapterMission(AsciiString mapName, GameDifficulty diff)
 {
@@ -228,7 +378,7 @@ static std::string TrimCopy(std::string text)
 
 static void LoadCampaignMaps(const char* campaignName)
 {
-  campaignMapItemData.clear();
+  campaignMissionData.clear();
 
   NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
   GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
@@ -248,6 +398,9 @@ static void LoadCampaignMaps(const char* campaignName)
   Int row = 0;
   std::string mapPath;
   std::string displayNameLabel;
+  std::string missionName;
+  std::string playerFaction;
+  std::string enemyFaction1;
 
   while (std::getline(file, line))
   {
@@ -280,7 +433,10 @@ static void LoadCampaignMaps(const char* campaignName)
     {
       inMission = true;
       mapPath.clear();
+      missionName = TrimCopy(trimmed.substr(8));
       displayNameLabel.clear();
+      playerFaction.clear();
+      enemyFaction1.clear();
       continue;
     }
 
@@ -299,8 +455,15 @@ static void LoadCampaignMaps(const char* campaignName)
 
           GadgetListBoxAddEntryText(listbox, utext, 0xFFFFFFFF, row);
 
-          campaignMapItemData.push_back(mapPath);
-          GadgetListBoxSetItemData(listbox, (void*)campaignMapItemData.back().c_str(), row);
+          CampaignMissionInfo info;
+          info.mapPath = mapPath;
+          info.displayNameLabel = displayNameLabel;
+          info.missionName = missionName;
+          info.playerFaction = playerFaction;
+          info.enemyFaction1 = enemyFaction1;
+
+          campaignMissionData.push_back(info);
+          GadgetListBoxSetItemData(listbox, (void*)campaignMissionData.back().mapPath.c_str(), row);
 
           ChapterProgress progress;
 
@@ -344,6 +507,8 @@ static void LoadCampaignMaps(const char* campaignName)
         inMission = false;
         mapPath.clear();
         displayNameLabel.clear();
+        playerFaction.clear();
+        enemyFaction1.clear();
       }
       else
       {
@@ -381,6 +546,19 @@ static void LoadCampaignMaps(const char* campaignName)
 
       continue;
     }
+
+    if (trimmed.rfind("PlayerFaction ", 0) == 0)
+    {
+      playerFaction = TrimCopy(trimmed.substr(14));
+      continue;
+    }
+
+    if (trimmed.rfind("EnemyFaction1 ", 0) == 0)
+    {
+      enemyFaction1 = TrimCopy(trimmed.substr(14));
+      continue;
+    }
+
   }
 
   if (row > 0)
@@ -636,6 +814,27 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   }
   chapterImagesCached = TRUE;
 
+  worldMapMarker = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapMarker")
+  );
+
+  if (worldMapMarker)
+  {
+    for (Int i = 0; i < 20; ++i)
+    {
+      AsciiString imageName;
+      imageName.format("SCCSniper_WorldMapMarker_%02d", i);
+      worldMapMarkerImages[i] = TheMappedImageCollection->findImageByName(imageName.str());
+    }
+
+    worldMapMarkerFrame = 0;
+    worldMapMarkerLastFrameTime = timeGetTime();
+    worldMapMarker->winSetStatus(WIN_STATUS_IMAGE);
+    worldMapMarker->winSetEnabledImage(0, worldMapMarkerImages[0]);
+    worldMapMarker->winHide(FALSE);
+    worldMapMarker->winBringToTop();
+  }
 
   SelectChapter(chapterToSelect);
 
@@ -666,6 +865,21 @@ void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
 
 void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
 {
+
+  if (worldMapMarker && worldMapMarkerImages[0])
+  {
+    UnsignedInt now = timeGetTime();
+
+    if (now - worldMapMarkerLastFrameTime >= 50)
+    {
+      worldMapMarkerLastFrameTime = now;
+      worldMapMarkerFrame = (worldMapMarkerFrame + 1) % 20;
+
+      if (worldMapMarkerImages[worldMapMarkerFrame])
+        worldMapMarker->winSetEnabledImage(0, worldMapMarkerImages[worldMapMarkerFrame]);
+    }
+  }
+
   if (justEntered)
   {
     if (initialGadgetDelay == 1)
@@ -876,6 +1090,9 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       {
         preview->winClearStatus(WIN_STATUS_IMAGE);
       }
+
+      UpdateMissionFactionIcons(rowSelected);
+      UpdateMissionLocation(rowSelected);
 
     }
 

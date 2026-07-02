@@ -360,6 +360,8 @@ void CampaignManager::parseMissionPart( INI* ini, void *instance, void *store, c
 		{
 			{ "Map",							INI::parseAsciiString,				nullptr, offsetof( Mission, m_mapName ) },
       { "DisplayName",      INI::parseAsciiString,        nullptr, offsetof( Mission, m_displayNameLabel) }, // Reborn: Added for Chapters Menu
+      { "PlayerFaction",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_playerFaction) }, // Reborn: Added for Chapters Menu
+      { "EnemyFaction1",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction1) }, // Reborn: Added for Chapters Menu
 			{ "NextMission",			INI::parseAsciiString,				nullptr, offsetof( Mission, m_nextMission ) },
 			{ "IntroMovie",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_movieLabel ) },
 			{ "ObjectiveLine0",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[0] ) },
