@@ -1846,7 +1846,7 @@ if (buildLimit > 0)
 {
 	Int currentCount = 0;
 	const ThingTemplate* tmpl = thingTemplate;
-	player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
+	player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
 
 	Int queuedCount = 0;
 	Int effectiveCount = currentCount;
@@ -1878,7 +1878,8 @@ if (buildLimit > 0)
 }
 
 
-if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
+if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
+	thingTemplate->getBuildable() != BSTATUS_IGNORE_PREREQUISITES)
 {
 	// ask each prerequisite to give us a list of the non satisfied prerequisites
 	for (Int i = 0; i < thingTemplate->getPrereqCount(); i++)
@@ -2897,7 +2898,7 @@ if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
 			{
 				Int currentCount = 0;
 				const ThingTemplate* tmpl = thing;
-				player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
+				player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
 				limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
 			}
 

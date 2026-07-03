@@ -814,8 +814,8 @@ WINDOW
       CHILD
       WINDOW
         WINDOWTYPE = PUSHBUTTON;
-        SCREENRECT = UPPERLEFT: 296 512,
-                     BOTTOMRIGHT: 396 552,
+        SCREENRECT = UPPERLEFT: 404 512,
+                     BOTTOMRIGHT: 504 552,
                      CREATIONRESOLUTION: 800 600;
         NAME = "MainMenu.wnd:ButtonSkirmish";
         STATUS = ENABLED+IMAGE;
@@ -862,8 +862,8 @@ WINDOW
       CHILD
       WINDOW
         WINDOWTYPE = PUSHBUTTON;
-        SCREENRECT = UPPERLEFT: 404 512,
-                     BOTTOMRIGHT: 504 552,
+        SCREENRECT = UPPERLEFT: 296 512,
+                     BOTTOMRIGHT: 396 552,
                      CREATIONRESOLUTION: 800 600;
         NAME = "MainMenu.wnd:ButtonChapters";
         STATUS = ENABLED+IMAGE;

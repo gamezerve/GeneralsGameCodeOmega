@@ -342,14 +342,29 @@ static void UpdateWorldMapMarkerPosition(Int row)
   worldMapMarker->winBringToTop();
 }
 
-static void StartChapterMission(AsciiString mapName, GameDifficulty diff)
+static void StartChapterMission(Int row, GameDifficulty diff)
 {
-
   if (missionLaunchPending || startGame)
     return;
 
-  missionLaunchPending = TRUE;
+  if (row < 0 || row >= (Int)campaignMissionData.size())
+    return;
 
+  Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+
+  if (!campaign)
+    return;
+
+  const CampaignMissionInfo& info = campaignMissionData[row];
+
+  AsciiString campaignName = campaign->m_name;
+  AsciiString missionName;
+  missionName.set(info.missionName.c_str());
+  missionName.toLower();
+
+  TheCampaignManager->setCampaignAndMission(campaignName, missionName);
+
+  missionLaunchPending = TRUE;
   startGame = TRUE;
 
   TheCampaignManager->setGameDifficulty(diff);
@@ -360,7 +375,7 @@ static void StartChapterMission(AsciiString mapName, GameDifficulty diff)
 
   TheScriptEngine->setGlobalDifficulty(diff);
 
-  TheWritableGlobalData->m_pendingFile = mapName;
+  TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
 
   TheShell->reverseAnimatewindow();
   TheTransitionHandler->setGroup("FadeWholeScreen");
@@ -1064,10 +1079,7 @@ static Bool LaunchSelectedChapterMission(GameWindow* listbox)
   if (!mapFname)
     return FALSE;
 
-  AsciiString mapName = mapFname;
-  mapName.toLower();
-
-  StartChapterMission(mapName, selectedDifficulty);
+  StartChapterMission(selected, selectedDifficulty);
   return TRUE;
 }
 
@@ -1181,12 +1193,6 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
       for (size_t i = 0; i < fixedPath.size(); ++i)
       {
-        if (fixedPath[i] == '\\')
-          fixedPath[i] = '/';
-      }
-
-      for (size_t i = 0; i < fixedPath.size(); ++i)
-      {
         fixedPath[i] = (char)tolower(fixedPath[i]);
       }
 
@@ -1255,10 +1261,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
     GadgetListBoxSetSelected(listbox, selected);
 
-    AsciiString mapName = mapFname;
-    mapName.toLower();
-
-    StartChapterMission(mapName, selectedDifficulty);
+    StartChapterMission(selected, selectedDifficulty);
 
     return MSG_HANDLED;
   }

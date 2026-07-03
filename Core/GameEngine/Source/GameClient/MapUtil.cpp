@@ -1147,13 +1147,16 @@ Image *getMapPreviewImage( AsciiString mapName )
 	AsciiString tgaName = mapName;
 	AsciiString name;
 	AsciiString tempName;
-	tgaName.truncateBy(4); // ".map"
+
+	tgaName.truncateBy(4);
 	name = tgaName;
 	tgaName.concat(".tga");
 
-	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(name);
+	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(mapName);
+	portableName.truncateBy(4);
+
 	tempName.set(AsciiString::TheEmptyString);
-	for(Int i = 0; i < portableName.getLength(); ++i)
+	for (Int i = 0; i < portableName.getLength(); ++i)
 	{
 		char c = portableName.getCharAt(i);
 		if (c == '\\' || c == ':')
