@@ -103,7 +103,7 @@ BEGIN
             VALUE "FileDescription", "patchgrabber\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "patchgrabber\0"
-            VALUE "LegalCopyright", "Copyright © 2002\0"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2002\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "patchgrabber.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -144,28 +144,28 @@ IDI_ICON1               ICON    DISCARDABLE     "Generals.ico"
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    TXT_ABORT_DOWNLOAD      "Sind Sie sicher, daß Sie das Download abbrechen möchten?"
+    TXT_ABORT_DOWNLOAD      "Sind Sie sicher, daï¿½ Sie das Download abbrechen mï¿½chten?"
     TXT_ABORT               "Abbrechen"
     TXT_TIME_REMAIN         "Verbleibende Zeit: %d:%02d"
     TXT_BYTES_READ          "Gelesene Bytes: %d von %d"
     TXT_BPS                 "Bytes pro Sekunde: %d"
     TXT_CANT_CONTACT        "Verbindung zum Electronic Arts-Update-Server konnte nicht hergestellt werden."
     TXT_ERROR               "Fehler"
-    TXT_AN_UPGRADE_AVAILABLE "Ein Upgrade ist verfügbar."
-    TXT_DOWNLOAD_NOW        "Möchten Sie es jetzt herunterladen?"
+    TXT_AN_UPGRADE_AVAILABLE "Ein Upgrade ist verfï¿½gbar."
+    TXT_DOWNLOAD_NOW        "Mï¿½chten Sie es jetzt herunterladen?"
     TXT_DOWNLOADING_FILE    "Datei %d von %d wird heruntergeladen ..."
     TXT_NONE                """"""
-    TXT_UPGRADE_AVAILABLE   "Upgrade verfügbar"
-    TXT_NO_PATCHES          "Für dieses Produkt gibt es z.Z. kein Patch."
+    TXT_UPGRADE_AVAILABLE   "Upgrade verfï¿½gbar"
+    TXT_NO_PATCHES          "Fï¿½r dieses Produkt gibt es z.Z. kein Patch."
     TXT_AUTO_UPDATE         "Auto-Update:"
     TXT_CONNECTING          "Verbinde ..."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    TXT_INSTALL_PROBLEM     "Das Spiel ist nicht korrekt installiert. Möglicherweise müssen Sie erneut installieren."
+    TXT_INSTALL_PROBLEM     "Das Spiel ist nicht korrekt installiert. Mï¿½glicherweise mï¿½ssen Sie erneut installieren."
     TXT_TITLE               "Electronic Arts Auto-Patch"
-    TXT_REGNOW              "Möchten Sie sich bei Generals Online registrieren?"
+    TXT_REGNOW              "Mï¿½chten Sie sich bei Generals Online registrieren?"
 END
 
 #endif    // German (Germany) resources
@@ -264,7 +264,7 @@ BEGIN
             VALUE "FileDescription", "patchgrabber\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "patchgrabber\0"
-            VALUE "LegalCopyright", "Copyright © 2002\0"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2002\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "patchgrabber.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -399,7 +399,7 @@ IDD_CONNECTING DIALOG DISCARDABLE  0, 0, 117, 20
 STYLE DS_ABSALIGN | DS_CENTER | WS_POPUP | WS_THICKFRAME
 FONT 18, "MS Sans Serif"
 BEGIN
-    CTEXT           "Connexion à EA",IDC_STATIC,12,4,93,12,SS_CENTERIMAGE
+    CTEXT           "Connexion ï¿½ EA",IDC_STATIC,12,4,93,12,SS_CENTERIMAGE
 END
 
 IDD_DOWNLOAD_DIALOG DIALOG DISCARDABLE  0, 0, 290, 143
@@ -472,7 +472,7 @@ BEGIN
             VALUE "FileDescription", "patchgrabber\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "patchgrabber\0"
-            VALUE "LegalCopyright", "Copyright © 2002\0"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2002\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "patchgrabber.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -513,28 +513,28 @@ IDI_ICON1               ICON    DISCARDABLE     "Generals.ico"
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    TXT_ABORT_DOWNLOAD      "Confirmer abandon du téléchargement ?"
+    TXT_ABORT_DOWNLOAD      "Confirmer abandon du tï¿½lï¿½chargement ?"
     TXT_ABORT               "Abandon"
     TXT_TIME_REMAIN         "Temps restant : %d:%02d"
     TXT_BYTES_READ          "Octets lus : %d sur %d"
     TXT_BPS                 "Octets/seconde : %d"
-    TXT_CANT_CONTACT        "La connexion au serveur de mise à jour de Electronic Arts a échoué."
+    TXT_CANT_CONTACT        "La connexion au serveur de mise ï¿½ jour de Electronic Arts a ï¿½chouï¿½."
     TXT_ERROR               "Erreur"
-    TXT_AN_UPGRADE_AVAILABLE "Une mise à jour est disponible."
-    TXT_DOWNLOAD_NOW        "Voulez-vous la télécharger maintenant ?"
-    TXT_DOWNLOADING_FILE    "Téléchargement du fichier %d sur %d..."
+    TXT_AN_UPGRADE_AVAILABLE "Une mise ï¿½ jour est disponible."
+    TXT_DOWNLOAD_NOW        "Voulez-vous la tï¿½lï¿½charger maintenant ?"
+    TXT_DOWNLOADING_FILE    "Tï¿½lï¿½chargement du fichier %d sur %d..."
     TXT_NONE                """"""
-    TXT_UPGRADE_AVAILABLE   "Mise à jour disponible"
+    TXT_UPGRADE_AVAILABLE   "Mise ï¿½ jour disponible"
     TXT_NO_PATCHES          "Aucun patch n'est disponible pour ce produit."
-    TXT_AUTO_UPDATE         "Mise à jour automatique :"
+    TXT_AUTO_UPDATE         "Mise ï¿½ jour automatique :"
     TXT_CONNECTING          "Connexion..."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    TXT_INSTALL_PROBLEM     "L'installation du jeu a échoué. Il est préférable de recommencer l'opération."
+    TXT_INSTALL_PROBLEM     "L'installation du jeu a ï¿½chouï¿½. Il est prï¿½fï¿½rable de recommencer l'opï¿½ration."
     TXT_TITLE               "Patch automatique de Electronic Arts"
-    TXT_REGNOW              "Voulez-vous vous inscrire à Generals Online ?"
+    TXT_REGNOW              "Voulez-vous vous inscrire ï¿½ Generals Online ?"
 END
 
 #endif    // French (France) resources
@@ -628,20 +628,20 @@ IDI_ICON1               ICON    DISCARDABLE     "Generals.ico"
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    TXT_ABORT_DOWNLOAD      "¿Seguro que quieres abortar la descarga?"
+    TXT_ABORT_DOWNLOAD      "ï¿½Seguro que quieres abortar la descarga?"
     TXT_ABORT               "Abortar"
     TXT_TIME_REMAIN         "Tiempo Restante: %d:%02d"
-    TXT_BYTES_READ          "Bytes Leídos: %d of %d"
+    TXT_BYTES_READ          "Bytes Leï¿½dos: %d of %d"
     TXT_BPS                 "Bytes Por Segundo: %d"
     TXT_CANT_CONTACT        "No se puede contactar con el servidor de actualizaciones de Electronic Arts."
     TXT_ERROR               "Error"
-    TXT_AN_UPGRADE_AVAILABLE "Hay una actualización disponible."
-    TXT_DOWNLOAD_NOW        "¿Quieres descargarla ahora?"
+    TXT_AN_UPGRADE_AVAILABLE "Hay una actualizaciï¿½n disponible."
+    TXT_DOWNLOAD_NOW        "ï¿½Quieres descargarla ahora?"
     TXT_DOWNLOADING_FILE    "Descargando el archivo %d de %d..."
     TXT_NONE                """"""
-    TXT_UPGRADE_AVAILABLE   "Actualización Disponible"
+    TXT_UPGRADE_AVAILABLE   "Actualizaciï¿½n Disponible"
     TXT_NO_PATCHES          "No hay parches disponibles para este producto."
-    TXT_AUTO_UPDATE         "Auto-Actualización:"
+    TXT_AUTO_UPDATE         "Auto-Actualizaciï¿½n:"
     TXT_CONNECTING          "Conectando..."
 END
 
@@ -649,7 +649,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     TXT_INSTALL_PROBLEM     "El juego parece no estar correctamente instalado. Puedes necesitar reinstalarlo."
     TXT_TITLE               "Auto-Parche Electronic Arts"
-    TXT_REGNOW              "¿Quieres registrarte a través de Generals Online?"
+    TXT_REGNOW              "ï¿½Quieres registrarte a travï¿½s de Generals Online?"
 END
 
 #endif    // Spanish (Modern) resources

@@ -872,7 +872,7 @@ static AsciiString getMapLeafAndDirName(const AsciiString& in)
 	const char* p = findLastBackslashInRangeInclusive(start, end);
 	if (p)
 	{
-		const char* p2 = findLastBackslashInRangeInclusive(start, p-1);
+		const char* p2 = findLastBackslashInRangeInclusive(start, p - 1);
 		if (p2)
 		{
 			// we have something like:
@@ -889,7 +889,7 @@ static AsciiString getMapLeafAndDirName(const AsciiString& in)
 	}
 	else
 	{
-		DEBUG_CRASH(("Illegal map-dir-name... should have at least one backslash"));
+		DEBUG_CRASH(("Illegal map-dir-name... should have at least one backslash. Input: %s", in.str()));
 		return in;
 	}
 }

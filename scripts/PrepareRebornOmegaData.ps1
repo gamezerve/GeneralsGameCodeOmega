@@ -42,6 +42,7 @@ robocopy `
     /XD `
     "$Source\Art\Textures\Buff-Nerf Icons" `
     "$Source\Art\Textures\ModDB" `
+    "$Source\Art\Textures\Discord Server" `
     "$Source\Art\Textures\User Interface"
 
 if ($LASTEXITCODE -ge 8)

@@ -361,7 +361,10 @@ void CampaignManager::parseMissionPart( INI* ini, void *instance, void *store, c
 			{ "Map",							INI::parseAsciiString,				nullptr, offsetof( Mission, m_mapName ) },
       { "DisplayName",      INI::parseAsciiString,        nullptr, offsetof( Mission, m_displayNameLabel) }, // Reborn: Added for Chapters Menu
       { "PlayerFaction",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_playerFaction) }, // Reborn: Added for Chapters Menu
+      { "AllyFaction1",     INI::parseAsciiString,        nullptr, offsetof( Mission, m_allyFaction1) }, // Reborn: Added for Chapters Menu
       { "EnemyFaction1",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction1) }, // Reborn: Added for Chapters Menu
+      { "WorldMapMarkerX",  INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerX) }, // Reborn: Added for Chapters Menu
+      { "WorldMapMarkerY",  INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerY) }, // Reborn: Added for Chapters Menu
 			{ "NextMission",			INI::parseAsciiString,				nullptr, offsetof( Mission, m_nextMission ) },
 			{ "IntroMovie",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_movieLabel ) },
 			{ "ObjectiveLine0",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[0] ) },
@@ -512,6 +515,8 @@ void CampaignManager::loadPostProcess()
 Mission::Mission()
 {
 	m_voiceLength = 0;
+	m_worldMapMarkerX = -1;
+	m_worldMapMarkerY = -1;
 }
 
 //-----------------------------------------------------------------------------

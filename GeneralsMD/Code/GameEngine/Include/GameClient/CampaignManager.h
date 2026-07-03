@@ -79,7 +79,10 @@ public:
 	AsciiString m_movieLabel;
 	AsciiString m_displayNameLabel;
 	AsciiString m_playerFaction;
+	AsciiString m_allyFaction1;
 	AsciiString m_enemyFaction1;
+	Int m_worldMapMarkerX;
+	Int m_worldMapMarkerY;
 	AsciiString m_missionObjectivesLabel[MAX_OBJECTIVE_LINES];
 	AudioEventRTS m_briefingVoice;
 	AsciiString m_locationNameLabel;

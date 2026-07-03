@@ -85,6 +85,8 @@ static Int lastMapClickRow = -1;
 static GameWindow* chapterButtons[8];
 static Int selectedChapter = -1;
 
+
+
 static const Image* normalImages[8][3];
 static const Image* selectedImages[8][3];
 
@@ -104,7 +106,10 @@ struct CampaignMissionInfo
   std::string displayNameLabel;
   std::string missionName;
   std::string playerFaction;
+  std::string allyFaction1;
   std::string enemyFaction1;
+  Int worldMapMarkerX = -1;
+  Int worldMapMarkerY = -1;
 };
 
 static std::vector<CampaignMissionInfo> campaignMissionData;
@@ -148,6 +153,47 @@ static void SetWindowImage(const char* windowName, const Image* image)
   }
 }
 
+static void PositionMissionFactionIcons(Bool hasAlly)
+{
+  GameWindow* playerWindow = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:PlayerFactionIcon")
+  );
+
+  GameWindow* allyWindow = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:AllyFactionIcon1")
+  );
+
+  if (!playerWindow)
+    return;
+
+  static Bool cached = FALSE;
+  static Int playerBaseX = 0;
+  static Int playerBaseY = 0;
+
+  if (!cached)
+  {
+    playerWindow->winGetPosition(&playerBaseX, &playerBaseY);
+    cached = TRUE;
+  }
+
+	// Reborn: Position the player, ally, and slash icons based on whether there is an ally faction or not.
+  if (hasAlly)
+  {
+    playerWindow->winSetPosition(playerBaseX - 35, playerBaseY);
+    allyWindow->winSetPosition(playerBaseX + 29, playerBaseY);
+
+    allyWindow->winHide(FALSE);
+  }
+  else
+  {
+    playerWindow->winSetPosition(playerBaseX, playerBaseY);
+
+    allyWindow->winHide(TRUE);
+  }
+}
+
 static void SetWindowVisible(const char* windowName, Bool visible)
 {
   GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windowName));
@@ -161,20 +207,34 @@ static void UpdateMissionFactionIcons(Int row)
   if (row < 0 || row >= (Int)campaignMissionData.size())
   {
     SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", nullptr);
+    SetWindowImage("ChaptersMenu.wnd:AllyFactionIcon1", nullptr);
     SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", nullptr);
     SetWindowVisible("ChaptersMenu.wnd:VsText", FALSE);
+    PositionMissionFactionIcons(FALSE);
     return;
   }
 
   const CampaignMissionInfo& mission = campaignMissionData[row];
 
   const Image* playerIcon = GetFactionIcon(mission.playerFaction);
+  const Image* allyIcon = GetFactionIcon(mission.allyFaction1);
   const Image* enemyIcon = GetFactionIcon(mission.enemyFaction1);
 
+  DEBUG_LOG(("Faction icons: player='%s' ally='%s' enemy='%s' playerIcon=%p allyIcon=%p enemyIcon=%p\n",
+    mission.playerFaction.c_str(),
+    mission.allyFaction1.c_str(),
+    mission.enemyFaction1.c_str(),
+    playerIcon,
+    allyIcon,
+    enemyIcon));
+
   SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", playerIcon);
+  SetWindowImage("ChaptersMenu.wnd:AllyFactionIcon1", allyIcon);
   SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", enemyIcon);
 
-  SetWindowVisible("ChaptersMenu.wnd:VsText", playerIcon || enemyIcon);
+  PositionMissionFactionIcons(allyIcon != nullptr);
+
+  SetWindowVisible("ChaptersMenu.wnd:VsText", playerIcon || allyIcon || enemyIcon);
 }
 
 static void NormalizeMapPath(AsciiString& path)
@@ -248,6 +308,38 @@ static void UpdateMissionLocation(Int row)
   if (mission)
     DEBUG_LOG(("LocationNameLabel=%s\n", mission->m_locationNameLabel.str()));
 
+}
+
+static void UpdateWorldMapMarkerPosition(Int row)
+{
+  if (!worldMapMarker)
+    return;
+
+  if (row < 0 || row >= (Int)campaignMissionData.size())
+  {
+    worldMapMarker->winHide(TRUE);
+    return;
+  }
+
+  Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+  Mission* mission = FindMissionByMapPath(campaign, campaignMissionData[row].mapPath);
+
+  if (!mission || mission->m_worldMapMarkerX < 0 || mission->m_worldMapMarkerY < 0)
+  {
+    worldMapMarker->winHide(TRUE);
+    return;
+  }
+
+  ICoord2D markerSize;
+  worldMapMarker->winGetSize(&markerSize.x, &markerSize.y);
+
+  worldMapMarker->winSetPosition(
+    mission->m_worldMapMarkerX - markerSize.x / 2,
+    mission->m_worldMapMarkerY - markerSize.y / 2
+  );
+
+  worldMapMarker->winHide(FALSE);
+  worldMapMarker->winBringToTop();
 }
 
 static void StartChapterMission(AsciiString mapName, GameDifficulty diff)
@@ -400,7 +492,10 @@ static void LoadCampaignMaps(const char* campaignName)
   std::string displayNameLabel;
   std::string missionName;
   std::string playerFaction;
+  std::string allyFaction1;
   std::string enemyFaction1;
+  Int worldMapMarkerX = -1;
+  Int worldMapMarkerY = -1;
 
   while (std::getline(file, line))
   {
@@ -436,7 +531,10 @@ static void LoadCampaignMaps(const char* campaignName)
       missionName = TrimCopy(trimmed.substr(8));
       displayNameLabel.clear();
       playerFaction.clear();
+      allyFaction1.clear();
       enemyFaction1.clear();
+      worldMapMarkerX = -1;
+      worldMapMarkerY = -1;
       continue;
     }
 
@@ -460,7 +558,10 @@ static void LoadCampaignMaps(const char* campaignName)
           info.displayNameLabel = displayNameLabel;
           info.missionName = missionName;
           info.playerFaction = playerFaction;
+          info.allyFaction1 = allyFaction1;
           info.enemyFaction1 = enemyFaction1;
+          info.worldMapMarkerX = worldMapMarkerX;
+          info.worldMapMarkerY = worldMapMarkerY;
 
           campaignMissionData.push_back(info);
           GadgetListBoxSetItemData(listbox, (void*)campaignMissionData.back().mapPath.c_str(), row);
@@ -508,7 +609,10 @@ static void LoadCampaignMaps(const char* campaignName)
         mapPath.clear();
         displayNameLabel.clear();
         playerFaction.clear();
+        allyFaction1.clear();
         enemyFaction1.clear();
+        worldMapMarkerX = -1;
+        worldMapMarkerY = -1;
       }
       else
       {
@@ -553,9 +657,27 @@ static void LoadCampaignMaps(const char* campaignName)
       continue;
     }
 
+    if (trimmed.rfind("AllyFaction1 ", 0) == 0)
+    {
+      allyFaction1 = TrimCopy(trimmed.substr(13));
+      continue;
+    }
+
     if (trimmed.rfind("EnemyFaction1 ", 0) == 0)
     {
       enemyFaction1 = TrimCopy(trimmed.substr(14));
+      continue;
+    }
+
+    if (trimmed.rfind("WorldMapMarkerX ", 0) == 0)
+    {
+      worldMapMarkerX = atoi(TrimCopy(trimmed.substr(16)).c_str());
+      continue;
+    }
+
+    if (trimmed.rfind("WorldMapMarkerY ", 0) == 0)
+    {
+      worldMapMarkerY = atoi(TrimCopy(trimmed.substr(16)).c_str());
       continue;
     }
 
@@ -1093,6 +1215,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
       UpdateMissionFactionIcons(rowSelected);
       UpdateMissionLocation(rowSelected);
+      UpdateWorldMapMarkerPosition(rowSelected);
 
     }
 
@@ -1148,5 +1271,28 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
 WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
 {
+#ifdef RTS_DEBUG
+  if (msg == GWM_LEFT_UP)
+  {
+    Int screenX = (Int)(mData1 & 0xFFFF);
+    Int screenY = (Int)((mData1 >> 16) & 0xFFFF);
+
+    GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
+      nullptr,
+      TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+    );
+
+    if (worldMapBorder)
+    {
+      Int wx, wy;
+      worldMapBorder->winGetScreenPosition(&wx, &wy);
+
+      DEBUG_LOG(("WorldMapMarker: X=%d Y=%d\n",
+        screenX - wx,
+        screenY - wy));
+    }
+  }
+#endif
+
   return MSG_IGNORED;
 }
