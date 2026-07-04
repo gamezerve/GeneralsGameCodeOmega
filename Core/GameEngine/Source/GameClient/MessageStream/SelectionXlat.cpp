@@ -860,16 +860,23 @@ GameMessageDisposition SelectionTranslator::onMouseoverDrawableHint(MAYBE_UNUSED
 
 	Object* obj = draw->getObject();
 
-	if (TheInGameUI->isInPowerMode() &&
-		obj &&
-		obj->isLocallyControlled() &&
-		!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
-		!obj->testStatus(OBJECT_STATUS_SOLD) &&
-		obj->getTemplate()->getEnergyProduction() < 0)
+	if (TheInGameUI->isInPowerMode())
 	{
-	TheInGameUI->setMouseCursorForMode(Mouse::POWER_MODE);
-	return DESTROY_MESSAGE;
-}
+		if (obj &&
+			obj->isLocallyControlled() &&
+			!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+			!obj->testStatus(OBJECT_STATUS_SOLD) &&
+			obj->getTemplate()->getEnergyProduction() < 0)
+		{
+			TheInGameUI->setMouseCursorForMode(Mouse::POWER_MODE);
+		}
+		else
+		{
+			TheInGameUI->setMouseCursorForMode(Mouse::CANT_POWER);
+		}
+
+		return DESTROY_MESSAGE;
+	}
 
 	GameMessage::Type msgType = TheGameClient->evaluateContextCommand(draw, draw->getPosition(), CommandTranslator::EVALUATE_ONLY);
 	if( msgType != GameMessage::MSG_INVALID )
@@ -910,39 +917,40 @@ GameMessageDisposition SelectionTranslator::onMouseoverDrawableHint(MAYBE_UNUSED
 
 GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const GameMessage *msg)
 {
+	if (TheInGameUI->isInPowerMode())
+	{
+		const IRegion2D& selectionRegion = msg->getArgument(0)->pixelRegion;
+		const ICoord2D& pixel = selectionRegion.lo;
+
+		UnsignedInt pickType = getPickTypesForContext(false);
+		Drawable* draw = TheTacticalView->pickDrawable(&pixel, false, (PickType)pickType);
+
+		if (draw)
+		{
+			Object* obj = draw->getObject();
+
+			if (obj &&
+				obj->isLocallyControlled() &&
+				!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+				!obj->testStatus(OBJECT_STATUS_SOLD) &&
+				obj->getTemplate()->getEnergyProduction() < 0)
+			{
+				GameMessage* newMsg = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_TOGGLE_POWER_MODE);
+				newMsg->appendObjectIDArgument(obj->getID());
+
+				return DESTROY_MESSAGE;
+			}
+		}
+
+		return DESTROY_MESSAGE;
+	}
+
 	// If the quit menu is visible, we need to not process left clicks through the selection translator.
 	if (TheInGameUI->isQuitMenuVisible())
 	{
 		return DESTROY_MESSAGE;
 	}
 
-	if (TheInGameUI->isInPowerMode())
-{
-	const IRegion2D& selectionRegion = msg->getArgument(0)->pixelRegion;
-	const ICoord2D& pixel = selectionRegion.lo;
-
-	UnsignedInt pickType = getPickTypesForContext(false);
-	Drawable* draw = TheTacticalView->pickDrawable(&pixel, false, (PickType)pickType);
-
-	if (draw)
-	{
-		Object* obj = draw->getObject();
-
-		if (obj &&
-			obj->isLocallyControlled() &&
-			!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
-			!obj->testStatus(OBJECT_STATUS_SOLD) &&
-			obj->getTemplate()->getEnergyProduction() < 0)
-		{
-			GameMessage* newMsg = TheMessageStream->appendMessage(GameMessage::MSG_REBORN_TOGGLE_POWER_MODE);
-			newMsg->appendObjectIDArgument(obj->getID());
-
-			return DESTROY_MESSAGE;
-		}
-	}
-
-	return DESTROY_MESSAGE;
-}
 
 	// Basically, we need to first determine if there are any drawables in the region of interest.
 	// If there aren't then this click should move forward.
