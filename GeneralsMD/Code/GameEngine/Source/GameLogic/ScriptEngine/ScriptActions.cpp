@@ -3104,6 +3104,13 @@ void ScriptActions::doCameraMotionBlurJump(const AsciiString& waypointName, Bool
 				passed = FALSE;
 			};
 		}
+		 //Reborn @bugfix Use alpha motion blur for camera jump.
+		 //Saturated additive blur can cause color-channel tinting on some D3D8 wrappers/drivers.
+		if (!TheTacticalView->setViewFilterMode(FM_VIEW_MB_IN_AND_OUT_ALPHA))
+		{
+			TheTacticalView->setViewFilter(FT_NULL_FILTER);
+			passed = FALSE;
+		}
 		if (passed)
 		{
 			TheTacticalView->setUserControlled(false);
