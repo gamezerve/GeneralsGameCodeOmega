@@ -280,7 +280,7 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 	TheWindowManager->winSetFocus( parent );
 	TheWindowManager->winSetModal( parent );
 
-	selectDefaultSaveDirectoryButton();
+	//selectDefaultSaveDirectoryButton();
 
 	// enable the menu action buttons
 	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:MenuButtonFrame" ) );
@@ -323,6 +323,8 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 	// get the listbox that will have the save games in it
 	listboxGames = TheWindowManager->winGetWindowFromId( nullptr, listboxGamesKey );
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );
+
+	selectDefaultSaveDirectoryButton();
 
 	// populate the listbox with the save games on disk
 	//TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
@@ -421,8 +423,6 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	//	TheWindowManager->winSetModal( parent );
 //	TheWindowManager->winSetModal( parent );
 
-	selectDefaultSaveDirectoryButton();
-
 	// enable the menu action buttons
 	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:MenuButtonFrame" ) );
 	//buttonFrame->winEnable( TRUE );
@@ -466,6 +466,8 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	// get the listbox that will have the save games in it
 	listboxGames = TheWindowManager->winGetWindowFromId( nullptr, listboxGamesKey );
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );
+
+	selectDefaultSaveDirectoryButton();
 
 	// populate the listbox with the save games on disk
 	//TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
