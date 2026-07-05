@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
-// FILE: ChaptersMenu.cpp 
+// FILE: ChaptersMenu.cpp ////////////////////////////////////////////////////////////////////
 // Author: Chris Brue, August 2002
 // Description: 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -84,8 +84,6 @@ static Int lastMapClickRow = -1;
 
 static GameWindow* chapterButtons[8];
 static Int selectedChapter = -1;
-
-
 
 static const Image* normalImages[8][3];
 static const Image* selectedImages[8][3];
@@ -812,6 +810,10 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   missionLaunchPending = FALSE;
   startGame = FALSE;
 
+  TheSupplyAndTechImageLocations.m_supplyPosList.clear();
+  TheSupplyAndTechImageLocations.m_techPosList.clear();
+
+
   if (resetChapterImagesOnNextInit)
   {
 		memset(chapterButtons, 0, sizeof(chapterButtons));
@@ -987,6 +989,9 @@ static void shutdownComplete(WindowLayout* layout)
 void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
 {
 
+  TheSupplyAndTechImageLocations.m_supplyPosList.clear();
+  TheSupplyAndTechImageLocations.m_techPosList.clear();
+
   Bool popImmediate = *(Bool*)userData;
 
   if (popImmediate)
@@ -1083,6 +1088,78 @@ static Bool LaunchSelectedChapterMission(GameWindow* listbox)
   return TRUE;
 }
 
+static void PopulateSupplyAndTechIcons(const MapMetaData* mmd, GameWindow* mapWindow)
+{
+  TheSupplyAndTechImageLocations.m_supplyPosList.clear();
+  TheSupplyAndTechImageLocations.m_techPosList.clear();
+
+  if (!mmd || !mapWindow)
+    return;
+
+  ICoord2D winMapSize;
+  mapWindow->winGetSize(&winMapSize.x, &winMapSize.y);
+
+  ICoord2D ul, lr;
+  findDrawPositions(
+    0,
+    0,
+    winMapSize.x,
+    winMapSize.y,
+    mmd->m_extent,
+    &ul,
+    &lr
+  );
+
+  Int smallWidth = lr.x - ul.x;
+  Int smallHeight = lr.y - ul.y;
+
+  for (Coord3DList::const_iterator it = mmd->m_supplyPositions.begin();
+    it != mmd->m_supplyPositions.end();
+    ++it)
+  {
+    ICoord2D markerPos;
+
+    Real pos =
+      (it->x - mmd->m_extent.lo.x) /
+      (mmd->m_extent.hi.x - mmd->m_extent.lo.x);
+
+    markerPos.x =
+      (pos * smallWidth) - SUPPLY_TECH_SIZE / 2 + ul.x;
+
+    pos =
+      (it->y - mmd->m_extent.lo.y) /
+      (mmd->m_extent.hi.y - mmd->m_extent.lo.y);
+
+    markerPos.y =
+      ((1 - pos) * smallHeight) - SUPPLY_TECH_SIZE / 2 + ul.y;
+
+    TheSupplyAndTechImageLocations.m_supplyPosList.push_front(markerPos);
+  }
+
+  for (Coord3DList::const_iterator it = mmd->m_techPositions.begin();
+    it != mmd->m_techPositions.end();
+    ++it)
+  {
+    ICoord2D markerPos;
+
+    Real pos =
+      (it->x - mmd->m_extent.lo.x) /
+      (mmd->m_extent.hi.x - mmd->m_extent.lo.x);
+
+    markerPos.x =
+      (pos * smallWidth) - SUPPLY_TECH_SIZE / 2 + ul.x;
+
+    pos =
+      (it->y - mmd->m_extent.lo.y) /
+      (mmd->m_extent.hi.y - mmd->m_extent.lo.y);
+
+    markerPos.y =
+      ((1 - pos) * smallHeight) - SUPPLY_TECH_SIZE / 2 + ul.y;
+
+    TheSupplyAndTechImageLocations.m_techPosList.push_front(markerPos);
+  }
+}
+
 WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
 {
   DEBUG_LOG(("ChaptersMenuSystem: msg=%u\n", msg));
@@ -1126,6 +1203,9 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       buttonPushed = TRUE;
 			resetChapterImagesOnNextInit = TRUE;
       resetDifficultyOnNextInit = TRUE;
+
+      TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
+
       TheShell->pop();
       return MSG_HANDLED;
     }
@@ -1207,8 +1287,15 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
       preview->winSetStatus(WIN_STATUS_IMAGE);
 
+
+      TheSupplyAndTechImageLocations.m_supplyPosList.clear();
+      TheSupplyAndTechImageLocations.m_techPosList.clear();
+
       Image* image = getMapPreviewImage(asciiMap);
       preview->winSetUserData((void*)TheMapCache->findMap(asciiMap));
+
+      const MapMetaData* md = TheMapCache->findMap(asciiMap);
+      PopulateSupplyAndTechIcons(md, preview);
 
       if (image)
       {

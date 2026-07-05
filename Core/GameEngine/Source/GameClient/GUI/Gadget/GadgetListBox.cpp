@@ -68,6 +68,7 @@
 // Sets up the user's OS set doubleclick time so if they don't like it... they can
 // change it in their OS.
 static UnsignedInt doubleClickTime = GetDoubleClickTime();
+static UnsignedInt g_chaptersListRepeatTime = 600;
 
 // PRIVATE TYPES //////////////////////////////////////////////////////////////
 typedef struct _AddMessageStruct
@@ -591,6 +592,20 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( mData2, KEY_STATE_DOWN ) )
 					{
 
+						NameKeyType chaptersListID =
+							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+
+						if (window->winGetWindowId() == chaptersListID &&
+							BitIsSet(mData2, KEY_STATE_AUTOREPEAT))
+						{
+							UnsignedInt now = timeGetTime();
+
+							if (now - g_chaptersListRepeatTime < 150)
+								break;
+
+							g_chaptersListRepeatTime = now;
+						}
+
 						if( list->selectPos == -1 )
 						{
 							list->selectPos = 0;
@@ -644,6 +659,20 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 
 					if( BitIsSet( mData2, KEY_STATE_DOWN ) )
 					{
+
+						NameKeyType chaptersListID =
+							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+
+						if (window->winGetWindowId() == chaptersListID &&
+							BitIsSet(mData2, KEY_STATE_AUTOREPEAT))
+						{
+							UnsignedInt now = timeGetTime();
+
+							if (now - g_chaptersListRepeatTime < 150)
+								break;
+
+							g_chaptersListRepeatTime = now;
+						}
 
 						if( list->selectPos == -1 )
 						{
