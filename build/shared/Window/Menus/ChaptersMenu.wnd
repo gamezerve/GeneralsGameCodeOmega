@@ -807,7 +807,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";
@@ -853,7 +853,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";
@@ -948,7 +948,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";
@@ -994,7 +994,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";
@@ -1089,7 +1089,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";
@@ -1135,7 +1135,7 @@ WINDOW
       STATUS = ENABLED+IMAGE;
       STYLE = USER;
       SYSTEMCALLBACK = "[None]";
-      INPUTCALLBACK = "[None]";
+      INPUTCALLBACK = "ChaptersMenuInput";
       TOOLTIPCALLBACK = "[None]";
       DRAWCALLBACK = "[None]";
       HEADERTEMPLATE = "[None]";

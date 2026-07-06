@@ -103,9 +103,58 @@ void MaxHealthUpgrade::upgradeImplementation()
 	Object *obj = getObject();
 
 	BodyModuleInterface *body = obj->getBodyModule();
-	if( body )
+
+	//if( body )
+	//{
+	//	body->setMaxHealth( body->getMaxHealth() + data->m_addMaxHealth, data->m_maxHealthChangeType );
+	//}
+	
+	// Reborn: MaxHealthUpgrade applies a flat health bonus, while difficulty and veterancy
+	// bonuses are applied multiplicatively.
+	//
+	// Without temporarily removing the active health multipliers, researching a
+	// health upgrade after an object has already received its difficulty and/or
+	// veterancy bonuses produces a different result than producing a new object
+	// after the upgrade is researched.
+	//
+	// Existing object:   (Base * Multipliers) + Upgrade
+	// New object:        (Base + Upgrade) * Multipliers
+	//
+	// To keep health values consistent regardless of upgrade order, temporarily
+	// remove the active health multipliers, apply the flat health increase to the
+	// base value, then reapply the multipliers.
+	//
+	// As a result, health values now always follow:
+	//
+	// (BaseHealth + UpgradeBonus) * DifficultyMultiplier * VeterancyMultiplier
+	//
+	// Compared to the previous behavior, existing units will now gain more health
+	// from MaxHealthUpgrade on health multipliers greater than 1.0 (e.g. Easy),
+	// and less health on health multipliers below 1.0 (e.g. Hard). Existing and
+	// newly produced units will always end up with identical maximum health.
+	if (body)
 	{
-		body->setMaxHealth( body->getMaxHealth() + data->m_addMaxHealth, data->m_maxHealthChangeType );
+		Bool wasReceivingDifficultyBonus = obj->isReceivingDifficultyBonus();
+
+		if (wasReceivingDifficultyBonus)
+			obj->setReceivingDifficultyBonus(FALSE);
+
+		ExperienceTracker* experienceTracker = obj->getExperienceTracker();
+		VeterancyLevel veterancyLevel = experienceTracker ? experienceTracker->getVeterancyLevel() : LEVEL_REGULAR;
+		Real veterancyBonus = TheGlobalData->m_healthBonus[veterancyLevel];
+
+		if (veterancyBonus != 1.0f)
+			body->setMaxHealth(body->getMaxHealth() / veterancyBonus, PRESERVE_RATIO);
+
+		body->setMaxHealth(
+			body->getMaxHealth() + data->m_addMaxHealth,
+			data->m_maxHealthChangeType);
+
+		if (veterancyBonus != 1.0f)
+			body->setMaxHealth(body->getMaxHealth() * veterancyBonus, PRESERVE_RATIO);
+
+		if (wasReceivingDifficultyBonus)
+			obj->setReceivingDifficultyBonus(TRUE);
 	}
 }
 

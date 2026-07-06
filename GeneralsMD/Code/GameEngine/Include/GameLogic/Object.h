@@ -645,6 +645,8 @@ public:
 	// player. These are friend_s for player.
 	void friend_adjustPowerForPlayer( Bool incoming );
 
+	Bool isReceivingDifficultyBonus() const { return m_isReceivingDifficultyBonus; }
+
 protected:
 
 	void setOrRestoreTeam( Team* team, Bool restoring );

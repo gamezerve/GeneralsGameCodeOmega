@@ -68,7 +68,8 @@
 // Sets up the user's OS set doubleclick time so if they don't like it... they can
 // change it in their OS.
 static UnsignedInt doubleClickTime = GetDoubleClickTime();
-static UnsignedInt g_chaptersListRepeatTime = 600;
+static UnsignedInt g_chaptersListRepeatTime = 0;
+static const UnsignedInt g_chaptersListRepeatDelay = 180;
 
 // PRIVATE TYPES //////////////////////////////////////////////////////////////
 typedef struct _AddMessageStruct
@@ -595,13 +596,15 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 						NameKeyType chaptersListID =
 							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
 
-						if (window->winGetWindowId() == chaptersListID &&
-							BitIsSet(mData2, KEY_STATE_AUTOREPEAT))
+						if (window->winGetWindowId() == chaptersListID)
 						{
 							UnsignedInt now = timeGetTime();
 
-							if (now - g_chaptersListRepeatTime < 150)
+							if (g_chaptersListRepeatTime != 0 &&
+								now - g_chaptersListRepeatTime < g_chaptersListRepeatDelay)
+							{
 								break;
+							}
 
 							g_chaptersListRepeatTime = now;
 						}
@@ -656,42 +659,85 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 				// --------------------------------------------------------------------
 				case KEY_UP:
 				{
-
-					if( BitIsSet( mData2, KEY_STATE_DOWN ) )
+					if (BitIsSet(mData2, KEY_STATE_DOWN))
 					{
-
 						NameKeyType chaptersListID =
 							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
 
-						if (window->winGetWindowId() == chaptersListID &&
-							BitIsSet(mData2, KEY_STATE_AUTOREPEAT))
+						Bool isChaptersMapList = (window->winGetWindowId() == chaptersListID);
+
+						if (isChaptersMapList)
 						{
 							UnsignedInt now = timeGetTime();
 
-							if (now - g_chaptersListRepeatTime < 150)
+							if (g_chaptersListRepeatTime != 0 &&
+								now - g_chaptersListRepeatTime < g_chaptersListRepeatDelay)
+							{
 								break;
+							}
 
 							g_chaptersListRepeatTime = now;
+
+							if (list->selectPos == -1)
+							{
+								list->selectPos = 0;
+								adjustDisplay(window, 0, TRUE);
+							}
+							else if (list->selectPos > 0)
+							{
+								list->selectPos--;
+
+								while (list->selectPos > 0 && !list->listData[list->selectPos].enabled)
+									list->selectPos--;
+
+								while (1)
+								{
+									Int cellBottom = list->listData[list->selectPos].listHeight;
+									Int cellTop = cellBottom - list->listData[list->selectPos].height;
+									Int displayTop = list->displayPos;
+									Int displayBottom = list->displayPos + list->displayHeight - 1;
+
+									if (cellTop < displayTop)
+									{
+										adjustDisplay(window, -1, TRUE);
+									}
+									else if (cellBottom < displayBottom)
+									{
+										adjustDisplay(window, 0, TRUE);
+										break;
+									}
+									else
+									{
+										adjustDisplay(window, 1, TRUE);
+									}
+								}
+							}
+
+							TheWindowManager->winSendSystemMsg(window->winGetOwner(),
+								GLM_SELECTED,
+								(WindowMsgData)window,
+								list->selectPos);
+
+							break;
 						}
 
-						if( list->selectPos == -1 )
+						if (list->selectPos == -1)
 						{
 							list->selectPos = 0;
-							adjustDisplay( window, 0, TRUE );
+							adjustDisplay(window, 0, TRUE);
 						}
-						else if( list->selectPos > 0 )
+						else if (list->selectPos > 0)
 						{
-
 							list->selectPos--;
 
 							while (1)
 							{
-								if( list->listData[list->selectPos].listHeight - list->listData[list->selectPos].height < list->displayPos )
+								if (list->listData[list->selectPos].listHeight - list->listData[list->selectPos].height < list->displayPos)
 								{
-									list->displayPos = list->listData[list->selectPos].listHeight +1;
-									adjustDisplay( window, -1, TRUE );
+									list->displayPos = list->listData[list->selectPos].listHeight + 1;
+									adjustDisplay(window, -1, TRUE);
 								}
-								else if( list->listData[list->selectPos].listHeight > list->displayPos  + list->displayHeight)
+								else if (list->listData[list->selectPos].listHeight > list->displayPos + list->displayHeight)
 								{
 									list->displayPos = list->listData[list->selectPos].listHeight - list->displayHeight;
 									adjustDisplay(window, 1, TRUE);
@@ -704,14 +750,13 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 							}
 						}
 
-						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
-																								GLM_SELECTED,
-																								(WindowMsgData)window,
-																								list->selectPos );
+						TheWindowManager->winSendSystemMsg(window->winGetOwner(),
+							GLM_SELECTED,
+							(WindowMsgData)window,
+							list->selectPos);
 					}
 
 					break;
-
 				}
 
 				// --------------------------------------------------------------------

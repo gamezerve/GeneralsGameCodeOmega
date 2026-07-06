@@ -79,6 +79,8 @@ static Bool resetDifficultyOnNextInit = FALSE;
 static Bool resetChapterImagesOnNextInit = FALSE;
 static Bool missionLaunchPending = FALSE;
 
+Bool g_chapterMissionLaunchActive = FALSE;
+
 static UnsignedInt lastMapClickTime = 0;
 static Int lastMapClickRow = -1;
 
@@ -292,20 +294,27 @@ static void UpdateMissionLocation(Int row)
   Campaign* campaign = TheCampaignManager->getCurrentCampaign();
   Mission* mission = FindMissionByMapPath(campaign, campaignMissionData[row].mapPath);
 
-  if (!mission || mission->m_locationNameLabel.isEmpty())
+  if (!mission)
+  {
+    GadgetStaticTextSetText(window, L"ERROR: Mission not found");
     return;
+  }
 
-  GadgetStaticTextSetText(window, TheGameText->fetch(mission->m_locationNameLabel));
+  if (mission->m_locationNameLabelCM.isEmpty())
+  {
+    GadgetStaticTextSetText(window, L"ERROR: Undefined LocationNameLabelCM");
+    return;
+  }
 
-  DEBUG_LOG(("UpdateMissionLocation row=%d map=%s campaign=%p mission=%p\n",
-    row,
-    campaignMissionData[row].mapPath.c_str(),
-    campaign,
-    mission));
+  UnicodeString text = TheGameText->fetch(mission->m_locationNameLabelCM);
 
-  if (mission)
-    DEBUG_LOG(("LocationNameLabel=%s\n", mission->m_locationNameLabel.str()));
+  static GameFont* font18 = nullptr;
 
+  if (!font18)
+    font18 = TheFontLibrary->getFont("Arial", 16, FALSE);
+
+  window->winSetFont(font18);
+  GadgetStaticTextSetText(window, text);
 }
 
 static void UpdateWorldMapMarkerPosition(Int row)
@@ -362,6 +371,7 @@ static void StartChapterMission(Int row, GameDifficulty diff)
 
   TheCampaignManager->setCampaignAndMission(campaignName, missionName);
 
+  g_chapterMissionLaunchActive = TRUE;
   missionLaunchPending = TRUE;
   startGame = TRUE;
 
@@ -837,6 +847,9 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   isShuttingDown = FALSE;
 
+  OptionPreferences pref;
+  selectedDifficulty = (GameDifficulty)pref.getCampaignDifficulty();
+
   NameKeyType selectedRadioID = radioMediumID;
 
   if (selectedDifficulty == DIFFICULTY_EASY)
@@ -991,6 +1004,13 @@ void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
 
   TheSupplyAndTechImageLocations.m_supplyPosList.clear();
   TheSupplyAndTechImageLocations.m_techPosList.clear();
+
+  GameWindow* preview = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MapWindow"));
+
+  if (preview)
+    preview->winSetUserData(nullptr);
 
   Bool popImmediate = *(Bool*)userData;
 
@@ -1204,6 +1224,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 			resetChapterImagesOnNextInit = TRUE;
       resetDifficultyOnNextInit = TRUE;
 
+			g_chapterMissionLaunchActive = FALSE;
       TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
 
       TheShell->pop();
@@ -1212,16 +1233,25 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
     if (controlID == radioEasyID)
     {
       selectedDifficulty = DIFFICULTY_EASY;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
       return MSG_HANDLED;
     }
     else if (controlID == radioMediumID)
     {
       selectedDifficulty = DIFFICULTY_NORMAL;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
       return MSG_HANDLED;
     }
     else if (controlID == radioHardID)
     {
       selectedDifficulty = DIFFICULTY_HARD;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
       return MSG_HANDLED;
     }
 
@@ -1361,6 +1391,74 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
 WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2)
 {
+  if (msg == GWM_LEFT_UP)
+  {
+    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyLeftStar"));
+    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyRightStar"));
+    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumLeftStar"));
+    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumRightStar"));
+    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardLeftStar"));
+    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardRightStar"));
+
+    GameWindow* radio = nullptr;
+
+    if (window == easyLeftStar || window == easyRightStar)
+    {
+      selectedDifficulty = DIFFICULTY_EASY;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioEasyID);
+    }
+    else if (window == mediumLeftStar || window == mediumRightStar)
+    {
+      selectedDifficulty = DIFFICULTY_NORMAL;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioMediumID);
+    }
+    else if (window == hardLeftStar || window == hardRightStar)
+    {
+      selectedDifficulty = DIFFICULTY_HARD;
+      OptionPreferences pref;
+      pref.setCampaignDifficulty(selectedDifficulty);
+      pref.write();
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioHardID);
+    }
+
+    if (radio)
+    {
+      TheWindowManager->winSendSystemMsg(radio, GBM_SET_SELECTION, TRUE, 0);
+      return MSG_HANDLED;
+    }
+  }
+
+  if (msg == GWM_MOUSE_ENTERING || msg == GWM_MOUSE_LEAVING)
+  {
+    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyLeftStar"));
+    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyRightStar"));
+    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumLeftStar"));
+    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumRightStar"));
+    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardLeftStar"));
+    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardRightStar"));
+
+    GameWindow* radio = nullptr;
+
+    if (window == easyLeftStar || window == easyRightStar)
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioEasyID);
+    else if (window == mediumLeftStar || window == mediumRightStar)
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioMediumID);
+    else if (window == hardLeftStar || window == hardRightStar)
+      radio = TheWindowManager->winGetWindowFromId(nullptr, radioHardID);
+
+    if (radio)
+    {
+      radio->winSetHiliteState(msg == GWM_MOUSE_ENTERING);
+      return MSG_HANDLED;
+    }
+  }
+
 #ifdef RTS_DEBUG
   if (msg == GWM_LEFT_UP)
   {

@@ -241,6 +241,38 @@ Int ScienceStore::getSciencePurchaseCost(ScienceType st) const
 }
 
 //-----------------------------------------------------------------------------
+Int ScienceStore::getRequiredRankForScience(ScienceType st) const
+{
+	const ScienceInfo* si = findScienceInfo(st);
+	if (!si)
+		return 0;
+
+	for (ScienceVec::const_iterator it = si->m_prereqSciences.begin(); it != si->m_prereqSciences.end(); ++it)
+	{
+		AsciiString prereqName = getInternalNameForScience(*it);
+
+		if (prereqName.compareNoCase("SCIENCE_Rank1") == 0)
+			return 1;
+		if (prereqName.compareNoCase("SCIENCE_Rank2") == 0)
+			return 2;
+		if (prereqName.compareNoCase("SCIENCE_Rank3") == 0)
+			return 3;
+		if (prereqName.compareNoCase("SCIENCE_Rank4") == 0)
+			return 4;
+		if (prereqName.compareNoCase("SCIENCE_Rank5") == 0)
+			return 5;
+		if (prereqName.compareNoCase("SCIENCE_Rank6") == 0)
+			return 6;
+		if (prereqName.compareNoCase("SCIENCE_Rank7") == 0)
+			return 7;
+		if (prereqName.compareNoCase("SCIENCE_Rank8") == 0)
+			return 8;
+	}
+
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 Bool ScienceStore::isScienceGrantable(ScienceType st) const
 {
 	const ScienceInfo* si = findScienceInfo(st);

@@ -358,27 +358,28 @@ void CampaignManager::parseMissionPart( INI* ini, void *instance, void *store, c
 {
 	static const FieldParse myFieldParse[] =
 		{
-			{ "Map",							INI::parseAsciiString,				nullptr, offsetof( Mission, m_mapName ) },
-      { "DisplayName",      INI::parseAsciiString,        nullptr, offsetof( Mission, m_displayNameLabel) }, // Reborn: Added for Chapters Menu
-      { "PlayerFaction",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_playerFaction) }, // Reborn: Added for Chapters Menu
-      { "AllyFaction1",     INI::parseAsciiString,        nullptr, offsetof( Mission, m_allyFaction1) }, // Reborn: Added for Chapters Menu
-      { "EnemyFaction1",    INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction1) }, // Reborn: Added for Chapters Menu
-      { "WorldMapMarkerX",  INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerX) }, // Reborn: Added for Chapters Menu
-      { "WorldMapMarkerY",  INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerY) }, // Reborn: Added for Chapters Menu
-			{ "NextMission",			INI::parseAsciiString,				nullptr, offsetof( Mission, m_nextMission ) },
-			{ "IntroMovie",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_movieLabel ) },
-			{ "ObjectiveLine0",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[0] ) },
-      { "ObjectiveLine1",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[1] ) },
-			{ "ObjectiveLine2",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[2] ) },
-			{ "ObjectiveLine3",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[3] ) },
-			{ "ObjectiveLine4",		INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[4] ) },
-			{ "BriefingVoice",		INI::parseAudioEventRTS,			nullptr, offsetof( Mission, m_briefingVoice ) },
-			{ "UnitNames0",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[0] ) },
-			{ "UnitNames1",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[1] ) },
-			{ "UnitNames2",				INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[2] ) },
-			{ "GeneralName",			INI::parseAsciiString,			nullptr, offsetof( Mission, m_generalName)	},
-			{ "LocationNameLabel",INI::parseAsciiString,				nullptr, offsetof( Mission, m_locationNameLabel ) },
-			{ "VoiceLength",			INI::parseInt ,								nullptr, offsetof( Mission, m_voiceLength ) },
+			{ "Map",						    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_mapName ) },
+      { "DisplayName",          INI::parseAsciiString,        nullptr, offsetof( Mission, m_displayNameLabel) }, // Reborn: Added for Chapters Menu
+      { "PlayerFaction",        INI::parseAsciiString,        nullptr, offsetof( Mission, m_playerFaction) }, // Reborn: Added for Chapters Menu
+      { "AllyFaction1",         INI::parseAsciiString,        nullptr, offsetof( Mission, m_allyFaction1) }, // Reborn: Added for Chapters Menu
+      { "EnemyFaction1",        INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction1) }, // Reborn: Added for Chapters Menu
+      { "WorldMapMarkerX",      INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerX) }, // Reborn: Added for Chapters Menu
+      { "WorldMapMarkerY",      INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerY) }, // Reborn: Added for Chapters Menu
+			{ "NextMission",		    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_nextMission ) },
+			{ "IntroMovie",			    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_movieLabel ) },
+			{ "ObjectiveLine0",	    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[0] ) },
+      { "ObjectiveLine1",		    INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[1] ) },
+			{ "ObjectiveLine2",		    INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[2] ) },
+			{ "ObjectiveLine3",		    INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[3] ) },
+			{ "ObjectiveLine4",		    INI::parseAsciiString,				nullptr, offsetof( Mission, m_missionObjectivesLabel[4] ) },
+			{ "BriefingVoice",		    INI::parseAudioEventRTS,			nullptr, offsetof( Mission, m_briefingVoice ) },
+			{ "UnitNames0",			    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[0] ) },
+			{ "UnitNames1",			    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[1] ) },
+			{ "UnitNames2",			    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_unitNames[2] ) },
+			{ "GeneralName",			    INI::parseAsciiString,			  nullptr, offsetof( Mission, m_generalName)	},
+			{ "LocationNameLabel",    INI::parseAsciiString,				nullptr, offsetof( Mission, m_locationNameLabel ) },
+			{ "LocationNameLabelCM",  INI::parseAsciiString,        nullptr, offsetof( Mission, m_locationNameLabelCM) }, // Reborn: Added for Chapters Menu
+			{ "VoiceLength",			    INI::parseInt ,								nullptr, offsetof( Mission, m_voiceLength ) },
 
 			{ nullptr,							nullptr,											nullptr, 0 }
 		};

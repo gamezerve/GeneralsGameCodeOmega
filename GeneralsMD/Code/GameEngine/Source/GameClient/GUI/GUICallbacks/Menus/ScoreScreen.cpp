@@ -56,6 +56,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/BattleHonors.h"
+#include "Common/ChapterProgress.h"
 #include "Common/GameEngine.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
@@ -158,6 +159,8 @@ static GameWindow* staticTextUnitsDestroyedGen = nullptr;
 
 static Bool overidePlayerDisplayName = FALSE;
 
+extern Bool g_chapterMissionLaunchActive;
+
 AsciiString previousCampaign;
 
 //External declarations
@@ -219,20 +222,33 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 
 void startNextCampaignGame()
 {
+	Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	Mission* mission = TheCampaignManager->getCurrentMission();
+
+	AsciiString campaignName = camp ? camp->m_name : AsciiString::TheEmptyString;
+	AsciiString missionName = mission ? mission->m_name : AsciiString::TheEmptyString;
+
 	TheShell->popImmediate();
+
+	if (g_chapterMissionLaunchActive && campaignName.isNotEmpty() && missionName.isNotEmpty())
+		TheCampaignManager->setCampaignAndMission(campaignName, missionName);
+
+	AsciiString nextMap = TheCampaignManager->getCurrentMap();
+	TheWritableGlobalData->m_pendingFile = nextMap;
+
 	TheShell->hideShell();
-	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
+
 	if (TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 	{
-		DEBUG_ASSERTCRASH( TheChallengeGameInfo, ("TheChallengeGameInfo doesn't exist.") );
+		DEBUG_ASSERTCRASH(TheChallengeGameInfo, ("TheChallengeGameInfo doesn't exist."));
 		TheChallengeGameInfo->init();
 		TheChallengeGameInfo->clearSlotList();
 		TheChallengeGameInfo->reset();
 		TheChallengeGameInfo->enterGame();
-		TheChallengeGameInfo->setMap(TheCampaignManager->getCurrentMap());
+		TheChallengeGameInfo->setMap(nextMap);
 
 		Int templateNum = TheChallengeGenerals->getCurrentPlayerTemplateNum();
-		const PlayerTemplate *playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
+		const PlayerTemplate* playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
 		GameSlot slot;
 		slot.setState(SLOT_PLAYER, playerTemplate->getDisplayName());
 		slot.setPlayerTemplate(templateNum);
@@ -243,7 +259,7 @@ void startNextCampaignGame()
 	}
 
 	// send a message to the logic for a new game
-	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
+	GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_NEW_GAME);
 	msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 	msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
 	msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
@@ -693,6 +709,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 			Int controlID = control->winGetWindowId();
 			if (controlID == buttonOkID)
 			{
+				g_chapterMissionLaunchActive = FALSE;
 				TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
 
 				TheShell->pop(); // ScoreScreen
@@ -706,6 +723,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 			}
 			if (controlID == buttonOkIDGen)
 			{
+				g_chapterMissionLaunchActive = FALSE;
 				const Campaign* camp = TheCampaignManager->getCurrentCampaign();
 				if (camp)
 					previousCampaign = camp->m_name;
@@ -1025,6 +1043,18 @@ void finishSinglePlayerInit()
 			AudioEventRTS event( general->getWinSound() );
 			TheAudio->addAudioEvent( &event );
 			TheAudio->update();
+		}
+
+		Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+
+		if (screenType == SCORESCREEN_SINGLEPLAYER && campaign)
+		{
+			ChapterProgress progress;
+			progress.setMissionComplete(
+				campaign->m_name,
+				TheCampaignManager->getCurrentMissionNumber() + 1,
+				TheCampaignManager->getGameDifficulty()
+			);
 		}
 
 		TheCampaignManager->gotoNextMission();

@@ -1009,7 +1009,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText, autoDepositText, hackInternetText, supplyDropText;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText, autoDepositText, hackInternetText, supplyDropText, rankText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
@@ -1019,6 +1019,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	autoDepositText = UnicodeString::TheEmptyString;
 	hackInternetText = UnicodeString::TheEmptyString;
 	supplyDropText = UnicodeString::TheEmptyString;
+	rankText = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -2035,6 +2036,13 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 			{
 				cost.format( TheGameText->fetch("TOOLTIP:ScienceCost"), costToBuild );
 			}
+			Int requiredRank = TheScienceStore->getRequiredRankForScience(st);
+			if (requiredRank > 0)
+			{
+				rankText.format(
+					TheGameText->fetch("TOOLTIP:ScienceRank"),
+					requiredRank);
+			}
 
 			// ask each prerequisite to give us a list of the non satisfied prerequisites
 			if( thingTemplate )
@@ -2183,7 +2191,7 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
-		if (!cost.isEmpty() || !buildtime.isEmpty() || !reloadtext.isEmpty() || !powertext.isEmpty() || !limittext.isEmpty() || !autoDepositText.isEmpty() || !supplyDropText.isEmpty())
+		if (!cost.isEmpty() || !buildtime.isEmpty() || !reloadtext.isEmpty() || !powertext.isEmpty() || !limittext.isEmpty() || !autoDepositText.isEmpty() || !supplyDropText.isEmpty() || !rankText.isEmpty())
 		{
 			win->winHide(FALSE);
 
@@ -2192,6 +2200,13 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 			if (!cost.isEmpty())
 			{
 				costAndTime.concat(cost);
+			}
+
+			if (!rankText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(rankText);
 			}
 
 			if (!buildtime.isEmpty())
@@ -2455,6 +2470,7 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 
 	Real currentHealthForTooltip = liveBody ? liveBody->getHealth() : 0.0f;
 	Real maxHealthForTooltip = liveBody ? liveBody->getMaxHealth() : 0.0f;
+
 	Bool useScaledEnemyHealthLine = FALSE;
 
 	SpawnBehaviorInterface* spawnInterface = obj ? obj->getSpawnBehaviorInterface() : nullptr;
@@ -2497,6 +2513,14 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 
 	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
 	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
+
+	DEBUG_LOG(("HealthCheck object=%s templateMax=%.0f liveMax=%.0f current=%.0f player=%d difficulty=%d\n",
+		thing ? thing->getName().str() : "null",
+		bodyData ? bodyData->m_maxHealth : 0.0f,
+		maxHealthForTooltip,
+		currentHealthForTooltip,
+		ownerPlayer ? ownerPlayer->getPlayerType() : -1,
+		ownerPlayer ? ownerPlayer->getPlayerDifficulty() : -1));
 	
 	//DEBUG_LOG(("SelectedTooltip thing=%s maxHealthUpgradeData=%08X activationCount=%d",
 	//	thing ? thing->getName().str() : "null",

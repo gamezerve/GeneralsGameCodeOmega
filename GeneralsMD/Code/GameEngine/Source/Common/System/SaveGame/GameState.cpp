@@ -29,7 +29,6 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
-#include "Common/ChapterProgress.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
@@ -675,13 +674,6 @@ SaveCode GameState::missionSave()
 	// do an automatic mission save
 	//return saveGame("", desc, SAVE_FILE_TYPE_MISSION);
 	SaveCode result = saveGame("", desc, SAVE_FILE_TYPE_MISSION);
-
-	ChapterProgress progress;
-	progress.setMissionComplete(
-		campaign->m_name,
-		TheCampaignManager->getCurrentMissionNumber(),
-		TheCampaignManager->getGameDifficulty()
-	);
 
 	return result;
 

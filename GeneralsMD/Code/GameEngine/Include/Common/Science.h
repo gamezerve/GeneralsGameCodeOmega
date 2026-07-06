@@ -103,6 +103,8 @@ public:
 
 	Int getSciencePurchaseCost(ScienceType science) const;
 
+	Int getRequiredRankForScience(ScienceType science) const;
+
 	ScienceType getScienceFromInternalName(const AsciiString& name) const;
 	AsciiString getInternalNameForScience(ScienceType science) const;
 

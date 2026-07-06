@@ -1,4 +1,8 @@
 
+GUI:CHI07
+"Nuclear Winter"
+END
+
 GUI:CHI06
 "Dead in Their Tracks"
 END
@@ -23278,6 +23282,10 @@ OBJECT:Balykchy
 "Balykchy"
 END
 
+LOCATION:Balykchy
+"Balykchy, Kyrgyzstan, Aldastan"
+END
+
 OBJECT:Bank
 "Bank"
 END
@@ -23356,6 +23364,10 @@ END
 
 OBJECT:Bishkek
 "Bishkek"
+END
+
+LOCATION:Bishkek
+"Bishkek, Kyrgyzstan, Aldastan"
 END
 
 OBJECT:BlackLotus
@@ -23670,6 +23682,10 @@ OBJECT:Dushanbe
 "Dushanbe"
 END
 
+LOCATION:Dushanbe
+"Dushanbe, Tajikistan, Aldastan"
+END
+
 OBJECT:ECMTank
 "ECM Tank"
 END
@@ -23874,6 +23890,10 @@ OBJECT:HongKong
 "Hong Kong"
 END
 
+LOCATION:HongKong
+"Hong Kong, China"
+END
+
 OBJECT:Hotel
 "Hotel"
 END
@@ -23882,12 +23902,20 @@ OBJECT:HubeiProvince
 "Three Gorges Dam"
 END
 
+LOCATION:HubeiProvince
+"Three Gorges Dam, Hubei, China"
+END
+
 OBJECT:Humvee
 "Humvee"
 END
 
 OBJECT:HuNanProvince
 "Beijing"
+END
+
+LOCATION:HuNanProvince
+"Beijing, China"
 END
 
 OBJECT:Incirlik
@@ -24000,6 +24028,10 @@ END
 
 OBJECT:Mazar
 "Mazar"
+END
+
+LOCATION:Mazar
+"Mazar Free Fire Zone, Afghanistan"
 END
 
 OBJECT:Medic
@@ -24676,6 +24708,10 @@ END
 
 OBJECT:Tangula
 "Tanggula Mountains"
+END
+
+LOCATION:Tangula
+"Tanggula Mountains, Tibet, China"
 END
 
 OBJECT:Tank_Overlord
@@ -26668,6 +26704,10 @@ END
 
 TOOLTIP:ScienceCost
 "Cost: %d"
+END
+
+TOOLTIP:ScienceRank
+"General Rank: %d"
 END
 
 TOOLTIP:ScienceCostUnavailable

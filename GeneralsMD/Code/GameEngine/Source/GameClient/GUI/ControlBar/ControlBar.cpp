@@ -896,6 +896,9 @@ static Bool canUseMoneyPopup()
 	if (!ThePlayerList || !TheVictoryConditions)
 		return FALSE;
 
+	if (TheGameLogic->isInSinglePlayerGame())
+		return FALSE;
+
 	Player* localPlayer = ThePlayerList->getLocalPlayer();
 	if (!localPlayer)
 		return FALSE;
