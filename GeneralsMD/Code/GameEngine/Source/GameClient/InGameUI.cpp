@@ -2019,7 +2019,7 @@ void InGameUI::update()
 	if( m_militarySubtitle )		// if we have a subtitle, work on it
 	{
 		// if the timeis frozen by a script, then we still want the text to display
-		if(TheScriptEngine->isTimeFrozenScript())
+		if (TheScriptEngine->isTimeFrozenScript() && !isQuitMenuVisible())
 		{
 			m_militarySubtitle->lifetime--;
 			m_militarySubtitle->blockBeginFrame--;
