@@ -207,6 +207,7 @@ protected:
 		SelectedInfo,			///< debug display for the selected object in the UI
 		TerrainStats,			///< debug display for the terrain renderer
 
+		LegacyForwardSpeed2D,
 		DisplayStringCount
 	};
 

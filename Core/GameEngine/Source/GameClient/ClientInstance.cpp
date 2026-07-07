@@ -28,7 +28,7 @@ UnsignedInt ClientInstance::s_instanceIndex = 0;
 #if defined(RTS_MULTI_INSTANCE) || defined(RTS_DEBUG)
 Bool ClientInstance::s_isMultiInstance = true;
 #else
-Bool ClientInstance::s_isMultiInstance = false;
+Bool ClientInstance::s_isMultiInstance = true;
 #endif
 
 bool ClientInstance::initialize()

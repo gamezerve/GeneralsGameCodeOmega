@@ -1,4 +1,8 @@
 
+GUI:GLA01
+"Operation: Black Rain"
+END
+
 GUI:CHI07
 "Nuclear Winter"
 END
@@ -24502,6 +24506,10 @@ OBJECT:Shymkent
 "Shymkent"
 END
 
+LOCATION:Shymkent
+"Shymkent, Kazakhstan"
+END
+
 OBJECT:SignalLights
 "Signal Lights"
 END
@@ -27295,7 +27303,7 @@ Version:BuildUser
 END
 
 Version:Format2
-"Version %d.%02d Reborn 1.04 by Gamezerve"
+"Version %d.%02d Reborn 1.05 by Gamezerve"
 END
 
 Version:Format3

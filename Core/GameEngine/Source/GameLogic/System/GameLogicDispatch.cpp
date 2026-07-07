@@ -445,6 +445,10 @@ void GameLogic::prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rank
 	}
 	m_background->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);
 	setGameMode( gameMode );
+
+	// Reborn: Reset legacy forward speed mode for every new game.
+	g_useLegacyForwardSpeed2D = FALSE;
+
 	if (TheGameInfo)
 	{
 		

@@ -46,6 +46,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/DataChunk.h"
+#include "Common/FileSystem.h"
 #include "Common/GameState.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/WellKnownKeys.h"
@@ -538,11 +539,11 @@ void SidesList::prepareForMP_or_Skirmish()
 		}
 	}
 	if (!gotScripts) {
-#ifdef REBORN_BUILD
 		AsciiString path = "RebornOmegaData\\Data\\Scripts\\SkirmishScripts.scb";
-#else
-		AsciiString path = "Data\\Scripts\\SkirmishScripts.scb";
-#endif
+		if (!TheFileSystem->doesFileExist(path.str()))
+		{
+			path = "Data\\Scripts\\SkirmishScripts.scb";
+		}
 		DEBUG_LOG(("Skirmish map using standard scripts"));
 		m_skirmishTeamrec.clear();
 		CachedFileInputStream theInputStream;

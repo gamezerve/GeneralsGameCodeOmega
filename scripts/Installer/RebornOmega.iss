@@ -59,19 +59,33 @@ Name: "{commondesktop}\{#RebornDisplayName}"; Filename: "{app}\{#RebornDisplayNa
 
 [Code]
 
+function NormalizeZeroHourDir(Path: String): String;
+begin
+  Result := Path;
+
+  if Pos('\ORIGIN\COMMAND AND CONQUER GENERALS ZERO HOUR', UpperCase(Path)) > 0 then
+    Result := AddBackslash(Path) + 'Command and Conquer Generals Zero Hour';
+end;
+
 function GetInstallDir(Param: String): String;
 begin
   if RegQueryStringValue(HKLM,
     'SOFTWARE\WOW6432Node\Electronic Arts\EA Games\Command and Conquer Generals Zero Hour',
     'InstallPath',
     Result) then
+  begin
+    Result := NormalizeZeroHourDir(Result);
     Exit;
+  end;
 
   if RegQueryStringValue(HKLM,
     'SOFTWARE\Electronic Arts\EA Games\Command and Conquer Generals Zero Hour',
     'InstallPath',
     Result) then
+  begin
+    Result := NormalizeZeroHourDir(Result);
     Exit;
+  end;
 
   Result := '';
 end;
@@ -180,6 +194,7 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   DataDir: String;
+  ResultCode: Integer;
 begin
   if CurStep = ssInstall then
   begin
@@ -189,6 +204,23 @@ begin
       DelTree(DataDir, True, True, True);
 
     DeleteOldRebornExecutables;
+  end
+  else if CurStep = ssDone then
+  begin
+    if MsgBox(
+      'It is recommended to restart your computer before using Reborn Omega.' + #13#10#13#10 +
+      'Would you like to restart your computer now?',
+      mbConfirmation,
+      MB_YESNO) = IDYES then
+    begin
+      Exec(
+        ExpandConstant('{sys}\shutdown.exe'),
+        '/r /t 0',
+        '',
+        SW_HIDE,
+        ewNoWait,
+        ResultCode);
+    end;
   end;
 end;
 
@@ -204,8 +236,4 @@ FinishedLabel=Zero Hour {#RebornDisplayName} has been installed successfully.
 Filename: "{app}\RebornOmegaData\Tools\VC_redist.x86.exe"; \
     Description: "Install/Update Microsoft Visual C++ Runtime (Recommended)"; \
     Parameters: "/install /passive /norestart"; \
-    Flags: postinstall unchecked skipifsilent
-
-Filename: "{app}\{#RebornDisplayName}.exe"; \
-    Description: "Launch {#RebornDisplayName}"; \
-    Flags: postinstall nowait skipifsilent
+    Flags: postinstall skipifsilent waituntilterminated

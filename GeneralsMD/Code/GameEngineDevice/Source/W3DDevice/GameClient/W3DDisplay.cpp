@@ -1561,7 +1561,14 @@ void W3DDisplay::gatherDebugStats()
 			}
 
 
-
+#if defined(RTS_DEBUG)
+			if (m_displayStrings[LegacyForwardSpeed2D])
+			{
+				m_displayStrings[LegacyForwardSpeed2D]->setText(
+					L"LegacyForwardSpeed2D"
+				);
+			}
+#endif
 
 
 
@@ -1627,11 +1634,21 @@ void W3DDisplay::drawDebugStats()
 
 #endif
 
-
 	Int w, h;
 	for (int i = 0; i < linesOfStrings; i++)
 	{
-		m_displayStrings[i]->draw( x, y, textColor, dropColor );
+		Color color = textColor;
+
+#if defined(RTS_DEBUG)
+		if (i == LegacyForwardSpeed2D)
+		{
+			color = g_useLegacyForwardSpeed2D
+				? GameMakeColor(0, 255, 0, 255)
+				: GameMakeColor(255, 0, 0, 255);
+		}
+#endif
+
+		m_displayStrings[i]->draw(x, y, color, dropColor);
 		m_displayStrings[i]->getSize(&w, &h);
 		y += h;
 	}

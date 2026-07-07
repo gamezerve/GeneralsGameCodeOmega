@@ -31,6 +31,8 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/ChapterProgress.h"
+#include "Common/file.h"
+#include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -153,6 +155,64 @@ static void SetWindowImage(const char* windowName, const Image* image)
   }
 }
 
+static void PositionDifficultyStarsForRadio(const char* radioName, const char* leftStarName, const char* rightStarName)
+{
+  GameWindow* radio = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey(radioName)
+  );
+
+  GameWindow* leftStar = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey(leftStarName)
+  );
+
+  GameWindow* rightStar = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey(rightStarName)
+  );
+
+  if (!radio || !leftStar || !rightStar)
+    return;
+
+  Int radioX, radioY;
+  radio->winGetPosition(&radioX, &radioY);
+
+  ICoord2D radioSize;
+  radio->winGetSize(&radioSize.x, &radioSize.y);
+
+  Real scaleX = (Real)radioSize.x / 128.0f;
+  Real scaleY = (Real)radioSize.y / 24.0f;
+
+  Int leftX = radioX + REAL_TO_INT_FLOOR(18.0f * scaleX);
+  Int rightX = radioX + REAL_TO_INT_FLOOR(93.0f * scaleX);
+  Int starY = radioY + REAL_TO_INT_FLOOR(4.0f * scaleY);
+
+  leftStar->winSetPosition(leftX, starY);
+  rightStar->winSetPosition(rightX, starY);
+}
+
+static void PositionDifficultyStars()
+{
+  PositionDifficultyStarsForRadio(
+    "ChaptersMenu.wnd:RadioButtonEasyAI",
+    "ChaptersMenu.wnd:EasyLeftStar",
+    "ChaptersMenu.wnd:EasyRightStar"
+  );
+
+  PositionDifficultyStarsForRadio(
+    "ChaptersMenu.wnd:RadioButtonMediumAI",
+    "ChaptersMenu.wnd:MediumLeftStar",
+    "ChaptersMenu.wnd:MediumRightStar"
+  );
+
+  PositionDifficultyStarsForRadio(
+    "ChaptersMenu.wnd:RadioButtonHardAI",
+    "ChaptersMenu.wnd:HardLeftStar",
+    "ChaptersMenu.wnd:HardRightStar"
+  );
+}
+
 static void PositionMissionFactionIcons(Bool hasAlly)
 {
   GameWindow* playerWindow = TheWindowManager->winGetWindowFromId(
@@ -165,32 +225,38 @@ static void PositionMissionFactionIcons(Bool hasAlly)
     TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:AllyFactionIcon1")
   );
 
-  if (!playerWindow)
+  GameWindow* vsWindow = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:VSWindow")
+  );
+
+  if (!playerWindow || !vsWindow)
     return;
 
-  static Bool cached = FALSE;
-  static Int playerBaseX = 0;
-  static Int playerBaseY = 0;
+  ICoord2D vsSize;
+  vsWindow->winGetSize(&vsSize.x, &vsSize.y);
 
-  if (!cached)
+  Real scaleX = (Real)vsSize.x / 164.0f;
+  Real scaleY = (Real)vsSize.y / 32.0f;
+
+  Int playerBaseX = REAL_TO_INT_FLOOR(28.0f * scaleX);
+  Int playerBaseY = REAL_TO_INT_FLOOR(3.0f * scaleY);
+
+  Int playerShift = REAL_TO_INT_FLOOR((35.0f / 2.4f) * scaleX);
+  Int allyShift = REAL_TO_INT_FLOOR((29.0f / 2.4f) * scaleX);
+
+  if (hasAlly && allyWindow)
   {
-    playerWindow->winGetPosition(&playerBaseX, &playerBaseY);
-    cached = TRUE;
-  }
-
-	// Reborn: Position the player, ally, and slash icons based on whether there is an ally faction or not.
-  if (hasAlly)
-  {
-    playerWindow->winSetPosition(playerBaseX - 35, playerBaseY);
-    allyWindow->winSetPosition(playerBaseX + 29, playerBaseY);
-
+    playerWindow->winSetPosition(playerBaseX - playerShift, playerBaseY);
+    allyWindow->winSetPosition(playerBaseX + allyShift, playerBaseY);
     allyWindow->winHide(FALSE);
   }
   else
   {
     playerWindow->winSetPosition(playerBaseX, playerBaseY);
 
-    allyWindow->winHide(TRUE);
+    if (allyWindow)
+      allyWindow->winHide(TRUE);
   }
 }
 
@@ -337,12 +403,39 @@ static void UpdateWorldMapMarkerPosition(Int row)
     return;
   }
 
+  GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+  );
+
+  if (!worldMapBorder)
+  {
+    worldMapMarker->winHide(TRUE);
+    return;
+  }
+
+  Int borderX;
+  Int borderY;
+  worldMapBorder->winGetScreenPosition(&borderX, &borderY);
+
+  ICoord2D borderSize;
+  worldMapBorder->winGetSize(&borderSize.x, &borderSize.y);
+
+  const Real designWorldMapWidth = 393.0f;
+  const Real designWorldMapHeight = 250.0f;
+
   ICoord2D markerSize;
   worldMapMarker->winGetSize(&markerSize.x, &markerSize.y);
 
+  Real scaleX = (Real)borderSize.x / designWorldMapWidth;
+  Real scaleY = (Real)borderSize.y / designWorldMapHeight;
+
+  Int markerX = REAL_TO_INT_FLOOR((Real)mission->m_worldMapMarkerX * scaleX);
+  Int markerY = REAL_TO_INT_FLOOR((Real)mission->m_worldMapMarkerY * scaleY);
+
   worldMapMarker->winSetPosition(
-    mission->m_worldMapMarkerX - markerSize.x / 2,
-    mission->m_worldMapMarkerY - markerSize.y / 2
+    markerX - markerSize.x / 2,
+    markerY - markerSize.y / 2
   );
 
   worldMapMarker->winHide(FALSE);
@@ -503,8 +596,12 @@ static void LoadCampaignMaps(const char* campaignName)
 
   ListboxClear(listbox);
 
-  std::ifstream file("Data\\INI\\Campaign.ini");
-  if (!file.is_open())
+  File* file = TheFileSystem->openFile("RebornOmegaData\\Data\\INI\\Campaign.ini", File::READ | File::TEXT);
+
+  if (!file)
+    file = TheFileSystem->openFile("Data\\INI\\Campaign.ini", File::READ | File::TEXT);
+
+  if (!file)
     return;
 
   std::string line;
@@ -520,8 +617,13 @@ static void LoadCampaignMaps(const char* campaignName)
   Int worldMapMarkerX = -1;
   Int worldMapMarkerY = -1;
 
-  while (std::getline(file, line))
+  Char buffer[1024];
+
+  while (!file->eof())
   {
+    file->nextLine(buffer, sizeof(buffer));
+
+    std::string line = buffer;
     std::string trimmed = TrimCopy(line);
 
     if (trimmed.empty() || trimmed[0] == ';')
@@ -617,7 +719,10 @@ static void LoadCampaignMaps(const char* campaignName)
 
           if (completedImage)
           {
-            GadgetListBoxAddEntryImage(listbox, completedImage, row, 1);
+            Real scaleY = (Real)TheDisplay->getHeight() / 1080.0f;
+            Int starSize = REAL_TO_INT_FLOOR(40.0f * scaleY);
+
+            GadgetListBoxAddEntryImage(listbox, completedImage, row, 1, starSize, starSize);
             GadgetListBoxSetItemData(listbox, (void*)completedDifficulty, row, 1);
           }
           else
@@ -729,7 +834,7 @@ static void LoadCampaignMaps(const char* campaignName)
     );
   }
 
-  file.close();
+  file->close();
 }
 
 static void SelectChapter(Int index)
@@ -805,6 +910,11 @@ static void SelectChapter(Int index)
     TheCampaignManager->setCampaign("China_Gen");
     LoadCampaignMaps("China_Gen");
   }
+  else if (index == 4) // GLAGen
+  {
+    TheCampaignManager->setCampaign("GLA_Gen");
+    LoadCampaignMaps("GLA_Gen");
+  }
 
 
 }
@@ -841,6 +951,9 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   radioEasyID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonEasyAI");
   radioMediumID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonMediumAI");
   radioHardID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonHardAI");
+
+  PositionDifficultyStars();
+
   buttonBackID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonBack");
   buttonStartID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonStart");
   buttonPushed = FALSE;
@@ -956,8 +1069,8 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
       }
 
 
-      // Reborn: Only Training (0) and ChinaGen (2) will be active atm.
-      if (i == 0 || i == 2)
+      // Reborn: Only Training (0), ChinaGen (2) and GLAGen (4) will be active atm.
+      if (i == 0 || i == 2 || i == 4)
         chapterButtons[i]->winEnable(TRUE);
       else
         chapterButtons[i]->winEnable(FALSE);
@@ -1475,9 +1588,14 @@ WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, Wind
       Int wx, wy;
       worldMapBorder->winGetScreenPosition(&wx, &wy);
 
-      DEBUG_LOG(("WorldMapMarker: X=%d Y=%d\n",
+      ICoord2D size;
+      worldMapBorder->winGetSize(&size.x, &size.y);
+
+      DEBUG_LOG(("WorldMapMarker: X=%d Y=%d BorderW=%d BorderH=%d\n",
         screenX - wx,
-        screenY - wy));
+        screenY - wy,
+        size.x,
+        size.y));
     }
   }
 #endif

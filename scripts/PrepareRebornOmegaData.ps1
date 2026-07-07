@@ -180,6 +180,7 @@ $MapFolders = @(
     "CHI05",
     "CHI06",
     "CHI07",
+    "GLA01",
     "ShellMap1",
     "ShellMapMD",
     "Training01"
