@@ -208,6 +208,7 @@ protected:
 		TerrainStats,			///< debug display for the terrain renderer
 
 		LegacyForwardSpeed2D,
+		GameDifficulty,
 		DisplayStringCount
 	};
 

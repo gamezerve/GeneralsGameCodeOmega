@@ -52,6 +52,7 @@
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
 
+#include "GameClient/CampaignManager.h"
 #include "GameClient/Color.h"
 #include "GameClient/CommandXlat.h"
 #include "GameClient/Drawable.h"
@@ -2858,7 +2859,14 @@ void W3DView::rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, 
 #if RTS_GENERALS
 	m_rcInfo.angle.endAngle = m_angle + angle;
 #else
-	m_rcInfo.angle.endAngle = angle;
+	if (IsRebornCampaign())
+	{
+		m_rcInfo.angle.endAngle = m_angle + angle;
+	}
+	else
+	{
+		m_rcInfo.angle.endAngle = angle;
+	}
 #endif
 	m_rcInfo.startTimeMultiplier = m_timeMultiplier;
 	m_rcInfo.endTimeMultiplier = m_timeMultiplier;

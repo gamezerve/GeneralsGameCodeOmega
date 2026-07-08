@@ -806,12 +806,34 @@ void ScriptActions::doCreateReinforcements(const AsciiString& team, const AsciiS
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real cameraStutterSec, Real easeIn, Real easeOut)
 {
-	for (Waypoint *way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext()) {
-		if (way->getName() == waypoint) {
+	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
+	{
+		if (way->getName() == waypoint)
+		{
 			Coord3D destination = *way->getLocation();
-			TheTacticalView->moveCameraTo(&destination, sec*1000, cameraStutterSec*1000, true, easeIn*1000.0f, easeOut*1000.0f);
-			DEBUG_LOG(("doMoveCameraTo: waypoint=%s destination=(%.2f, %.2f, %.2f), sec=%.2f",
-				waypoint.str(), destination.x, destination.y, destination.z, sec));
+
+			if (IsRebornCampaign() && sec <= 0.0f)
+			{
+				TheTacticalView->setUserControlled(false);
+				TheTacticalView->lookAt(&destination);
+
+				DEBUG_LOG(("doMoveCameraTo INSTANT: waypoint=%s destination=(%.2f, %.2f, %.2f)",
+					waypoint.str(), destination.x, destination.y, destination.z));
+			}
+			else
+			{
+				TheTacticalView->moveCameraTo(
+					&destination,
+					sec * 1000,
+					cameraStutterSec * 1000,
+					true,
+					easeIn * 1000.0f,
+					easeOut * 1000.0f);
+
+				DEBUG_LOG(("doMoveCameraTo: waypoint=%s destination=(%.2f, %.2f, %.2f), sec=%.2f",
+					waypoint.str(), destination.x, destination.y, destination.z, sec));
+			}
+
 			break;
 		}
 	}

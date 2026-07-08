@@ -102,18 +102,6 @@ void DoCompressTest();
 #endif // TEST_COMPRESSION
 #endif
 
-//static Bool IsRebornCampaign()
-//{
-//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-//	if (!camp)
-//		return FALSE;
-//
-//	return camp->m_name.compare("training") == 0
-//		|| camp->m_name.compare("usa_gen") == 0
-//		|| camp->m_name.compare("gla_gen") == 0
-//		|| camp->m_name.compare("china_gen") == 0;
-//}
-
 static const char* GetSaveLoadMenuFile()
 {
 	//return IsRebornCampaign() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd";

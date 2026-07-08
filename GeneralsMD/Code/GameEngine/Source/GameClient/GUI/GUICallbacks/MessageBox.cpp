@@ -106,18 +106,6 @@ GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
-//static Bool IsRebornCampaign()
-//{
-//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-//	if (!camp)
-//		return FALSE;
-//
-//	return camp->m_name.compare("training") == 0
-//		|| camp->m_name.compare("usa_gen") == 0
-//		|| camp->m_name.compare("gla_gen") == 0
-//		|| camp->m_name.compare("china_gen") == 0;
-//}
-
 //-------------------------------------------------------------------------------------------------
 /** Message Box window system callback */
 //-------------------------------------------------------------------------------------------------
@@ -156,7 +144,6 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 			GameWindow* control = (GameWindow*)mData1;
 			Int controlID = control->winGetWindowId();
 
-			//const Bool useGen = IsRebornCampaign();
 			const Bool useGen = s_popupMessageUsesRebornLayout;
 
 			NameKeyType buttonOkID;
@@ -259,7 +246,6 @@ WindowMsgHandledType QuitMessageBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
-			//const Bool useGen = IsRebornCampaign();
 			const Bool useGen = s_popupMessageUsesRebornLayout;
 
 			const NameKeyType buttonOkID =

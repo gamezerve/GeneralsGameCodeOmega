@@ -143,22 +143,6 @@ static const Int TELETYPE_UPDATE_FREQ = 2; // how many frames between teletype u
 
 
 
-Bool IsRebornCampaign()
-{
-	if (!TheCampaignManager)
-		return FALSE;
-
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
-
-
 //-----------------------------------------------------------------------------
 // LoadScreen Class
 //-----------------------------------------------------------------------------

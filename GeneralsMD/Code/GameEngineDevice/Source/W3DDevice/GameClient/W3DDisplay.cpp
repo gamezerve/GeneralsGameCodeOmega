@@ -55,6 +55,7 @@ static void drawFramerateBar();
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
 
+#include "GameClient/CampaignManager.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/GameText.h"
 #include "GameClient/GraphDraw.h"
@@ -1561,14 +1562,6 @@ void W3DDisplay::gatherDebugStats()
 			}
 
 
-#if defined(RTS_DEBUG)
-			if (m_displayStrings[LegacyForwardSpeed2D])
-			{
-				m_displayStrings[LegacyForwardSpeed2D]->setText(
-					L"LegacyForwardSpeed2D"
-				);
-			}
-#endif
 
 
 
@@ -1613,6 +1606,42 @@ void W3DDisplay::gatherDebugStats()
 
 	}
 
+#if defined(RTS_DEBUG)
+	if (m_displayStrings[LegacyForwardSpeed2D])
+	{
+		UnicodeString text;
+		text.format(
+			L"LegacyForwardSpeed2D: %s",
+			g_useLegacyForwardSpeed2D ? L"TRUE" : L"FALSE"
+		);
+		m_displayStrings[LegacyForwardSpeed2D]->setText(text);
+	}
+#endif
+#if defined(RTS_DEBUG)
+	if (m_displayStrings[GameDifficulty])
+	{
+		const wchar_t* difficulty = L"Unknown";
+
+		switch (TheCampaignManager->getGameDifficulty())
+		{
+		case DIFFICULTY_EASY:
+			difficulty = L"EASY";
+			break;
+		case DIFFICULTY_NORMAL:
+			difficulty = L"NORMAL";
+			break;
+		case DIFFICULTY_HARD:
+			difficulty = L"HARD";
+			break;
+		}
+
+		UnicodeString text;
+		text.format(L"Difficulty: %s", difficulty);
+		m_displayStrings[GameDifficulty]->setText(text);
+	}
+#endif
+
+
 }
 
 // W3DDisplay::drawDebugStats =================================================
@@ -1645,6 +1674,23 @@ void W3DDisplay::drawDebugStats()
 			color = g_useLegacyForwardSpeed2D
 				? GameMakeColor(0, 255, 0, 255)
 				: GameMakeColor(255, 0, 0, 255);
+		}
+#endif
+#if defined(RTS_DEBUG)
+		if (i == GameDifficulty)
+		{
+			switch (TheCampaignManager->getGameDifficulty())
+			{
+			case DIFFICULTY_EASY:
+				color = GameMakeColor(0, 255, 0, 255);
+				break;
+			case DIFFICULTY_NORMAL:
+				color = GameMakeColor(255, 255, 0, 255);
+				break;
+			case DIFFICULTY_HARD:
+				color = GameMakeColor(255, 0, 0, 255);
+				break;
+			}
 		}
 #endif
 

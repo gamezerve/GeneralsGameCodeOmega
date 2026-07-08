@@ -67,8 +67,6 @@ class Image;
 
 #define MAX_MP_STARTING_UNITS 10
 
-Bool IsRebornCampaign();
-
 
 
 // ----------------------------------------------------------------------------------------------
