@@ -3864,13 +3864,14 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 	if (info.m_recoilBone || info.m_muzzleFlashBone)
 	{
 		//DEBUG_LOG(("START muzzleflash %08lx for Draw %08lx state %s at frame %d",info.m_muzzleFlashBone,this,m_curState->m_description.str(),TheGameLogic->getFrame()));
-#ifdef RTS_DEBUG
-		Object* obj = getDrawable() ? getDrawable()->getObject() : nullptr;
-		DEBUG_LOG(("RECOIL DEBUG: Object=%s  WeaponSlot=%d  Barrel=%d\n",
-			obj ? obj->getTemplate()->getName().str() : "<null>",
-			wslot,
-			specificBarrelToUse));
-#endif
+
+		//#ifdef RTS_DEBUG
+		//		Object* obj = getDrawable() ? getDrawable()->getObject() : nullptr;
+		//		DEBUG_LOG(("RECOIL DEBUG: Object=%s  WeaponSlot=%d  Barrel=%d\n",
+		//			obj ? obj->getTemplate()->getName().str() : "<null>",
+		//			wslot,
+		//			specificBarrelToUse));
+		//#endif
 
 		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
