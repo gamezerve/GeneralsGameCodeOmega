@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/GameType.h"
 #include "Common/Overridable.h"
+#include "Common/ThingTemplate.h"
 #include "Common/Science.h"
 #include "GameClient/Color.h"
 
@@ -99,6 +100,7 @@ enum CommandOption CPP_11(: Int)
 	USES_MINE_CLEARING_WEAPONSET= 0x00200000,	// uses the special mine-clearing weaponset, even if not current
 	CAN_USE_WAYPOINTS						= 0x00400000, // button has option to use a waypoint path
 	MUST_BE_STOPPED							= 0x00800000, // Unit must be stopped in order to be able to use button.
+	EXTENSION_QUEUE_EXCLUSIVE   = 0x01000000, // Reborn: if one such extension upgrade is in queue, other extension buttons of same group are disabled
 };
 
 #ifdef DEFINE_COMMAND_OPTION_NAMES
@@ -132,6 +134,7 @@ static const char *const TheCommandOptionNames[] =
 	"USES_MINE_CLEARING_WEAPONSET",
 	"CAN_USE_WAYPOINTS",
 	"MUST_BE_STOPPED",
+	"EXTENSION_QUEUE_EXCLUSIVE",
 
 	nullptr
 };
@@ -182,6 +185,7 @@ enum GUICommandType CPP_11(: Int)
 	GUI_COMMAND_EXECUTE_RAILED_TRANSPORT,	///< execute railed transport sequence
 	GUI_COMMAND_BEACON_DELETE,						///< delete a beacon
 	GUI_COMMAND_SET_RALLY_POINT,					///< set rally point for a structure
+	GUI_COMMAND_RESET_RALLY_POINT,					///< Reborn: reset rally point for a structure
 	GUI_COMMAND_SELL,											///< sell a structure
 	GUI_COMMAND_FIRE_WEAPON,							///< fire a weapon
 	GUI_COMMAND_SPECIAL_POWER,						///< do a special power
@@ -241,6 +245,7 @@ static const char *const TheGuiCommandNames[] =
 	"EXECUTE_RAILED_TRANSPORT",
 	"BEACON_DELETE",
 	"SET_RALLY_POINT",
+	"RESET_RALLY_POINT", //Reborn
 	"SELL",
 	"FIRE_WEAPON",
 	"SPECIAL_POWER",
@@ -321,6 +326,10 @@ public:
 	Bool isValidObjectTarget(const Object* sourceObj, const Object* targetObj) const;
 	Bool isValidObjectTarget(const Drawable* source, const Drawable* target) const;
 
+	mutable const Image* m_runtimeOverrideButtonImage = nullptr;
+	void setRuntimeOverrideButtonImage(const Image* image) const { m_runtimeOverrideButtonImage = image; }
+	void clearRuntimeOverrideButtonImage() const { m_runtimeOverrideButtonImage = nullptr; }
+
 	// Note: It is perfectly valid for either (or both!) of targetObj and targetLocation to be nullptr.
 	// This is a convenience function to make several calls to other functions.
 	Bool isValidToUseOn(const Object *sourceObj, const Object *targetObj, const Coord3D *targetLocation, CommandSourceType commandSource) const;
@@ -345,8 +354,20 @@ public:
 	Int getMaxShotsToFire() const { return m_maxShotsToFire; }
 	const ScienceVec& getScienceVec() const { return m_science; }
 	CommandButtonMappedBorderType getCommandButtonMappedBorderType() const { return m_commandButtonBorder; }
-	const Image* getButtonImage() const { return m_buttonImage;	}
+
+
+	//const Image* getButtonImage() const { return m_buttonImage;	}
+	const Image* getButtonImage() const
+	{
+		if (m_runtimeOverrideButtonImage)
+			return m_runtimeOverrideButtonImage;
+		return m_buttonImage;
+	}
+
 	void cacheButtonImage();
+
+
+
 
 	GameWindow* getWindow() const { return m_window;	}
 	Int getFlashCount() const { return m_flashCount; }
@@ -407,8 +428,8 @@ private:
 /** Command sets are collections of configurable command buttons.  They are used in the
 	* command context sensitive window in the battle user interface */
 //-------------------------------------------------------------------------------------------------
-enum { MAX_COMMANDS_PER_SET = 18 };  // user interface max is 14 (but internally it's 18 for script only buttons!)
-enum { MAX_RIGHT_HUD_UPGRADE_CAMEOS = 5};
+enum { MAX_COMMANDS_PER_SET = 26 };  // user interface max is 14 (but internally it's 18 for script only buttons!)
+enum { MAX_RIGHT_HUD_UPGRADE_CAMEOS = 7}; // Reborn
 enum {
 			 MAX_PURCHASE_SCIENCE_RANK_1 = 4,
 			 MAX_PURCHASE_SCIENCE_RANK_3 = 15,
@@ -416,7 +437,7 @@ enum {
 			};
 enum { MAX_STRUCTURE_INVENTORY_BUTTONS = 10 }; // there are this many physical buttons in "inventory" windows for structures
 enum { MAX_BUILD_QUEUE_BUTTONS = 9 };// physical button count for the build queue
-enum { MAX_SPECIAL_POWER_SHORTCUTS = 11};
+enum { MAX_SPECIAL_POWER_SHORTCUTS = 26 };
 class CommandSet : public Overridable
 {
 
@@ -431,7 +452,10 @@ public:
 	const CommandButton* getCommandButton(Int i) const;
 
 	// only for the control bar.
+	//CommandSet* friend_getNext() { return m_next; }
 	CommandSet* friend_getNext() { return m_next; }
+	const CommandSet* friend_getNext() const { return m_next; }
+
 	const FieldParse* friend_getFieldParse() const { return m_commandSetFieldParseTable; }
 	void friend_addToList(CommandSet** listHead);
 
@@ -671,6 +695,9 @@ public:
 	void onPlayerRankChanged(const Player *p);
 	void onPlayerSciencePurchasePointsChanged(const Player *p);
 
+
+	Int getVisibleSpecialPowerShortcutButtonCount() const;
+
 	/** if this button is part of the context sensitive command system, process a button click
 	the gadgetMessage is either a GBM_SELECTED or GBM_SELECTED_RIGHT */
 	CBCommandStatus processContextSensitiveButtonClick( GameWindow *button,
@@ -694,7 +721,8 @@ public:
 	const CommandButton *findCommandButton( const AsciiString& name );
 
 	/// find existing command set
-	const CommandSet *findCommandSet( const AsciiString& name );
+	//const CommandSet *findCommandSet( const AsciiString& name );
+	const CommandSet* findCommandSet(const AsciiString& name) const;
 
 	void showPurchaseScience();
 	void hidePurchaseScience();
@@ -768,6 +796,8 @@ public:
 
 	/// set the command data into the button
 	void setControlCommand( GameWindow *button, const CommandButton *commandButton );
+
+	void setControlCommand(GameWindow* button, const CommandButton* commandButton, Object* contextObj);
 
 	void getForegroundMarkerPos(Int *x, Int *y);
 	void getBackgroundMarkerPos(Int *x, Int *y);
@@ -909,6 +939,7 @@ protected:
 	GameWindow *m_rightHUDWindow;									///< window of the right HUD display
 	GameWindow *m_rightHUDCameoWindow;									///< window of the right HUD display
 	GameWindow *m_rightHUDUpgradeCameos[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
+	AsciiString m_rightHUDUpgradeTooltipNames[MAX_UPGRADE_CAMEO_UPGRADES];
 	GameWindow *m_rightHUDUnitSelectParent;
 
 	GameWindow *m_communicatorButton;             ///< button for the communicator
@@ -982,6 +1013,12 @@ protected:
 	Bool m_showBuildToolTipLayout;											///< every frame we test to see if we are going to continue showing this or not.
 public:
 	void showBuildTooltipLayout( GameWindow *cmdButton );
+	void showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade);
+	const UpgradeTemplate* getUpgradeTemplateForCameoWindow(GameWindow* window) const;
+	const UpgradeTemplate* m_rightHUDUpgradeTooltipTemplates[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
+	void showSelectedUnitCameoTooltip(GameWindow* window);
+	void showSelectedUnitTooltipLayout(GameWindow* window, Object* obj);
+	Drawable* getCurrentSelectedDrawable() const { return m_currentSelectedDrawable; }
 	void hideBuildTooltipLayout();
 	void deleteBuildTooltipLayout();
 	Bool getShowBuildTooltipLayout(){return m_showBuildToolTipLayout;	}
@@ -1001,6 +1038,7 @@ private:
 	void setCommandBarBorder( GameWindow *button, CommandButtonMappedBorderType type);
 public:
 	void updateCommandBarBorderColors(Color build, Color action, Color upgrade, Color system );
+	ObjectID getRightHUDPortraitObjectID() const { return m_rightHUDPortraitObjectID; }
 
 private:
 
@@ -1029,6 +1067,7 @@ private:
 
 
 	Bool m_genStarFlash;
+	Real m_genStarFlashTimeAccumulator; ///< Frame time accumulated within the current star blink cycle, in seconds
 	Int m_lastFlashedAtPointValue;
 
 	ICoord2D m_controlBarForegroundMarkerPos;
@@ -1043,6 +1082,8 @@ private:
 	UnsignedInt m_consecutiveDirtyFrames;
 #endif
 //	ControlBarResizer *m_controlBarResizer;
+
+	ObjectID m_rightHUDPortraitObjectID;
 
 };
 
