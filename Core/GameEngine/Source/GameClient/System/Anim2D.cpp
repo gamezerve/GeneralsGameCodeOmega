@@ -32,6 +32,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #define DEFINE_ANIM_2D_MODE_NAMES
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Xfer.h"
 #include "GameClient/Anim2D.h"
 #include "GameClient/Display.h"
@@ -106,6 +107,15 @@ void Anim2DTemplate::parseNumImages( INI *ini, void *instance, void *store, cons
 
 		DEBUG_CRASH(( "Anim2DTemplate::parseNumImages - Invalid animation '%s', animations must have '%d' or more frames defined",
 									 animTemplate->getName().str(), minimumFrames ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid animation '%s'. Animation has %u frames; expected at least %d. INIFile='%s', INILine=%d.",
+			animTemplate->getName().str(),
+			numFrames,
+			minimumFrames,
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -189,6 +199,13 @@ void Anim2DTemplate::parseImage( INI *ini, void *instance, void *store, const vo
 
 		DEBUG_CRASH(( "Anim2DTemplate::parseImageSequence - You must specify the number of animation frames for animation '%s' *BEFORE* specifying the image sequence name",
 									animTemplate->getName().str() ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Animation '%s' has no valid frame count. NumImages must be specified before ImageSequence. INIFile='%s', INILine=%d.",
+			animTemplate->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -215,6 +232,17 @@ void Anim2DTemplate::parseImage( INI *ini, void *instance, void *store, const vo
 
 			DEBUG_CRASH(( "Anim2DTemplate::parseImageSequence - Image '%s' not found for animation '%s'.  Check the number of images specified in INI and also make sure all the actual images exist.",
 										imageName.str(), animTemplate->getName().str() ));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Image '%s' was not found for animation '%s'. BaseImageName='%s', FrameIndex=%d, FrameCount=%d, INIFile='%s', INILine=%d.",
+				imageName.str(),
+				animTemplate->getName().str(),
+				imageBaseName.str(),
+				i,
+				animTemplate->getNumFrames(),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 
 		}
@@ -253,6 +281,13 @@ void Anim2DTemplate::storeImage( const Image *image )
 	// if we got here we tried to store an image in an array that was too small
 	DEBUG_CRASH(( "Anim2DTemplate::storeImage - Unable to store image '%s' into animation '%s' because the animation is setup to only support '%d' image frames",
 								image->getName().str(), getName().str(), m_numFrames ));
+
+	REBORN_LOG(
+		"INI_INVALID_DATA: Unable to store image '%s' in animation '%s' because all %d image slots are already occupied.",
+		image->getName().str(),
+		getName().str(),
+		m_numFrames);
+
 	throw INI_INVALID_DATA;
 
 }

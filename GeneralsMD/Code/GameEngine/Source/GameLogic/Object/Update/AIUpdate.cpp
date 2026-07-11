@@ -39,6 +39,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Team.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
@@ -147,6 +148,12 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 	if (*(TurretAIData**)store)
 	{
 		DEBUG_CRASH(("Only one turret to a customer, for now"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Multiple Turret definitions are not allowed in the same AIUpdate module. INIFile='%s', INILine=%d.",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -163,6 +170,13 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 	if (!self)
 	{
 		DEBUG_CRASH( ("Attempted to specify a locomotor for object %s without an AIUpdate block.", tt->getName().str() ) );
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: LocomotorSet was specified for ThingTemplate '%s' without an AIUpdate module. INIFile='%s', INILine=%d.",
+			tt->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -172,6 +186,16 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 		if (ini->getLoadType() != INI_LOAD_CREATE_OVERRIDES)
 		{
 			DEBUG_CRASH(("re-specifying a LocomotorSet is no longer allowed"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: LocomotorSet %d was defined more than once for ThingTemplate '%s'. LoadType=%d, ExistingLocomotorCount=%u, INIFile='%s', INILine=%d.",
+				static_cast<int>(set),
+				tt->getName().str(),
+				static_cast<int>(ini->getLoadType()),
+				static_cast<UnsignedInt>(self->m_locomotorTemplates[set].size()),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 	}
@@ -187,6 +211,16 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 		if (!lt)
 		{
 			DEBUG_CRASH(("Locomotor %s not found!",token));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Locomotor '%s' referenced by LocomotorSet %d was not found for ThingTemplate '%s'. LocomotorKey=%u, INIFile='%s', INILine=%d.",
+				token,
+				static_cast<int>(set),
+				tt->getName().str(),
+				static_cast<UnsignedInt>(locoKey),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 		self->m_locomotorTemplates[set].push_back(lt);

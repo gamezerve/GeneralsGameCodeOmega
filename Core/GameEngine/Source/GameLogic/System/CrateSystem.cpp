@@ -33,6 +33,7 @@
 
 #include "GameLogic/CrateSystem.h"
 #include "Common/BitFlagsIO.h"
+#include "Common/RebornLog.h"
 
 CrateSystem *TheCrateSystem = nullptr;
 
@@ -213,7 +214,16 @@ void CrateTemplate::parseCrateCreationEntry( INI* ini, void *instance, void *, c
 	token = ini->getNextToken();
 	Real crateValue;
 	if (sscanf( token, "%f", &crateValue ) != 1)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to parse crate chance value '%s' for crate '%s'. Expected a valid real number. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			crateName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	crateCreationEntry newEntry;
 	newEntry.crateName = crateName;

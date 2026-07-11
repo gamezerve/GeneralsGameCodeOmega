@@ -31,6 +31,7 @@
 
 #include "Common/INI.h"
 #include "Common/Player.h"
+#include "Common/RebornLog.h"
 #include "Common/Science.h"
 
 ScienceStore* TheScienceStore = nullptr;
@@ -214,6 +215,15 @@ const ScienceInfo* ScienceStore::findScienceInfo(ScienceType st) const
 			if (info != nullptr)
 			{
 				DEBUG_CRASH(("duplicate science %s!",c));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Duplicate science definition '%s'. LoadType=%d, ScienceKey=%u, INIFile='%s', INILine=%d.",
+					c ? c : "NULL",
+					static_cast<int>(ini->getLoadType()),
+					static_cast<UnsignedInt>(nkt),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			info = newInstance(ScienceInfo);
@@ -388,6 +398,12 @@ ScienceType ScienceStore::friend_lookupScience(const char* scienceName) const
 	if (!isValidScience(st))
 	{
 		DEBUG_CRASH(("Science name %s not known! (Did you define it in Science.ini?)",scienceName));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unknown science name '%s'. The science may be missing from Science.ini. ScienceKey=%u.",
+			scienceName ? scienceName : "NULL",
+			static_cast<UnsignedInt>(nkt));
+
 		throw INI_INVALID_DATA;
 	}
 	return st;

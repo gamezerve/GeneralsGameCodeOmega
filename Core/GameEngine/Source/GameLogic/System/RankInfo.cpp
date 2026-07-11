@@ -30,6 +30,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "Common/Player.h"
 #include "GameLogic/RankInfo.h"
 
@@ -130,6 +131,14 @@ void RankInfoStore::friend_parseRankDefinition( INI* ini )
 			if (rank < 1 || rank > TheRankInfoStore->m_rankInfos.size())
 			{
 				DEBUG_CRASH(("Rank not found in map.ini"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Rank %d cannot be overridden because it does not exist. ExistingRankCount=%u, INIFile='%s', INILine=%d.",
+					rank,
+					static_cast<UnsignedInt>(TheRankInfoStore->m_rankInfos.size()),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -137,6 +146,14 @@ void RankInfoStore::friend_parseRankDefinition( INI* ini )
 			if (!info)
 			{
 				DEBUG_CRASH(("Rank not found in map.ini"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Rank %d exists in the rank list but its RankInfo pointer is null. ExistingRankCount=%u, INIFile='%s', INILine=%d.",
+					rank,
+					static_cast<UnsignedInt>(TheRankInfoStore->m_rankInfos.size()),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -158,6 +175,15 @@ void RankInfoStore::friend_parseRankDefinition( INI* ini )
 			if (rank != TheRankInfoStore->m_rankInfos.size() + 1)
 			{
 				DEBUG_CRASH(("Ranks must increase monotonically"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Rank definitions must increase monotonically. ParsedRank=%d, ExpectedRank=%u, ExistingRankCount=%u, INIFile='%s', INILine=%d.",
+					rank,
+					static_cast<UnsignedInt>(TheRankInfoStore->m_rankInfos.size() + 1),
+					static_cast<UnsignedInt>(TheRankInfoStore->m_rankInfos.size()),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			RankInfo* info = newInstance(RankInfo);

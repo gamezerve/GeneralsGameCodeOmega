@@ -35,6 +35,7 @@
 #include "Common/MessageStream.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/RebornLog.h"
 #include "Common/Team.h"
 #include "Common/ThingTemplate.h"
 
@@ -791,11 +792,28 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 
 	GameMessage::Type t = TheMetaMap->findGameMessageMetaType(c);
 	if (t == GameMessage::MSG_INVALID)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid MetaMap message type '%s'. INIFile='%s', INILine=%d.",
+			c ? c : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	MetaMapRec *map = TheMetaMap->getMetaMapRec(t);
 	if (map == nullptr)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: No MetaMap record was found for message type '%s' with enum value %d. INIFile='%s', INILine=%d.",
+			c ? c : "NULL",
+			static_cast<int>(t),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	ini->initFromINI(map, TheMetaMapFieldParseTable);
 }

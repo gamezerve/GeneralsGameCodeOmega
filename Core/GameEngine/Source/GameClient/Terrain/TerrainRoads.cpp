@@ -32,6 +32,7 @@
 
 #define DEFINE_BODYDAMAGETYPE_NAMES
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "GameClient/TerrainRoads.h"
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +114,13 @@ const FieldParse TerrainRoadType::m_terrainBridgeFieldParseTable[] =
 	{
 
 		DEBUG_CRASH(( "Expected Damage/Repair transition keyword" ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid bridge transition type '%s'; expected 'Damage' or 'Repair'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -133,6 +141,16 @@ const FieldParse TerrainRoadType::m_terrainBridgeFieldParseTable[] =
 	{
 
 		DEBUG_CRASH(( "Effect number max on bridge transitions is '%d'", MAX_BRIDGE_BODY_FX ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid bridge transition effect number %d. Valid INI values are between 1 and %d. Transition='%s', ToState=%d, INIFile='%s', INILine=%d.",
+			effectNum + 1,
+			MAX_BRIDGE_BODY_FX,
+			damageTransition ? "Damage" : "Repair",
+			static_cast<int>(state),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -169,6 +187,13 @@ const FieldParse TerrainRoadType::m_terrainBridgeFieldParseTable[] =
 	{
 
 		DEBUG_CRASH(( "Expected Damage/Repair transition keyword" ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid bridge transition type '%s'; expected 'Damage' or 'Repair'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -189,6 +214,16 @@ const FieldParse TerrainRoadType::m_terrainBridgeFieldParseTable[] =
 	{
 
 		DEBUG_CRASH(( "Effect number max on bridge transitions is '%d'", MAX_BRIDGE_BODY_FX ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid bridge transition effect number %d. Valid INI values are between 1 and %d. Transition='%s', ToState=%d, INIFile='%s', INILine=%d.",
+			effectNum + 1,
+			MAX_BRIDGE_BODY_FX,
+			damageTransition ? "Damage" : "Repair",
+			static_cast<int>(state),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}

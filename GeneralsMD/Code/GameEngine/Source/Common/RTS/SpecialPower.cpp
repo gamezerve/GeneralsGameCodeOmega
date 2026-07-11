@@ -32,6 +32,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Player.h"
+#include "Common/RebornLog.h"
 #include "Common/Science.h"
 #include "Common/SpecialPower.h"
 #include "GameLogic/Object.h"
@@ -168,6 +169,14 @@ void SpecialPowerStore::parseSpecialPowerDefinition( INI *ini )
 	{
 		if (specialPower)
 		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: Duplicate SpecialPower definition '%s'. LoadType=%d, ExistingSpecialPowerID=%d, INIFile='%s', INILine=%d.",
+				name.str(),
+				static_cast<int>(ini->getLoadType()),
+				specialPower->getID(),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 		else

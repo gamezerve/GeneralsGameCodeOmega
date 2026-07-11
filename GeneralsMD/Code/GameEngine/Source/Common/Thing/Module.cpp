@@ -34,6 +34,7 @@
 #include "Common/Module.h"
 #include "Common/Thing.h"
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Upgrade.h"
 #include "Common/Xfer.h"
@@ -109,6 +110,11 @@ ObjectModule::ObjectModule( Thing *thing, const ModuleData* moduleData ) : Modul
 	if (!moduleData)
 	{
 		DEBUG_CRASH(("module data may not be null"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: ObjectModule received a null ModuleData pointer. ThingPointer=%p.",
+			thing);
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -172,6 +178,11 @@ DrawableModule::DrawableModule( Thing *thing, const ModuleData* moduleData ) : M
 	if (!moduleData)
 	{
 		DEBUG_CRASH(("module data may not be null"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: DrawableModule received a null ModuleData pointer. ThingPointer=%p.",
+			thing);
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -255,6 +266,13 @@ void UpgradeMuxData::muxDataProcessUpgradeRemoval(Object* obj) const
 			if( !theTemplate )
 			{
 				DEBUG_CRASH(("An upgrade module references '%s', which is not an Upgrade", it->str()));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Upgrade removal references unknown upgrade '%s'. ObjectPointer=%p, ObjectTemplate='%s'.",
+					it->str(),
+					obj,
+					obj && obj->getTemplate() ? obj->getTemplate()->getName().str() : "Unknown");
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -297,6 +315,11 @@ void UpgradeMuxData::getUpgradeActivationMasks(UpgradeMaskType& activation, Upgr
 			if( !theTemplate )
 			{
 				DEBUG_CRASH(("An upgrade module references '%s', which is not an Upgrade", it->str()));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Activation upgrade list references unknown upgrade '%s'.",
+					it->str());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -311,6 +334,11 @@ void UpgradeMuxData::getUpgradeActivationMasks(UpgradeMaskType& activation, Upgr
 			if( !theTemplate )
 			{
 				DEBUG_CRASH(("An upgrade module references '%s', which is not an Upgrade", it->str()));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Conflicting upgrade list references unknown upgrade '%s'.",
+					it->str());
+
 				throw INI_INVALID_DATA;
 			}
 

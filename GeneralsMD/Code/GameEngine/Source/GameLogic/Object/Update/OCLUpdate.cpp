@@ -34,6 +34,7 @@
 #include "Common/Xfer.h"
 #include "Common/Player.h"
 #include "Common/PlayerTemplate.h"
+#include "Common/RebornLog.h"
 #include "Common/UnicodeString.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
@@ -55,14 +56,31 @@ void parseFactionObjectCreationList( INI *ini, void *instance, void *store, cons
 		info.m_factionName = token;
 	}
 	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'Faction' but found '%s' while parsing a faction ObjectCreationList entry. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 
 	token = ini->getNextToken( ini->getSepsColon() );
 	if ( stricmp(token, "OCL") == 0 )
 		ini->parseObjectCreationList( ini, instance, &info.m_ocl, nullptr );
 	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OCL' but found '%s' while parsing faction '%s'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info.m_factionName.c_str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	// Insert the info into the ocl hashmap
 	OCLUpdateModuleData::FactionOCLList * theList = (OCLUpdateModuleData::FactionOCLList*)store;

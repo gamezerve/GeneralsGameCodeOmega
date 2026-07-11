@@ -35,6 +35,7 @@
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Xfer.h"
 #include "GameClient/FXList.h"
 #include "GameLogic/GameLogic.h"
@@ -99,6 +100,11 @@ void BoneFXUpdate::onObjectCreated()
 	if (bfxd == nullptr)
 	{
 		DEBUG_CRASH(("BoneFXUpdate requires BoneFXDamage"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: BoneFXUpdate requires a BoneFXDamage module, but no BoneFXDamage module was found. Object='%s'.",
+			getObject()->getTemplate()->getName().str());
+
 		throw INI_INVALID_DATA;
 	}
 }
@@ -126,6 +132,12 @@ static void parseFXLocInfo( INI *ini, void *instance, BoneLocInfo *locInfo )
 	}
 	else
 	{
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'Bone' while parsing BoneFX location information, but found '%s'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -172,6 +184,12 @@ void BoneFXUpdateModuleData::parseFXList( INI *ini, void *instance,
 	token = ini->getNextToken( ini->getSepsColon() );
 	if (stricmp( token, "onlyonce" ) != 0)
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OnlyOnce' while parsing BoneFX FXList, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -186,6 +204,12 @@ void BoneFXUpdateModuleData::parseFXList( INI *ini, void *instance,
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "fxlist" ) != 0 )
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'FXList' while parsing BoneFX FXList, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -215,6 +239,13 @@ void BoneFXUpdateModuleData::parseObjectCreationList( INI *ini, void *instance,
 	if (stricmp( token, "onlyonce" ) != 0)
 	{
 
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OnlyOnce' while parsing BoneFX ObjectCreationList, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		// error
 		throw INI_INVALID_DATA;
 
@@ -228,6 +259,13 @@ void BoneFXUpdateModuleData::parseObjectCreationList( INI *ini, void *instance,
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "ocl" ) != 0 )
 	{
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OCL' while parsing BoneFX ObjectCreationList, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -257,6 +295,13 @@ void BoneFXUpdateModuleData::parseParticleSystem( INI *ini, void *instance,
 	if (stricmp( token, "onlyonce" ) != 0)
 	{
 
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OnlyOnce' while parsing BoneFX ParticleSystem, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		// error
 		throw INI_INVALID_DATA;
 
@@ -270,6 +315,13 @@ void BoneFXUpdateModuleData::parseParticleSystem( INI *ini, void *instance,
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "psys" ) != 0 )
 	{
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'PSys' while parsing BoneFX ParticleSystem, but found '%s'. Bone='%s', INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info->locInfo.boneName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;

@@ -57,6 +57,7 @@
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "GameLogic/GameLogic.h"
@@ -85,14 +86,31 @@ void parseUpgradePair( INI *ini, void *instance, void *store, const void *userDa
 		info.type = token;
 	}
 	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'UpgradeType' but found '%s' while parsing an upgrade pair. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 
 	token = ini->getNextToken( ini->getSepsColon() );
 	if ( stricmp(token, "Boost") == 0 )
 		info.amount = INI::scanInt(ini->getNextToken( ini->getSepsColon() ));
 	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'Boost' but found '%s' while parsing upgrade '%s'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			info.type.c_str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	// Insert the info into the upgrade list
 	std::list<upgradePair> * theList = (std::list<upgradePair>*)store;

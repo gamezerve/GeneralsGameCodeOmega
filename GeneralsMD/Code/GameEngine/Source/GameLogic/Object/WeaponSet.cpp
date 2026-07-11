@@ -39,6 +39,7 @@
 #include "Common/INI.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
 #include "Common/BitFlagsIO.h"
@@ -237,11 +238,27 @@ void WeaponSet::xfer( Xfer *xfer )
 		{
 			const ThingTemplate* tt = TheThingFactory->findTemplate(ttName);
 			if (tt == nullptr)
+			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: ThingTemplate '%s' referenced by loaded WeaponSet data was not found. XferVersion=%u, XferMode=%d.",
+					ttName.str(),
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
+			}
 
 			m_curWeaponTemplateSet = tt->findWeaponTemplateSet(wsFlags);
 			if (m_curWeaponTemplateSet == nullptr)
+			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: No matching WeaponTemplateSet was found for ThingTemplate '%s'. XferVersion=%u, XferMode=%d.",
+					ttName.str(),
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
+			}
 		}
 	}
 	else if (xfer->getXferMode() == XFER_SAVE)
@@ -252,7 +269,15 @@ void WeaponSet::xfer( Xfer *xfer )
 		{
 			const ThingTemplate* tt = m_curWeaponTemplateSet->friend_getThingTemplate();
 			if (tt == nullptr)
+			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: WeaponTemplateSet has no owning ThingTemplate while saving. WeaponTemplateSetPointer=%p, XferVersion=%u, XferMode=%d.",
+					m_curWeaponTemplateSet,
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
+			}
 
 			ttName = tt->getName();
 			wsFlags = m_curWeaponTemplateSet->friend_getWeaponSetFlags();

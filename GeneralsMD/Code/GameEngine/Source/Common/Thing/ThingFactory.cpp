@@ -37,6 +37,7 @@
 #include "Common/MapObject.h"
 #include "Common/ModuleFactory.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
 #include "Common/Player.h"
@@ -430,6 +431,16 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 		else
 		{
 			DEBUG_CRASH(("Inherited Object must come after the original Object (%s, %s).", inheritFrom.str(), name.str()));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Object '%s' inherits from unknown or not-yet-defined object '%s'. ReskinOnly=%d, LoadType=%d, INIFile='%s', INILine=%d.",
+				name.str(),
+				inheritFrom.str(),
+				static_cast<int>(reskinOnly),
+				static_cast<int>(ini->getLoadType()),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 	}

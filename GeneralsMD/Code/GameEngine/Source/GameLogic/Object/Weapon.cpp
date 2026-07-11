@@ -45,6 +45,7 @@
 #include "Common/INI.h"
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -3451,7 +3452,16 @@ void Weapon::xfer( Xfer *xfer )
 		{
 			m_template = TheWeaponStore->findWeaponTemplate(tmplName);
 			if (m_template == nullptr)
+			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: WeaponTemplate '%s' referenced by loaded weapon data was not found. WeaponSlot=%d, XferVersion=%u, XferMode=%d.",
+					tmplName.str(),
+					static_cast<int>(m_wslot),
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
+			}
 		}
 	}
 

@@ -36,6 +36,7 @@
 #define DEFINE_LOCO_APPEARANCE_NAMES
 
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/Locomotor.h"
@@ -401,6 +402,15 @@ void LocomotorTemplate::validate()
 				m_liftDamaged != 0.0f)
 		{
 			DEBUG_CRASH(("THRUST locos may not use ZAxisBehavior or lift!"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: THRUST locomotor may not use ZAxisBehavior or lift. ZAxisBehavior=%d, Lift=%f, LiftDamaged=%f, MaxSpeed=%f, MinSpeed=%f.",
+				static_cast<int>(m_behaviorZ),
+				m_lift,
+				m_liftDamaged,
+				m_maxSpeed,
+				m_minSpeed);
+
 			throw INI_INVALID_DATA;
 		}
 		if (m_maxSpeed <= 0.0f)
@@ -602,7 +612,14 @@ LocomotorTemplate *LocomotorStore::newOverride( LocomotorTemplate *locoTemplate 
 /*static*/ void LocomotorStore::parseLocomotorTemplateDefinition(INI* ini)
 {
 	if (!TheLocomotorStore)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: LocomotorStore is null while parsing a Locomotor definition. INIFile='%s', INILine=%d.",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	Bool isOverride = false;
 	// read the Locomotor name

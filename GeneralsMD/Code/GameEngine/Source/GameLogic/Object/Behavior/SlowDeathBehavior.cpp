@@ -34,6 +34,7 @@
 #include "Common/GameLOD.h"
 #include "Common/INI.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -159,6 +160,13 @@ SlowDeathBehavior::SlowDeathBehavior( Thing *thing, const ModuleData* moduleData
 	if (getSlowDeathBehaviorModuleData()->m_probabilityModifier < 1)
 	{
 		DEBUG_CRASH(("ProbabilityModifier must be >= 1."));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: SlowDeathBehavior ProbabilityModifier must be at least 1. ProbabilityModifier=%d, ThingTemplate='%s', ThingPointer=%p.",
+			getSlowDeathBehaviorModuleData()->m_probabilityModifier,
+			thing && thing->getTemplate() ? thing->getTemplate()->getName().str() : "Unknown",
+			thing);
+
 		throw INI_INVALID_DATA;
 	}
 

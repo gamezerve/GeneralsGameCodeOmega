@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/RebornLog.h"
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/FXList.h"
@@ -103,6 +104,14 @@ static void parseFXLocInfo( INI *ini, void *instance, FXLocInfo *locInfo )
 		{
 
 			DEBUG_CRASH(( "parseFXLocInfo: Bone name not followed by RandomBone specifier\nPress IGNORE to see which INI file and line # is incorrect." ));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Bone location '%s' was not followed by the required RandomBone token. FoundToken='%s', INIFile='%s', INILine=%d.",
+				locInfo->boneName.str(),
+				token ? token : "NULL",
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 
 		}
@@ -123,6 +132,11 @@ static void parseFXLocInfo( INI *ini, void *instance, FXLocInfo *locInfo )
 	}
 	else
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid FX location type '%s'; expected 'Bone' or 'Loc'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -148,6 +162,11 @@ void TransitionDamageFXModuleData::parseFXList( INI *ini, void *instance,
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "fxlist" ) != 0 )
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'FXList' but found '%s' while parsing TransitionDamageFX. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -176,6 +195,11 @@ void TransitionDamageFXModuleData::parseObjectCreationList( INI *ini, void *inst
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "ocl" ) != 0 )
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OCL' but found '%s' while parsing TransitionDamageFX. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;
@@ -204,6 +228,11 @@ void TransitionDamageFXModuleData::parseParticleSystem( INI *ini, void *instance
 	token = ini->getNextToken( ini->getSepsColon() );
 	if( stricmp( token, "psys" ) != 0 )
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'PSys' but found '%s' while parsing TransitionDamageFX. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
 
 		// error
 		throw INI_INVALID_DATA;

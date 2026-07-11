@@ -42,6 +42,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/Radar.h"
+#include "Common/RebornLog.h"
 #include "Common/Team.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
@@ -583,6 +584,14 @@ void InGameUI::xfer( Xfer *xfer )
 			else if (playerIndex < 0 || playerIndex >= MAX_PLAYER_COUNT)
 			{
 				DEBUG_CRASH(("SWInfo bad plyrindex"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Invalid superweapon player index %d was read from the xfer stream. ValidRange=0-%d, XferVersion=%u, XferMode=%d.",
+					playerIndex,
+					MAX_PLAYER_COUNT - 1,
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -592,6 +601,14 @@ void InGameUI::xfer( Xfer *xfer )
 			if (powerTemplate == nullptr)
 			{
 				DEBUG_CRASH(("power %s not found",templateName.str()));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: SpecialPowerTemplate '%s' referenced by loaded superweapon data was not found. PlayerIndex=%d, XferVersion=%u, XferMode=%d.",
+					templateName.str(),
+					playerIndex,
+					static_cast<UnsignedInt>(version),
+					static_cast<int>(xfer->getXferMode()));
+
 				throw INI_INVALID_DATA;
 			}
 

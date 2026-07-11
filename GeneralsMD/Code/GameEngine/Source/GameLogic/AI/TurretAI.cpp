@@ -33,6 +33,7 @@
 #include "Common/GameAudio.h"
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
 
@@ -284,12 +285,27 @@ TurretAI::TurretAI(Object* owner, const TurretAIData* data, WhichTurretType tur)
 	if (!m_data)
 	{
 		DEBUG_CRASH(("TurretAI MUST have ModuleData"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: TurretAI was created without valid TurretAIData. Owner='%s', OwnerPointer=%p, TurretType=%d.",
+			m_owner && m_owner->getTemplate() ? m_owner->getTemplate()->getName().str() : "Unknown",
+			m_owner,
+			static_cast<int>(m_whichTurret));
+
 		throw INI_INVALID_DATA;
 	}
 
 	if (m_data->m_turretWeaponSlots == 0)
 	{
 		DEBUG_CRASH(("TurretAI MUST specify controlled weapon slots!"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: TurretAI has no controlled weapon slots specified. Owner='%s', OwnerPointer=%p, TurretType=%d, TurretWeaponSlots=%d.",
+			m_owner && m_owner->getTemplate() ? m_owner->getTemplate()->getName().str() : "Unknown",
+			m_owner,
+			static_cast<int>(m_whichTurret),
+			static_cast<int>(m_data->m_turretWeaponSlots));
+
 		throw INI_INVALID_DATA;
 	}
 	m_angle = getNaturalTurretAngle();

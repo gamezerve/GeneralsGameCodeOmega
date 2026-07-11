@@ -34,6 +34,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameLOD.h"
+#include "Common/RebornLog.h"
 #include "GameClient/TerrainVisual.h"
 #include "GameClient/GameClient.h"
 #include "Common/OptionPreferences.h"
@@ -466,6 +467,13 @@ void INI::parseStaticGameLODLevel( INI* ini, void * , void *store, const void*)
 		}
 
 	DEBUG_CRASH(("invalid GameLODLevel token %s -- expected LOW/MEDIUM/HIGH",tok));
+
+	REBORN_LOG(
+		"INI_INVALID_DATA: Invalid static GameLODLevel token '%s'; expected LOW, MEDIUM, or HIGH. INIFile='%s', INILine=%d.",
+		tok ? tok : "NULL",
+		ini->getFilename().str(),
+		ini->getLineNum());
+
 	throw INI_INVALID_DATA;
 }
 
@@ -664,6 +672,13 @@ void INI::parseDynamicGameLODLevel( INI* ini, void * , void *store, const void*)
 		}
 
 	DEBUG_CRASH(("invalid GameLODLevel token %s -- expected LOW/MEDIUM/HIGH",tok));
+
+	REBORN_LOG(
+		"INI_INVALID_DATA: Invalid dynamic GameLODLevel token '%s'; expected LOW, MEDIUM, or HIGH. INIFile='%s', INILine=%d.",
+		tok ? tok : "NULL",
+		ini->getFilename().str(),
+		ini->getLineNum());
+
 	throw INI_INVALID_DATA;
 }
 

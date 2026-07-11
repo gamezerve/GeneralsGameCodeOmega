@@ -42,6 +42,7 @@
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingTemplate.h"
 #include "Common/GameLOD.h"
 #include "Common/Xfer.h"
@@ -1468,6 +1469,13 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	ModelConditionInfo info;
 	W3DModelDrawModuleData* self = (W3DModelDrawModuleData*)instance;
 	ParseCondStateType cst = (ParseCondStateType)(UnsignedInt)userData;
+
+#if defined(RTS_DEBUG)
+	const char* thingTemplateName = TheThingTemplateBeingParsedName.str();
+#else
+	const char* thingTemplateName = "Unknown (Try Debug Build)";
+#endif
+
 	switch (cst)
 	{
 		case PARSE_DEFAULT:
@@ -1475,18 +1483,41 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			if (self->m_defaultState >= 0)
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: you may have only one default state!"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Multiple DefaultConditionState definitions are not allowed. ThingTemplate='%s', ExistingDefaultState=%d, INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					self->m_defaultState,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
-			else if (ini->getNextTokenOrNull())
+			else if (const char* unexpectedToken = ini->getNextTokenOrNull())
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: unknown keyword"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Unexpected token '%s' after DefaultConditionState. ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					unexpectedToken,
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			else
 			{
 				if (!self->m_conditionStates.empty())
 				{
-					DEBUG_CRASH(("*** ASSET ERROR: when using DefaultConditionState, it must be the first state listed (%s)",TheThingTemplateBeingParsedName.str()));
+					DEBUG_CRASH(("*** ASSET ERROR: when using DefaultConditionState, it must be the first state listed (%s)", thingTemplateName));
+
+					REBORN_LOG(
+						"INI_INVALID_DATA: DefaultConditionState must be the first state listed. ThingTemplate='%s', ExistingConditionStateCount=%u, INIFile='%s', INILine=%d.",
+						thingTemplateName,
+						static_cast<UnsignedInt>(self->m_conditionStates.size()),
+						ini->getFilename().str(),
+						ini->getLineNum());
 					throw INI_INVALID_DATA;
 				}
 
@@ -1520,6 +1551,15 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			if (firstKey == secondKey)
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: You may not declare a transition between two identical states"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: TransitionConditionState cannot declare a transition between identical states. FirstState='%s', SecondState='%s', ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					firstNm.str(),
+					secondNm.str(),
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -1549,6 +1589,13 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			if (self->m_conditionStates.empty())
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: AliasConditionState must refer to the previous state!"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: AliasConditionState cannot be defined because there is no previous ConditionState. ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -1568,13 +1615,28 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 			if (conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates))
 			{
-				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
+				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", thingTemplateName));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: AliasConditionState contains condition bits already specified in IgnoreConditionStates. ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
 			if (doesStateExist(self->m_conditionStates, conditionsYes))
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: duplicate condition states are not currently allowed"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Duplicate AliasConditionState detected. ThingTemplate='%s', ExistingConditionStateCount=%u, INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					static_cast<UnsignedInt>(self->m_conditionStates.size()),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -1582,6 +1644,14 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			if (!conditionsYes.any() && self->m_defaultState >= 0)
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: you may not specify both a Default state and a Conditions=None state"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: AliasConditionState with Conditions=None cannot be used together with DefaultConditionState. ThingTemplate='%s', DefaultState=%d, INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					self->m_defaultState,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -1622,26 +1692,56 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 			if (conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates))
 			{
-				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
+				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", thingTemplateName));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: ConditionState contains condition bits already specified in IgnoreConditionStates. ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
 			if (self->m_defaultState < 0 && self->m_conditionStates.empty() && conditionsYes.any())
 			{
 				// it doesn't actually NEED to be first, but it does need to be present, and this is the simplest way to enforce...
-				DEBUG_CRASH(("*** ASSET ERROR: when not using DefaultConditionState, the first ConditionState must be for NONE (%s)",TheThingTemplateBeingParsedName.str()));
+				DEBUG_CRASH(("*** ASSET ERROR: when not using DefaultConditionState, the first ConditionState must be for NONE (%s)", thingTemplateName));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: The first ConditionState must be NONE when no DefaultConditionState is defined. ThingTemplate='%s', INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
 			if (!conditionsYes.any() && self->m_defaultState >= 0)
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: you may not specify both a Default state and a Conditions=None state"));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: ConditionState with Conditions=None cannot be used together with DefaultConditionState. ThingTemplate='%s', DefaultState=%d, INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					self->m_defaultState,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
 			if (doesStateExist(self->m_conditionStates, conditionsYes))
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: duplicate condition states are not currently allowed (%s)",info.m_description.str()));
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Duplicate ConditionState detected. ThingTemplate='%s', ExistingConditionStateCount=%u, INIFile='%s', INILine=%d.",
+					thingTemplateName,
+					static_cast<UnsignedInt>(self->m_conditionStates.size()),
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 
@@ -1657,6 +1757,14 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	if (info.m_modelName.isEmpty())
 	{
 		DEBUG_CRASH(("*** ASSET ERROR: you must specify a model name"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: No model name was specified for the model condition state. ThingTemplate='%s', ParseConditionStateType=%d, INIFile='%s', INILine=%d.",
+			thingTemplateName,
+			static_cast<int>(cst),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 	else if (info.m_modelName.isNone())
@@ -1667,12 +1775,29 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	if ((info.m_iniReadFlags & (1<<GOT_IDLE_ANIMS)) && (info.m_iniReadFlags & (1<<GOT_NONIDLE_ANIMS)))
 	{
 		DEBUG_CRASH(("*** ASSET ERROR: you should not specify both Animations and IdleAnimations for the same state"));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Both Animation and IdleAnimation were specified for the same model condition state. ThingTemplate='%s', Model='%s', INIFile='%s', INILine=%d.",
+			thingTemplateName,
+			info.m_modelName.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
 	if ((info.m_iniReadFlags & (1<<GOT_IDLE_ANIMS)) && (info.m_mode != RenderObjClass::ANIM_MODE_ONCE && info.m_mode != RenderObjClass::ANIM_MODE_ONCE_BACKWARDS))
 	{
-		DEBUG_CRASH(("*** ASSET ERROR: Idle Anims should always use ONCE or ONCE_BACKWARDS (%s)",TheThingTemplateBeingParsedName.str()));
+		DEBUG_CRASH(("*** ASSET ERROR: Idle Anims should always use ONCE or ONCE_BACKWARDS (%s)", thingTemplateName));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: IdleAnimation must use ONCE or ONCE_BACKWARDS animation mode. ThingTemplate='%s', Model='%s', AnimationMode=%d, INIFile='%s', INILine=%d.",
+			thingTemplateName,
+			info.m_modelName.str(),
+			static_cast<int>(info.m_mode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -1691,18 +1816,45 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		if (info.m_iniReadFlags & (1<<GOT_IDLE_ANIMS))
 		{
 			DEBUG_CRASH(("*** ASSET ERROR: Transition States should not specify Idle anims"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: TransitionConditionState must not specify IdleAnimation. ThingTemplate='%s', Model='%s', INIFile='%s', INILine=%d.",
+				thingTemplateName,
+				info.m_modelName.str(),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 
 		if (info.m_mode != RenderObjClass::ANIM_MODE_ONCE && info.m_mode != RenderObjClass::ANIM_MODE_ONCE_BACKWARDS)
 		{
 			DEBUG_CRASH(("*** ASSET ERROR: Transition States should always use ONCE or ONCE_BACKWARDS"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: TransitionConditionState must use ONCE or ONCE_BACKWARDS animation mode. ThingTemplate='%s', Model='%s', AnimationMode=%d, INIFile='%s', INILine=%d.",
+				thingTemplateName,
+				info.m_modelName.str(),
+				static_cast<int>(info.m_mode),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 
 		if (info.m_transitionKey != NAMEKEY_INVALID || info.m_allowToFinishKey != NAMEKEY_INVALID)
 		{
 			DEBUG_CRASH(("*** ASSET ERROR: Transition States must not have transition keys or m_allowToFinishKey"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: TransitionConditionState must not specify TransitionKey or WaitForStateToFinishIfPossible. ThingTemplate='%s', Model='%s', TransitionKey=%u, AllowToFinishKey=%u, INIFile='%s', INILine=%d.",
+				thingTemplateName,
+				info.m_modelName.str(),
+				static_cast<UnsignedInt>(info.m_transitionKey),
+				static_cast<UnsignedInt>(info.m_allowToFinishKey),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 
@@ -1773,6 +1925,18 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	if (!info)
 	{
 		DEBUG_CRASH(("*** ASSET ERROR: all draw modules must have an IDLE state"));
+
+		const Drawable* drawable = getDrawable();
+		const Object* object = drawable ? drawable->getObject() : nullptr;
+		const ThingTemplate* thingTemplate = object ? object->getTemplate() : nullptr;
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: W3DModelDraw could not find a valid default or IDLE model condition state. ThingTemplate='%s', ThingPointer=%p, DrawablePointer=%p, ObjectPointer=%p.",
+			thingTemplate ? thingTemplate->getName().str() : "Unknown",
+			thing,
+			drawable,
+			object);
+
 		throw INI_INVALID_DATA;
 	}
 

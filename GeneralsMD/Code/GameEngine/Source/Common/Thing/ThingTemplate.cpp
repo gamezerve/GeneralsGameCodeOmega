@@ -51,6 +51,7 @@
 #include "Common/ProductionPrerequisite.h"
 #include "Common/Radar.h"
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Science.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
@@ -369,6 +370,17 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 												moduleTag.str(),
 												nugget->first.str()) );
 
+		REBORN_LOG(
+			"INI_INVALID_DATA: Duplicate module tag '%s' detected while adding behavior module '%s' to ThingTemplate '%s'. ExistingModule='%s', InterfaceMask=%d, Inheritable=%d, OverrideableByLikeKind=%d.",
+			moduleTag.str(),
+			name.str(),
+			thingTemplate->getName().str(),
+			nugget->first.str(),
+			interfaceMask,
+			static_cast<int>(inheritable),
+			static_cast<int>(overrideableByLikeKind));
+
+
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
 	}
@@ -387,6 +399,17 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 												moduleTag.str(),
 												nugget->first.str()) );
 
+		REBORN_LOG(
+			"INI_INVALID_DATA: Duplicate module tag '%s' detected while adding draw module '%s' to ThingTemplate '%s'. ExistingModule='%s', InterfaceMask=%d, Inheritable=%d, OverrideableByLikeKind=%d.",
+			moduleTag.str(),
+			name.str(),
+			thingTemplate->getName().str(),
+			nugget->first.str(),
+			interfaceMask,
+			static_cast<int>(inheritable),
+			static_cast<int>(overrideableByLikeKind));
+
+
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
 	}
@@ -404,6 +427,17 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 												moduleTag.str(),
 												moduleTag.str(),
 												nugget->first.str()) );
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Duplicate module tag '%s' detected while adding client update module '%s' to ThingTemplate '%s'. ExistingModule='%s', InterfaceMask=%d, Inheritable=%d, OverrideableByLikeKind=%d.",
+			moduleTag.str(),
+			name.str(),
+			thingTemplate->getName().str(),
+			nugget->first.str(),
+			interfaceMask,
+			static_cast<int>(inheritable),
+			static_cast<int>(overrideableByLikeKind));
+
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
 	}
@@ -589,6 +623,15 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 		DEBUG_CRASH(( "[LINE: %d - FILE: '%s'] Module tag not found for module '%s' on thing template '%s'.  Module tags are required and must be unique for all modules within an object definition",
 									ini->getLineNum(), ini->getFilename().str(),
 									tokenStr.str(), self->getName().str() ));
+
+		REBORN_LOG(
+			"INI parse error: Module tag is missing for module '%s' on ThingTemplate '%s'. Module tags are required and must be unique. ModuleType=%d, INIFile='%s', INILine=%d.",
+			tokenStr.str(),
+			self->getName().str(),
+			static_cast<int>(type),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw;
 
 	}
@@ -604,6 +647,17 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 		if ((interfaceMask & (MODULEINTERFACE_BODY)) == 0)
 		{
 			DEBUG_CRASH(("Only Body allowed here"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Module '%s' on ThingTemplate '%s' does not implement the required Body interface. ModuleTag='%s', ModuleType=%d, InterfaceMask=%d, INIFile='%s', INILine=%d.",
+				tokenStr.str(),
+				self->getName().str(),
+				moduleTagStr.str(),
+				static_cast<int>(type),
+				interfaceMask,
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 	}
@@ -613,6 +667,17 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 		if ((interfaceMask & (MODULEINTERFACE_BODY)) != 0)
 		{
 			DEBUG_CRASH(("No Body allowed here"));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Body module '%s' is not allowed in this module section for ThingTemplate '%s'. ModuleTag='%s', ModuleType=%d, InterfaceMask=%d, INIFile='%s', INILine=%d.",
+				tokenStr.str(),
+				self->getName().str(),
+				moduleTagStr.str(),
+				static_cast<int>(type),
+				interfaceMask,
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 	}
@@ -628,6 +693,17 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 		{
 			DEBUG_CRASH(("[LINE: %d - FILE: '%s'] You must use AddModule to add modules in override INI files.",
 				ini->getLineNum(), ini->getFilename().str(), self->getName().str()));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Override INI attempted to add module '%s' without AddModule on ThingTemplate '%s'. ModuleTag='%s', ModuleParsingMode=%d, LoadType=%d, INIFile='%s', INILine=%d.",
+				tokenStr.str(),
+				self->getName().str(),
+				moduleTagStr.str(),
+				static_cast<int>(self->m_moduleParsingMode),
+				static_cast<int>(ini->getLoadType()),
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 		}
 	}
@@ -648,6 +724,17 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 	{
 		DEBUG_CRASH(("[LINE: %d - FILE: '%s'] ReplaceModule must replace modules with another module of the same type, but you are attempting to replace a %s with a %s for Object %s.",
 			ini->getLineNum(), ini->getFilename().str(), self->m_moduleBeingReplacedName.str(), tokenStr.str(), self->getName().str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: ReplaceModule type mismatch on ThingTemplate '%s'. ExistingModuleType='%s', ReplacementModuleType='%s', ExistingModuleTag='%s', ReplacementModuleTag='%s', INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			self->m_moduleBeingReplacedName.str(),
+			tokenStr.str(),
+			self->m_moduleBeingReplacedTag.str(),
+			moduleTagStr.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -657,6 +744,16 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 	{
 		DEBUG_CRASH(("[LINE: %d - FILE: '%s'] ReplaceModule must specify a new, unique tag for the replaced module, but you are not doing so for %s (%s) for Object %s.",
 			ini->getLineNum(), ini->getFilename().str(), moduleTagStr.str(), self->m_moduleBeingReplacedName.str(), self->getName().str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: ReplaceModule reused the existing module tag '%s' on ThingTemplate '%s'. ReplacedModuleType='%s', ReplacementModuleType='%s', INIFile='%s', INILine=%d.",
+			moduleTagStr.str(),
+			self->getName().str(),
+			self->m_moduleBeingReplacedName.str(),
+			tokenStr.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -805,7 +902,16 @@ void ThingTemplate::parseAddModule(INI *ini, void *instance, void *store, const 
 
 	ModuleParseMode oldMode = (ModuleParseMode)self->m_moduleParsingMode;
 	if (oldMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: AddModule cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(oldMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	self->m_moduleParsingMode = MODULEPARSE_ADD_REMOVE_REPLACE;
 
@@ -823,7 +929,16 @@ void ThingTemplate::parseRemoveModule(INI *ini, void *instance, void *store, con
 
 	ModuleParseMode oldMode = (ModuleParseMode)self->m_moduleParsingMode;
 	if (oldMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: RemoveModule cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(oldMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	self->m_moduleParsingMode = MODULEPARSE_ADD_REMOVE_REPLACE;
 
@@ -833,6 +948,14 @@ void ThingTemplate::parseRemoveModule(INI *ini, void *instance, void *store, con
 	if (!removed)
 	{
 		DEBUG_ASSERTCRASH(removed, ("RemoveModule %s was not found for %s. The game will crash now!",modToRemove, self->getName().str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: RemoveModule '%s' was not found for ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			modToRemove,
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -848,7 +971,16 @@ void ThingTemplate::parseReplaceModule(INI *ini, void *instance, void *store, co
 
 	ModuleParseMode oldMode = (ModuleParseMode)self->m_moduleParsingMode;
 	if (oldMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: ReplaceModule cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(oldMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	self->m_moduleParsingMode = MODULEPARSE_ADD_REMOVE_REPLACE;
 
@@ -859,6 +991,14 @@ void ThingTemplate::parseReplaceModule(INI *ini, void *instance, void *store, co
 	{
 		DEBUG_CRASH(("[LINE: %d - FILE: '%s'] ReplaceModule %s was not found for %s; cannot continue.",
 															ini->getLineNum(), ini->getFilename().str(), modToRemove, self->getName().str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: ReplaceModule '%s' was not found for ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			modToRemove,
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -880,7 +1020,16 @@ void ThingTemplate::parseInheritableModule(INI *ini, void *instance, void *store
 
 	ModuleParseMode oldMode = (ModuleParseMode)self->m_moduleParsingMode;
 	if (oldMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: InheritableModule cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(oldMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	self->m_moduleParsingMode = MODULEPARSE_INHERITABLE;
 
@@ -899,7 +1048,16 @@ void ThingTemplate::OverrideableByLikeKind(INI *ini, void *instance, void *store
 
 	ModuleParseMode oldMode = (ModuleParseMode)self->m_moduleParsingMode;
 	if (oldMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideableByLikeKind cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(oldMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	self->m_moduleParsingMode = MODULEPARSE_OVERRIDEABLE_BY_LIKE_KIND;
 

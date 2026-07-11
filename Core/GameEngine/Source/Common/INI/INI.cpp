@@ -38,6 +38,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameAudio.h"
+#include "Common/RebornLog.h"
 #include "Common/Science.h"
 #include "Common/SpecialPower.h"
 #include "Common/ThingFactory.h"
@@ -221,6 +222,14 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 	// Expect to open and load at least one file.
 	if (filesRead == 0)
 	{
+		REBORN_LOG(
+			"INI_CANT_OPEN_FILE: No INI files could be found or loaded. RequestedPath='%s', ExpectedINIFile='%s', ExpectedINIDirectory='%s', LoadType=%d, SearchSubdirectories=%d.",
+			fileDirName.str(),
+			iniFile.str(),
+			iniDir.str(),
+			static_cast<int>(loadType),
+			static_cast<int>(subdirs));
+
 		throw INI_CANT_OPEN_FILE;
 	}
 
@@ -238,8 +247,15 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 
 	// sanity
 	if( dirName.isEmpty() )
+	{
+		REBORN_LOG(
+			"INI_INVALID_DIRECTORY: INI::loadDirectory received an invalid directory name. Directory='%s', LoadType=%d, Subdirs=%d.",
+			dirName.str(),
+			static_cast<int>(loadType),
+			static_cast<int>(subdirs));
+	
 		throw INI_INVALID_DIRECTORY;
-
+	}
 	FilenameList filenameList;
 	dirName.concat('\\');
 	TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
@@ -281,7 +297,15 @@ void INI::prepFile( AsciiString filename, INILoadType loadType )
 	if( m_readBuffer != nullptr )
 	{
 
+		REBORN_LOG(
+			"INI_FILE_ALREADY_OPEN: Cannot open INI file '%s' because another INI file is already open. CurrentINIFile='%s', CurrentINILine=%d, LoadType=%d.",
+			filename.str(),
+			m_filename.str(),
+			m_lineNum,
+			static_cast<int>(loadType));
+
 		DEBUG_CRASH(( "INI::load, cannot open file '%s', file already open", filename.str() ));
+
 		throw INI_FILE_ALREADY_OPEN;
 
 	}
@@ -291,7 +315,13 @@ void INI::prepFile( AsciiString filename, INILoadType loadType )
 	if( file == nullptr )
 	{
 
+		REBORN_LOG(
+			"INI_CANT_OPEN_FILE: Failed to open INI file '%s'. LoadType=%d.",
+			filename.str(),
+			static_cast<int>(loadType));
+
 		DEBUG_CRASH(( "INI::load, cannot open file '%s'", filename.str() ));
+
 		throw INI_CANT_OPEN_FILE;
 
 	}
@@ -402,6 +432,15 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 
 					} catch (...) {
 						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
+
+						REBORN_LOG(
+							"INI parse error: An exception occurred while parsing block '%s'. INIFile='%s', INILine=%d, SourceLine='%s', LoadType=%d.",
+							token ? token : "NULL",
+							m_filename.str(),
+							getLineNum(),
+							currentLine.str(),
+							static_cast<int>(loadType));
+
 						char buff[1024];
 						snprintf(buff, ARRAY_SIZE(buff), "Error parsing INI file '%s' (Line: '%s')\n",
 							m_filename.str(), currentLine.str());
@@ -416,6 +455,15 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 				{
 					DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Unknown block '%s'",
 														 getLineNum(), getFilename().str(), token ) );
+
+					REBORN_LOG(
+						"INI_UNKNOWN_TOKEN: Unknown INI block '%s'. INIFile='%s', INILine=%d, SourceLine='%s', LoadType=%d.",
+						token ? token : "NULL",
+						getFilename().str(),
+						getLineNum(),
+						currentLine.str(),
+						static_cast<int>(loadType));
+
 					throw INI_UNKNOWN_TOKEN;
 				}
 
@@ -425,6 +473,12 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 	}
 	catch (...)
 	{
+		REBORN_LOG(
+			"Unhandled INI exception propagated from INI::load. INIFile='%s', INILine=%d, LoadType=%d.",
+			m_filename.str(),
+			m_lineNum,
+			static_cast<int>(m_loadType));
+
 		unPrepFile();
 
 		// propagate the exception.
@@ -598,6 +652,14 @@ void INI::parsePositiveNonZeroReal( INI* ini, void * /*instance*/, void *store, 
 	if (*(Real *)store <= 0.0f)
 	{
 		DEBUG_CRASH(("invalid Real value %f -- expected > 0",*(Real*)store));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid Real value %f; expected a value greater than 0. Token='%s', INIFile='%s', INILine=%d.",
+			*(Real*)store,
+			token,
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -667,6 +729,11 @@ void INI::parseBitInInt32( INI *ini, void *instance, void *store, const void* us
 	else
 	{
 		DEBUG_CRASH(("invalid boolean token %s -- expected Yes or No",token));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Invalid boolean token '%s'; expected 'Yes' or 'No'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_DATA;
 		return false;	// keep compiler happy
 	}
@@ -839,8 +906,17 @@ void INI::parseAndTranslateLabel( INI* ini, void * /*instance*/, void *store, co
 
 	// translate
 	UnicodeString translated = TheGameText->fetch( token );
-	if( translated.isEmpty() )
+	if (translated.isEmpty())
+	{
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to translate string label '%s'. The label was not found or returned an empty translation. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	// save the translated text
 	UnicodeString *theString = (UnicodeString *)store;
@@ -887,6 +963,13 @@ void INI::parseMappedImage( INI *ini, void * /*instance*/, void *store, const vo
 	{
 
 		DEBUG_CRASH(( "INI::parseAnim2DTemplate - TheAnim2DCollection is null" ));
+
+		REBORN_LOG(
+			"INI_UNKNOWN_ERROR: TheAnim2DCollection is null while parsing Anim2D template '%s'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_UNKNOWN_ERROR;
 
 	}
@@ -935,6 +1018,12 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 	if( flagList == nullptr || flagList[ 0 ] == nullptr)
 	{
 		DEBUG_ASSERTCRASH( flagList, ("INTERNAL ERROR! parseBitString32: No flag list provided!") );
+
+		REBORN_LOG(
+			"INI_INVALID_NAME_LIST: No flag list was provided to parseBitString32. INIFile='%s', INILine=%d.",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_NAME_LIST;
 	}
 
@@ -949,6 +1038,13 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 			if (foundNormal || foundAddOrSub)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: Token 'NONE' cannot be mixed with normal or +/- operations in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			*bits = 0;
@@ -960,6 +1056,13 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 			if (foundNormal)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A '+' operation cannot be mixed with normal tokens in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			Int bitIndex = INI::scanIndexList(token+1, flagList);	// this throws if the token is not found
@@ -971,6 +1074,13 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 			if (foundNormal)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A '-' operation cannot be mixed with normal tokens in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			Int bitIndex = INI::scanIndexList(token+1, flagList);	// this throws if the token is not found
@@ -982,6 +1092,13 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 			if (foundAddOrSub)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A normal token cannot be mixed with +/- operations in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 
@@ -1009,9 +1126,27 @@ void INI::parseRGBColor( INI* ini, void * /*instance*/, void *store, const void*
 	{
 		colors[i] = scanInt(ini->getNextSubToken(names[i]));
 		if( colors[ i ] < 0 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: RGB color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 		if( colors[ i ] > 255 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: RGB color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 	}
 
 	// assign the color components to the "RGBColor" pointer at 'store'
@@ -1039,6 +1174,12 @@ void INI::parseRGBAColorInt( INI* ini, void * /*instance*/, void *store, const v
 		{
 			if (i < 3)
 			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: Missing required RGBA color component '%s'. INIFile='%s', INILine=%d.",
+					names[i],
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			else
@@ -1052,14 +1193,39 @@ void INI::parseRGBAColorInt( INI* ini, void * /*instance*/, void *store, const v
 			// if present, the token must match.
 			if (stricmp(token, names[i]) != 0)
 			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: Unexpected RGBA color component token '%s'; expected '%s'. INIFile='%s', INILine=%d.",
+					token,
+					names[i],
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			colors[i] = scanInt(ini->getNextToken(ini->getSepsColon()));
 		}
 		if( colors[ i ] < 0 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: RGBA color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 		if( colors[ i ] > 255 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: RGBA color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 	}
 
 	//
@@ -1091,6 +1257,12 @@ void INI::parseColorInt( INI* ini, void * /*instance*/, void *store, const void*
 		{
 			if (i < 3)
 			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: Missing required color component '%s'. INIFile='%s', INILine=%d.",
+					names[i],
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			else
@@ -1104,14 +1276,39 @@ void INI::parseColorInt( INI* ini, void * /*instance*/, void *store, const void*
 			// if present, the token must match.
 			if (stricmp(token, names[i]) != 0)
 			{
+				REBORN_LOG(
+					"INI_INVALID_DATA: Unexpected color component token '%s'; expected '%s'. INIFile='%s', INILine=%d.",
+					token,
+					names[i],
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
 			}
 			colors[i] = scanInt(ini->getNextToken(ini->getSepsColon()));
 		}
 		if( colors[ i ] < 0 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: Color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 		if( colors[ i ] > 255 )
+		{
+			REBORN_LOG(
+				"INI_INVALID_DATA: Color component '%s' has invalid value %d; expected a value between 0 and 255. INIFile='%s', INILine=%d.",
+				names[i],
+				colors[i],
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
+		}
 	}
 
 	//
@@ -1503,6 +1700,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	if( what == nullptr )
 	{
 		DEBUG_CRASH( ("INI::initFromINI - Invalid parameters supplied!") );
+		REBORN_LOG(
+			"INI_INVALID_PARAMS: INI::initFromINIMulti received a null target pointer. ParseTableCount=%d.",
+			parseTableList.getCount());
 		throw INI_INVALID_PARAMS;
 	}
 
@@ -1554,6 +1754,14 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
 
+							REBORN_LOG(
+								"INI parse error: Failed to read field '%s'. INIFile='%s', INILine=%d, ParseTableIndex=%d, Offset=%d, ExtraOffset=%u.",
+								field,
+								INI::getFilename().str(),
+								INI::getLineNum(),
+								ptIdx,
+								offset,
+								parseTableList.getNthExtraOffset(ptIdx));
 
 							char buff[1024];
 							snprintf(buff, ARRAY_SIZE(buff), "[LINE: %d - FILE: '%s'] Error reading field '%s'\n",
@@ -1584,6 +1792,11 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 			done = TRUE;
 			DEBUG_CRASH( ("Error parsing block '%s', in INI file '%s'.  Missing '%s' token",
 												 m_curBlockStart, getFilename().str(), getEndToken()) );
+			REBORN_LOG(
+				"INI_MISSING_END_TOKEN: Reached end of file before finding token '%s'. INIFile='%s', INILine=%d.",
+				getEndToken(),
+				getFilename().str(),
+				getLineNum());
 			throw INI_MISSING_END_TOKEN;
 
 		}
@@ -1601,7 +1814,13 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	const char* token = ::strtok(nullptr, seps);
 
 	if (!token)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected another token, but no token was found. Separators='%s'.",
+			seps ? seps : "NULL");
+
 		throw INI_INVALID_DATA;
+	}
 
 #ifdef RTS_DEBUG
 	RecordThingTemplateUpgradeToken(token);
@@ -1648,12 +1867,26 @@ Type scanType(std::string_view token)
 		token.remove_prefix(1);
 	}
 
+	if (token.empty())
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Numeric token contains only a plus sign.");
+
+		throw INI_INVALID_DATA;
+	}
+
 	// Unlike sscanf, std::from_chars cannot parse "-" as unsigned integer.
 	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
 	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
 
 	if (ec != std::errc{})
 	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to parse numeric token '%.*s'. ErrorCode=%d.",
+			static_cast<int>(token.size()),
+			token.data(),
+			static_cast<int>(ec));
+
 		throw INI_INVALID_DATA;
 	}
 
@@ -1670,11 +1903,27 @@ Type scanType(std::string_view token)
 #else
 	Int value;
 	if (sscanf( token, "%d", &value ) != 1)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to parse integer token '%s'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_DATA;
+	}
 
 #if USE_STD_FROM_CHARS_PARSING == -1
-	if (value != scanType<Int>(token))
+	if (value != scanType<Int>(token);
+
+	if (value != parsedValue)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Integer parsing mismatch for token '%s'. sscanfValue=%d, fromCharsValue=%d.",
+			token ? token : "NULL",
+			value,
+			parsedValue);
+
 		throw INI_INVALID_DATA;
+	}
 #endif
 
 	return value;
@@ -1689,11 +1938,27 @@ Type scanType(std::string_view token)
 #else
 	UnsignedInt value;
 	if (sscanf( token, "%u", &value ) != 1)	// unsigned int is %u, not %d
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to parse unsigned integer token '%s'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_DATA;
+	}
 
 #if USE_STD_FROM_CHARS_PARSING == -1
-	if (value != scanType<UnsignedInt>(token))
+	UnsignedInt parsedValue = scanType<UnsignedInt>(token);
+
+	if (value != parsedValue)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unsigned integer parsing mismatch for token '%s'. sscanfValue=%u, fromCharsValue=%u.",
+			token ? token : "NULL",
+			value,
+			parsedValue);
+
 		throw INI_INVALID_DATA;
+	}
 #endif
 
 	return value;
@@ -1708,11 +1973,27 @@ Type scanType(std::string_view token)
 #else
 	Real value;
 	if (sscanf( token, "%f", &value ) != 1)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Failed to parse real token '%s'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_DATA;
+	}
 
 #if USE_STD_FROM_CHARS_PARSING == -1
-	if (value != scanType<Real>(token))
+	Real parsedValue = scanType<Real>(token);
+
+	if (value != parsedValue)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Real parsing mismatch for token '%s'. sscanfValue=%f, fromCharsValue=%f.",
+			token ? token : "NULL",
+			value,
+			parsedValue);
+
 		throw INI_INVALID_DATA;
+	}
 #endif
 
 	return value;
@@ -1732,6 +2013,11 @@ Type scanType(std::string_view token)
 	{
 
 		DEBUG_CRASH( ("INTERNAL ERROR! scanIndexList, invalid name list") );
+
+		REBORN_LOG(
+			"INI_INVALID_NAME_LIST: Invalid or empty name list provided to scanIndexList. Token='%s'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_NAME_LIST;
 
 	}
@@ -1747,6 +2033,11 @@ Type scanType(std::string_view token)
 	}
 
 	DEBUG_CRASH(("token %s is not a valid member of the index list",token));
+
+	REBORN_LOG(
+		"INI_INVALID_DATA: Token '%s' is not a valid member of the index list.",
+		token ? token : "NULL");
+
 	throw INI_INVALID_DATA;
 	return 0;	// never executed, but keeps compiler happy
 
@@ -1757,6 +2048,11 @@ Type scanType(std::string_view token)
 	if( lookupList == nullptr || lookupList[ 0 ].name == nullptr )
 	{
 		DEBUG_CRASH( ("INTERNAL ERROR! scanLookupList, invalid name list") );
+
+		REBORN_LOG(
+			"INI_INVALID_NAME_LIST: Invalid or empty lookup list provided to scanLookupList. Token='%s'.",
+			token ? token : "NULL");
+
 		throw INI_INVALID_NAME_LIST;
 	}
 
@@ -1771,6 +2067,11 @@ Type scanType(std::string_view token)
 
 	DEBUG_CRASH(("token %s is not a valid member of the lookup list",token));
 	throw INI_INVALID_DATA;
+
+	REBORN_LOG(
+		"INI_INVALID_DATA: Token '%s' is not a valid member of the lookup list.",
+		token ? token : "NULL");
+
 	return 0;	// never executed, but keeps compiler happy
 
 }
@@ -1780,7 +2081,14 @@ const char* INI::getNextSubToken(const char* expected)
 {
 	const char* token = getNextToken(getSepsColon());
 	if (stricmp(token, expected) != 0)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unexpected sub-token '%s'; expected '%s'.",
+			token ? token : "NULL",
+			expected ? expected : "NULL");
+
 		throw INI_INVALID_DATA;
+	}
 	return getNextToken(getSepsColon());
 }
 
@@ -1884,6 +2192,12 @@ void INI::parseVeterancyLevelFlags(INI* ini, void* /*instance*/, void* store, co
 		}
 		else
 		{
+			REBORN_LOG(
+				"INI_UNKNOWN_TOKEN: Invalid veterancy level flag token '%s'. Expected ALL, NONE, or a veterancy level prefixed with '+' or '-'. INIFile='%s', INILine=%d.",
+				token ? token : "NULL",
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_UNKNOWN_TOKEN;
 		}
 	}
@@ -1934,6 +2248,13 @@ void INI::parseDamageTypeFlags(INI* ini, void* /*instance*/, void* store, const 
 			flags = clearDamageTypeFlag(flags, dt);
 			continue;
 		}
+
+		REBORN_LOG(
+			"INI_UNKNOWN_TOKEN: Invalid damage type flag token '%s'. Expected ALL, NONE, or a damage type prefixed with '+' or '-'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_UNKNOWN_TOKEN;
 	}
 	*(DamageTypeFlags*)store = flags;
@@ -1968,6 +2289,13 @@ void INI::parseDeathTypeFlags(INI* ini, void* /*instance*/, void* store, const v
 			flags = clearDeathTypeFlag(flags, dt);
 			continue;
 		}
+
+		REBORN_LOG(
+			"INI_UNKNOWN_TOKEN: Invalid death type flag token '%s'. Expected ALL, NONE, or a death type prefixed with '+' or '-'. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_UNKNOWN_TOKEN;
 	}
 	*(DeathTypeFlags*)store = flags;

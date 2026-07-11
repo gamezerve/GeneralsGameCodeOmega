@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the Game
+#include "Common/RebornLog.h"
 #include "GameClient/Snow.h"
 #include "GameClient/View.h"
 
@@ -135,7 +136,15 @@ void INI::parseWeatherDefinition( INI *ini )
 		wsOverride->markAsOverride();
 
 		ws->friend_getFinalOverride()->setNextOverride(wsOverride);
-	} else {
+	}
+	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: WeatherSetting is already defined and the current load type does not allow overrides. LoadType=%d, INIFile='%s', INILine=%d.",
+			static_cast<int>(ini->getLoadType()),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 

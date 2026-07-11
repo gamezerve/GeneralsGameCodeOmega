@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "GameClient/TerrainRoads.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -55,6 +56,14 @@ void INI::parseTerrainBridgeDefinition( INI* ini )
 		// sanity
 		DEBUG_ASSERTCRASH( bridge->isBridge(), ("Redefining road '%s' as a bridge!",
 											 bridge->getName().str()) );
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Terrain entry '%s' is already defined and cannot be redefined as a bridge. ExistingIsBridge=%d, INIFile='%s', INILine=%d.",
+			bridge->getName().str(),
+			static_cast<int>(bridge->isBridge()),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}

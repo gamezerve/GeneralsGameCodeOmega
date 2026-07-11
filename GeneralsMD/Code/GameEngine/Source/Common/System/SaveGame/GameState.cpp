@@ -39,6 +39,7 @@
 #include "Common/PlayerList.h"
 #include "Common/PlayerTemplate.h" // Reborn
 #include "Common/RandomValue.h"
+#include "Common/RebornLog.h"
 #include "Common/Radar.h"
 #include "Common/Team.h"
 #include "Common/WellKnownKeys.h"

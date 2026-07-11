@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Radar.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
@@ -110,6 +111,13 @@ static void parseTimeAndLocationInfo( INI *ini, void *instance,
 	{
 
 		DEBUG_CRASH(( "Expected 'Delay' token, found '%s'", token ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'Delay' but found '%s' while parsing bridge time and location data. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -127,6 +135,14 @@ static void parseTimeAndLocationInfo( INI *ini, void *instance,
 		{
 
 			DEBUG_CRASH(( "Expected 'Bone' token, found '%s'", token ));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Expected optional token 'Bone' but found '%s' while parsing bridge time and location data. Delay=%u, INIFile='%s', INILine=%d.",
+				token,
+				timeAndLocationInfo->delay,
+				ini->getFilename().str(),
+				ini->getLineNum());
+
 			throw INI_INVALID_DATA;
 
 		}
@@ -160,6 +176,13 @@ static void parseTimeAndLocationInfo( INI *ini, void *instance,
 	{
 
 		DEBUG_CRASH(( "Expected 'FX' token, found '%s'", token ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'FX' but found '%s' while parsing BridgeBehavior FX data. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -201,6 +224,13 @@ static void parseTimeAndLocationInfo( INI *ini, void *instance,
 	{
 
 		DEBUG_CRASH(( "Expected 'OCL' token, found '%s'", token ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Expected token 'OCL' but found '%s' while parsing BridgeBehavior OCL data. INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}

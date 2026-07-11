@@ -34,6 +34,7 @@
 #include "Common/GameState.h"
 #include "Common/INI.h"
 #include "Common/PerfTimer.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingFactory.h"
 #include "Common/GameLOD.h"
 #include "Common/Xfer.h"
@@ -2828,7 +2829,20 @@ void ParticleSystemTemplate::parseRandomRGBColor( INI* ini, void *instance,
 
 			// check to see if it's within range
 			if( colors[j][i] < -255 || colors[j][i] > 255 )
+			{
+				const char* componentNames[3] = { "Red", "Green", "Blue" };
+				const char* rangeNames[2] = { "Low", "High" };
+
+				REBORN_LOG(
+					"INI_INVALID_DATA: Particle random RGB component '%s' %s value %d is outside the valid range -255 to 255. INIFile='%s', INILine=%d.",
+					componentNames[i],
+					rangeNames[j],
+					colors[j][i],
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_DATA;
+			}
 
 		}
 	}

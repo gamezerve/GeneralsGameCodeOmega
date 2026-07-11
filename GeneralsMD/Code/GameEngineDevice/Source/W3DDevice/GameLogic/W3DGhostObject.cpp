@@ -33,6 +33,7 @@
 #include "Common/Debug.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/RebornLog.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
 #include "Common/GlobalData.h"
@@ -664,6 +665,14 @@ void W3DGhostObject::xfer( Xfer *xfer )
 		if( snapshotCount == 0 && m_parentSnapshots[ i ] != nullptr )
 		{
 			DEBUG_CRASH(( "W3DGhostObject::xfer - m_parentSnapshots[ %d ] has data present but the count from the xfer stream is empty", i ));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Snapshot count from the xfer stream is zero, but m_parentSnapshots[%d] already contains data. XferMode=%d, DrawableID=%u, ShroudStatusObjectID=%u.",
+				i,
+				static_cast<int>(xfer->getXferMode()),
+				static_cast<UnsignedInt>(drawableID),
+				static_cast<UnsignedInt>(m_drawableInfo.m_shroudStatusObjectID));
+
 			throw INI_INVALID_DATA;
 		}
 

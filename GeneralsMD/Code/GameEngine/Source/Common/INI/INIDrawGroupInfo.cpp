@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "GameClient/DrawGroupInfo.h"
 
 void parseInt( INI* ini, void * /*instance*/, void *store, const void* userData )
@@ -83,6 +84,12 @@ const FieldParse DrawGroupInfo::s_fieldParseTable[] =
 /*static */ void INI::parseDrawGroupNumberDefinition(INI* ini)
 {
 	if (!TheDrawGroupInfo) {
+
+		REBORN_LOG(
+			"INI_UNKNOWN_ERROR: TheDrawGroupInfo is null while parsing a DrawGroup definition. INIFile='%s', INILine=%d.",
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_UNKNOWN_ERROR;
 	}
 

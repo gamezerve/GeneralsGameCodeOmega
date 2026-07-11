@@ -31,6 +31,7 @@
 
 #include "Common/BitFlags.h"
 #include "Common/INI.h"
+#include "Common/RebornLog.h"
 #include "Common/Xfer.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -81,6 +82,13 @@ void BitFlags<NUMBITS, TAG>::parse(INI* ini, AsciiString* str)
 			if (foundNormal || foundAddOrSub)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: Token 'NONE' cannot be mixed with normal or +/- operations in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			clear();
@@ -92,6 +100,13 @@ void BitFlags<NUMBITS, TAG>::parse(INI* ini, AsciiString* str)
 			if (foundNormal)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A '+' operation cannot be mixed with normal tokens in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			Int bitIndex = INI::scanIndexList(token+1, s_bitNameList);	// this throws if the token is not found
@@ -103,6 +118,13 @@ void BitFlags<NUMBITS, TAG>::parse(INI* ini, AsciiString* str)
 			if (foundNormal)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A '-' operation cannot be mixed with normal tokens in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 			Int bitIndex = INI::scanIndexList(token+1, s_bitNameList);	// this throws if the token is not found
@@ -114,6 +136,13 @@ void BitFlags<NUMBITS, TAG>::parse(INI* ini, AsciiString* str)
 			if (foundAddOrSub)
 			{
 				DEBUG_CRASH(("you may not mix normal and +- ops in bitstring lists"));
+
+				REBORN_LOG(
+					"INI_INVALID_NAME_LIST: A normal token cannot be mixed with +/- operations in a bitstring list. Token='%s', INIFile='%s', INILine=%d.",
+					token,
+					ini->getFilename().str(),
+					ini->getLineNum());
+
 				throw INI_INVALID_NAME_LIST;
 			}
 

@@ -29,6 +29,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/RebornLog.h"
 #include "Common/Xfer.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/GhostObject.h"
@@ -91,6 +92,14 @@ void GhostObject::xfer( Xfer *xfer )
 		if( parentObjectID != INVALID_ID && m_parentObject == nullptr )
 		{
 			DEBUG_CRASH(( "GhostObject::xfer - Unable to connect m_parentObject" ));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: GhostObject could not reconnect its parent object while loading. ParentObjectID=%u, XferVersion=%u, XferMode=%d, GhostObjectPointer=%p.",
+				static_cast<UnsignedInt>(parentObjectID),
+				static_cast<UnsignedInt>(version),
+				static_cast<int>(xfer->getXferMode()),
+				this);
+
 			throw INI_INVALID_DATA;
 		}
 	}

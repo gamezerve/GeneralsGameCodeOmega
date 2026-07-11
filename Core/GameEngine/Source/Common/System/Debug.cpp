@@ -61,6 +61,7 @@
 #include "Common/CommandLine.h"
 #include "Common/Debug.h"
 #include "Common/CRCDebug.h"
+#include "Common/RebornLog.h"
 #include "Common/UnicodeString.h"
 #include "GameClient/ClientInstance.h"
 #include "GameClient/GameText.h"
@@ -752,6 +753,11 @@ static void TriggerMiniDump()
 
 void ReleaseCrash(const char *reason)
 {
+	REBORN_LOG(
+		"RELEASE_CRASH: ReleaseCrash was triggered. Reason='%s', LastError='%s'.",
+		reason ? reason : "NULL",
+		g_LastErrorDump.str());
+
 	/// do additional reporting on the crash, if possible
 
 	if (!DX8Wrapper_IsWindowed) {
@@ -832,6 +838,12 @@ void ReleaseCrash(const char *reason)
 
 void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 {
+	REBORN_LOG(
+		"RELEASE_CRASH_LOCALIZED: ReleaseCrashLocalized was triggered. PromptLabel='%s', MessageLabel='%s', LastError='%s'.",
+		p.str(),
+		m.str(),
+		g_LastErrorDump.str());
+
 	if (!TheGameText) {
 		ReleaseCrash(m.str());
 		// This won't ever return

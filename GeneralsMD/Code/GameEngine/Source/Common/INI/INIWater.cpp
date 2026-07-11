@@ -34,6 +34,7 @@
 
 #include "Common/INI.h"
 #include "Common/GameType.h"
+#include "Common/RebornLog.h"
 
 #include "GameClient/TerrainVisual.h"
 #include "GameClient/Water.h"
@@ -78,7 +79,15 @@ void INI::parseWaterSettingDefinition( INI* ini )
 
 	// check for no time of day match
 	if( waterSetting == nullptr )
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: WaterSetting name '%s' does not match any valid time-of-day entry. INIFile='%s', INILine=%d.",
+			name.str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
+	}
 
 	// parse the data
 	ini->initFromINI( waterSetting, waterSetting->getFieldParse() );
@@ -99,7 +108,15 @@ void INI::parseWaterTransparencyDefinition( INI *ini )
 		wtOverride->markAsOverride();
 
 		wt->friend_getFinalOverride()->setNextOverride(wtOverride);
-	} else {
+	}
+	else
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: WaterTransparency is already defined and the current load type does not allow overrides. LoadType=%d, INIFile='%s', INILine=%d.",
+			static_cast<int>(ini->getLoadType()),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 	}
 

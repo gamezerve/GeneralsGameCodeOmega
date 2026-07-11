@@ -44,6 +44,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ProductionPrerequisite.h"
+#include "Common/RebornLog.h"
 #include "Common/SpecialPower.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
@@ -1791,6 +1792,13 @@ void CommandButton::parseCommand( INI* ini, void *instance, void *store, const v
 
 	}
 
+	REBORN_LOG(
+		"INI_INVALID_DATA: Unknown GUI command token '%s'. INIFile='%s', INILine=%d.",
+		token ? token : "NULL",
+		ini->getFilename().str(),
+		ini->getLineNum());
+
+
 	// if we're here the command was not found
 	throw INI_INVALID_DATA;
 
@@ -2075,6 +2083,14 @@ void CommandSet::parseCommandButton( INI* ini, void *instance, void *store, cons
 
 		DEBUG_CRASH(( "[LINE: %d - FILE: '%s'] Unknown command '%s' found in command set",
 								  ini->getLineNum(), ini->getFilename().str(), token ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unknown CommandButton '%s' referenced by a CommandSet. Slot=%d, INIFile='%s', INILine=%d.",
+			token ? token : "NULL",
+			static_cast<int>((Int)userData) + 1,
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 	}
@@ -3392,6 +3408,14 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 		//So, I (KM) have added this assert to notify in case of two same-name
 		//command set.
 		DEBUG_CRASH(( "[LINE: %d in '%s'] Duplicate commandset %s found!", ini->getLineNum(), ini->getFilename().str(), name.str() ));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Duplicate CommandSet definition '%s'. LoadType=%d, INIFile='%s', INILine=%d.",
+			name.str(),
+			static_cast<int>(ini->getLoadType()),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
 		throw INI_INVALID_DATA;
 
 		//@todo SUPPORT OVERRIDES -- JM
