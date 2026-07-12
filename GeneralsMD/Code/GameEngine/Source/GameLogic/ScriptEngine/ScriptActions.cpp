@@ -991,7 +991,16 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 	for (Waypoint *way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext()) {
 		if (way->getName() == waypoint) {
 			Coord3D destination = *way->getLocation();
-			TheTacticalView->cameraModFinalLookToward(&destination);
+			if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA01\\GLA01.map") == 0 &&
+				waypoint == "Camera Dam Over Wave Look") // Reborn: Fix for GLA01 Ending Dam Sequence
+			{
+				TheTacticalView->cameraLookTowardImmediate(&destination);
+				TheTacticalView->cameraModFinalZoom(1.5f);
+			}
+			else
+			{
+				TheTacticalView->cameraModFinalLookToward(&destination);
+			}
 			break;
 		}
 	}

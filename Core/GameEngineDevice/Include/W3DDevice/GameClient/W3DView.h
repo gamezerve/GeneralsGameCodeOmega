@@ -197,6 +197,7 @@ public:
 	virtual void cameraModFinalPitch(Real finalPitch, Real easeIn, Real easeOut) override;	///< Final pitch for current camera movement.
 	virtual void cameraModLookToward(Coord3D *pLoc) override;								///< Sets a look at point during camera movement.
 	virtual void cameraModFinalLookToward(Coord3D *pLoc) override;						///< Sets a look at point during camera movement.
+	virtual void cameraLookTowardImmediate(const Coord3D* pLoc) override;  ///< Reborn: Fix for GLA01 Ending Dam Sequence. Sets a look at point immediately.
 	virtual void cameraModFinalMoveTo(Coord3D *pLoc) override;			///< Sets a final move to.
 	// (gth) C&C3 animation controlled camera feature
 	virtual void cameraEnableSlaveMode(const AsciiString & thingtemplateName, const AsciiString & boneName) override;

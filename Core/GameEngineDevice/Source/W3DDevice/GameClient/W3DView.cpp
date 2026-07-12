@@ -2856,9 +2856,9 @@ void W3DView::rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, 
 	m_rcInfo.angle.startAngle = m_angle;
 	// TheSuperHackers @todo Investigate if the non Generals code is correct for Zero Hour.
 	// It certainly is incorrect for Generals: Seen in GLA mission 1 opening cut scene.
-#if RTS_GENERALS
-	m_rcInfo.angle.endAngle = m_angle + angle;
-#else
+//#if RTS_GENERALS
+//	m_rcInfo.angle.endAngle = m_angle + angle;
+//#else
 	if (IsRebornCampaign())
 	{
 		m_rcInfo.angle.endAngle = m_angle + angle;
@@ -2867,7 +2867,7 @@ void W3DView::rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, 
 	{
 		m_rcInfo.angle.endAngle = angle;
 	}
-#endif
+//#endif
 	m_rcInfo.startTimeMultiplier = m_timeMultiplier;
 	m_rcInfo.endTimeMultiplier = m_timeMultiplier;
 	m_rcInfo.ease.setEaseTimes(easeIn/milliseconds, easeOut/milliseconds);
@@ -3026,6 +3026,35 @@ void W3DView::cameraModFinalMoveTo(Coord3D *pLoc)
 			m_mcwpInfo.waypoints[i] = result;
 		}
 	}
+}
+
+// ------------------------------------------------------------------------------------------------
+/** Reborn: Fix for GLA01 Ending Dam Sequence. Immediately rotates the camera to look toward a specified point. */
+// ------------------------------------------------------------------------------------------------
+void W3DView::cameraLookTowardImmediate(const Coord3D* pLoc)
+{
+	Coord2D curPos = getPosition2D();
+	Vector2 dir(pLoc->x - curPos.x, pLoc->y - curPos.y);
+	const Real dirLength = dir.Length();
+
+	if (dirLength < 0.1f)
+	{
+		return;
+	}
+
+	Real angle = WWMath::Acos(dir.X / dirLength);
+
+	if (dir.Y < 0.0f)
+	{
+		angle = -angle;
+	}
+
+	angle -= PI / 2.0f;
+	normAngle(angle);
+
+	m_angle = angle;
+	m_rcInfo.angle.startAngle = angle;
+	m_rcInfo.angle.endAngle = angle;
 }
 
 // ------------------------------------------------------------------------------------------------
