@@ -344,6 +344,20 @@ static Mission* FindMissionByMapPath(Campaign* campaign, const std::string& mapP
   return nullptr;
 }
 
+static void BringWorldMapLayersToTop()
+{
+  if (worldMapMarker)
+    worldMapMarker->winBringToTop();
+
+  GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+  );
+
+  if (worldMapBorder)
+    worldMapBorder->winBringToTop();
+}
+
 static void UpdateMissionLocation(Int row)
 {
   GameWindow* window = TheWindowManager->winGetWindowFromId(
@@ -438,8 +452,8 @@ static void UpdateWorldMapMarkerPosition(Int row)
     markerY - markerSize.y / 2
   );
 
-  worldMapMarker->winHide(FALSE);
-  worldMapMarker->winBringToTop();
+worldMapMarker->winHide(FALSE);
+BringWorldMapLayersToTop();
 }
 
 static void StartChapterMission(Int row, GameDifficulty diff)
@@ -924,6 +938,74 @@ WindowMsgHandledType ChaptersMenuDividerInput(GameWindow* window, UnsignedInt ms
   return MSG_IGNORED;
 }
 
+static void DrawWorldMapMarkerClipped(GameWindow* window, WinInstanceData* instData)
+{
+  ICoord2D origin;
+  ICoord2D size;
+
+  window->winGetScreenPosition(&origin.x, &origin.y);
+  window->winGetSize(&size.x, &size.y);
+
+  const Image* image;
+
+  if (!BitIsSet(window->winGetStatus(), WIN_STATUS_ENABLED))
+    image = window->winGetDisabledImage(0);
+  else if (BitIsSet(instData->getState(), WIN_STATE_HILITED))
+    image = window->winGetHiliteImage(0);
+  else
+    image = window->winGetEnabledImage(0);
+
+  if (!image)
+    return;
+
+  GameWindow* worldMap = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMap")
+  );
+
+  if (!worldMap)
+    return;
+
+  ICoord2D mapOrigin;
+  ICoord2D mapSize;
+
+  worldMap->winGetScreenPosition(&mapOrigin.x, &mapOrigin.y);
+  worldMap->winGetSize(&mapSize.x, &mapSize.y);
+
+  const Real scaleX = (Real)mapSize.x / 393.0f;
+  const Real scaleY = (Real)mapSize.y / 250.0f;
+
+  const Int insetX = REAL_TO_INT_FLOOR(2.0f * scaleX) < 1 ? 1 : REAL_TO_INT_FLOOR(2.0f * scaleX);
+  const Int insetY = REAL_TO_INT_FLOOR(2.0f * scaleY) < 1 ? 1 : REAL_TO_INT_FLOOR(2.0f * scaleY);
+
+  IRegion2D clipRegion;
+  clipRegion.lo.x = mapOrigin.x + insetX;
+  clipRegion.lo.y = mapOrigin.y + insetY;
+  clipRegion.hi.x = mapOrigin.x + mapSize.x - insetX;
+  clipRegion.hi.y = mapOrigin.y + mapSize.y - insetY;
+
+  TheDisplay->setClipRegion(&clipRegion);
+
+  Int startX = origin.x + instData->m_imageOffset.x;
+  Int startY = origin.y + instData->m_imageOffset.y;
+
+  TheDisplay->drawImage(
+    image,
+    startX,
+    startY,
+    startX + size.x,
+    startY + size.y
+  );
+
+  IRegion2D fullScreenRegion;
+  fullScreenRegion.lo.x = 0;
+  fullScreenRegion.lo.y = 0;
+  fullScreenRegion.hi.x = TheDisplay->getWidth();
+  fullScreenRegion.hi.y = TheDisplay->getHeight();
+
+  TheDisplay->setClipRegion(&fullScreenRegion);
+}
+
 void ChaptersMenuInit(WindowLayout* layout, void* userData)
 {
 
@@ -1097,8 +1179,9 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
     worldMapMarkerLastFrameTime = timeGetTime();
     worldMapMarker->winSetStatus(WIN_STATUS_IMAGE);
     worldMapMarker->winSetEnabledImage(0, worldMapMarkerImages[0]);
+    worldMapMarker->winSetDrawFunc(DrawWorldMapMarkerClipped);
     worldMapMarker->winHide(FALSE);
-    worldMapMarker->winBringToTop();
+    BringWorldMapLayersToTop();
   }
 
   SelectChapter(chapterToSelect);
