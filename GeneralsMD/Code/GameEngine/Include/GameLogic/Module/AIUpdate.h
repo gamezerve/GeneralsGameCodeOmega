@@ -197,6 +197,7 @@ public:
   Bool        m_forbidPlayerCommands;     ///< Should isAllowedToRespondToAiCommands() filter out commands from the player, thus making it ai-controllable only?
   Bool        m_turretsLinked;						///< Turrets are linked together and attack together.
 	UnsignedInt						m_autoAcquireEnemiesWhenIdle;
+	Bool m_allowAutoAcquireToggle; // Reborn: Allow this object to toggle automatic enemy acquisition.
 #ifdef ALLOW_SURRENDER
  	UnsignedInt						m_surrenderDuration;					///< when we surrender, how long we stay surrendered.
 #endif
@@ -589,7 +590,10 @@ public:
 	// while the move is the original command source.  John A.
 	void friend_setLastCommandSource( CommandSourceType source ) {m_lastCommandSource = source;}
 
-	Bool canAutoAcquire() const { return getAIUpdateModuleData()->m_autoAcquireEnemiesWhenIdle; }
+	Bool canAutoAcquire() const { return m_autoAcquireEnemiesWhenIdleEnabled; } // Reborn: Return the runtime automatic enemy acquisition state.
+	Bool isAutoAcquireToggleAllowed() const { return getAIUpdateModuleData()->m_allowAutoAcquireToggle; } // Reborn: Return whether runtime automatic enemy acquisition toggling is allowed.
+	Bool isAutoAcquireEnemiesWhenIdleEnabled() const { return m_autoAcquireEnemiesWhenIdleEnabled; } // Reborn: Return whether automatic enemy acquisition is enabled.
+	void setAutoAcquireEnemiesWhenIdleEnabled(Bool enabled); // Reborn: Set the runtime automatic enemy acquisition state.
 
   Bool canAutoAcquireWhileStealthed() const ;
 
@@ -806,6 +810,7 @@ private:
 	Bool				m_allowedToChase;						///< Allowed to pursue targets.
 	Bool				m_isInUpdate;								///< If true, we are inside our update method.
 	Bool				m_fixLocoInPostProcess;
+	Bool				m_autoAcquireEnemiesWhenIdleEnabled; // Reborn: Runtime automatic enemy acquisition state.
 };
 
 //------------------------------------------------------------------------------------------------------------

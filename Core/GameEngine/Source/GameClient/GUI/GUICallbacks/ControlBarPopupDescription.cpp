@@ -1150,6 +1150,20 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 					}
 				}
 
+				// Reborn: Display the current ECM automatic vehicle-disable state and the result of toggling it.
+				else if (commandButton->getCommandType() == GUI_COMMAND_TOGGLE_AUTO_ACQUIRE)
+				{
+					AIUpdateInterface* ai = selectedObject->getAIUpdateInterface();
+
+					if (ai && ai->isAutoAcquireToggleAllowed())
+					{
+						if (ai->isAutoAcquireEnemiesWhenIdleEnabled())
+							descrip = TheGameText->fetch("CONTROLBAR:ToolTipECMDisableVehicleEnabled");
+						else
+							descrip = TheGameText->fetch("CONTROLBAR:ToolTipECMDisableVehicleDisabled");
+					}
+				}
+
 				//Special case: When building units & buildings, the CanMakeType determines reasons for not being able to buy stuff.
 				//else if( thingTemplate )
 				else if (thingTemplate &&

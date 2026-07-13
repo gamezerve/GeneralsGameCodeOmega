@@ -3905,6 +3905,14 @@ CONTROLBAR:ToolTipECMDisableVehicle
 "Disable enemy vehicle"
 END
 
+CONTROLBAR:ToolTipECMDisableVehicleDisabled
+"Disable enemy vehicle manually.\n\nClick to switch to Automatic mode. The ECM Tank will automatically disable nearby enemy vehicles, temporarily interrupting missile jamming when engaging a target."
+END
+
+CONTROLBAR:ToolTipECMDisableVehicleEnabled
+"Disable enemy vehicle automatically.\n\nClick to switch to Manual mode. The ECM Tank will remain in missile-jamming mode unless explicitly ordered to attack."
+END
+
 CONTROLBAR:TooltipEMPPulse
 "Strong vs. Vehicles"
 END

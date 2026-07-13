@@ -790,6 +790,12 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 		}
 
+		case GUI_COMMAND_TOGGLE_AUTO_ACQUIRE: // Reborn: Toggle automatic enemy acquisition.
+		{
+			TheMessageStream->appendMessage(GameMessage::MSG_REBORN_TOGGLE_AUTO_ACQUIRE);
+			break;
+		}
+
 #ifdef ALLOW_SURRENDER
 		// ------------------------------------------------------------------------------------------------
 		case GUI_COMMAND_POW_RETURN_TO_PRISON:

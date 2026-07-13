@@ -82,6 +82,7 @@ AIUpdateModuleData::AIUpdateModuleData()
 	for (int i = 0; i < MAX_TURRETS; i++)
 		m_turretData[i] = nullptr;
 	m_autoAcquireEnemiesWhenIdle = 0;
+	m_allowAutoAcquireToggle = FALSE; // Reborn: Disable runtime automatic enemy acquisition toggling by default.
 	m_moodAttackCheckRate = LOGICFRAMES_PER_SECOND * 2;
 #ifdef ALLOW_SURRENDER
 	m_surrenderDuration = LOGICFRAMES_PER_SECOND * 120;
@@ -131,6 +132,7 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 		{ "Turret",											AIUpdateModuleData::parseTurret,	nullptr, offsetof(AIUpdateModuleData, m_turretData[0]) },
 		{ "AltTurret",									AIUpdateModuleData::parseTurret,	nullptr, offsetof(AIUpdateModuleData, m_turretData[1]) },
 		{ "AutoAcquireEnemiesWhenIdle", INI::parseBitString32, TheAutoAcquireEnemiesNames, offsetof(AIUpdateModuleData, m_autoAcquireEnemiesWhenIdle) },
+		{ "AllowAutoAcquireToggle",     INI::parseBool,                   nullptr, offsetof(AIUpdateModuleData, m_allowAutoAcquireToggle) }, // Reborn: Allow runtime automatic enemy acquisition toggling.
 		{ "MoodAttackCheckRate",				INI::parseDurationUnsignedInt,		nullptr, offsetof(AIUpdateModuleData, m_moodAttackCheckRate) },
 #ifdef ALLOW_SURRENDER
 		{ "SurrenderDuration",					INI::parseDurationUnsignedInt,		nullptr, offsetof(AIUpdateModuleData, m_surrenderDuration) },
@@ -316,6 +318,8 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 	m_retryPath = FALSE;
 	m_isInUpdate = FALSE;
 	m_fixLocoInPostProcess = FALSE;
+	m_autoAcquireEnemiesWhenIdleEnabled =
+		BitIsSet(getAIUpdateModuleData()->m_autoAcquireEnemiesWhenIdle, AAS_Idle); // Reborn: Initialize the runtime automatic enemy acquisition state from INI.
 
 	m_waypointLoopEnabled = FALSE;
 	m_waypointLoopStartIndex = -1;
@@ -4581,6 +4585,26 @@ void AIUpdateInterface::wakeUpAndAttemptToTarget()
 	m_randomlyOffsetMoodCheck = TRUE;
 }
 
+// ------------------------------------------------------------------------------------------------
+/** Reborn: Set the runtime automatic enemy acquisition state. */
+// ------------------------------------------------------------------------------------------------
+void AIUpdateInterface::setAutoAcquireEnemiesWhenIdleEnabled(Bool enabled)
+{
+	if (m_autoAcquireEnemiesWhenIdleEnabled == enabled)
+		return;
+
+	m_autoAcquireEnemiesWhenIdleEnabled = enabled;
+
+	if (enabled)
+	{
+		wakeUpAndAttemptToTarget();
+	}
+	else if (isAttacking())
+	{
+		privateIdle(CMD_FROM_PLAYER);
+	}
+}
+
 //----------------------------------------------------------------------------------------------
 /**
  * Reset when we should next look for a target. Usually called by *Idle::onEnter
@@ -4627,13 +4651,18 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 
 	const AIUpdateModuleData* d = getAIUpdateModuleData();
 
-	if (calledDuringIdle)
+	//if (calledDuringIdle)
+	//{
+	//	if ((d->m_autoAcquireEnemiesWhenIdle & AAS_Idle) == 0)
+	//	{
+	//		return nullptr;
+	//	}
+	//}
+	if (calledDuringIdle && !m_autoAcquireEnemiesWhenIdleEnabled) // Reborn: Use the runtime automatic enemy acquisition state.
 	{
-		if ((d->m_autoAcquireEnemiesWhenIdle & AAS_Idle) == 0)
-		{
-			return nullptr;
-		}
+		return nullptr;
 	}
+
 
 // srj sez: this should ignore calledDuringIdle, despite what the name of the bit implies.
 	if (isAttacking() && BitIsSet(d->m_autoAcquireEnemiesWhenIdle, AAS_Idle_Not_While_Attacking))
@@ -5176,6 +5205,7 @@ void AIUpdateInterface::crc( Xfer *x )
 	* 3: Removed lastFrameMoved and repulsorCountdown; removed surrender and demoralize variables
 	* 4: Read m_curLocomotorSet from ini
 	* 5: TheSuperHackers @fix Fixed out-of-bounds xfer of m_guardTargetType
+	* 6: Reborn: Added runtime automatic enemy acquisition state
 	*/
 // ------------------------------------------------------------------------------------------------
 void AIUpdateInterface::xfer( Xfer *xfer )
@@ -5184,7 +5214,8 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 #if RETAIL_COMPATIBLE_CRC || RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 4;
 #else
-	const XferVersion currentVersion = 5;
+	//const XferVersion currentVersion = 5;
+	const XferVersion currentVersion = 6;
 #endif
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
@@ -5317,6 +5348,11 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 	{
 		Int lastFrameMoved = 0;
 		xfer->xferInt(&lastFrameMoved);
+	}
+
+	if (version >= 6)
+	{
+		xfer->xferBool(&m_autoAcquireEnemiesWhenIdleEnabled); // Reborn: Preserve the runtime automatic enemy acquisition state.
 	}
 
 	xfer->xferObjectID(&m_moveOutOfWay1);

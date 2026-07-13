@@ -1587,6 +1587,19 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			break;
 		}
 
+		case GUI_COMMAND_TOGGLE_AUTO_ACQUIRE: // Reborn: Show the automatic enemy acquisition button as active when enabled.
+		{
+			AIUpdateInterface* ai = obj->getAIUpdateInterface();
+
+			if (ai == nullptr || !ai->isAutoAcquireToggleAllowed())
+				return COMMAND_HIDDEN;
+
+			if (ai->isAutoAcquireEnemiesWhenIdleEnabled())
+				return COMMAND_ACTIVE;
+
+			break;
+		}
+
 		// switch weapon command
 		case GUI_COMMAND_SWITCH_WEAPON:
 		{

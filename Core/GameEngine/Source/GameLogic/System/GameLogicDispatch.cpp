@@ -1156,6 +1156,12 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
+		case GameMessage::MSG_REBORN_TOGGLE_AUTO_ACQUIRE: // Reborn: Toggle automatic enemy acquisition
+		{
+			onToggleAutoAcquire(msg, currentlySelectedGroup);
+			break;
+		}
+
 #ifdef ALLOW_SURRENDER
 		case GameMessage::MSG_DO_SURRENDER:
 		{
@@ -2428,6 +2434,17 @@ bool GameLogic::onToggleOvercharge(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &cu
 	// use the selected group
 	if( currentlySelectedGroup )
 		currentlySelectedGroup->groupToggleOvercharge( CMD_FROM_PLAYER );
+
+	return true;
+}
+
+// ------------------------------------------------------------------------------------------------
+/** Reborn: Toggle automatic enemy acquisition for the selected group. */
+// ------------------------------------------------------------------------------------------------
+bool GameLogic::onToggleAutoAcquire(MAYBE_UNUSED GameMessage* msg, AIGroupPtr& currentlySelectedGroup)
+{
+	if (currentlySelectedGroup)
+		currentlySelectedGroup->groupToggleAutoAcquire(CMD_FROM_PLAYER);
 
 	return true;
 }
