@@ -483,6 +483,7 @@ public:
 	void verifyMetaMap();
 
 	const MetaMapRec *getFirstMetaMapRec() const { return m_metaMaps; }
+	MappableKeyType getKeyForMetaEvent(GameMessage::Type type) const;
 };
 
 extern MetaMap *TheMetaMap;

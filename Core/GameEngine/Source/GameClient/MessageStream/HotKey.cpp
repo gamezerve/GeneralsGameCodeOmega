@@ -140,6 +140,27 @@ void HotKeyManager::reset()
 	m_hotKeyMap.clear();
 }
 
+Bool HotKeyManager::hasExecutableHotKey(const AsciiString& keyIn) const
+{
+	AsciiString key = keyIn;
+	key.toLower();
+
+	HotKeyMap::const_iterator it = m_hotKeyMap.find(key);
+
+	if (it == m_hotKeyMap.end())
+		return FALSE;
+
+	GameWindow* win = it->second.m_win;
+
+	if (win == nullptr)
+		return FALSE;
+
+	if (BitIsSet(win->winGetStatus(), WIN_STATUS_HIDDEN))
+		return FALSE;
+
+	return BitIsSet(win->winGetStatus(), WIN_STATUS_ENABLED);
+}
+
 //-----------------------------------------------------------------------------
 void HotKeyManager::addHotKey(GameWindow* win, const AsciiString& keyIn)
 {

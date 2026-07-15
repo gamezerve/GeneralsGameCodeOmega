@@ -1031,6 +1031,17 @@ void MetaMap::verifyMetaMap()
 #endif
 }
 
+MappableKeyType MetaMap::getKeyForMetaEvent(GameMessage::Type type) const
+{
+	for (const MetaMapRec* map = m_metaMaps; map; map = map->m_next)
+	{
+		if (map->m_meta == type)
+			return map->m_key;
+	}
+
+	return MK_NONE;
+}
+
 //-------------------------------------------------------------------------------------------------
 /*static*/ void INI::parseMetaMapDefinition( INI* ini )
 {

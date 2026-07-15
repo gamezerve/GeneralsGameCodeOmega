@@ -94,6 +94,7 @@ public:
 
 	void addHotKey( GameWindow *win, const AsciiString& key);
 	Bool executeHotKey( const AsciiString& key); // called front eh HotKeyTranslator
+	Bool hasExecutableHotKey(const AsciiString& key) const;
 
 	AsciiString searchHotKey( const AsciiString& label);
 	AsciiString searchHotKey( const UnicodeString& uStr );

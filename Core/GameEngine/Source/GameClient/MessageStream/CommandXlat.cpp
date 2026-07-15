@@ -59,6 +59,9 @@
 #include "GameClient/GameClient.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GameText.h"
+#include "GameClient/HotKey.h"
+#include "GameClient/Keyboard.h"
+#include "GameClient/MetaEvent.h"
 #include "GameClient/ParticleSys.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/Shell.h"
@@ -3730,10 +3733,28 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_BEGIN_POWER_MODE:
+		{
+			MappableKeyType powerModeKey = TheMetaMap->getKeyForMetaEvent(GameMessage::MSG_META_BEGIN_POWER_MODE);
+
+			WideChar printableKey = TheKeyboard->getPrintableKey((KeyDefType)powerModeKey, 0);
+
+			UnicodeString unicodeKey;
+			unicodeKey.concat(printableKey);
+
+			AsciiString hotKey;
+			hotKey.translate(unicodeKey);
+			if (TheHotKeyManager != nullptr && TheHotKeyManager->hasExecutableHotKey(hotKey))
+			{
+				TheHotKeyManager->executeHotKey(hotKey);
+			}
+			else
+			{
 			// Reborn: Test whether the Z down Power Mode event reaches CommandXlat.
 			DEBUG_LOG(("Reborn test: BEGIN_POWER_MODE reached."));
 			TheInGameUI->setPowerMode(TRUE);
+			}
 			break;
+		}
 
 		case GameMessage::MSG_META_END_POWER_MODE:
 			// Reborn: Test whether the Z up Power Mode event reaches CommandXlat.
