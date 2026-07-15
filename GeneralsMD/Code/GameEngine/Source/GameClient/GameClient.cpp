@@ -83,8 +83,6 @@
 #include "GameLogic/GhostObject.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/ScriptEngine.h"		// For TheScriptEngine - jkmcd
-#include <cstdlib>
-#include <ctime>
 
 #define DRAWABLE_HASH_SIZE	8192
 
@@ -533,71 +531,11 @@ void GameClient::update()
 
 		if (m_intro->isDone())
 		{
-			static Bool randomSeeded = FALSE;
+			delete m_intro;
+			m_intro = nullptr;
 
-			if (!randomSeeded)
-			{
-				srand((unsigned int)time(NULL));
-				randomSeeded = TRUE;
-			}
-
-			if (TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
-			{
-				if (playSizzle && TheGlobalData->m_playSizzle)
-				{
-					TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
-
-					if (TheGameLODManager && TheGameLODManager->didMemPass())
-						TheDisplay->playMovie((rand() % 2) ? "SizzleGen" : "Sizzle");
-					else
-						TheDisplay->playMovie((rand() % 2) ? "Sizzle640Gen" : "Sizzle640");
-
-					playSizzle = FALSE;
-				}
-				else
-				{
-					TheWritableGlobalData->m_breakTheMovie = TRUE;
-					TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
-
-					if (TheGameLODManager && !TheGameLODManager->didMemPass())
-					{
-						TheWritableGlobalData->m_breakTheMovie = FALSE;
-
-						WindowLayout* legal = TheWindowManager->winCreateLayout("Menus/LegalPage.wnd");
-
-						if (legal)
-						{
-							legal->hide(FALSE);
-							legal->bringForward();
-
-							Int beginTime = timeGetTime();
-
-							while (beginTime + 4000 > timeGetTime())
-							{
-								if (GameClient::isMovieAbortRequested())
-									break;
-
-								TheWindowManager->update();
-								TheDisplay->draw();
-								Sleep(100);
-							}
-
-							setFPMode();
-
-							legal->destroyWindows();
-							deleteInstance(legal);
-						}
-
-						TheWritableGlobalData->m_breakTheMovie = TRUE;
-					}
-
-					delete m_intro;
-					m_intro = nullptr;
-
-					TheShell->showShellMap(TRUE);
-					TheShell->showShell();
-				}
-			}
+			TheShell->showShellMap(TRUE);
+			TheShell->showShell();
 		}
 	}
 

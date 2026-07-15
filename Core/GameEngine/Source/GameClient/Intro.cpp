@@ -222,10 +222,18 @@ void Intro::doTheSuperHackers()
 void Intro::doSizzleMovie()
 {
 	TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
+	static Bool randomSeeded = FALSE;
+
+	if (!randomSeeded)
+	{
+		srand((unsigned int)time(NULL));
+		randomSeeded = TRUE;
+	}
+
 	if (TheGameLODManager && TheGameLODManager->didMemPass())
-		TheDisplay->playMovie("Sizzle");
+		TheDisplay->playMovie((rand() % 2) ? "SizzleGen" : "Sizzle");
 	else
-		TheDisplay->playMovie("Sizzle640");
+		TheDisplay->playMovie((rand() % 2) ? "Sizzle640Gen" : "Sizzle640");
 }
 
 void Intro::doPostIntro()

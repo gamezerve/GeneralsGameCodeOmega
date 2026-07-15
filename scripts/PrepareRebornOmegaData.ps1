@@ -173,6 +173,7 @@ robocopy `
 # Copy Maps
 
 $MapFolders = @(
+    "Alpine Assault",
     "CHI01",
     "CHI02",
     "CHI03",

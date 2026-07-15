@@ -1015,7 +1015,7 @@ GlobalData::GlobalData()
 	m_defaultStructureRubbleHeight = 1.0f;
 	m_weaponBonusSet = newInstance(WeaponBonusSet);
 
-	m_shellMapName.set("Maps\\ShellMap1\\ShellMap1.map");
+	m_shellMapName.set("Maps\\ShellMapMD\\ShellMapMD.map");
 	m_alternativeShellMapName.set(""); // Reborn: Assigned from GameData.ini with AlternativeShellMap attribute, if present.
 	m_shellMapOn =TRUE;
 	m_playIntro = TRUE;

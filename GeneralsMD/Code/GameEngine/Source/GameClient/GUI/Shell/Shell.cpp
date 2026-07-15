@@ -549,7 +549,7 @@ void Shell::showShellMap(Bool useShellMap )
 
 
 
-		// Reborn: Shell map switches Betwen Generals and Zero Hour versions randomly if both are present, otherwise just uses the one specified in GameData.ini.
+		// Reborn: Shell map switches Between Generals and Zero Hour versions randomly if both are present, otherwise just uses the one specified in GameData.ini.
 
 		if (!TheGlobalData->m_alternativeShellMapName.isEmpty() && rand() % 2 == 0)
 			TheWritableGlobalData->m_pendingFile = TheGlobalData->m_alternativeShellMapName;
