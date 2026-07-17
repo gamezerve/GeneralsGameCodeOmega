@@ -527,6 +527,7 @@ public:
 
 
 	static IDirect3DDevice8* _Get_D3D_Device8() { return D3DDevice; }
+	static HWND _Get_HWND();
 	static IDirect3D8* _Get_D3D8() { return D3DInterface; }
 	/// Returns the display format - added by TR for video playback - not part of W3D
 	static WW3DFormat	getBackBufferFormat();

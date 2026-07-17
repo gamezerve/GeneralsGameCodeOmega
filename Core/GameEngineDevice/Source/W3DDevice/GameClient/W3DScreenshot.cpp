@@ -169,27 +169,116 @@ void W3D_TakeCompressedScreenshot(ScreenshotFormat format, Int jpegQuality)
 	// TheSuperHackers @bugfix xezon 21/05/2025 Get the back buffer and create a copy of the surface.
 	// Originally this code took the front buffer and tried to lock it. This does not work when the
 	// render view clips outside the desktop boundaries. It crashed the game.
-	SurfaceClass* surface = DX8Wrapper::_Get_DX8_Back_Buffer();
-	SurfaceClass::SurfaceDescription surfaceDesc;
-	surface->Get_Description(surfaceDesc);
 
-	// TheSuperHackers @bugfix bobtista 08/07/2026 Support the 16 bit back buffer format that the
-	// game uses when running in 16 bit color mode. Reading it with the 32 bit stride read garbage.
-	const bool is32Bit = surfaceDesc.Format == WW3D_FORMAT_A8R8G8B8 || surfaceDesc.Format == WW3D_FORMAT_X8R8G8B8;
-	const bool is16Bit = surfaceDesc.Format == WW3D_FORMAT_R5G6B5;
+	SurfaceClass* backBuffer = DX8Wrapper::_Get_DX8_Back_Buffer();
+	SurfaceClass::SurfaceDescription backBufferDesc;
+	backBuffer->Get_Description(backBufferDesc);
 
-	if (!is32Bit && !is16Bit)
+	D3DSURFACE_DESC d3dBackBufferDesc = {};
+	backBuffer->Peek_D3D_Surface()->GetDesc(&d3dBackBufferDesc);
+
+	SurfaceClass* surfaceCopy = nullptr;
+	bool is16Bit = false;
+
+	if (d3dBackBufferDesc.MultiSampleType == D3DMULTISAMPLE_NONE)
 	{
-		DEBUG_LOG(("Screenshot does not support back buffer format %d", (int)surfaceDesc.Format));
-		surface->Release_Ref();
-		return;
+		// TheSuperHackers @bugfix bobtista 08/07/2026 Support the 16 bit back buffer format that the
+		// game uses when running in 16 bit color mode. Reading it with the 32 bit stride read garbage.
+		const bool is32Bit =
+			backBufferDesc.Format == WW3D_FORMAT_A8R8G8B8 ||
+			backBufferDesc.Format == WW3D_FORMAT_X8R8G8B8;
+
+		is16Bit = backBufferDesc.Format == WW3D_FORMAT_R5G6B5;
+
+		if (!is32Bit && !is16Bit)
+		{
+			DEBUG_LOG(("Screenshot does not support back buffer format %d", (int)backBufferDesc.Format));
+			backBuffer->Release_Ref();
+			return;
+		}
+
+		surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(
+			backBufferDesc.Width,
+			backBufferDesc.Height,
+			backBufferDesc.Format)));
+
+		DX8Wrapper::_Copy_DX8_Rects(
+			backBuffer->Peek_D3D_Surface(),
+			nullptr,
+			0,
+			surfaceCopy->Peek_D3D_Surface(),
+			nullptr);
+	}
+	else
+	{
+		IDirect3DSurface8* frontBuffer = DX8Wrapper::_Get_DX8_Front_Buffer();
+
+		if (frontBuffer == nullptr)
+		{
+			backBuffer->Release_Ref();
+			return;
+		}
+
+		D3DSURFACE_DESC frontBufferDesc = {};
+		frontBuffer->GetDesc(&frontBufferDesc);
+
+		surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(
+			backBufferDesc.Width,
+			backBufferDesc.Height,
+			WW3D_FORMAT_A8R8G8B8)));
+
+		struct LockedRect
+		{
+			int Pitch;
+			void* pBits;
+		} clearRect;
+
+		clearRect.pBits = surfaceCopy->Lock(&clearRect.Pitch);
+
+		if (clearRect.pBits != nullptr)
+		{
+			memset(clearRect.pBits, 0, clearRect.Pitch * backBufferDesc.Height);
+			surfaceCopy->Unlock();
+		}
+
+		POINT clientOrigin = { 0, 0 };
+		ClientToScreen(DX8Wrapper::_Get_HWND(), &clientOrigin);
+
+		RECT sourceRect;
+		sourceRect.left = clientOrigin.x;
+		sourceRect.top = clientOrigin.y;
+		sourceRect.right = clientOrigin.x + backBufferDesc.Width;
+		sourceRect.bottom = clientOrigin.y + backBufferDesc.Height;
+
+		RECT clippedRect;
+		clippedRect.left = max<LONG>(0, sourceRect.left);
+		clippedRect.top = max<LONG>(0, sourceRect.top);
+		clippedRect.right = min<LONG>((LONG)frontBufferDesc.Width, sourceRect.right);
+		clippedRect.bottom = min<LONG>((LONG)frontBufferDesc.Height, sourceRect.bottom);
+
+		if (clippedRect.right > clippedRect.left && clippedRect.bottom > clippedRect.top)
+		{
+			POINT destinationPoint;
+			destinationPoint.x = clippedRect.left - sourceRect.left;
+			destinationPoint.y = clippedRect.top - sourceRect.top;
+
+			DX8Wrapper::_Copy_DX8_Rects(
+				frontBuffer,
+				&clippedRect,
+				1,
+				surfaceCopy->Peek_D3D_Surface(),
+				&destinationPoint);
+		}
+
+		frontBuffer->Release();
+		is16Bit = false;
 	}
 
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), nullptr, 0, surfaceCopy->Peek_D3D_Surface(), nullptr);
+	backBuffer->Release_Ref();
+	backBuffer = nullptr;
 
-	surface->Release_Ref();
-	surface = nullptr;
+	SurfaceClass::SurfaceDescription surfaceDesc;
+	surfaceCopy->Get_Description(surfaceDesc);
 
 	struct Rect
 	{
