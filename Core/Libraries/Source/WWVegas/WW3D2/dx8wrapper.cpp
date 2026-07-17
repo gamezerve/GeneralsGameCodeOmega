@@ -3148,6 +3148,10 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 	return surf;
 }
 
+HWND DX8Wrapper::_Get_HWND()
+{
+	return _Hwnd;
+}
 
 TextureClass *
 DX8Wrapper::Create_Render_Target (int width, int height, WW3DFormat format)
