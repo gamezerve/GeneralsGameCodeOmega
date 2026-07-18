@@ -3033,15 +3033,22 @@ void W3DView::cameraModFinalMoveTo(Coord3D *pLoc)
 // ------------------------------------------------------------------------------------------------
 void W3DView::cameraLookTowardImmediate(const Coord3D* pLoc)
 {
+	// Get the current 2D camera position.
 	Coord2D curPos = getPosition2D();
+
+	// Calculate the horizontal direction from the current camera position
+	// toward the requested look-at point.
 	Vector2 dir(pLoc->x - curPos.x, pLoc->y - curPos.y);
 	const Real dirLength = dir.Length();
 
+	// Avoid calculating an invalid angle when the camera and target are
+	// effectively at the same horizontal position.
 	if (dirLength < 0.1f)
 	{
 		return;
 	}
 
+	// Calculate the horizontal camera angle toward the target.
 	Real angle = WWMath::Acos(dir.X / dirLength);
 
 	if (dir.Y < 0.0f)
@@ -3049,12 +3056,18 @@ void W3DView::cameraLookTowardImmediate(const Coord3D* pLoc)
 		angle = -angle;
 	}
 
+	// Convert the calculated world direction to the camera's angle convention.
 	angle -= PI / 2.0f;
 	normAngle(angle);
 
+	// Apply the horizontal angle immediately and synchronize the scripted
+	// rotation information so no interpolation occurs afterward.
 	m_angle = angle;
 	m_rcInfo.angle.startAngle = angle;
 	m_rcInfo.angle.endAngle = angle;
+
+	// Force the camera transform to be recalculated using the updated angle.
+	m_recalcCamera = true;
 }
 
 // ------------------------------------------------------------------------------------------------
