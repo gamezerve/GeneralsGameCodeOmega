@@ -988,19 +988,88 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 {
-	for (Waypoint *way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext()) {
-		if (way->getName() == waypoint) {
+	const AsciiString& mapName = TheGlobalData->m_mapName;
+
+	// Reborn: Fix for GLA01 ending dam sequence.
+	const Bool fixGLA01DamSequence =
+		mapName.compareNoCase("Maps\\GLA01\\GLA01.map") == 0 &&
+		waypoint == "Camera Dam Over Wave Look";
+
+	// Reborn: Fix for the first affected GLA02 intro camera sequence.
+	const Bool fixGLA02Intro06 =
+		mapName.compareNoCase("Maps\\GLA02\\GLA02.map") == 0 &&
+		waypoint == "INTRO06";
+
+	// Reborn: Fix for the second affected GLA02 intro camera sequence.
+	const Bool fixGLA02Intro08 =
+		mapName.compareNoCase("Maps\\GLA02\\GLA02.map") == 0 &&
+		waypoint == "INTRO08";
+
+	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
+	{
+		if (way->getName() == waypoint)
+		{
 			Coord3D destination = *way->getLocation();
-			if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA01\\GLA01.map") == 0 &&
-				waypoint == "Camera Dam Over Wave Look") // Reborn: Fix for GLA01 Ending Dam Sequence
+
+			if (fixGLA01DamSequence || fixGLA02Intro06 || fixGLA02Intro08)
 			{
+				// Reborn: Move the camera center farther backwards while preserving
+				// the original look target. This produces a wider and less steep-looking
+				// composition without directly changing the camera pitch.
+				const Real backwardOffset = 60.0f;
+
+				// Get the current 2D camera center before applying the relocation.
+				const Coord2D currentPosition =
+					TheTacticalView->getPosition2D();
+
+				// Calculate the 2D direction from the current camera center
+				// toward the original look target.
+				Real directionX =
+					destination.x - currentPosition.x;
+
+				Real directionY =
+					destination.y - currentPosition.y;
+
+				const Real directionLength =
+					WWMath::Sqrt(
+						directionX * directionX +
+						directionY * directionY);
+
+				// Only relocate the camera when a valid horizontal direction
+				// toward the look target can be calculated.
+				if (directionLength > 0.001f)
+				{
+					// Normalize the horizontal direction toward the look target.
+					directionX /= directionLength;
+					directionY /= directionLength;
+
+					Coord2D relocatedPosition;
+
+					// Move the camera center in the opposite direction from the
+					// look target. Only the 2D pivot position is changed.
+					relocatedPosition.x =
+						currentPosition.x - directionX * backwardOffset;
+
+					relocatedPosition.y =
+						currentPosition.y - directionY * backwardOffset;
+
+					// Apply the pure 2D relocation without invoking lookAt(),
+					// which would reset the pivot and scripted camera states.
+					TheTacticalView->setPosition2D(relocatedPosition);
+				}
+
+				// Rotate immediately toward the original waypoint after relocating
+				// the camera so the target remains centered in the new composition.
 				TheTacticalView->cameraLookTowardImmediate(&destination);
-				TheTacticalView->cameraModFinalZoom(1.5f);
+
+				// Apply the scripted final zoom.
+				TheTacticalView->cameraModFinalZoom(2.5f);
 			}
 			else
 			{
 				TheTacticalView->cameraModFinalLookToward(&destination);
 			}
+
 			break;
 		}
 	}

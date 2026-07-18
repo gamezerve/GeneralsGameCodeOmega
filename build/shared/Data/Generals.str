@@ -1,4 +1,8 @@
 
+GUI:GLA02
+"Pillage the Village"
+END
+
 GUI:GLA01
 "Operation: Black Rain"
 END
@@ -23184,6 +23188,10 @@ END
 
 OBJECT:Almaty
 "Almaty"
+END
+
+LOCATION:Almaty
+"Villages outside of Almaty, Kazakhstan"
 END
 
 OBJECT:Ambassador
