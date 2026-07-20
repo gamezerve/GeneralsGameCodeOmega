@@ -1,4 +1,8 @@
 
+GUI:GLA03
+"Black Sheep"
+END
+
 GUI:GLA02
 "Pillage the Village"
 END
@@ -24992,6 +24996,10 @@ END
 
 OBJECT:Zambul
 "Zhambul"
+END
+
+LOCATION:Zambul
+"Zhambul, Kazakhstan"
 END
 
 QM:COULDNOTFINDBOT
