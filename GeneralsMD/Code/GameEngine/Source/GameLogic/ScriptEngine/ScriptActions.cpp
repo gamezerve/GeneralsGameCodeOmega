@@ -900,33 +900,101 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
 
 	// CHI04 ending specific fix here
-	Bool rebornCHI04CameraFix =
-		!mapName.compareNoCase("CHI04.map") &&
-		!waypoint.compareNoCase("ENDING_cameraherobehind_pt1") &&
-		!lookAtWaypoint.compareNoCase("ENDING_cameraherobehind_lookat");
+	Bool rebornSetupCameraFix =
+		(
+			!mapName.compareNoCase("CHI04.map") &&
+			!waypoint.compareNoCase("ENDING_cameraherobehind_pt1") &&
+			!lookAtWaypoint.compareNoCase("ENDING_cameraherobehind_lookat")
+			)
+		||
+		(
+			!mapName.compareNoCase("GLA03.map") &&
+			!waypoint.compareNoCase("INTRO_Camera_SC2_StPt") &&
+			!lookAtWaypoint.compareNoCase("INTRO_CameraPoint_02")
+			);
 
-	TheTacticalView->moveCameraTo(&pos, 0, 0, !rebornCHI04CameraFix, 0.0f, 0.0f);
+	TheTacticalView->moveCameraTo(&pos, 0, 0, !rebornSetupCameraFix, 0.0f, 0.0f);
 
-	if (rebornCHI04CameraFix)
+	if (rebornSetupCameraFix)
 	{
 		TheTacticalView->moveCameraTo(&pos, 0, 0, false, 0.0f, 0.0f);
 
-		Vector2 dir(destination.x - pos.x, destination.y - pos.y);
-		Real dirLength = dir.Length();
+		TheTacticalView->moveCameraTo(&pos, 0, 0, false, 0.0f, 0.0f);
 
-		if (dirLength > 0.1f)
+		if (rebornSetupCameraFix)
 		{
-			Real angle = WWMath::Acos(dir.X / dirLength);
+			Coord3D adjustedPos = pos;
 
-			if (dir.Y < 0.0f)
+			if (!mapName.compareNoCase("GLA03.map"))
 			{
-				angle = -angle;
+				const Real backwardOffset = 30.0f;
+				const Real leftOffset = 20.0f;
+
+				Vector2 dir(destination.x - pos.x, destination.y - pos.y);
+				Real dirLength = dir.Length();
+
+				if (dirLength > 0.1f)
+				{
+					dir /= dirLength;
+
+					// Reborn: Perpendicular direction used as the camera-left vector
+					// for the game's coordinate system.
+					Vector2 left(dir.Y, -dir.X);
+
+					adjustedPos.x =
+						pos.x - dir.X * backwardOffset + left.X * leftOffset;
+
+					adjustedPos.y =
+						pos.y - dir.Y * backwardOffset + left.Y * leftOffset;
+				}
 			}
 
-			angle -= PI / 2;
-			angle = WWMath::Normalize_Angle(angle);
+			TheTacticalView->moveCameraTo(&adjustedPos, 0, 0, false, 0.0f, 0.0f);
 
-			TheTacticalView->setAngle(angle);
+			Vector2 dir(
+				destination.x - adjustedPos.x,
+				destination.y - adjustedPos.y);
+
+			Real dirLength = dir.Length();
+
+			if (dirLength > 0.1f)
+			{
+				Real angle = WWMath::Acos(dir.X / dirLength);
+
+				if (dir.Y < 0.0f)
+				{
+					angle = -angle;
+				}
+
+				angle -= PI / 2;
+				angle = WWMath::Normalize_Angle(angle);
+
+				TheTacticalView->setAngle(angle);
+			}
+
+			TheTacticalView->pitchCamera(pitch, 1, 0.0f, 0.0f);
+			TheTacticalView->zoomCamera(zoom, 1, 0.0f, 0.0f);
+			return;
+		}
+		else
+		{
+			Vector2 dir(destination.x - pos.x, destination.y - pos.y);
+			Real dirLength = dir.Length();
+
+			if (dirLength > 0.1f)
+			{
+				Real angle = WWMath::Acos(dir.X / dirLength);
+
+				if (dir.Y < 0.0f)
+				{
+					angle = -angle;
+				}
+
+				angle -= PI / 2;
+				angle = WWMath::Normalize_Angle(angle);
+
+				TheTacticalView->setAngle(angle);
+			}
 		}
 
 		TheTacticalView->pitchCamera(pitch, 1, 0.0f, 0.0f);
@@ -990,20 +1058,26 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 {
 	const AsciiString& mapName = TheGlobalData->m_mapName;
 
+	DEBUG_LOG(("doModCameraFinalLookToward: %s | %s",
+		mapName.str(),
+		waypoint.str()));
+
 	// Reborn: Fix for GLA01 ending dam sequence.
 	const Bool fixGLA01DamSequence =
 		mapName.compareNoCase("Maps\\GLA01\\GLA01.map") == 0 &&
 		waypoint == "Camera Dam Over Wave Look";
 
-	// Reborn: Fix for the first affected GLA02 intro camera sequence.
-	const Bool fixGLA02Intro06 =
+	// Reborn: Fix for the affected GLA02 intro camera sequences.
+	const Bool fixGLA02Intro =
 		mapName.compareNoCase("Maps\\GLA02\\GLA02.map") == 0 &&
-		waypoint == "INTRO06";
+		(waypoint == "INTRO06" || waypoint == "INTRO08");
 
-	// Reborn: Fix for the second affected GLA02 intro camera sequence.
-	const Bool fixGLA02Intro08 =
-		mapName.compareNoCase("Maps\\GLA02\\GLA02.map") == 0 &&
-		waypoint == "INTRO08";
+	// Reborn: Fix for the affected GLA03 intro camera sequences.
+	const Bool fixGLA03Intro =
+		mapName.compareNoCase("Maps\\GLA03\\GLA03.map") == 0 &&
+		(waypoint == "INTRO_CameraPoint_02" ||
+			waypoint == "INTRO_Camera_SC3_LookAt02" ||
+			waypoint == "INTRO_Camera_Final_Rot");
 
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
@@ -1011,8 +1085,20 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 		{
 			Coord3D destination = *way->getLocation();
 
-			if (fixGLA01DamSequence || fixGLA02Intro06 || fixGLA02Intro08)
+			DEBUG_LOG(("doModCameraFinalLookToward: map=%s waypoint=%s destination=(%.2f, %.2f, %.2f)",
+				mapName.str(),
+				waypoint.str(),
+				destination.x,
+				destination.y,
+				destination.z));
+
+			if (fixGLA01DamSequence || fixGLA02Intro || fixGLA03Intro)
 			{
+				const Bool applyBackwardOffset =
+					waypoint != "INTRO_Camera_SC3_LookAt02";
+
+				if (applyBackwardOffset)
+				{
 				// Reborn: Move the camera center farther backwards while preserving
 				// the original look target. This produces a wider and less steep-looking
 				// composition without directly changing the camera pitch.
@@ -1056,6 +1142,7 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 					// Apply the pure 2D relocation without invoking lookAt(),
 					// which would reset the pivot and scripted camera states.
 					TheTacticalView->setPosition2D(relocatedPosition);
+				}
 				}
 
 				// Rotate immediately toward the original waypoint after relocating

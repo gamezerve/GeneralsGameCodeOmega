@@ -183,6 +183,7 @@ $MapFolders = @(
     "CHI07",
     "GLA01",
     "GLA02",
+    "GLA03",
     "MD_CHI01",
     "ShellMap1",
     "ShellMapMD",
