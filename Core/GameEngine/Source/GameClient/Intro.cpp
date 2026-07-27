@@ -244,7 +244,7 @@ void Intro::doTheSuperHackers()
 
 void Intro::doSizzleMovie()
 {
-	TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
+	//TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
 	static Bool randomSeeded = FALSE;
 
 	if (!randomSeeded)
