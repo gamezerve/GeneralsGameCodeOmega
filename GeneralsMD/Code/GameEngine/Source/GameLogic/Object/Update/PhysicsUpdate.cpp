@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // PhysicsBehavior.cpp
-// PhysicsUpdate.cpp (Corrected by Reborn)
+// PhysicsUpdate.cpp (Reborn: Corrected)
 // Simple rigid body physics
 // Author: Michael S. Booth, November 2001
 
