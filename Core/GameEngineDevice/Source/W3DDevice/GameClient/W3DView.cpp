@@ -100,7 +100,6 @@
 
 // 30 fps
 Real TheW3DFrameLengthInMsec = MSEC_PER_LOGICFRAME_REAL; // default is 33msec/frame == 30fps. but we may change it depending on sys config.
-static const Int MAX_REQUEST_CACHE_SIZE = 40;	// Any size larger than 10, or examine code below for changes. jkmcd.
 static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much to overscan in the 3D screen region
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
@@ -175,9 +174,7 @@ W3DView::W3DView()
 	m_shakeIntensity = 0.0f;
 	m_FXPitch = 1.0f;
 	m_freezeTimeForCameraMovement = false;
-	m_cameraHasMovedSinceRequest = true;
-	m_locationRequests.clear();
-	m_locationRequests.reserve(MAX_REQUEST_CACHE_SIZE + 10);	// This prevents the vector from ever re-allocating
+	m_lastScreenToTerrainValid = false;
 
 	//Enhancements from CNC3 WST 4/15/2003. JSC Integrated 5/20/03.
 	m_scriptedState = 0;
@@ -222,6 +219,7 @@ void W3DView::setHeight(Int height)
 	// showing or hiding the control bar will change the viewable area.
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
 }
 
 void W3DView::applyRebornCutsceneWidescreenFix()
@@ -279,6 +277,7 @@ void W3DView::setWidth(Int width)
 
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -866,7 +865,7 @@ void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 //-------------------------------------------------------------------------------------------------
 void W3DView::setCameraTransform(const Matrix3D &transform)
 {
-	m_cameraHasMovedSinceRequest = true;
+	m_lastScreenToTerrainValid = false;
 
 	applyRebornCutsceneWidescreenFix();
 
@@ -1510,6 +1509,7 @@ void W3DView::update()
 						Matrix3D camXForm;
 						camXForm.Look_At(camtran,objPos,0);
 						m_3DCamera->Set_Transform(camXForm);
+						m_lastScreenToTerrainValid = false;
 					}
 				}
 			}
@@ -1726,8 +1726,7 @@ void W3DView::update()
 	}
 
 #ifdef DO_SEISMIC_SIMULATIONS
-  // Give the terrain a chance to refresh animating (Seismic) regions, if any.
-  TheTerrainVisual->updateSeismicSimulations();
+	TheTerrainVisual->updateSeismicSimulations();
 #endif
 
 	Region3D axisAlignedRegion;
@@ -2582,22 +2581,11 @@ Bool W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 	if( screen == nullptr || world == nullptr || TheTerrainRenderObject == nullptr )
 		return false;
 
-	if (m_cameraHasMovedSinceRequest) {
-		m_locationRequests.clear();
-		m_cameraHasMovedSinceRequest = false;
-	}
-
-	if (m_locationRequests.size() > MAX_REQUEST_CACHE_SIZE) {
-		m_locationRequests.erase(m_locationRequests.begin(), m_locationRequests.begin() + 10);
-	}
-
-	// We insert them at the end for speed (no copies needed), but using the principle of locality, we should
-	// start searching where we most recently inserted
-	for (int i = m_locationRequests.size() - 1; i >= 0; --i) {
-		if (m_locationRequests[i].first.x == screen->x && m_locationRequests[i].first.y == screen->y) {
-			(*world) = m_locationRequests[i].second;
-			return true;
-		}
+	if (m_lastScreenToTerrainValid &&
+		m_lastScreenToTerrainScreen.x == screen->x && m_lastScreenToTerrainScreen.y == screen->y)
+	{
+		*world = m_lastScreenToTerrainWorld;
+		return true;
 	}
 
 	Vector3 rayStart,rayEnd;
@@ -2634,10 +2622,9 @@ Bool W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 	world->y = intersection.Y;
 	world->z = intersection.Z;
 
-	PosRequest req;
-	req.first = (*screen);
-	req.second = (*world);
-	m_locationRequests.push_back(req);	// Insert this request at the end, requires no extra copies
+	m_lastScreenToTerrainScreen = *screen;
+	m_lastScreenToTerrainWorld = *world;
+	m_lastScreenToTerrainValid = true;
 
 	return true;
 }
@@ -3809,30 +3796,54 @@ void W3DView::Add_Camera_Shake (const Coord3D & position,float radius,float dura
 	CameraShakerSystem.Add_Camera_Shake(vpos,radius,duration,power);
 }
 
+bool W3DView::getDesiredTerrainDrawSize(ICoord2D &dimensions) const
+{
+	if (TheGlobalData && TheGlobalData->m_drawEntireTerrain)
+	{
+		DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
+
+		if (const WorldHeightMap *heightMap = TheTerrainRenderObject->getMap())
+		{
+			dimensions.x = heightMap->getXExtent();
+			dimensions.y = heightMap->getYExtent();
+			return true;
+		}
+
+		return false;
+	}
+
+	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
+
+	if (cameraPitch > ViewDefaultLowPitchRadians || !m_isUserControlled)
+	{
+		// TheSuperHackers @info The scripted camera always uses the regular draw sizes
+		// and uses terrain oversize if it needs to enlarge.
+		dimensions.x = WorldHeightMap::NORMAL_DRAW_WIDTH;
+		dimensions.y = WorldHeightMap::NORMAL_DRAW_HEIGHT;
+		return true;
+	}
+
+	// TheSuperHackers @tweak xezon 31/12/2025 Increases visible terrain area when lowering the camera pitch.
+	// Note: The default camera pitch in Generals was 37.5, which we prefer to keep the normal draw size for.
+	dimensions.x = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
+	dimensions.y = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
+	return true;
+}
+
 void W3DView::updateTerrain()
 {
 	DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
 
+	ICoord2D drawSize;
+
+	if (getDesiredTerrainDrawSize(drawSize))
+	{
+		TheTerrainRenderObject->setTerrainDrawSize(drawSize.x, drawSize.y);
+	}
+
 	RefRenderObjListIterator *it = W3DDisplay::m_3DScene->createLightsIterator();
+
 	const Vector3 cameraPivot(m_pos.x, m_pos.y, m_pos.z);
-	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
-	Int drawWidth;
-	Int drawHeight;
-
-	if (cameraPitch > ViewDefaultLowPitchRadians)
-	{
-		drawWidth = WorldHeightMap::NORMAL_DRAW_WIDTH;
-		drawHeight = WorldHeightMap::NORMAL_DRAW_HEIGHT;
-	}
-	else
-	{
-		// TheSuperHackers @tweak xezon 31/12/2025 Increases visible terrain area when lowering the camera pitch.
-		// Note: The default camera pitch in Generals was 37.5, which we prefer to keep the normal draw size for.
-		drawWidth = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
-		drawHeight = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
-	}
-
-	TheTerrainRenderObject->setTerrainDrawSize(drawWidth, drawHeight);
 	TheTerrainRenderObject->updateCenter(m_3DCamera, &cameraPivot, it);
 
 	if (it)

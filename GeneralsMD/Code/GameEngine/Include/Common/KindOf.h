@@ -179,8 +179,9 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_FIRST = 0,
 };
 
-struct KindOfTag;
-typedef BitFlags<KINDOF_COUNT, KindOfTag> KindOfMaskType;
+// struct KindOfTag;
+// typedef BitFlags<KINDOF_COUNT, KindOfTag> KindOfMaskType;
+typedef BitFlags<KINDOF_COUNT, struct KindOfMaskTypeTag>	KindOfMaskType;
 
 #define MAKE_KINDOF_MASK(k) KindOfMaskType(KindOfMaskType::kInit, (k))
 

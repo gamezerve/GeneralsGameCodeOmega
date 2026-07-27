@@ -37,8 +37,8 @@
 //-------------------------------------------------------------------------------------------------
 
 /*
-template <size_t NUMBITS>
-void BitFlags<NUMBITS>::buildDescription( AsciiString* str ) const
+template <size_t NUMBITS, typename TAG>
+void BitFlags<NUMBITS, TAG>::buildDescription( AsciiString* str ) const
 {
 	if ( str == nullptr )
 		return;//sanity
@@ -159,7 +159,7 @@ void BitFlags<NUMBITS, TAG>::parse(INI* ini, AsciiString* str)
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 template <size_t NUMBITS, typename TAG>
-/*static*/ void BitFlags<NUMBITS, TAG>::parseFromINI(INI* ini, void* /*instance*/, void* store, const void* /*userData*/)
+/*static*/ void BitFlags<NUMBITS, TAG>::parseFromINI(INI* ini, void* /*instance*/, void *store, const void* /*userData*/)
 {
 	((BitFlags<NUMBITS, TAG>*)store)->parse(ini, nullptr);
 }
@@ -167,7 +167,7 @@ template <size_t NUMBITS, typename TAG>
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 template <size_t NUMBITS, typename TAG>
-/*static*/ void BitFlags<NUMBITS, TAG>::parseSingleBitFromINI(INI* ini, void* /*instance*/, void* store, const void* /*userData*/)
+/*static*/ void BitFlags<NUMBITS, TAG>::parseSingleBitFromINI(INI* ini, void* /*instance*/, void *store, const void* /*userData*/)
 {
 	const char *token = ini->getNextToken();
 	Int bitIndex = INI::scanIndexList(token, s_bitNameList);	// this throws if the token is not found

@@ -76,8 +76,8 @@
 #include "GameClient/MessageBox.h"
 #include "GameClient/CampaignManager.h"
 
-#include "ww3d.h"
-#include "texturefilter.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/texturefilter.h"
 
 // This is for non-RC builds only!!!
 #define VERBOSE_VERSION L"Release"

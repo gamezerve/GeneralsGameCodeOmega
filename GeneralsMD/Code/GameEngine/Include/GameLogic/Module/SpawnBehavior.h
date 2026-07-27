@@ -122,8 +122,8 @@ public:
 	virtual Bool areAllSlavesStealthed() const = 0;
 	virtual void revealSlaves() = 0;
 	virtual Bool doSlavesHaveFreedom() const = 0;
-
 	virtual Bool getSlavesHealthForTooltip(Real& currentHealth, Real& maxHealth) const = 0;
+	virtual Int getSlaveCount() const = 0;
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -179,6 +179,7 @@ public:
 	virtual Bool areAllSlavesStealthed() const override;
 	virtual void revealSlaves() override;
 	virtual Bool doSlavesHaveFreedom() const override { return getSpawnBehaviorModuleData()->m_slavesHaveFreeWill; }
+	virtual Int getSlaveCount() const override { return m_spawnCount; }
 
 	virtual Bool getSlavesHealthForTooltip(Real& currentHealth, Real& maxHealth) const override;
 	static Bool getPotentialSpawnHealthForTooltip(const ThingTemplate* thing, Real& minHealth, Real& maxHealth);

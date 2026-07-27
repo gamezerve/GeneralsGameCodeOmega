@@ -47,13 +47,13 @@
 //-----------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <assetmgr.h>
-#include <texture.h>
-#include <tri.h>
-#include <colmath.h>
-#include <coltest.h>
-#include <rinfo.h>
-#include <camera.h>
+#include <WW3D2/assetmgr.h>
+#include <WW3D2/texture.h>
+#include <WWMath/tri.h>
+#include <WWMath/colmath.h>
+#include <WW3D2/coltest.h>
+#include <WW3D2/rinfo.h>
+#include <WW3D2/camera.h>
 #include <d3dx8core.h>
 
 #include "Common/GlobalData.h"
@@ -312,6 +312,14 @@ BaseHeightMapRenderObjClass::BaseHeightMapRenderObjClass()
 	DX8Wrapper::SetCleanupHook(this);
 }
 
+void BaseHeightMapRenderObjClass::scheduleFullUpdate()
+{
+	m_needFullUpdate = true;
+	if (TheTacticalView) {
+		TheTacticalView->onHeightMapChanged();
+	}
+}
+
 void BaseHeightMapRenderObjClass::setTextureLOD(Int lod)
 {
 	if (m_treeBuffer)
@@ -340,7 +348,7 @@ void BaseHeightMapRenderObjClass::adjustTerrainLOD(Int adj)
 		m_shroud->reset();	//need reset here since initHeightData will load new shroud.
 
 	BaseHeightMapRenderObjClass *newROBJ = nullptr;
-	if (TheGlobalData->m_terrainLOD==7) {
+	if (TheGlobalData->m_terrainLOD == TERRAIN_LOD_MAX) {
 		newROBJ = TheHeightMap;
 		if (newROBJ==nullptr) {
 			newROBJ = NEW_REF( HeightMapRenderObjClass, () );
@@ -351,8 +359,7 @@ void BaseHeightMapRenderObjClass::adjustTerrainLOD(Int adj)
 			newROBJ = NEW_REF( FlatHeightMapRenderObjClass, () );
 		}
 	}
-	if (TheGlobalData->m_terrainLOD == 5)
-		newROBJ = nullptr;
+
 	RTS3DScene *pMyScene = (RTS3DScene *)Scene;
 	if (pMyScene) {
 		pMyScene->Remove_Render_Object(this);
@@ -455,7 +462,7 @@ void BaseHeightMapRenderObjClass::ReAcquireResources()
 	{
 		this->initHeightData(m_x,m_y,m_map, nullptr);
 		// Tell lights to update next time through.
-		m_needFullUpdate = true;
+		scheduleFullUpdate();
 	}
 
 	if (m_treeBuffer) {
@@ -1824,7 +1831,7 @@ Int BaseHeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pM
 	}
 
 	Set_Force_Visible(TRUE);	//terrain is always visible.
-	m_needFullUpdate = true;
+	scheduleFullUpdate();
 
 	m_scorchesInBuffer = 0;
 	m_curNumScorchVertices=0;
@@ -2353,7 +2360,7 @@ void BaseHeightMapRenderObjClass::removeTerrainBibDrawable(DrawableID id)
 void BaseHeightMapRenderObjClass::staticLightingChanged()
 {
 	// Cause the terrain to get updated with new lighting.
-	m_needFullUpdate = true;
+	scheduleFullUpdate();
 
 	// Cause the scorches to get updated with new lighting.
 	m_scorchesInBuffer = 0; // If we just allocated the buffers, we got no scorches in the buffer.
