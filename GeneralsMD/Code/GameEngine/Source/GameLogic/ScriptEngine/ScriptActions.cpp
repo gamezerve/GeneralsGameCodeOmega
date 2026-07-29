@@ -806,19 +806,65 @@ void ScriptActions::doCreateReinforcements(const AsciiString& team, const AsciiS
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real cameraStutterSec, Real easeIn, Real easeOut)
 {
+	const AsciiString& mapName = TheGlobalData->m_mapName;
+
+	// Reborn: Preserve the original zero-duration camera movement path for
+// the affected CHI03 cinematic shot.
+	const Bool preserveCHI03CameraMovement =
+		mapName.compareNoCase("Maps\\CHI03\\CHI03.map") == 0 &&
+		(
+			waypoint.compareNoCase("WP(v0.3)_Start_Scene 3") == 0 ||
+			waypoint.compareNoCase("WP(v0.3)_Start_Scene 4") == 0 ||
+			waypoint.compareNoCase("WP(Dam)_Start_Scene 3a") == 0 ||
+			waypoint.compareNoCase("WP(Dam)_Start_Scene 3") == 0
+			);
+
+	// Reborn: Preserve the original zero-duration camera movement path for
+	// the affected CHI05 intro shot. Its final look direction depends on the
+	// scripted camera state created by moveCameraTo().
+	const Bool preserveCHI05CameraMovement =
+		mapName.compareNoCase("Maps\\CHI05\\CHI05.map") == 0 &&
+		(
+			waypoint.compareNoCase("INTRO_sc1_camera_pos0") == 0 ||
+			waypoint.compareNoCase("INTRO_sc2_camera_pos0") == 0
+			);
+
+	// Reborn: Preserve the original zero-duration camera movement path for
+	// the affected CHI06 intro and ending cinematic shots.
+	const Bool preserveCHI06CameraMovement =
+		mapName.compareNoCase("Maps\\CHI06\\CHI06.map") == 0 &&
+		(
+			waypoint.compareNoCase("INTRO_Camera_Sc.2_Start") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_Sc3a_Goto") == 0 ||
+			waypoint.compareNoCase("END_Camera01_SC2_Goto (Start)") == 0 ||
+			waypoint.compareNoCase("END_Camera02_SC1_Goto (Start)") == 0 ||
+			waypoint.compareNoCase("END_Camera01_SC4_Goto") == 0 ||
+			waypoint.compareNoCase("END_Camera01_SC5_Goto") == 0 ||
+			waypoint.compareNoCase("END_Camera01b_SC5_Goto") == 0 ||
+			waypoint.compareNoCase("END_Camera02_SC5_Goto") == 0 ||
+			waypoint.compareNoCase("END_Camera01_SC6_Goto") == 0
+			);
+
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
 		if (way->getName() == waypoint)
 		{
 			Coord3D destination = *way->getLocation();
 
-			if (IsRebornCampaign() && sec <= 0.0f)
+			if (IsRebornCampaign() &&
+				sec <= 0.0f &&
+				!preserveCHI03CameraMovement &&
+				!preserveCHI05CameraMovement &&
+				!preserveCHI06CameraMovement)
 			{
 				TheTacticalView->setUserControlled(false);
 				TheTacticalView->lookAt(&destination);
 
 				DEBUG_LOG(("doMoveCameraTo INSTANT: waypoint=%s destination=(%.2f, %.2f, %.2f)",
-					waypoint.str(), destination.x, destination.y, destination.z));
+					waypoint.str(),
+					destination.x,
+					destination.y,
+					destination.z));
 			}
 			else
 			{
@@ -831,7 +877,11 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 					easeOut * 1000.0f);
 
 				DEBUG_LOG(("doMoveCameraTo: waypoint=%s destination=(%.2f, %.2f, %.2f), sec=%.2f",
-					waypoint.str(), destination.x, destination.y, destination.z, sec));
+					waypoint.str(),
+					destination.x,
+					destination.y,
+					destination.z,
+					sec));
 			}
 
 			break;
@@ -898,6 +948,60 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 
 
 	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+	// Reborn: Immediately place specific GLA04 opening cameras before
+	// subsequent movement or rotation actions are executed in the same frame.
+	const Bool rebornGLA04IntroCameraPositionFix =
+		!mapName.compareNoCase("GLA04.map") &&
+		(
+			!waypoint.compareNoCase("INTRO_camera0_pos0") ||
+			!waypoint.compareNoCase("INTRO_camera0_pos3")
+			);
+
+	if (rebornGLA04IntroCameraPositionFix)
+	{
+		TheTacticalView->setUserControlled(false);
+
+		// Reborn: Position the view immediately instead of queuing a
+		// zero-duration move that can be overwritten by the following action.
+		TheTacticalView->lookAt(&pos);
+
+		Vector2 dir(
+			destination.x - pos.x,
+			destination.y - pos.y);
+
+		const Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+		}
+
+		TheTacticalView->setPitch(pitch);
+		TheTacticalView->setZoom(zoom);
+
+		DEBUG_LOG((
+			"doSetupCamera GLA04 FIX: map=%s waypoint=%s lookAt=%s "
+			"position=(%.2f, %.2f, %.2f)",
+			mapName.str(),
+			waypoint.str(),
+			lookAtWaypoint.str(),
+			pos.x,
+			pos.y,
+			pos.z));
+
+		return;
+	}
 
 	// CHI04 ending specific fix here
 	Bool rebornSetupCameraFix =
@@ -1042,13 +1146,49 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 {
-	for (Waypoint *way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext()) {
-		if (way->getName() == waypoint) {
-			Coord3D destination = *way->getLocation();
-			TheTacticalView->cameraModLookToward(&destination);
-			break;
-		}
+	Waypoint* way = TheTerrainLogic->getWaypointByName(waypoint);
+	if (way == nullptr)
+	{
+		return;
 	}
+
+	Coord3D destination = *way->getLocation();
+
+	AsciiString mapName =
+		TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+	DEBUG_LOG((
+			"doModCameraLookToward: map=%s waypoint=%s destination=(%.2f, %.2f, %.2f)",
+			mapName.str(),
+			waypoint.str(),
+			destination.x,
+			destination.y,
+			destination.z));
+
+	// Reborn: The original GLA04 script applies this look-toward command
+	// immediately after a zero-duration camera move. cameraModLookToward()
+	// normally only handles waypoint-path movements, so apply the angle
+	// immediately for this specific cinematic shot.
+	const Bool fixGLA04IntroLook3b =
+		!mapName.compareNoCase("GLA04.map") &&
+		!waypoint.compareNoCase("INTRO_camera0_look3b");
+
+	if (fixGLA04IntroLook3b)
+	{
+		TheTacticalView->cameraLookTowardImmediate(&destination);
+
+		DEBUG_LOG((
+			"doModCameraLookToward GLA04 FIX: waypoint=%s "
+			"destination=(%.2f, %.2f, %.2f)",
+			waypoint.str(),
+			destination.x,
+			destination.y,
+			destination.z));
+
+		return;
+	}
+
+	TheTacticalView->cameraModLookToward(&destination);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1079,6 +1219,10 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 			waypoint == "INTRO_Camera_SC3_LookAt02" ||
 			waypoint == "INTRO_Camera_Final_Rot");
 
+	const Bool fixGLA04IntroLook5 =
+		mapName.compareNoCase("Maps\\GLA04\\GLA04.map") == 0 &&
+		waypoint.compareNoCase("INTRO_camera0_look5") == 0;
+
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
 		if (way->getName() == waypoint)
@@ -1092,6 +1236,19 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 				destination.y,
 				destination.z));
 
+			if (fixGLA04IntroLook5)
+			{
+				// Reborn: Apply the intended horizontal look direction immediately after
+				// the zero-duration camera repositioning used by this GLA04 intro shot.
+				TheTacticalView->cameraLookTowardImmediate(&destination);
+
+				// Reborn: Restore the intended pitch for the shot.
+				TheTacticalView->setPitch(0.70f);
+
+				DEBUG_LOG(("doModCameraFinalLookToward GLA04 FIX: waypoint=%s pitch=%.2f",
+					waypoint.str(),
+					TheTacticalView->getPitch()));
+			}
 			if (fixGLA01DamSequence || fixGLA02Intro || fixGLA03Intro)
 			{
 				const Bool applyBackwardOffset =
@@ -3569,6 +3726,7 @@ void ScriptActions::doDisableInput()
 		TheInGameUI->setWaypointMode( FALSE );
 		TheControlBar->deleteBuildTooltipLayout();
 		TheLookAtTranslator->resetModes();
+		g_useLegacyForwardSpeed2D = true; // Reborn: Enable Legacy Forward Speed 2D when input is disabled, to avoid camera issues with the new system.
 	}
 }
 
@@ -3579,6 +3737,7 @@ void ScriptActions::doEnableInput()
 {
 	TheInGameUI->setInputEnabled(true);
 	TheMouse->setVisibility(true);
+	g_useLegacyForwardSpeed2D = false; // Reborn: Disable Legacy Forward Speed 2D when input is enabled, to restore the fixed movement behavior.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -7367,7 +7526,8 @@ void ScriptActions::doRebornEnableAIScriptUpgrades(const AsciiString& playerName
 
 	AIPlayer* aiPlayer = player->getAIPlayer();
 	if (!aiPlayer) {
-		DEBUG_LOG(("Reborn AI script upgrades: player '%s' has no AIPlayer\n", playerName.str()));
+		DEBUG_LOG(("Reborn AI script upgrades: player '%s' has no AIPlayer\n",
+			TheNameKeyGenerator->keyToName(player->getPlayerNameKey()).str()));
 		return;
 	}
 

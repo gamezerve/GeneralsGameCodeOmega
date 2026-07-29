@@ -375,6 +375,7 @@ void CampaignManager::parseMissionPart( INI* ini, void *instance, void *store, c
       { "PlayerFaction",        INI::parseAsciiString,        nullptr, offsetof( Mission, m_playerFaction) }, // Reborn: Added for Chapters Menu
       { "AllyFaction1",         INI::parseAsciiString,        nullptr, offsetof( Mission, m_allyFaction1) }, // Reborn: Added for Chapters Menu
       { "EnemyFaction1",        INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction1) }, // Reborn: Added for Chapters Menu
+      { "EnemyFaction2",        INI::parseAsciiString,        nullptr, offsetof( Mission, m_enemyFaction2) }, // Reborn: Added for Chapters Menu
       { "WorldMapMarkerX",      INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerX) }, // Reborn: Added for Chapters Menu
       { "WorldMapMarkerY",      INI::parseInt,                nullptr, offsetof( Mission, m_worldMapMarkerY) }, // Reborn: Added for Chapters Menu
 			{ "NextMission",		    	INI::parseAsciiString,				nullptr, offsetof( Mission, m_nextMission ) },

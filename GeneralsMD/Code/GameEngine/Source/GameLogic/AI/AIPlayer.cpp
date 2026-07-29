@@ -1956,7 +1956,9 @@ void AIPlayer::updateScriptUpgradeList()
 {
 
 	// Reborn: Only attempt to build script upgrades if we're active and we're a skirmish AI. Also requires to be enabled through WorldBuilder scripts.
-	if (!m_scriptUpgradeListEnabled || !m_player || !m_player->isPlayerActive() || !isSkirmishAI()) {
+	//if (!m_scriptUpgradeListEnabled || !m_player || !m_player->isPlayerActive() || !isSkirmishAI()) {
+	// Reborn: !isSkirmishAI() condition removed to allow it to work in Campaign
+	if (!m_scriptUpgradeListEnabled || !m_player || !m_player->isPlayerActive()) {
 		return;
 	}
 

@@ -1688,6 +1688,52 @@ WINDOW
                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
       END
+      CHILD
+      WINDOW
+        WINDOWTYPE = USER;
+        SCREENRECT = UPPERLEFT: 650 408,
+                     BOTTOMRIGHT: 676 434,
+                     CREATIONRESOLUTION: 800 600;
+        NAME = "ChaptersMenu.wnd:EnemyFactionIcon2";
+        STATUS = ENABLED+IMAGE;
+        STYLE = USER;
+        SYSTEMCALLBACK = "[None]";
+        INPUTCALLBACK = "[None]";
+        TOOLTIPCALLBACK = "[None]";
+        DRAWCALLBACK = "[None]";
+        HEADERTEMPLATE = "[None]";
+        TOOLTIPDELAY = -1;
+        TEXTCOLOR = ENABLED:  0 0 0 0, ENABLEDBORDER:  0 0 0 0,
+                    DISABLED: 0 0 0 0, DISABLEDBORDER: 0 0 0 0,
+                    HILITE:   0 0 0 0, HILITEBORDER:   0 0 0 0;
+        ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 255 255 255, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 0 0 0 0;
+        DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        HILITEDRAWDATA = IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+      END
       ENDALLCHILDREN
     END
     CHILD

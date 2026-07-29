@@ -110,6 +110,7 @@ struct CampaignMissionInfo
   std::string playerFaction;
   std::string allyFaction1;
   std::string enemyFaction1;
+  std::string enemyFaction2;
   Int worldMapMarkerX = -1;
   Int worldMapMarkerY = -1;
 };
@@ -213,7 +214,7 @@ static void PositionDifficultyStars()
   );
 }
 
-static void PositionMissionFactionIcons(Bool hasAlly)
+static void PositionMissionFactionIcons(Bool hasAlly, Bool hasSecondEnemy)
 {
   GameWindow* playerWindow = TheWindowManager->winGetWindowFromId(
     nullptr,
@@ -225,12 +226,22 @@ static void PositionMissionFactionIcons(Bool hasAlly)
     TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:AllyFactionIcon1")
   );
 
+  GameWindow* enemyWindow1 = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EnemyFactionIcon1")
+  );
+
+  GameWindow* enemyWindow2 = TheWindowManager->winGetWindowFromId(
+    nullptr,
+    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EnemyFactionIcon2")
+  );
+
   GameWindow* vsWindow = TheWindowManager->winGetWindowFromId(
     nullptr,
     TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:VSWindow")
   );
 
-  if (!playerWindow || !vsWindow)
+  if (!playerWindow || !enemyWindow1 || !vsWindow)
     return;
 
   ICoord2D vsSize;
@@ -240,23 +251,38 @@ static void PositionMissionFactionIcons(Bool hasAlly)
   Real scaleY = (Real)vsSize.y / 32.0f;
 
   Int playerBaseX = REAL_TO_INT_FLOOR(28.0f * scaleX);
-  Int playerBaseY = REAL_TO_INT_FLOOR(3.0f * scaleY);
+  Int enemyBaseX = REAL_TO_INT_FLOOR(116.0f * scaleX);
+  Int baseY = REAL_TO_INT_FLOOR(3.0f * scaleY);
 
-  Int playerShift = REAL_TO_INT_FLOOR((35.0f / 2.4f) * scaleX);
-  Int allyShift = REAL_TO_INT_FLOOR((29.0f / 2.4f) * scaleX);
+  Int leftShift = REAL_TO_INT_FLOOR((35.0f / 2.4f) * scaleX);
+  Int rightShift = REAL_TO_INT_FLOOR((29.0f / 2.4f) * scaleX);
 
   if (hasAlly && allyWindow)
   {
-    playerWindow->winSetPosition(playerBaseX - playerShift, playerBaseY);
-    allyWindow->winSetPosition(playerBaseX + allyShift, playerBaseY);
+    playerWindow->winSetPosition(playerBaseX - leftShift, baseY);
+    allyWindow->winSetPosition(playerBaseX + rightShift, baseY);
     allyWindow->winHide(FALSE);
   }
   else
   {
-    playerWindow->winSetPosition(playerBaseX, playerBaseY);
+    playerWindow->winSetPosition(playerBaseX, baseY);
 
     if (allyWindow)
       allyWindow->winHide(TRUE);
+  }
+
+  if (hasSecondEnemy && enemyWindow2)
+  {
+    enemyWindow1->winSetPosition(enemyBaseX - leftShift, baseY);
+    enemyWindow2->winSetPosition(enemyBaseX + rightShift, baseY);
+    enemyWindow2->winHide(FALSE);
+  }
+  else
+  {
+    enemyWindow1->winSetPosition(enemyBaseX, baseY);
+
+    if (enemyWindow2)
+      enemyWindow2->winHide(TRUE);
   }
 }
 
@@ -275,32 +301,37 @@ static void UpdateMissionFactionIcons(Int row)
     SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", nullptr);
     SetWindowImage("ChaptersMenu.wnd:AllyFactionIcon1", nullptr);
     SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", nullptr);
+    SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon2", nullptr);
     SetWindowVisible("ChaptersMenu.wnd:VsText", FALSE);
-    PositionMissionFactionIcons(FALSE);
+    PositionMissionFactionIcons(FALSE, FALSE);
     return;
   }
 
   const CampaignMissionInfo& mission = campaignMissionData[row];
 
   const Image* playerIcon = GetFactionIcon(mission.playerFaction);
-  const Image* allyIcon = GetFactionIcon(mission.allyFaction1);
-  const Image* enemyIcon = GetFactionIcon(mission.enemyFaction1);
+  const Image* allyIcon1 = GetFactionIcon(mission.allyFaction1);
+  const Image* enemyIcon1 = GetFactionIcon(mission.enemyFaction1);
+  const Image* enemyIcon2 = GetFactionIcon(mission.enemyFaction2);
 
-  DEBUG_LOG(("Faction icons: player='%s' ally='%s' enemy='%s' playerIcon=%p allyIcon=%p enemyIcon=%p\n",
+  DEBUG_LOG(("Faction icons: player='%s' ally1='%s' enemy1='%s' enemy2='%s' playerIcon=%p allyIcon1=%p enemyIcon1=%p enemyIcon2=%p\n",
     mission.playerFaction.c_str(),
     mission.allyFaction1.c_str(),
     mission.enemyFaction1.c_str(),
+    mission.enemyFaction2.c_str(),
     playerIcon,
-    allyIcon,
-    enemyIcon));
+    allyIcon1,
+    enemyIcon1,
+    enemyIcon2));
 
   SetWindowImage("ChaptersMenu.wnd:PlayerFactionIcon", playerIcon);
-  SetWindowImage("ChaptersMenu.wnd:AllyFactionIcon1", allyIcon);
-  SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", enemyIcon);
+  SetWindowImage("ChaptersMenu.wnd:AllyFactionIcon1", allyIcon1);
+  SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon1", enemyIcon1);
+  SetWindowImage("ChaptersMenu.wnd:EnemyFactionIcon2", enemyIcon2);
 
-  PositionMissionFactionIcons(allyIcon != nullptr);
+  PositionMissionFactionIcons(allyIcon1 != nullptr, enemyIcon2 != nullptr);
 
-  SetWindowVisible("ChaptersMenu.wnd:VsText", playerIcon || allyIcon || enemyIcon);
+  SetWindowVisible("ChaptersMenu.wnd:VsText", playerIcon || allyIcon1 || enemyIcon1 || enemyIcon2);
 }
 
 static void NormalizeMapPath(AsciiString& path)
@@ -628,6 +659,7 @@ static void LoadCampaignMaps(const char* campaignName)
   std::string playerFaction;
   std::string allyFaction1;
   std::string enemyFaction1;
+  std::string enemyFaction2;
   Int worldMapMarkerX = -1;
   Int worldMapMarkerY = -1;
 
@@ -699,6 +731,7 @@ static void LoadCampaignMaps(const char* campaignName)
           info.playerFaction = playerFaction;
           info.allyFaction1 = allyFaction1;
           info.enemyFaction1 = enemyFaction1;
+          info.enemyFaction2 = enemyFaction2;
           info.worldMapMarkerX = worldMapMarkerX;
           info.worldMapMarkerY = worldMapMarkerY;
 
@@ -753,6 +786,7 @@ static void LoadCampaignMaps(const char* campaignName)
         playerFaction.clear();
         allyFaction1.clear();
         enemyFaction1.clear();
+        enemyFaction2.clear();
         worldMapMarkerX = -1;
         worldMapMarkerY = -1;
       }
@@ -808,6 +842,12 @@ static void LoadCampaignMaps(const char* campaignName)
     if (trimmed.rfind("EnemyFaction1 ", 0) == 0)
     {
       enemyFaction1 = TrimCopy(trimmed.substr(14));
+      continue;
+    }
+
+    if (trimmed.rfind("EnemyFaction2 ", 0) == 0)
+    {
+      enemyFaction2 = TrimCopy(trimmed.substr(14));
       continue;
     }
 

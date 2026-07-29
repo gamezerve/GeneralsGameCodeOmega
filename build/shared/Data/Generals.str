@@ -1,4 +1,8 @@
 
+GUI:GLA04
+"Astana City"
+END
+
 GUI:GLA03
 "Black Sheep"
 END
@@ -23268,6 +23272,10 @@ END
 
 OBJECT:Astana
 "Astana"
+END
+
+LOCATION:Astana
+"Astana, Kazakhstan"
 END
 
 OBJECT:Aurora

@@ -81,6 +81,7 @@ public:
 	AsciiString m_playerFaction;
 	AsciiString m_allyFaction1;
 	AsciiString m_enemyFaction1;
+	AsciiString m_enemyFaction2;
 	Int m_worldMapMarkerX;
 	Int m_worldMapMarkerY;
 	AsciiString m_missionObjectivesLabel[MAX_OBJECTIVE_LINES];
