@@ -121,7 +121,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_soundOnDamaged,           ///< Sound when unit enters damaged state
 	TTAUDIO_soundOnReallyDamaged,     ///< Sound when unit enters really damaged state
 	TTAUDIO_soundDieFire,							///< Sound when unit dies by fire. NOTE: Replaces soundDie if present and unit dies by fire.
-	TTAUDIO_soundDieToxin,						///< Sound when unit dies by Toxin. NOTE: Replaces soundDie if present and unit dies by fire.
+	TTAUDIO_soundDieToxin,						///< Sound when unit dies by toxin. NOTE: Replaces soundDie if present and unit dies by toxin.
 	TTAUDIO_soundEnter,								///< Sound when another unit enters me.
 	TTAUDIO_soundExit,								///< Sound when another unit exits me.
 	TTAUDIO_soundPromotedVeteran,			///< Sound when unit gets promoted to Veteran level
