@@ -2145,6 +2145,60 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	TheTacticalView->setPitchToDefault();
 	TheTacticalView->setZoomToDefault();
 
+	// Reborn: GLA05 Intro Initial Camera Fix
+	if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA05\\GLA05.map") == 0)
+	{
+		Waypoint* introStart =
+			findNamedWaypoint("INTRO_Camera_Sc.1_Start");
+
+		Waypoint* introLook =
+			findNamedWaypoint("INTRO_Camera_Sc.1_Goto_Lookat");
+
+		if (introStart != nullptr && introLook != nullptr)
+		{
+			const Coord3D startPosition =
+				*introStart->getLocation();
+
+			const Coord3D lookDestination =
+				*introLook->getLocation();
+
+			TheTacticalView->lookAt(&startPosition);
+
+			Vector2 dir(
+				lookDestination.x - startPosition.x,
+				lookDestination.y - startPosition.y);
+
+			const Real dirLength = dir.Length();
+
+			if (dirLength > 0.1f)
+			{
+				Real angle =
+					WWMath::Acos(dir.X / dirLength);
+
+				if (dir.Y < 0.0f)
+				{
+					angle = -angle;
+				}
+
+				angle -= PI / 2;
+				angle = WWMath::Normalize_Angle(angle);
+
+				TheTacticalView->setAngle(angle);
+
+				DEBUG_LOG((
+					"GLA05 initial cinematic camera fix: "
+					"start=%s lookAt=%s "
+					"position=(%.2f, %.2f, %.2f) angle=%.4f",
+					"INTRO_Camera_Sc.1_Start",
+					"INTRO_Camera_Sc.1_Goto_Lookat",
+					startPosition.x,
+					startPosition.y,
+					startPosition.z,
+					angle));
+			}
+		}
+	}
+
 	// update the loadscreen
 	updateLoadProgress(LOAD_PROGRESS_POST_STARTING_CAMERA_2);
 

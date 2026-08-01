@@ -1,4 +1,8 @@
 
+GUI:GLA05
+"Incirlik Air Base"
+END
+
 GUI:GLA04
 "Astana City"
 END
@@ -23952,6 +23956,10 @@ END
 
 OBJECT:Incirlik
 "Incirlik"
+END
+
+LOCATION:Incirlik
+"Incirlik Air Base, Adana, Turkiye"
 END
 
 OBJECT:IndustrialBuilding

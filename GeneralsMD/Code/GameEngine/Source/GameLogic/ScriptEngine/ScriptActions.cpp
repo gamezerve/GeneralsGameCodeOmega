@@ -845,6 +845,19 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("END_Camera01_SC6_Goto") == 0
 			);
 
+	// Reborn: Preserve the original zero-duration camera movement path for
+	// the affected GLA05 cinematic shots.
+	const Bool preserveGLA05CameraMovement =
+		mapName.compareNoCase("Maps\\GLA05\\GLA05.map") == 0 &&
+		(
+			waypoint.compareNoCase("INTRO_Camera_Sc.2_Goto") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_Sc.6_Goto") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_Sc.7_Goto") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_Sc.8_Goto") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_Sc.9_Goto") == 0 ||
+			waypoint.compareNoCase("InitialCameraPosition") == 0
+			);
+
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
 		if (way->getName() == waypoint)
@@ -855,7 +868,8 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 				sec <= 0.0f &&
 				!preserveCHI03CameraMovement &&
 				!preserveCHI05CameraMovement &&
-				!preserveCHI06CameraMovement)
+				!preserveCHI06CameraMovement &&
+				!preserveGLA05CameraMovement)
 			{
 				TheTacticalView->setUserControlled(false);
 				TheTacticalView->lookAt(&destination);
@@ -868,6 +882,24 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			}
 			else
 			{
+				const Coord2D currentPosition =
+					TheTacticalView->getPosition2D();
+
+				DEBUG_LOG((
+					"doMoveCameraTo START STATE: waypoint=%s "
+					"current=(%.2f, %.2f) destination=(%.2f, %.2f, %.2f) "
+					"angle=%.4f pitch=%.4f zoom=%.4f sec=%.2f",
+					waypoint.str(),
+					currentPosition.x,
+					currentPosition.y,
+					destination.x,
+					destination.y,
+					destination.z,
+					TheTacticalView->getAngle(),
+					TheTacticalView->getPitch(),
+					TheTacticalView->getZoom(),
+					sec));
+
 				TheTacticalView->moveCameraTo(
 					&destination,
 					sec * 1000,
@@ -876,7 +908,9 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 					easeIn * 1000.0f,
 					easeOut * 1000.0f);
 
-				DEBUG_LOG(("doMoveCameraTo: waypoint=%s destination=(%.2f, %.2f, %.2f), sec=%.2f",
+				DEBUG_LOG((
+					"doMoveCameraTo: waypoint=%s "
+					"destination=(%.2f, %.2f, %.2f), sec=%.2f",
 					waypoint.str(),
 					destination.x,
 					destination.y,
@@ -1219,6 +1253,7 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 			waypoint == "INTRO_Camera_SC3_LookAt02" ||
 			waypoint == "INTRO_Camera_Final_Rot");
 
+	// Reborn: Fix for the affected GLA04 intro camera sequences.
 	const Bool fixGLA04IntroLook5 =
 		mapName.compareNoCase("Maps\\GLA04\\GLA04.map") == 0 &&
 		waypoint.compareNoCase("INTRO_camera0_look5") == 0;
@@ -1249,7 +1284,7 @@ void ScriptActions::doModCameraFinalLookToward(const AsciiString& waypoint)
 					waypoint.str(),
 					TheTacticalView->getPitch()));
 			}
-			if (fixGLA01DamSequence || fixGLA02Intro || fixGLA03Intro)
+			else if (fixGLA01DamSequence || fixGLA02Intro || fixGLA03Intro)
 			{
 				const Bool applyBackwardOffset =
 					waypoint != "INTRO_Camera_SC3_LookAt02";
