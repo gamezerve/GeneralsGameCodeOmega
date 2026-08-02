@@ -28,11 +28,11 @@
 #endif
 
 #ifndef PRESERVE_CHINOOK_PASSENGER_DUMPING
-#define PRESERVE_CHINOOK_PASSENGER_DUMPING (1)
+#define PRESERVE_CHINOOK_PASSENGER_DUMPING (0)
 #endif
 
 #ifndef PRESERVE_HARDCODED_BLACK_LOTUS_CASH_HACK
-#define PRESERVE_HARDCODED_BLACK_LOTUS_CASH_HACK (1)
+#define PRESERVE_HARDCODED_BLACK_LOTUS_CASH_HACK (0)
 #endif
 
 #ifndef PRESERVE_MULTI_CRATE_PICKUP
@@ -44,23 +44,23 @@
 #endif
 
 #ifndef PRESERVE_NO_XP_FROM_OCL_KILLS
-#define PRESERVE_NO_XP_FROM_OCL_KILLS (1)
+#define PRESERVE_NO_XP_FROM_OCL_KILLS (0)
 #endif
 
 #ifndef PRESERVE_NO_XP_FROM_POISON_KILLS
-#define PRESERVE_NO_XP_FROM_POISON_KILLS (1)
+#define PRESERVE_NO_XP_FROM_POISON_KILLS (0)
 #endif
 
 #ifndef PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION
-#define PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION (1)
+#define PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION (0)
 #endif
 
 #ifndef PRESERVE_PERPETUAL_HORDE_BONUS
-#define PRESERVE_PERPETUAL_HORDE_BONUS (1)
+#define PRESERVE_PERPETUAL_HORDE_BONUS (0)
 #endif
 
 #ifndef PRESERVE_PREMATURE_BATTLE_BUS_DEATH
-#define PRESERVE_PREMATURE_BATTLE_BUS_DEATH (1)
+#define PRESERVE_PREMATURE_BATTLE_BUS_DEATH (0)
 #endif
 
 #ifndef PRESERVE_RADAR_WARNING_SUPPRESSION
@@ -72,7 +72,7 @@
 #endif
 
 #ifndef PRESERVE_TUNNEL_HEAL_STACKING
-#define PRESERVE_TUNNEL_HEAL_STACKING (1)
+#define PRESERVE_TUNNEL_HEAL_STACKING (0)
 #endif
 
 #ifndef PRESERVE_UNRELIABLE_FIRESTORMS
@@ -88,30 +88,30 @@
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CRC
-#define RETAIL_COMPATIBLE_CRC (1) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_CRC (0) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
-#define RETAIL_COMPATIBLE_XFER_SAVE (1) // Game is expected to be Xfer Save compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_XFER_SAVE (0) // Game is expected to be Xfer Save compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 // This is here to easily toggle between the retail compatible with fixed pathfinding fallback and pure fixed pathfinding mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING
-#define RETAIL_COMPATIBLE_PATHFINDING (1)
+#define RETAIL_COMPATIBLE_PATHFINDING (0)
 #endif
 
 // This is here to easily toggle between the retail compatible pathfinding memory allocation and the new static allocated data mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
-#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (1)
+#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (0)
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
-#define RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM (1) // Use the original circle fill algorithm, which is more efficient but less accurate
+#define RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM (0) // Use the original circle fill algorithm, which is more efficient but less accurate
 #endif
 
 // Disable non retail fixes in the networking, such as putting more data per UDP packet
 #ifndef RETAIL_COMPATIBLE_NETWORKING
-#define RETAIL_COMPATIBLE_NETWORKING (1)
+#define RETAIL_COMPATIBLE_NETWORKING (0)
 #endif
 
 // This is essentially synonymous for RETAIL_COMPATIBLE_CRC. There is a lot wrong with AIGroup, such as use-after-free, double-free, leaks,
@@ -119,7 +119,7 @@
 // but put them behind this macro.
 
 #ifndef RETAIL_COMPATIBLE_AIGROUP
-#define RETAIL_COMPATIBLE_AIGROUP (1) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_AIGROUP (0) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef ENABLE_GAMETEXT_SUBSTITUTES
@@ -127,7 +127,7 @@
 #endif
 
 #ifndef ALLOW_MONEY_PER_MINUTE_FOR_PLAYER
-#define ALLOW_MONEY_PER_MINUTE_FOR_PLAYER (0) // When enabled, a money-per-minute stat is calculated and displayed in-game
+#define ALLOW_MONEY_PER_MINUTE_FOR_PLAYER (1) // When enabled, a money-per-minute stat is calculated and displayed in-game
 #endif
 
 // Previously the configurable shroud sat behind #if defined(RTS_DEBUG)

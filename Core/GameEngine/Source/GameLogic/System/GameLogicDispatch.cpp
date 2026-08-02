@@ -598,10 +598,15 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			if (obj)
 			{
 #if !RETAIL_COMPATIBLE_CRC
-				if (obj->getControllingPlayer() != thisPlayer)
+				Player* player = ThePlayerList->getNthPlayer(msg->getPlayerIndex());
+
+				if (player == nullptr)
+					break;
+
+				if (obj->getControllingPlayer() != player)
 				{
 					DEBUG_CRASH(("MSG_RESET_RALLY_POINT: Player '%ls' attempted to reset the rally point of object '%s' owned by player '%ls'.",
-						thisPlayer->getPlayerDisplayName().str(),
+						player->getPlayerDisplayName().str(),
 						obj->getTemplate()->getName().str(),
 						obj->getControllingPlayer()->getPlayerDisplayName().str()));
 					break;
