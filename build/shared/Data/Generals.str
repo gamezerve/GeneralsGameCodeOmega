@@ -63,6 +63,14 @@ GUI:Location
 "Location"
 END
 
+CONTROLBAR:UpgradeActive
+"Active"
+END
+
+CONTROLBAR:UpgradePassive
+"Passive"
+END
+
 GUI:ReplayMoneyRequestSent
 "%ls requested money from %ls"
 END

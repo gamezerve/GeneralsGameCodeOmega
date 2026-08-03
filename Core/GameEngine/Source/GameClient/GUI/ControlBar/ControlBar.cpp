@@ -988,69 +988,6 @@ const UpgradeTemplate* ControlBar::getUpgradeTemplateForCameoWindow(GameWindow* 
 	return nullptr;
 }
 
-void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade)
-{
-	if (!window || !upgrade || !m_buildToolTipLayout)
-		return;
-
-	if (TheInGameUI->areTooltipsDisabled())
-		return;
-
-	if (TheScriptEngine->isGameEnding())
-		return;
-
-	if (TheGameLogic->isInReplayGame())
-		return;
-
-	if (TheInGameUI->isQuitMenuVisible())
-		return;
-
-	if (TheDisconnectMenu && TheDisconnectMenu->isScreenVisible())
-		return;
-
-	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
-	if (!root)
-		return;
-
-	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
-		root,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName")
-	);
-
-	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
-		root,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
-	);
-
-	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
-		root,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
-	);
-
-	if (!titleWin || !descWin || !costWin)
-		return;
-
-	UnicodeString emptyText;
-	UnicodeString titleText;
-
-	const AsciiString& displayNameLabel = upgrade->getDisplayNameLabel();
-	if (displayNameLabel.isNotEmpty())
-		titleText = TheGameText->fetch(displayNameLabel);
-	else
-		titleText.translate(upgrade->getUpgradeName());
-
-	titleWin->winHide(FALSE);
-	descWin->winHide(FALSE);
-	costWin->winHide(FALSE);
-
-	GadgetStaticTextSetText(titleWin, titleText);
-	GadgetStaticTextSetText(descWin, emptyText);
-	GadgetStaticTextSetText(costWin, emptyText);
-
-	m_showBuildToolTipLayout = TRUE;
-	m_buildToolTipLayout->hide(FALSE);
-}
-
 //void ControlBar::showSelectedUnitCameoTooltip(GameWindow* window)
 //{
 //	if (!window || !m_buildToolTipLayout)

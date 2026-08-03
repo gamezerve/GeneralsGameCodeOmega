@@ -330,6 +330,11 @@ static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
 
 	if (descWin)
 	{
+		TextData* textData = static_cast<TextData*>(descWin->winGetUserData());
+
+		if (textData)
+			textData->centered = FALSE;
+
 		descWin->winSetSize(s_tooltipDescDefaultSize.x, s_tooltipDescDefaultSize.y);
 		descWin->winSetPosition(s_tooltipDescDefaultPos.x, s_tooltipDescDefaultPos.y);
 	}
@@ -3249,6 +3254,118 @@ if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
 	m_buildToolTipLayout->hide(FALSE);
 }
 
+void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade)
+{
+	if (!window || !upgrade || !m_buildToolTipLayout)
+		return;
+
+	if (TheInGameUI->areTooltipsDisabled())
+		return;
+
+	if (TheScriptEngine->isGameEnding())
+		return;
+
+	if (TheGameLogic->isInReplayGame())
+		return;
+
+	if (TheInGameUI->isQuitMenuVisible())
+		return;
+
+	if (TheDisconnectMenu && TheDisconnectMenu->isScreenVisible())
+		return;
+
+	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
+
+	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
+	if (!root)
+		return;
+
+	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
+
+	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
+
+	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
+
+	if (!titleWin || !descWin || !costWin)
+		return;
+
+	UnicodeString titleText;
+	UnicodeString descriptionText;
+
+	const AsciiString& displayNameLabel = upgrade->getDisplayNameLabel();
+
+	if (displayNameLabel.isNotEmpty())
+		titleText = TheGameText->fetch(displayNameLabel);
+	else
+		titleText.translate(upgrade->getUpgradeName());
+
+	Object* obj = TheGameLogic->findObjectByID(m_rightHUDPortraitObjectID);
+	Bool upgradeEnabled = FALSE;
+
+	if (obj)
+	{
+		Player* player = obj->getControllingPlayer();
+
+		upgradeEnabled =
+			obj->hasUpgrade(upgrade) ||
+			(player && player->hasUpgradeComplete(upgrade));
+	}
+
+	TextData* textData = static_cast<TextData*>(descWin->winGetUserData());
+
+	if (textData)
+		textData->centered = TRUE;
+
+	descriptionText = TheGameText->fetch(
+		upgradeEnabled
+		? "CONTROLBAR:UpgradeActive"
+		: "CONTROLBAR:UpgradePassive");
+
+	titleWin->winHide(FALSE);
+	descWin->winHide(FALSE);
+	costWin->winHide(TRUE);
+
+	GadgetStaticTextSetText(titleWin, titleText);
+	GadgetStaticTextSetText(descWin, descriptionText);
+
+	ICoord2D descSize;
+	ICoord2D textSize;
+	ICoord2D rootSize;
+	ICoord2D rootPos;
+
+	descWin->winGetSize(&descSize.x, &descSize.y);
+
+	DisplayString* displayString = TheDisplayStringManager->newDisplayString();
+	displayString->setFont(descWin->winGetFont());
+	displayString->setWordWrap(descSize.x - 10);
+	displayString->setText(descriptionText);
+	displayString->getSize(&textSize.x, &textSize.y);
+	TheDisplayStringManager->freeDisplayString(displayString);
+
+	Int heightDifference = textSize.y - descSize.y;
+
+	if (heightDifference < 0)
+		heightDifference = 0;
+
+	root->winGetSize(&rootSize.x, &rootSize.y);
+	root->winGetPosition(&rootPos.x, &rootPos.y);
+
+	root->winSetSize(rootSize.x, rootSize.y + heightDifference);
+	root->winSetPosition(rootPos.x, rootPos.y - heightDifference);
+
+	descWin->winSetSize(descSize.x, descSize.y + heightDifference);
+
+	GadgetStaticTextSetText(descWin, descriptionText);
+
+	m_showBuildToolTipLayout = TRUE;
+	m_buildToolTipLayout->hide(FALSE);
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
