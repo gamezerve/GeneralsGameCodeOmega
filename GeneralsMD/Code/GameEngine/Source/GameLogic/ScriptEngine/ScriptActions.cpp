@@ -858,18 +858,87 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("InitialCameraPosition") == 0
 			);
 
+	// Reborn: Preserve the original zero-duration camera movement path for
+  // the affected GLA06 cinematic shots.
+	const Bool preserveGLA06CameraMovement =
+		mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+		waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0;
+
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
 		if (way->getName() == waypoint)
 		{
 			Coord3D destination = *way->getLocation();
 
+			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				(
+					waypoint.compareNoCase("INTRO_Camera_SC2_01") == 0 ||
+					waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0 ||
+					waypoint.compareNoCase("INTRO_Camera_SC4_01") == 0
+					))
+			{
+				destination.x += 125.0f;
+				destination.y -= 155.0f;
+			}
+
+			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				waypoint.compareNoCase("INTRO_Camera_SC2_01") == 0)
+			{
+				TheTacticalView->setAngle(0.7337f);
+			}
+
+			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0 &&
+				sec <= 0.0f)
+			{
+				TheTacticalView->setAngle(0.6825f);
+			}
+
+			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				waypoint.compareNoCase("INTRO_Camera_SC3_03") == 0)
+			{
+				Waypoint* lookAtWaypoint =
+					TheTerrainLogic->getWaypointByName("INTRO_Camera_SC1_04");
+
+				if (lookAtWaypoint != nullptr)
+				{
+					const Coord3D lookDestination = *lookAtWaypoint->getLocation();
+
+					Vector2 dir(
+						lookDestination.x - destination.x,
+						lookDestination.y - destination.y);
+
+					const Real dirLength = dir.Length();
+
+					if (dirLength > 0.1f)
+					{
+						Real angle = WWMath::Acos(dir.X / dirLength);
+
+						if (dir.Y < 0.0f)
+						{
+							angle = -angle;
+						}
+
+						angle -= PI / 2;
+						angle += DEG_TO_RADF(1.5f);
+						angle = WWMath::Normalize_Angle(angle);
+
+						TheTacticalView->setAngle(angle);
+
+						DEBUG_LOG((
+							"GLA06 SC3 START ANGLE FIX: angle=%.4f",
+							angle));
+					}
+				}
+			}
+
 			if (IsRebornCampaign() &&
 				sec <= 0.0f &&
 				!preserveCHI03CameraMovement &&
 				!preserveCHI05CameraMovement &&
 				!preserveCHI06CameraMovement &&
-				!preserveGLA05CameraMovement)
+				!preserveGLA05CameraMovement &&
+				!preserveGLA06CameraMovement)
 			{
 				TheTacticalView->setUserControlled(false);
 				TheTacticalView->lookAt(&destination);

@@ -2979,8 +2979,43 @@ void W3DView::cameraModLookToward(Coord3D *pLoc)
 			// Default camera is rotated 90 degrees, so match.
 			angle -= PI/2;
 			normAngle(angle);
-			m_mcwpInfo.cameraAngle[i] = angle;
+
+			const Bool fixGLA06SC2 =
+				TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				pLoc->x > 63.0f && pLoc->x < 63.2f &&
+				pLoc->y > 2010.5f && pLoc->y < 2010.8f;
+
+			const Bool fixGLA06SC4 =
+				TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
+				pLoc->x > 45.0f && pLoc->x < 45.3f &&
+				pLoc->y > 2030.7f && pLoc->y < 2031.1f;
+
+			if (fixGLA06SC2 || fixGLA06SC4)
+			{
+				const Real fixedAngle = m_angle;
+
+				for (Int j = 0; j <= m_mcwpInfo.numWaypoints + 1; ++j)
+				{
+					m_mcwpInfo.cameraAngle[j] = fixedAngle;
+				}
+			}
+			else
+			{
+				m_mcwpInfo.cameraAngle[i] = angle;
+			}
+
 		}
+
+		if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0)
+		{
+			DEBUG_LOG((
+				"GLA06 LOOK PATH: angle0=%.4f angle1=%.4f angle2=%.4f angle3=%.4f",
+				m_mcwpInfo.cameraAngle[0],
+				m_mcwpInfo.cameraAngle[1],
+				m_mcwpInfo.cameraAngle[2],
+				m_mcwpInfo.cameraAngle[3]));
+		}
+
 		if (m_mcwpInfo.totalTimeMilliseconds==1) {
 			// do it instantly.
 			moveAlongWaypointPath(1);
