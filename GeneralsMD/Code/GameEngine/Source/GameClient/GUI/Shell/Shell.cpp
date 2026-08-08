@@ -213,15 +213,14 @@ void Shell::update()
 
 		}
 
-		// Update the animate window manager
-		m_animateWindowManager->update();
-
 		m_schemeManager->update();
 
 		// mark last time we ran the updates
 		lastUpdate = now;
 
 	}
+
+	m_animateWindowManager->update();
 
 }
 
