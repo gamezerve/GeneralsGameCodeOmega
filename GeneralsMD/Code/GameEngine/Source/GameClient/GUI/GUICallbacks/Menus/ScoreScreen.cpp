@@ -228,7 +228,7 @@ void startNextCampaignGame()
 	AsciiString campaignName = camp ? camp->m_name : AsciiString::TheEmptyString;
 	AsciiString missionName = mission ? mission->m_name : AsciiString::TheEmptyString;
 
-	TheShell->popImmediate();
+	TheShell->popImmediate(TRUE);
 
 	if (g_chapterMissionLaunchActive && campaignName.isNotEmpty() && missionName.isNotEmpty())
 		TheCampaignManager->setCampaignAndMission(campaignName, missionName);

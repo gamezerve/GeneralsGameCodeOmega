@@ -1,4 +1,8 @@
 
+GUI:GLA06
+"Appropriate Poisons"
+END
+
 GUI:GLA05
 "Incirlik Air Base"
 END
@@ -23256,6 +23260,10 @@ END
 
 OBJECT:AralSea
 "Aral Sea"
+END
+
+LOCATION:AralSea
+"Western shore of the Aral Sea, Kazakhstan"
 END
 
 OBJECT:Arcade

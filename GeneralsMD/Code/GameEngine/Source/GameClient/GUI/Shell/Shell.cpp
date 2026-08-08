@@ -433,7 +433,7 @@ void Shell::pop()
 	* from the shutdown() for the screen, it will be immediately popped off
 	* the stack */
 //-------------------------------------------------------------------------------------------------
-void Shell::popImmediate()
+void Shell::popImmediate(Bool skipNewTopInit)
 {
 	WindowLayout *screen = top();
 
@@ -457,7 +457,8 @@ void Shell::popImmediate()
 	screen->runShutdown( &immediatePop );
 
 	// pop the screen of the stack
-	doPop( FALSE );
+	//doPop( FALSE );
+	doPop(skipNewTopInit);
 
 	if (TheIMEManager)
 		TheIMEManager->detach();
@@ -558,6 +559,15 @@ void Shell::showShellMap(Bool useShellMap )
 
 
 		InitRandom(0);
+
+		DEBUG_LOG(("Appending MSG_NEW_GAME from Shell::showShellMap useShellMap=%d shellMapOn=%d inGame=%d mode=%d loadingMap=%d pendingFile=%s",
+			useShellMap,
+			TheGlobalData->m_shellMapOn,
+			TheGameLogic->isInGame(),
+			TheGameLogic->getGameMode(),
+			TheGameLogic->isLoadingMap(),
+			TheWritableGlobalData->m_pendingFile.str()));
+
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_SHELL);
 		m_shellMapOn = TRUE;

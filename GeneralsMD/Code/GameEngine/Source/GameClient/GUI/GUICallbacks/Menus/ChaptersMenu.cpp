@@ -1302,6 +1302,12 @@ void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
 
   if (startGame && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
   {
+
+    DEBUG_LOG(("Appending MSG_NEW_GAME from ChaptersMenuUpdate startGame=%d inGame=%d loadingMap=%d",
+      startGame,
+      TheGameLogic->isInGame(),
+      TheGameLogic->isLoadingMap()));
+
     startGame = FALSE;
 
     if (TheGameLogic->isInGame())

@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// FILE: GameDefines.h ///////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "WWLib/WWDefines.h"

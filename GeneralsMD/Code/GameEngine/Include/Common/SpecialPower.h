@@ -143,7 +143,7 @@ private:
 	Real							m_radiusCursorRadius;	///< size of radius cursor, if any
 	Bool							m_publicTimer;				///< display a countdown timer for this special power for all to see
 	Bool							m_sharedNSync;				///< If true, this is a special that is shared between all of a player's command centers
-	Bool							m_shortcutPower;		///< Is this shortcut power capable of being fired by the side panel?
+	Bool							m_shortcutPower;		  ///< Is this shortcut power capable of being fired by the side panel?
 
 	static const FieldParse m_specialPowerFieldParse[];		///< the parse table
 
