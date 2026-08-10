@@ -637,6 +637,12 @@ public:
 		MSG_OBJECT_ORIENTATION,											///< (objectID, angle) New orientation of object
 		MSG_OBJECT_JOINED_TEAM,											///< (objectID) New team affiliation of object
 
+#ifdef ALLOW_SURRENDER
+		MSG_DO_SURRENDER,
+		MSG_RETURN_TO_PRISON,
+		MSG_PICK_UP_PRISONER,
+#endif
+
 		MSG_COUNT
 	};
 

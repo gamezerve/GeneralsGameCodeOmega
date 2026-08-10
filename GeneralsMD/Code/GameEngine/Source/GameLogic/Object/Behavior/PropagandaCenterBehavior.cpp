@@ -167,13 +167,16 @@ UpdateSleepTime PropagandaCenterBehavior::update()
 						ai->setSurrendered( nullptr, FALSE );
 
 					// add this object to our brainwashed list if we're not already in it
-					for( BrainwashedIDListIterator it = m_brainwashedList.begin();
-							 it != m_brainwashedList.end(); ++it )
-						if( *it == brainwashingSubject->getID() )
-							break;  // exit for
+					BrainwashedIDListIterator it = m_brainwashedList.begin();
 
-					if( it == m_brainwashedList.end() )
-						m_brainwashedList.push_front( brainwashingSubject->getID() );
+					for (; it != m_brainwashedList.end(); ++it)
+					{
+						if (*it == brainwashingSubject->getID())
+							break;
+					}
+
+					if (it == m_brainwashedList.end())
+						m_brainwashedList.push_front(brainwashingSubject->getID());
 
 					// exit the prison
 					exitObjectViaDoor( brainwashingSubject, exitDoor );

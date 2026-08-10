@@ -1,4 +1,8 @@
 
+GUI:GLA07
+"Trojan Horse"
+END
+
 GUI:GLA06
 "Appropriate Poisons"
 END
@@ -24044,6 +24048,10 @@ END
 
 OBJECT:Lenger
 "Lenger"
+END
+
+LOCATION:Lenger
+"Near Lenger, Kazakhstan"
 END
 
 OBJECT:Limo

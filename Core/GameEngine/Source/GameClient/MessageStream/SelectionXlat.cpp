@@ -1098,6 +1098,13 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 	else if (si.newCountEnemies > 0 && si.newCountCivilians > 0 && si.newCountFriends > 0)
 	{
 		// No go here
+		if (rebornUseLassoSelection)
+		{
+			m_rebornLassoSelecting = FALSE;
+			m_rebornLassoHasMoved = FALSE;
+			m_rebornLassoAddToGroup = FALSE;
+			clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
+		}
 		return KEEP_MESSAGE;
 	}
 	else if (si.newCountEnemies == 1)
@@ -1119,6 +1126,13 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 	// If we're not going to select anything, just bail now.
 	if (!(si.selectMine || si.selectEnemies || si.selectCivilians || si.selectFriends))
 	{
+		if (rebornUseLassoSelection)
+		{
+			m_rebornLassoSelecting = FALSE;
+			m_rebornLassoHasMoved = FALSE;
+			m_rebornLassoAddToGroup = FALSE;
+			clearRebornLassoSelectionPreview(&m_rebornLassoPoints);
+		}
 		return KEEP_MESSAGE;
 	}
 

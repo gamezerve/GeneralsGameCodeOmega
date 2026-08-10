@@ -960,7 +960,7 @@ Object* AIUpdateInterface::checkForCrateToPickup()
 //-------------------------------------------------------------------------------------------------
 void AIUpdateInterface::doSurrenderUpdateStuff()
 {
-	RELEASE_CRASH(("Read the comment in doSurrenderUpdateStuff"));
+	//RELEASE_CRASH(("Read the comment in doSurrenderUpdateStuff"));
 
 	/*
 		If you ever re-enable this code, you must convert it to be
@@ -1167,7 +1167,7 @@ UpdateSleepTime AIUpdateInterface::update()
 #endif
 
 #ifdef ALLOW_SURRENDER
-	RELEASE_CRASH(("If ALLOW_SURRENDER is ever defined, this code must be redone to do proper SLEEPY updates. (srj)"));
+	//RELEASE_CRASH(("If ALLOW_SURRENDER is ever defined, this code must be redone to do proper SLEEPY updates. (srj)"));
 	doSurrenderUpdateStuff();
 #endif
 

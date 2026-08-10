@@ -35,6 +35,7 @@
 #include "Common/Money.h"
 #include "Common/Player.h"
 #include "Common/ThingTemplate.h"
+#include "GameClient/GameText.h"
 #include "GameClient/InGameUI.h"
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/Locomotor.h"
@@ -656,9 +657,11 @@ Object *POWTruckAIUpdate::findBestTarget()
 		return nullptr;
 
 	// get our info
+#ifndef REBORN_BUILD
 	const AIUpdateInterface *ai = us->getAIUpdateInterface();
 	DEBUG_ASSERTCRASH( ai, ("POWTruckAIUpdate::findBestTarget- '%s' has no AI",
 												 us->getTemplate()->getName().str()) );
+#endif
 
 	// scan all objects, there is no range
 	Object *other;
@@ -680,21 +683,27 @@ Object *POWTruckAIUpdate::findBestTarget()
 
 		// is this target closer than the one we've found so far
 		Real distSq = ThePartitionManager->getDistanceSquared( us, other, FROM_CENTER_2D );
-		if( closestTarget == nullptr || distSq < closestTargetDistSq )
+
+		//if( closestTarget == nullptr || distSq < closestTargetDistSq )
+		//{
+
+		//	// we must be able to pathfind to this target
+		//	if( TheAI->pathfinder()->quickDoesPathExist( ai->getLocomotorSet(),
+		//																					us->getPosition(),
+		//																					other->getPosition() ) == TRUE )
+		//	{
+
+		//		// this is our new closest target
+		//		closestTarget = other;
+		//		closestTargetDistSq = distSq;
+
+		//	}
+
+		//}
+		if (closestTarget == nullptr || distSq < closestTargetDistSq)
 		{
-
-			// we must be able to pathfind to this target
-			if( TheAI->pathfinder()->quickDoesPathExist( ai->getLocomotorSet(),
-																							us->getPosition(),
-																							other->getPosition() ) == TRUE )
-			{
-
-				// this is our new closest target
-				closestTarget = other;
-				closestTargetDistSq = distSq;
-
-			}
-
+			closestTarget = other;
+			closestTargetDistSq = distSq;
 		}
 
 	}

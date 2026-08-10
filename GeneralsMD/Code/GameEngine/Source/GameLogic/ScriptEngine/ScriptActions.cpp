@@ -7622,6 +7622,11 @@ void ScriptActions::doRebornRandomObjectUseButton(
 
 void ScriptActions::doRebornEnableAIScriptUpgrades(const AsciiString& playerName, Bool enabled)
 {
+
+	DEBUG_LOG(("Reborn AI script upgrades called: player='%s', enabled=%d\n",
+		playerName.str(),
+		enabled));
+
 	Player* player = TheScriptEngine->getPlayerFromAsciiString(playerName);
 	if (!player) {
 		DEBUG_LOG(("Reborn AI script upgrades: player '%s' not found\n", playerName.str()));
