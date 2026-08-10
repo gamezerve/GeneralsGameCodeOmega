@@ -111,7 +111,7 @@ static NameKeyType buttonOkID = NAMEKEY_INVALID;
 static NameKeyType buttonOkIDGen = NAMEKEY_INVALID;
 ///static NameKeyType buttonRehostID = NAMEKEY_INVALID;
 static NameKeyType textEntryChatID = NAMEKEY_INVALID;
-static NameKeyType buttonEmoteID = NAMEKEY_INVALID;
+static NameKeyType buttonChatID = NAMEKEY_INVALID;
 static NameKeyType chatBoxBorderID = NAMEKEY_INVALID;
 static NameKeyType buttonContinueID = NAMEKEY_INVALID;
 static NameKeyType buttonContinueIDGen = NAMEKEY_INVALID;
@@ -126,7 +126,7 @@ static GameWindow *buttonOkGen = nullptr;
 static GameWindow *buttonContinue = nullptr;
 static GameWindow *buttonContinueGen = nullptr;
 static GameWindow *textEntryChat = nullptr;
-static GameWindow *buttonEmote = nullptr;
+static GameWindow *buttonChat = nullptr;
 static GameWindow *chatBoxBorder = nullptr;
 static GameWindow *buttonBuddies = nullptr;
 static GameWindow *staticTextGameSaved = nullptr;
@@ -390,7 +390,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 
 
 	textEntryChatID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:TextEntryChat" );
-	buttonEmoteID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonEmote" );
+	buttonChatID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonEmote" ); // TODO Rename ButtonEmote to ButtonChat in .wnd file
 	listboxChatWindowScoreScreenID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ListboxChatWindowScoreScreen" );
 	listboxAcademyWindowScoreScreenID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ListboxWarschoolAdvice" );
 	staticTextAcademyTitleID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:StaticTextWarSchool" );
@@ -421,7 +421,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	buttonOk = TheWindowManager->winGetWindowFromId( parent, buttonOkID );
 	buttonOkGen = TheWindowManager->winGetWindowFromId( parent, buttonOkIDGen );
 	textEntryChat = TheWindowManager->winGetWindowFromId( parent, textEntryChatID );
-	buttonEmote = TheWindowManager->winGetWindowFromId( parent,buttonEmoteID  );
+	buttonChat = TheWindowManager->winGetWindowFromId( parent,buttonChatID  );
 	listboxChatWindowScoreScreen = TheWindowManager->winGetWindowFromId( parent, listboxChatWindowScoreScreenID );
 	listboxAcademyWindowScoreScreen = TheWindowManager->winGetWindowFromId( parent, listboxAcademyWindowScoreScreenID );
 	staticTextAcademyTitle = TheWindowManager->winGetWindowFromId( parent, staticTextAcademyTitleID );
@@ -805,7 +805,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				saveReplayLayout->bringForward();
 			}
 
-			else if ( controlID == buttonEmoteID )
+			else if ( controlID == buttonChatID )
 			{
 				// read the user's input
 				txtInput.set(GadgetTextEntryGetText( textEntryChat ));
@@ -816,7 +816,9 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
+					{
+						TheLAN->RequestPlayerChat(txtInput);
+					}
 					//add the gamespy chat request here
 			}
 			for(Int i = 0; i < MAX_SLOTS; ++i)
@@ -873,7 +875,9 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+					{
+						TheLAN->RequestPlayerChat(txtInput);
+					}
 					//add the gamespy chat request here
 
 			}
@@ -897,8 +901,8 @@ void initSkirmish()
 	grabMultiPlayerInfo();
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (chatBoxBorder)
 		chatBoxBorder->winHide(TRUE);
 	if (buttonBuddies)
@@ -1117,8 +1121,8 @@ void finishSinglePlayerInit()
 					buttonContinueGen->winHide(TRUE);
 				if (textEntryChat)
 					textEntryChat->winHide(TRUE);
-				if (buttonEmote)
-					buttonEmote->winHide(TRUE);
+				if (buttonChat)
+					buttonChat->winHide(TRUE);
 				if (listboxChatWindowScoreScreen)
 					listboxChatWindowScoreScreen->winHide(TRUE);
 				if( listboxAcademyWindowScoreScreen )
@@ -1255,8 +1259,8 @@ void finishSinglePlayerInit()
 	}
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(TRUE);
@@ -1288,8 +1292,8 @@ void initReplaySinglePlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (chatBoxBorder)
 		chatBoxBorder->winHide(TRUE);
 	if (buttonContinue)
@@ -1319,8 +1323,8 @@ void initLANMultiPlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(FALSE);
-	if (buttonEmote)
-		buttonEmote->winHide(FALSE);
+	if (buttonChat)
+		buttonChat->winHide(FALSE);
 	if (buttonContinue)
 		buttonContinue->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
@@ -1350,8 +1354,8 @@ void initInternetMultiPlayer()
 		buttonContinue->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(FALSE);
 
@@ -1389,8 +1393,8 @@ void initReplayMultiPlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(TRUE);
 	if( listboxAcademyWindowScoreScreen )
