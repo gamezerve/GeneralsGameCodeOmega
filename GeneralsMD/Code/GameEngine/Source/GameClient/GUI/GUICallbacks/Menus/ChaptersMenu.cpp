@@ -1232,14 +1232,6 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 static void shutdownComplete(WindowLayout* layout)
 {
   layout->hide(TRUE);
-  TheShell->shutdownComplete(layout);
-}
-
-void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
-{
-
-  TheSupplyAndTechImageLocations.m_supplyPosList.clear();
-  TheSupplyAndTechImageLocations.m_techPosList.clear();
 
   GameWindow* preview = TheWindowManager->winGetWindowFromId(
     nullptr,
@@ -1248,7 +1240,17 @@ void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
   if (preview)
     preview->winSetUserData(nullptr);
 
-  Bool popImmediate = *(Bool*)userData;
+  TheSupplyAndTechImageLocations.m_supplyPosList.clear();
+  TheSupplyAndTechImageLocations.m_techPosList.clear();
+
+  TheShell->shutdownComplete(layout);
+}
+
+void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
+{
+  Bool popImmediate = userData
+    ? *static_cast<Bool*>(userData)
+    : FALSE;
 
   if (popImmediate)
   {
