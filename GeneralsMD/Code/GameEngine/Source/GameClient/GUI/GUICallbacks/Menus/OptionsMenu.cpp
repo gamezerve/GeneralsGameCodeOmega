@@ -1157,7 +1157,7 @@ if (checkSendDelayLocal)
 	checkSendDelayLocal->winHide(TRUE);
 #endif
 
-checkDrawAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxDrawAnchor" );
+//checkDrawAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxDrawAnchor" );
 	checkDrawAnchor				 = TheWindowManager->winGetWindowFromId( nullptr, checkDrawAnchorID);
 	//checkMoveAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxMoveAnchor" );
 	checkMoveAnchor				 = TheWindowManager->winGetWindowFromId( nullptr, checkMoveAnchorID);
@@ -1324,8 +1324,9 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	if (textEntryHTTPProxy)
 		textEntryHTTPProxy->winHide(TRUE);
 
-	NameKeyType staticTextHTTPProxyID = TheNameKeyGenerator->nameToKey("OptionsMenu.wnd:StaticTextHTTPProxy");
-	GameWindow *staticTextHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, staticTextHTTPProxyID);
+	//NameKeyType staticTextHTTPProxyID = TheNameKeyGenerator->nameToKey("OptionsMenu.wnd:StaticTextHTTPProxy");
+	//GameWindow *staticTextHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, staticTextHTTPProxyID);
+	GameWindow* staticTextHTTPProxy =	TheWindowManager->winGetWindowFromId(nullptr,	GetOptionsMenuChildKey("StaticTextHTTPProxy"));
 	if (staticTextHTTPProxy)
 		staticTextHTTPProxy->winHide(TRUE);
 #endif
@@ -1608,12 +1609,16 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	if( (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL) || TheGameSpyInfo )
 	{
 		// disable controls that you can't change the options for in game
-		comboBoxLANIP->winEnable(FALSE);
+		//comboBoxLANIP->winEnable(FALSE);
+		if (comboBoxLANIP)
+			comboBoxLANIP->winEnable(FALSE);
 
 		if (comboBoxOnlineIP)
 			comboBoxOnlineIP->winEnable(FALSE);
 
-		buttonFirewallRefresh->winEnable(FALSE);
+		//buttonFirewallRefresh->winEnable(FALSE);
+		if (buttonFirewallRefresh)
+			buttonFirewallRefresh->winEnable(FALSE);
 
 		if (comboBoxDetail)
 			comboBoxDetail->winEnable(FALSE);
