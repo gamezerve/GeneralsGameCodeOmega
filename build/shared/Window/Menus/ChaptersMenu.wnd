@@ -359,8 +359,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 183 143,
-                   BOTTOMRIGHT: 283 183,
+      SCREENRECT = UPPERLEFT: 183 140,
+                   BOTTOMRIGHT: 283 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonChina";
       STATUS = ENABLED+IMAGE;
@@ -408,8 +408,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 316 143,
-                   BOTTOMRIGHT: 416 183,
+      SCREENRECT = UPPERLEFT: 316 140,
+                   BOTTOMRIGHT: 416 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonGLA";
       STATUS = ENABLED+IMAGE;
@@ -457,8 +457,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 449 92,
-                   BOTTOMRIGHT: 549 132,
+      SCREENRECT = UPPERLEFT: 449 91,
+                   BOTTOMRIGHT: 549 131,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonUSAGen";
       STATUS = ENABLED+IMAGE;
@@ -506,8 +506,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 449 143,
-                   BOTTOMRIGHT: 549 183,
+      SCREENRECT = UPPERLEFT: 449 140,
+                   BOTTOMRIGHT: 549 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonUSA";
       STATUS = ENABLED+IMAGE;
@@ -555,8 +555,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 316 92,
-                   BOTTOMRIGHT: 416 132,
+      SCREENRECT = UPPERLEFT: 316 91,
+                   BOTTOMRIGHT: 416 131,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonGLAGen";
       STATUS = ENABLED+IMAGE;
@@ -604,8 +604,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 183 92,
-                   BOTTOMRIGHT: 283 132,
+      SCREENRECT = UPPERLEFT: 183 91,
+                   BOTTOMRIGHT: 283 131,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonChinaGen";
       STATUS = ENABLED+IMAGE;
@@ -653,8 +653,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 50 143,
-                   BOTTOMRIGHT: 150 183,
+      SCREENRECT = UPPERLEFT: 50 140,
+                   BOTTOMRIGHT: 150 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonChallenge";
       STATUS = ENABLED+IMAGE;
@@ -702,8 +702,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 50 92,
-                   BOTTOMRIGHT: 150 132,
+      SCREENRECT = UPPERLEFT: 50 91,
+                   BOTTOMRIGHT: 150 131,
                    CREATIONRESOLUTION: 800 600;
       NAME = "ChaptersMenu.wnd:ButtonTRAINING";
       STATUS = ENABLED+IMAGE;
