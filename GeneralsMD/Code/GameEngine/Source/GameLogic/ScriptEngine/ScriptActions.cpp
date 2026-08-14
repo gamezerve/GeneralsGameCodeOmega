@@ -1061,6 +1061,10 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 			!waypoint.compareNoCase("INTRO_camera0_pos3")
 			);
 
+	const Bool rebornGLA07IntroCameraPositionFix =
+		!mapName.compareNoCase("GLA07.map") &&
+		!waypoint.compareNoCase("INTRO_checkOutChinesePath_temp_pos0");
+
 	if (rebornGLA04IntroCameraPositionFix)
 	{
 		TheTacticalView->setUserControlled(false);
@@ -1102,6 +1106,69 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 			pos.x,
 			pos.y,
 			pos.z));
+
+		return;
+	}
+
+	if (rebornGLA07IntroCameraPositionFix)
+	{
+		TheTacticalView->setUserControlled(false);
+
+		Coord3D adjustedPos = pos;
+
+		Vector2 offsetDir(
+			destination.x - pos.x,
+			destination.y - pos.y);
+
+		Real offsetDirLength = offsetDir.Length();
+
+		if (offsetDirLength > 0.1f)
+		{
+			offsetDir /= offsetDirLength;
+
+			const Real backwardOffset = 60.0f;
+
+			adjustedPos.x -= offsetDir.X * backwardOffset;
+			adjustedPos.y -= offsetDir.Y * backwardOffset;
+		}
+
+		TheTacticalView->lookAt(&adjustedPos);
+
+		Vector2 dir(
+			destination.x - adjustedPos.x,
+			destination.y - adjustedPos.y);
+
+		const Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+		}
+
+		TheTacticalView->pitchCamera(pitch, 1, 0.0f, 0.0f);
+		TheTacticalView->zoomCamera(zoom, 1, 0.0f, 0.0f);
+
+		DEBUG_LOG((
+			"doSetupCamera GLA07 FIX: map=%s waypoint=%s lookAt=%s position=(%.2f, %.2f, %.2f) adjusted=(%.2f, %.2f, %.2f)",
+			mapName.str(),
+			waypoint.str(),
+			lookAtWaypoint.str(),
+			pos.x,
+			pos.y,
+			pos.z,
+			adjustedPos.x,
+			adjustedPos.y,
+			adjustedPos.z));
 
 		return;
 	}
