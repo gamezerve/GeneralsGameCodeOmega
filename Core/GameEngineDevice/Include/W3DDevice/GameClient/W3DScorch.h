@@ -36,6 +36,7 @@ public:
 	virtual void freeBuffers() = 0;
 	virtual void clearAllScorches() = 0;
 	virtual void invalidateBuffers() = 0;
+	virtual void invalidateTexture() = 0;
 	virtual void addScorch(Vector3 location, Real radius, Scorches type) = 0;
 	virtual void drawScorches(WorldHeightMap& map) = 0;
 };
@@ -43,13 +44,14 @@ public:
 class W3DScorch : public W3DScorchInterface
 {
 public:
-	W3DScorch();
+	W3DScorch(bool deduplicateScorches);
 	virtual ~W3DScorch() override;
 
 	virtual void allocateBuffers() override;    ///< allocate static buffers for drawing scorch marks.
 	virtual void freeBuffers() override;    ///< frees up scorch buffers.
 	virtual void clearAllScorches() override;
 	virtual void invalidateBuffers() override;
+	virtual void invalidateTexture() override;
 	virtual void addScorch(Vector3 location, Real radius, Scorches type) override;
 	virtual void drawScorches(WorldHeightMap& map) override;    ///< Draws the scorch mark polygons in m_vertexScorch.
 
@@ -80,6 +82,7 @@ private:
 	TScorch m_scorches[MAX_SCORCH_MARKS];
 	Int m_numScorches;
 	Int m_scorchesInBuffer;    ///< how many are in the buffers.  If less than numScorches, we need to update
+	Bool m_deduplicateScorches;
 };
 
 class W3DScorchDummy : public W3DScorchInterface
@@ -89,6 +92,7 @@ public:
 	virtual void freeBuffers() override {}
 	virtual void clearAllScorches() override {}
 	virtual void invalidateBuffers() override {}
+	virtual void invalidateTexture() override {}
 	virtual void addScorch(Vector3, Real, Scorches) override {}
 	virtual void drawScorches(WorldHeightMap&) override {}
 };
