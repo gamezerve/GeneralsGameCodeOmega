@@ -176,7 +176,7 @@ protected:
 	Bool evaluateSkirmishStartPosition(Parameter *pSkirmishPlayerParm, Parameter *startNdx );
 
 	// Reborn: Condition Script
-	Bool evaluateRebornDummy();
+	Bool evaluateRebornGameTime(Parameter* comparisonParm, Parameter* secondsParm);
 
 	// Stubs
 	Bool evaluateMissionAttempts(Parameter *pPlayerParm, Parameter *pComparisonParm, Parameter *pAttemptsParm);

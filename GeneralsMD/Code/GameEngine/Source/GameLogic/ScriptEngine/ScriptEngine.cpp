@@ -3672,6 +3672,21 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[2] = " on nearest object of type ";
 	curTemplate->m_uiStrings[3] = ".";
 
+	curTemplate = &m_actionTemplates[ScriptAction::TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE_WITH_STATUS];
+	curTemplate->m_internalName = "TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE_WITH_STATUS";
+	curTemplate->m_uiName = "Reborn/Team use command ability on nearest object type with status.";
+	curTemplate->m_numParameters = 4;
+	curTemplate->m_parameters[0] = Parameter::TEAM;
+	curTemplate->m_parameters[1] = Parameter::COMMANDBUTTON_ALL_ABILITIES;
+	curTemplate->m_parameters[2] = Parameter::OBJECT_TYPE;
+	curTemplate->m_parameters[3] = Parameter::OBJECT_STATUS;
+	curTemplate->m_numUiStrings = 5;
+	curTemplate->m_uiStrings[0] = " ";
+	curTemplate->m_uiStrings[1] = " use ";
+	curTemplate->m_uiStrings[2] = " on nearest object of type ";
+	curTemplate->m_uiStrings[3] = " with object status ";
+	curTemplate->m_uiStrings[4] = ".";
+
  	curTemplate = &m_actionTemplates[ScriptAction::TEAM_PARTIAL_USE_COMMANDBUTTON];
 	curTemplate->m_internalName = "TEAM_PARTIAL_USE_COMMANDBUTTON";
 	curTemplate->m_uiName = "Team_/ Use command ability -- partial -- self.";
@@ -4163,12 +4178,16 @@ void ScriptEngine::init()
 
 	// Set up condition templates.
 
-	curTemplate = &m_conditionTemplates[Condition::CONDITION_REBORN_DUMMY];
-	curTemplate->m_internalName = "CONDITION_REBORN_DUMMY";
-	curTemplate->m_uiName = "Reborn/Dummy Reborn Condition";
-	curTemplate->m_numParameters = 0;
-	curTemplate->m_numUiStrings = 1;
-	curTemplate->m_uiStrings[0] = "Dummy Reborn Condition.";
+	curTemplate = &m_conditionTemplates[Condition::CONDITION_REBORN_GAME_TIME];
+	curTemplate->m_internalName = "CONDITION_REBORN_GAME_TIME";
+	curTemplate->m_uiName = "Reborn/Game time compared to a value.";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::COMPARISON;
+	curTemplate->m_parameters[1] = Parameter::INT;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "Game time IS ";
+	curTemplate->m_uiStrings[1] = " ";
+	curTemplate->m_uiStrings[2] = " seconds.";
 
 	curTemplate = &m_conditionTemplates[Condition::CONDITION_FALSE];
 	curTemplate->m_internalName = "CONDITION_FALSE";

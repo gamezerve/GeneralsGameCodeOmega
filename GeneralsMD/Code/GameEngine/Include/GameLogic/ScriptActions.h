@@ -343,6 +343,7 @@ protected:
 	void doTeamUseCommandButtonOnNearestBuilding( const AsciiString& teamName, const AsciiString& commandAbility );
 	void doTeamUseCommandButtonOnNearestBuildingClass( const AsciiString& teamName, const AsciiString& commandAbility, Int kindofBit );
 	void doTeamUseCommandButtonOnNearestObjectType( const AsciiString& teamName, const AsciiString& commandAbility, const AsciiString& objectType );
+	void doTeamUseCommandButtonOnNearestObjectTypeWithStatus(const AsciiString& teamName, const AsciiString& commandAbility, const AsciiString& objectType, const ObjectStatusMaskType& objectStatus); // Reborn: Added for use with "kindof" system.
 	void doTeamPartialUseCommandButton( Real percentage, const AsciiString& teamName, const AsciiString& commandAbility );
 	void doTeamCaptureNearestUnownedFactionUnit( const AsciiString& teamName );
 	void doCreateTeamFromCapturedUnits( const AsciiString& playerName, const AsciiString& teamName );

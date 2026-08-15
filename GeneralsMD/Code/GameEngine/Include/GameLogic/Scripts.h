@@ -468,6 +468,7 @@ public:
 		TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING,	///< Tell the team to use the commandbutton on the nearest enemy building
 		TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_ENEMY_BUILDING_CLASS,	///< Tell the team to use the commandbutton on the nearest enemy building class
 		TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE,	///< Tell the team to use the commandbutton on the nearest enemy object of type
+		TEAM_ALL_USE_COMMANDBUTTON_ON_NEAREST_OBJECTTYPE_WITH_STATUS, ///< Reborn: Tell the team to use the commandbutton on the nearest enemy object of type with certain status
 		TEAM_PARTIAL_USE_COMMANDBUTTON,						///< Tell some percentage of the team to use the commandbutton on
 		TEAM_CAPTURE_NEAREST_UNOWNED_FACTION_UNIT,///< Tell the team to capture the nearest unowned faction unit (unit whose pilot has been killed by Jarmen Kell)
 		PLAYER_CREATE_TEAM_FROM_CAPTURED_UNITS,		///< Tell the player to create a new named team from all the units who have been captured.
@@ -979,7 +980,7 @@ public:
 		SUPPLY_SOURCE_ATTACKED,									// True if our supply depot or dozer near depot was attacked.
 		START_POSITION_IS,											// True if our start position matches.
 		NAMED_HAS_FREE_CONTAINER_SLOTS,					///< Kris -- Checks if any given container has any free slots.
-		CONDITION_REBORN_DUMMY,
+		CONDITION_REBORN_GAME_TIME,
 
 		NUM_ITEMS		 // Always the last condition.
 	};

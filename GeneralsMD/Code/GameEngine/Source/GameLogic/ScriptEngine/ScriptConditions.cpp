@@ -2718,8 +2718,26 @@ Bool ScriptConditions::evaluatePlayerLostObjectType(Parameter *pPlayerParm, Para
 	return (sumOfObjs < currentCount);
 }
 
-Bool ScriptConditions::evaluateRebornDummy()
+Bool ScriptConditions::evaluateRebornGameTime(Parameter* comparisonParm, Parameter* secondsParm)
 {
+	const Int gameTime = TheGameLogic->getFrame() / LOGICFRAMES_PER_SECOND;
+	const Int value = secondsParm->getInt();
+
+	switch (comparisonParm->getInt()) {
+	case Parameter::LESS_THAN:
+		return gameTime < value;
+	case Parameter::LESS_EQUAL:
+		return gameTime <= value;
+	case Parameter::EQUAL:
+		return gameTime == value;
+	case Parameter::GREATER_EQUAL:
+		return gameTime >= value;
+	case Parameter::GREATER:
+		return gameTime > value;
+	case Parameter::NOT_EQUAL:
+		return gameTime != value;
+	}
+
 	return false;
 }
 
@@ -2733,8 +2751,8 @@ Bool ScriptConditions::evaluateCondition( Condition *pCondition )
 			DEBUG_CRASH(("Unknown ScriptCondition type %d", pCondition->getConditionType()));
 			return false;
 
-		case Condition::CONDITION_REBORN_DUMMY:
-			return evaluateRebornDummy();
+		case Condition::CONDITION_REBORN_GAME_TIME:
+			return evaluateRebornGameTime(pCondition->getParameter(0), pCondition->getParameter(1));
 		case Condition::PLAYER_ALL_DESTROYED:
 			return evaluateAllDestroyed(pCondition->getParameter(0));
 		case Condition::PLAYER_ALL_BUILDFACILITIES_DESTROYED:
