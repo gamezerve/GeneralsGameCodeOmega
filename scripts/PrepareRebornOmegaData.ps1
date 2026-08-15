@@ -188,6 +188,7 @@ $MapFolders = @(
     "GLA05",
     "GLA06",
     "GLA07",
+    "GLA08",
     "MD_CHI01",
     "ShellMap1",
     "ShellMapMD",

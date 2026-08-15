@@ -1,4 +1,8 @@
 
+GUI:GLA08
+"Baikonur Cosmodrome"
+END
+
 GUI:GLA07
 "Trojan Horse"
 END
@@ -23332,6 +23336,10 @@ END
 
 OBJECT:Baikonur
 "Baikonur"
+END
+
+LOCATION:Baikonur
+"Baikonur Cosmodrome, Southern Kazakhstan"
 END
 
 OBJECT:Balykchy
