@@ -957,7 +957,7 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 				DEBUG_LOG((
 					"doMoveCameraTo START STATE: waypoint=%s "
 					"current=(%.2f, %.2f) destination=(%.2f, %.2f, %.2f) "
-					"angle=%.4f pitch=%.4f zoom=%.4f sec=%.2f",
+					"angle=%.4f pitch=%.4f fxPitch=%.4f zoom=%.4f sec=%.2f",
 					waypoint.str(),
 					currentPosition.x,
 					currentPosition.y,
@@ -966,6 +966,7 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 					destination.z,
 					TheTacticalView->getAngle(),
 					TheTacticalView->getPitch(),
+					TheTacticalView->getFXPitch(),
 					TheTacticalView->getZoom(),
 					sec));
 
@@ -1343,6 +1344,13 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 		!mapName.compareNoCase("GLA04.map") &&
 		!waypoint.compareNoCase("INTRO_camera0_look3b");
 
+	const Bool fixGLA08IntroStartLook =
+		!mapName.compareNoCase("GLA08.map") &&
+		(
+			!waypoint.compareNoCase("INTRO_Cam_Sc_01_ST_Lk") ||
+			!waypoint.compareNoCase("INTRO_Cam_Sc_01_stp2_lk")
+			);
+
 	if (fixGLA04IntroLook3b)
 	{
 		TheTacticalView->cameraLookTowardImmediate(&destination);
@@ -1350,6 +1358,20 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 		DEBUG_LOG((
 			"doModCameraLookToward GLA04 FIX: waypoint=%s "
 			"destination=(%.2f, %.2f, %.2f)",
+			waypoint.str(),
+			destination.x,
+			destination.y,
+			destination.z));
+
+		return;
+	}
+
+	if (fixGLA08IntroStartLook)
+	{
+		TheTacticalView->cameraLookTowardImmediate(&destination);
+
+		DEBUG_LOG((
+			"doModCameraLookToward GLA08 START FIX: waypoint=%s destination=(%.2f, %.2f, %.2f)",
 			waypoint.str(),
 			destination.x,
 			destination.y,

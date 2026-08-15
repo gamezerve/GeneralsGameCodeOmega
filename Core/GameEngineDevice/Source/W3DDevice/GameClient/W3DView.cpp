@@ -2980,6 +2980,17 @@ void W3DView::cameraModLookToward(Coord3D *pLoc)
 			angle -= PI/2;
 			normAngle(angle);
 
+			DEBUG_LOG((
+				"cameraModLookToward DEBUG: map=%s i=%d result=(%.2f, %.2f) target=(%.2f, %.2f) angle=%.4f currentAngle=%.4f",
+				TheGlobalData->m_mapName.str(),
+				i,
+				result.x,
+				result.y,
+				pLoc->x,
+				pLoc->y,
+				angle,
+				m_angle));
+
 			const Bool fixGLA06SC2 =
 				TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
 				pLoc->x > 63.0f && pLoc->x < 63.2f &&
