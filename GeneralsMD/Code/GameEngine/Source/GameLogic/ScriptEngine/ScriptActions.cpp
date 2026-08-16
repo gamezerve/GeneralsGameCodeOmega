@@ -864,6 +864,10 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 		mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
 		waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0;
 
+	const Bool preserveGLA08CameraMovement =
+		mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+		waypoint.compareNoCase("INTRO_Cam_05_Crawl_ST") == 0;
+
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
 		if (way->getName() == waypoint)
@@ -932,13 +936,44 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 				}
 			}
 
+			if (
+				mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+				waypoint.compareNoCase("INTRO_Cam_05_Crawl_ST") == 0
+				)
+			{
+				Waypoint* lookAtWaypoint =
+					TheTerrainLogic->getWaypointByName("INTRO_Cam_05_Crawl_ST_LK");
+
+				if (lookAtWaypoint != nullptr)
+				{
+					const Coord3D lookDestination = *lookAtWaypoint->getLocation();
+
+					Vector2 dir(
+						lookDestination.x - destination.x,
+						lookDestination.y - destination.y);
+
+					const Real dirLength = dir.Length();
+
+					if (dirLength > 0.1f)
+					{
+						dir /= dirLength;
+
+						const Real backwardOffset = 250.0f;
+
+						destination.x -= dir.X * backwardOffset;
+						destination.y -= dir.Y * backwardOffset;
+					}
+				}
+			}
+
 			if (IsRebornCampaign() &&
 				sec <= 0.0f &&
 				!preserveCHI03CameraMovement &&
 				!preserveCHI05CameraMovement &&
 				!preserveCHI06CameraMovement &&
 				!preserveGLA05CameraMovement &&
-				!preserveGLA06CameraMovement)
+				!preserveGLA06CameraMovement &&
+				!preserveGLA08CameraMovement)
 			{
 				TheTacticalView->setUserControlled(false);
 				TheTacticalView->lookAt(&destination);
@@ -1368,14 +1403,33 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 
 	if (fixGLA08IntroStartLook)
 	{
-		TheTacticalView->cameraLookTowardImmediate(&destination);
+		const Coord2D currentPosition = TheTacticalView->getPosition2D();
 
-		DEBUG_LOG((
-			"doModCameraLookToward GLA08 START FIX: waypoint=%s destination=(%.2f, %.2f, %.2f)",
-			waypoint.str(),
-			destination.x,
-			destination.y,
-			destination.z));
+		Vector2 dir(
+			destination.x - currentPosition.x,
+			destination.y - currentPosition.y);
+
+		const Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+
+			DEBUG_LOG((
+				"doModCameraLookToward GLA08 START FIX: waypoint=%s angle=%.4f",
+				waypoint.str(),
+				angle));
+		}
 
 		return;
 	}
