@@ -866,7 +866,12 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 
 	const Bool preserveGLA08CameraMovement =
 		mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
-		waypoint.compareNoCase("INTRO_Cam_05_Crawl_ST") == 0;
+		(
+			waypoint.compareNoCase("INTRO_Cam_05_Crawl_ST") == 0 ||
+			waypoint.compareNoCase("MiniCini - Gantry01") == 0 ||
+			waypoint.compareNoCase("MiniCini - Gantry02") == 0 ||
+			waypoint.compareNoCase("MiniCini - Gantry03") == 0
+			);
 
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
 	{
@@ -962,6 +967,41 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 
 						destination.x -= dir.X * backwardOffset;
 						destination.y -= dir.Y * backwardOffset;
+					}
+				}
+			}
+
+			if (
+				mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+				(
+					waypoint.compareNoCase("MiniCini - Gantry01") == 0 ||
+					waypoint.compareNoCase("MiniCini - Gantry02") == 0 ||
+					waypoint.compareNoCase("MiniCini - Gantry03") == 0
+					)
+				)
+			{
+				Waypoint* lookAtWaypoint =
+					TheTerrainLogic->getWaypointByName("Reveal - Gantry");
+
+				if (lookAtWaypoint != nullptr)
+				{
+					const Coord3D lookDestination = *lookAtWaypoint->getLocation();
+
+					Vector2 dir(
+						lookDestination.x - destination.x,
+						lookDestination.y - destination.y);
+
+					const Real dirLength = dir.Length();
+
+					if (dirLength > 0.1f)
+					{
+						dir /= dirLength;
+
+						const Real forwardFactor = 0.75f;
+						const Real forwardOffset = dirLength * forwardFactor;
+
+						destination.x += dir.X * forwardOffset;
+						destination.y += dir.Y * forwardOffset;
 					}
 				}
 			}
@@ -1386,6 +1426,10 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 			!waypoint.compareNoCase("INTRO_Cam_Sc_01_stp2_lk")
 			);
 
+	const Bool fixGLA08GroundControlLook =
+		!mapName.compareNoCase("GLA08.map") &&
+		!waypoint.compareNoCase("Reveal - Ground Control");
+
 	if (fixGLA04IntroLook3b)
 	{
 		TheTacticalView->cameraLookTowardImmediate(&destination);
@@ -1427,6 +1471,39 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 
 			DEBUG_LOG((
 				"doModCameraLookToward GLA08 START FIX: waypoint=%s angle=%.4f",
+				waypoint.str(),
+				angle));
+		}
+
+		return;
+	}
+
+	if (fixGLA08GroundControlLook)
+	{
+		const Coord2D currentPosition = TheTacticalView->getPosition2D();
+
+		Vector2 dir(
+			destination.x - currentPosition.x,
+			destination.y - currentPosition.y);
+
+		const Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+
+			DEBUG_LOG((
+				"doModCameraLookToward GLA08 SNAPSHOT FIX: waypoint=%s angle=%.4f",
 				waypoint.str(),
 				angle));
 		}
