@@ -2887,6 +2887,9 @@ void W3DModelDraw::recalcBonesForClientParticleSystems()
 */
 Bool W3DModelDraw::updateBonesForClientParticleSystems()
 {
+	if (m_needRecalcBoneParticleSystems && m_renderObject != nullptr)
+		recalcBonesForClientParticleSystems();
+
 	const Drawable* drawable = getDrawable();
 	if (drawable != nullptr && m_curState != nullptr && m_renderObject != nullptr )
 	{
