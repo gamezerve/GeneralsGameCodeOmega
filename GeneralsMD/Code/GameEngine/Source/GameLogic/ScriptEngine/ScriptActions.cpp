@@ -874,7 +874,9 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("END_CAM_Sc01_ED") == 0 ||
 			waypoint.compareNoCase("END_CAM_Lookup_ST") == 0 ||
 			waypoint.compareNoCase("END_CAM_Sc04_ST") == 0 ||
-			waypoint.compareNoCase("END_CAM_Sc06_ST") == 0
+			waypoint.compareNoCase("END_CAM_Sc06_ST") == 0 ||
+			waypoint.compareNoCase("END_CAM_Sc08_ST") == 0 ||
+			waypoint.compareNoCase("END_CAM_Sc09_ST") == 0
 			);
 
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
@@ -1029,6 +1031,18 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			{
 				destination.x += 139.80f;
 				destination.y += 54.45f;
+			}
+
+			if (
+				mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+				(
+					waypoint.compareNoCase("END_CAM_Sc09_ST") == 0 ||
+					waypoint.compareNoCase("END_CAM_Sc09_ED") == 0
+					)
+				)
+			{
+				destination.x += 203.89f;
+				destination.y += 220.14f;
 			}
 
 			if (IsRebornCampaign() &&
@@ -1447,6 +1461,18 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 	{
 		destination.x += 139.80f;
 		destination.y += 54.45f;
+	}
+
+	if (
+		!mapName.compareNoCase("GLA08.map") &&
+		(
+			!waypoint.compareNoCase("END_CAM_Sc09_ST_Lk") ||
+			!waypoint.compareNoCase("END_CAM_Sc09_ED_Lk")
+			)
+		)
+	{
+		destination.x += 203.89f;
+		destination.y += 220.14f;
 	}
 
 	DEBUG_LOG((
