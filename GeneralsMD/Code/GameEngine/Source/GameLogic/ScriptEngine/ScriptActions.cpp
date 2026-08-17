@@ -873,7 +873,8 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("MiniCini - Gantry03") == 0 ||
 			waypoint.compareNoCase("END_CAM_Sc01_ED") == 0 ||
 			waypoint.compareNoCase("END_CAM_Lookup_ST") == 0 ||
-			waypoint.compareNoCase("END_CAM_Sc04_ST") == 0
+			waypoint.compareNoCase("END_CAM_Sc04_ST") == 0 ||
+			waypoint.compareNoCase("END_CAM_Sc06_ST") == 0
 			);
 
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
@@ -1016,6 +1017,18 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			{
 				destination.x += 664.84f;
 				destination.y -= 174.08f;
+			}
+
+			if (
+				mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+				(
+					waypoint.compareNoCase("END_CAM_Sc06_ST") == 0 ||
+					waypoint.compareNoCase("END_CAM_Sc06_ED") == 0
+					)
+				)
+			{
+				destination.x += 139.80f;
+				destination.y += 54.45f;
 			}
 
 			if (IsRebornCampaign() &&
@@ -1422,6 +1435,18 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 	{
 		destination.x += 664.84f;
 		destination.y -= 174.08f;
+	}
+
+	if (
+		!mapName.compareNoCase("GLA08.map") &&
+		(
+			!waypoint.compareNoCase("END_CAM_Sc06_ST_Lk") ||
+			!waypoint.compareNoCase("END_CAM_Sc06_ED_Lk")
+			)
+		)
+	{
+		destination.x += 139.80f;
+		destination.y += 54.45f;
 	}
 
 	DEBUG_LOG((
