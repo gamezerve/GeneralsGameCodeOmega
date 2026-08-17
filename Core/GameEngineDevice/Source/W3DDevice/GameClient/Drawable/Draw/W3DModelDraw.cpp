@@ -2887,6 +2887,7 @@ void W3DModelDraw::recalcBonesForClientParticleSystems()
 */
 Bool W3DModelDraw::updateBonesForClientParticleSystems()
 {
+	// Reborn: Initialize animated-bone particle systems even when the drawable is culled before its first draw. (Fix For GLA08 Ending Cinematic Splitting Bomb Missing Exhaust)
 	if (m_needRecalcBoneParticleSystems && m_renderObject != nullptr)
 		recalcBonesForClientParticleSystems();
 

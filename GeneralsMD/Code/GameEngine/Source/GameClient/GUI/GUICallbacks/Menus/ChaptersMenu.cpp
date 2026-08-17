@@ -704,6 +704,7 @@ static void LoadCampaignMaps(const char* campaignName)
       playerFaction.clear();
       allyFaction1.clear();
       enemyFaction1.clear();
+      enemyFaction2.clear();
       worldMapMarkerX = -1;
       worldMapMarkerY = -1;
       continue;

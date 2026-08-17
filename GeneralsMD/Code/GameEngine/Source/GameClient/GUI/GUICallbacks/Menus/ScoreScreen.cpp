@@ -1092,11 +1092,11 @@ void finishSinglePlayerInit()
 					stats.setHonors(BATTLE_HONOR_CAMPAIGN_GLA);
 				}
 
-				if (campaign->m_name.compareNoCase("GLA") == 0)
-				{
-					stats.setGLACampaignComplete(difficulty);
-					stats.setHonors(BATTLE_HONOR_CAMPAIGN_GLA);
-				}
+				//if (campaign->m_name.compareNoCase("GLA") == 0)
+				//{
+				//	stats.setGLACampaignComplete(difficulty);
+				//	stats.setHonors(BATTLE_HONOR_CAMPAIGN_GLA);
+				//}
 
 				for (int i = 0; i < MAX_GLOBAL_GENERAL_TYPES; ++i)
 				{
