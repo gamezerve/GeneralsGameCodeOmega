@@ -870,7 +870,10 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("INTRO_Cam_05_Crawl_ST") == 0 ||
 			waypoint.compareNoCase("MiniCini - Gantry01") == 0 ||
 			waypoint.compareNoCase("MiniCini - Gantry02") == 0 ||
-			waypoint.compareNoCase("MiniCini - Gantry03") == 0
+			waypoint.compareNoCase("MiniCini - Gantry03") == 0 ||
+			waypoint.compareNoCase("END_CAM_Sc01_ED") == 0 ||
+			waypoint.compareNoCase("END_CAM_Lookup_ST") == 0 ||
+			waypoint.compareNoCase("END_CAM_Sc04_ST") == 0
 			);
 
 	for (Waypoint* way = TheTerrainLogic->getFirstWaypoint(); way; way = way->getNext())
@@ -1004,6 +1007,15 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 						destination.y += dir.Y * forwardOffset;
 					}
 				}
+			}
+
+			if (
+				mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
+				waypoint.compareNoCase("END_CAM_Sc04_ST") == 0
+				)
+			{
+				destination.x += 664.84f;
+				destination.y -= 174.08f;
 			}
 
 			if (IsRebornCampaign() &&
@@ -1402,6 +1414,15 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 
 	AsciiString mapName =
 		TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+	if (
+		!mapName.compareNoCase("GLA08.map") &&
+		!waypoint.compareNoCase("END_CAM_Sc04_ST_Lk")
+		)
+	{
+		destination.x += 664.84f;
+		destination.y -= 174.08f;
+	}
 
 	DEBUG_LOG((
 			"doModCameraLookToward: map=%s waypoint=%s destination=(%.2f, %.2f, %.2f)",
