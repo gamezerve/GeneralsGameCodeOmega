@@ -917,81 +917,111 @@ void initSkirmish()
 //		buttonRehost->winHide(TRUE);
 }
 
+//void PlayMovieAndBlock(AsciiString movieTitle)
+//{
+//	VideoStreamInterface *videoStream = TheVideoPlayer->open( movieTitle );
+//	if ( videoStream == nullptr )
+//	{
+//		return;
+//	}
+//
+//	// Create the new buffer
+//	VideoBuffer *videoBuffer = TheDisplay->createVideoBuffer();
+//	if (	videoBuffer == nullptr ||
+//				!videoBuffer->allocate(	videoStream->width(),
+//													videoStream->height())
+//		)
+//	{
+//		delete videoBuffer;
+//		videoBuffer = nullptr;
+//
+//		if ( videoStream )
+//		{
+//			videoStream->close();
+//			videoStream = nullptr;
+//		}
+//
+//		return;
+//	}
+//
+//	// TheSuperHackers @bugfix Originally this movie render loop stopped rendering when the game window was inactive.
+//	// This either skipped the movie or caused decompression artifacts. Now the video just keeps playing until it done.
+//
+//	GameWindow *movieWindow = s_blankLayout->getFirstWindow();
+//	TheWritableGlobalData->m_loadScreenRender = TRUE;
+//	while (videoStream->frameIndex() < videoStream->frameCount() - 1)
+//	{
+//		// TheSuperHackers @feature User can now skip video by pressing ESC
+//		if (TheKeyboard)
+//		{
+//			TheKeyboard->UPDATE();
+//			KeyboardIO *io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
+//			if (io && BitIsSet(io->state, KEY_STATE_DOWN))
+//			{
+//				io->setUsed();
+//				break;
+//			}
+//		}
+//
+//		TheGameEngine->serviceWindowsOS();
+//
+//		if(!videoStream->isFrameReady())
+//		{
+//			Sleep(1);
+//			continue;
+//		}
+//
+//		videoStream->frameDecompress();
+//		videoStream->frameRender(videoBuffer);
+//		videoStream->frameNext();
+//
+//		if(videoBuffer)
+//			movieWindow->winGetInstanceData()->setVideoBuffer(videoBuffer);
+//
+//		//TheWindowManager->update();
+//
+//		TheDisplay->draw();
+//	}
+//	TheWritableGlobalData->m_loadScreenRender = FALSE;
+//	movieWindow->winGetInstanceData()->setVideoBuffer(nullptr);
+//
+//	delete videoBuffer;
+//	videoBuffer = nullptr;
+//
+//	if (videoStream)
+//	{
+//		videoStream->close();
+//		videoStream = nullptr;
+//	}
+//
+//	setFPMode();
+//}
+
+// Reborn: Play imported Generals final victory movies through the Display movie system to prevent the darkened
+// rendering caused by the original GameWindow video buffer path. The original implementation
+// is preserved above for reference.
 void PlayMovieAndBlock(AsciiString movieTitle)
 {
-	VideoStreamInterface *videoStream = TheVideoPlayer->open( movieTitle );
-	if ( videoStream == nullptr )
+	TheDisplay->playMovie(movieTitle);
+
+	while (TheDisplay->isMoviePlaying())
 	{
-		return;
-	}
-
-	// Create the new buffer
-	VideoBuffer *videoBuffer = TheDisplay->createVideoBuffer();
-	if (	videoBuffer == nullptr ||
-				!videoBuffer->allocate(	videoStream->width(),
-													videoStream->height())
-		)
-	{
-		delete videoBuffer;
-		videoBuffer = nullptr;
-
-		if ( videoStream )
-		{
-			videoStream->close();
-			videoStream = nullptr;
-		}
-
-		return;
-	}
-
-	// TheSuperHackers @bugfix Originally this movie render loop stopped rendering when the game window was inactive.
-	// This either skipped the movie or caused decompression artifacts. Now the video just keeps playing until it done.
-
-	GameWindow *movieWindow = s_blankLayout->getFirstWindow();
-	TheWritableGlobalData->m_loadScreenRender = TRUE;
-	while (videoStream->frameIndex() < videoStream->frameCount() - 1)
-	{
-		// TheSuperHackers @feature User can now skip video by pressing ESC
 		if (TheKeyboard)
 		{
 			TheKeyboard->UPDATE();
-			KeyboardIO *io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
+			KeyboardIO* io = TheKeyboard->findKey(KEY_ESC, KeyboardIO::STATUS_UNUSED);
 			if (io && BitIsSet(io->state, KEY_STATE_DOWN))
 			{
 				io->setUsed();
+				TheDisplay->stopMovie();
 				break;
 			}
 		}
 
 		TheGameEngine->serviceWindowsOS();
-
-		if(!videoStream->isFrameReady())
-		{
-			Sleep(1);
-			continue;
-		}
-
-		videoStream->frameDecompress();
-		videoStream->frameRender(videoBuffer);
-		videoStream->frameNext();
-
-		if(videoBuffer)
-			movieWindow->winGetInstanceData()->setVideoBuffer(videoBuffer);
-
-		//TheWindowManager->update();
-
+		TheDisplay->update();
 		TheDisplay->draw();
-	}
-	TheWritableGlobalData->m_loadScreenRender = FALSE;
-	movieWindow->winGetInstanceData()->setVideoBuffer(nullptr);
-
-	delete videoBuffer;
-	videoBuffer = nullptr;
-
-	if (videoStream)
-	{
-		videoStream->close();
-		videoStream = nullptr;
+		Sleep(1);
 	}
 
 	setFPMode();
