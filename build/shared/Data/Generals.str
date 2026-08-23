@@ -1,4 +1,28 @@
 
+TOOLTIP:DisableAutomaticUpdateChecks
+"Stops Reborn Omega from automatically checking for new versions when the main menu opens. You can re-enable this setting or check for updates manually from the Options menu."
+END
+
+GUI:DisableAutomaticUpdateChecks
+"Don't show this again"
+END
+
+TOOLTIP:AutomaticUpdateChecks
+"When enabled, Reborn Omega automatically checks for new versions when the main menu opens. You can still check manually when this option is disabled."
+END
+
+GUI:AutomaticUpdateChecks
+"Automatically check for updates"
+END
+
+GUI:DontShowUpdateAgain
+"Don't show this update notification again"
+END
+
+GUI:RebornOmegaNewVersionAvailable
+"NEW VERSION AVAILABLE"
+END
+
 GUI:RebornOmegaInstallerLaunchFailed
 "The update installer could not be started."
 END
