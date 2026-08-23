@@ -1213,6 +1213,11 @@ buttonFirewallRefresh		= TheWindowManager->winGetWindowFromId( nullptr, buttonFi
 // TheSuperHackers @tweak 26/07/2026 The Send Delay feature was obsoleted because it only worked around
 // a source port remapping bug in early 2000s Netgear firewalls. Hide the obsoleted UI element accordingly.
 GameWindow *checkSendDelayLocal = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenu.wnd:CheckSendDelay"));
+
+// Reborn: Check if we are using Generals theme to find the correct window, since the name of the window is different in that theme.
+if (!checkSendDelayLocal)
+checkSendDelayLocal = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenuGen.wnd:CheckSendDelay"));
+
 if (checkSendDelayLocal)
 	checkSendDelayLocal->winHide(TRUE);
 #endif
