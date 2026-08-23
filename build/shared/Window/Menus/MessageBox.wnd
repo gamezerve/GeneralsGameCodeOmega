@@ -6,8 +6,8 @@ STARTLAYOUTBLOCK
 ENDLAYOUTBLOCK
 WINDOW
   WINDOWTYPE = USER;
-  SCREENRECT = UPPERLEFT: 0 0,
-               BOTTOMRIGHT: 799 599,
+  SCREENRECT = UPPERLEFT: 1 0,
+               BOTTOMRIGHT: 800 599,
                CREATIONRESOLUTION: 800 600;
   NAME = "MessageBox.wnd:";
   STATUS = ENABLED;
@@ -52,8 +52,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = USER;
-    SCREENRECT = UPPERLEFT: 252 100,
-                 BOTTOMRIGHT: 552 428,
+    SCREENRECT = UPPERLEFT: 253 100,
+                 BOTTOMRIGHT: 553 428,
                  CREATIONRESOLUTION: 800 600;
     NAME = "MessageBox.wnd:MessageBoxParent";
     STATUS = ENABLED;
@@ -98,8 +98,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 254 114,
-                   BOTTOMRIGHT: 550 146,
+      SCREENRECT = UPPERLEFT: 255 114,
+                   BOTTOMRIGHT: 551 146,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:StaticTextTitle";
       STATUS = ENABLED;
@@ -147,8 +147,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 267 158,
-                   BOTTOMRIGHT: 537 366,
+      SCREENRECT = UPPERLEFT: 268 158,
+                   BOTTOMRIGHT: 538 366,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:StaticTextMessage";
       STATUS = ENABLED;
@@ -196,8 +196,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 348 377,
-                   BOTTOMRIGHT: 438 401,
+      SCREENRECT = UPPERLEFT: 349 377,
+                   BOTTOMRIGHT: 439 401,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:ButtonNo";
       STATUS = ENABLED+HIDDEN+IMAGE;
@@ -244,8 +244,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 260 345,
-                   BOTTOMRIGHT: 349 369,
+      SCREENRECT = UPPERLEFT: 261 345,
+                   BOTTOMRIGHT: 350 369,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:ButtonYes";
       STATUS = ENABLED+HIDDEN+IMAGE;
@@ -292,8 +292,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 454 377,
-                   BOTTOMRIGHT: 544 401,
+      SCREENRECT = UPPERLEFT: 455 377,
+                   BOTTOMRIGHT: 545 401,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:ButtonCancel";
       STATUS = ENABLED+HIDDEN+IMAGE;
@@ -340,8 +340,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = PUSHBUTTON;
-      SCREENRECT = UPPERLEFT: 260 377,
-                   BOTTOMRIGHT: 350 401,
+      SCREENRECT = UPPERLEFT: 261 377,
+                   BOTTOMRIGHT: 351 401,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:ButtonOk";
       STATUS = ENABLED+HIDDEN+IMAGE;
@@ -387,9 +387,58 @@ WINDOW
     END
     CHILD
     WINDOW
+      WINDOWTYPE = CHECKBOX;
+      SCREENRECT = UPPERLEFT: 262 345,
+                   BOTTOMRIGHT: 412 369,
+                   CREATIONRESOLUTION: 800 600;
+      NAME = "MessageBox.wnd:CheckDisableAutomaticUpdateChecks";
+      STATUS = ENABLED+HIDDEN+IMAGE;
+      STYLE = CHECKBOX+MOUSETRACK;
+      SYSTEMCALLBACK = "[None]";
+      INPUTCALLBACK = "[None]";
+      TOOLTIPCALLBACK = "[None]";
+      DRAWCALLBACK = "[None]";
+      FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+      HEADERTEMPLATE = "LabelRegular";
+      TOOLTIPTEXT = "TOOLTIP:DisableAutomaticUpdateChecks";
+      TOOLTIPDELAY = -1;
+      TEXT = "GUI:DisableAutomaticUpdateChecks";
+      TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                  DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                  HILITE:   186 255 12 255, HILITEBORDER:   0 0 0 255;
+      ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                        IMAGE: Active-Unchecked, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                        IMAGE: Active-Checked, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                        IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+      DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                         IMAGE: Disabled-Unchecked, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
+                         IMAGE: Disabled-Checked, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+      HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
+                       IMAGE: Active-HiLighted, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                       IMAGE: Active-Checked, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                       IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+    END
+    CHILD
+    WINDOW
       WINDOWTYPE = USER;
-      SCREENRECT = UPPERLEFT: 252 100,
-                   BOTTOMRIGHT: 552 150,
+      SCREENRECT = UPPERLEFT: 253 100,
+                   BOTTOMRIGHT: 553 150,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MessageBox.wnd:";
       STATUS = ENABLED;

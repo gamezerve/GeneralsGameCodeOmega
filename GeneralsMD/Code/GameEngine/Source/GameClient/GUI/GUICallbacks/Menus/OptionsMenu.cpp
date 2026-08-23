@@ -210,6 +210,11 @@ static GameWindow *   checkUnlockFps   = nullptr;
 static NameKeyType    checkHeatEffectsID = NAMEKEY_INVALID;
 static GameWindow *   checkHeatEffects   = nullptr;
 
+static NameKeyType		checkAutomaticUpdateChecksID = NAMEKEY_INVALID;
+static GameWindow *		checkAutomaticUpdateChecks   = nullptr;
+
+static GameWindow *   s_rebornOmegaAutomaticUpdateCheckBox = nullptr;
+
 static GameWindow*		s_rebornOmegaCheckingWindow = nullptr;
 static GameWindow* s_rebornOmegaOldCheckingWindow = nullptr;
 /*
@@ -237,6 +242,8 @@ static Bool s_optionsMenuUsesRebornLayout = FALSE;
 static Bool s_rebornOmegaUpdateCheckIgnored = FALSE;
 
 static Bool s_rebornOmegaDownloadTransitionPending = FALSE;
+
+static void RebornOmegaUpdateAccepted();
 
 void SetOptionsMenuUsesRebornLayout(Bool useReborn)
 {
@@ -969,6 +976,15 @@ static void saveOptions()
 	}
 
 	//-------------------------------------------------------------------------------------------------
+  // Set Reborn Omega AutoUpdate Checker Preferences
+	if (checkAutomaticUpdateChecks)
+	{
+		SetRebornOmegaAutomaticUpdateChecksEnabled(
+			GadgetCheckBoxIsChecked(
+				checkAutomaticUpdateChecks));
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	// Resolution
 	//
 	// TheSuperHackers @bugfix xezon 12/06/2025 Now performs the resolution change at the very end of
@@ -1108,6 +1124,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonAccept"));
 	GameWindow* backButton =
 		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonBack"));
+
+	checkAutomaticUpdateChecksID = GetOptionsMenuChildKey("CheckAutomaticUpdateChecks");
 
 	if (checkUpdatesButton)
 	{
@@ -1299,6 +1317,8 @@ if (checkSendDelayLocal)
 
 	//sliderParticleCapID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ParticleCapSlider" );
   sliderParticleCap = TheWindowManager->winGetWindowFromId( nullptr, sliderParticleCapID );
+
+	checkAutomaticUpdateChecks =	TheWindowManager->winGetWindowFromId( nullptr,	checkAutomaticUpdateChecksID);
 
 	if (WinAdvancedDisplay)
 		WinAdvancedDisplay->winHide(TRUE);
@@ -1634,6 +1654,13 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	GadgetCheckBoxSetChecked(checkRetaliation, TheGlobalData->m_clientRetaliationModeEnabled);
 	GadgetCheckBoxSetChecked( checkDoubleClickAttackMove, TheGlobalData->m_doubleClickAttackMove );
 
+	if (checkAutomaticUpdateChecks)
+	{
+		GadgetCheckBoxSetChecked(
+			checkAutomaticUpdateChecks,
+			GetRebornOmegaAutomaticUpdateChecksEnabled());
+	}
+
 	// set scroll speed slider
 	// TheSuperHackers @tweak xezon 11/07/2025 No longer sets the slider position if the user setting
 	// is set beyond the slider limits. This gives the user more freedom to customize the scroll
@@ -1763,6 +1790,32 @@ static void RebornOmegaCheckingWindowClosed()
 	s_rebornOmegaCheckingWindow = nullptr;
 }
 
+static void SaveRebornOmegaAutomaticUpdatePreference()
+{
+	if (s_rebornOmegaAutomaticUpdateCheckBox &&
+		GadgetCheckBoxIsChecked(
+			s_rebornOmegaAutomaticUpdateCheckBox))
+	{
+		SetRebornOmegaAutomaticUpdateChecksEnabled(
+			FALSE);
+	}
+
+	s_rebornOmegaAutomaticUpdateCheckBox =
+		nullptr;
+}
+
+
+static void RebornOmegaAutomaticUpdateAccepted()
+{
+	SaveRebornOmegaAutomaticUpdatePreference();
+	RebornOmegaUpdateAccepted();
+}
+
+static void RebornOmegaAutomaticUpdateDeclined()
+{
+	SaveRebornOmegaAutomaticUpdatePreference();
+}
+
 static void RebornOmegaUpdateAccepted()
 {
 
@@ -1790,14 +1843,27 @@ static void RebornOmegaUpdateAccepted()
 		return;
 	}
 
-	s_rebornOmegaDownloadTransitionPending = TRUE;
+	GameWindow* optionsMenuWindow =
+		TheWindowManager->winGetWindowFromId(
+			nullptr,
+			NAMEKEY("OptionsMenu.wnd:"));
 
-	TheTransitionHandler->setGroup(
-		"RebornOmegaMenusFade",
-		TRUE);
+	if (optionsMenuWindow)
+	{
+		s_rebornOmegaDownloadTransitionPending = TRUE;
 
-	TheTransitionHandler->reverse(
-		"RebornOmegaMenusFade");
+		TheTransitionHandler->setGroup(
+			"RebornOmegaMenusFade",
+			TRUE);
+
+		TheTransitionHandler->reverse(
+			"RebornOmegaMenusFade");
+	}
+	else
+	{
+		TheShell->push(
+			"Menus/DownloadMenuRO.wnd");
+	}
 }
 
 static void RebornOmegaUpdateResultClosed()
@@ -1810,7 +1876,7 @@ static void RebornOmegaUpdateDeclined()
 	DestroyRebornOmegaOldCheckingWindow();
 }
 
-static void ProcessRebornOmegaUpdateCheck()
+void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 {
 	RebornOmegaUpdateCheckState state =
 		GetRebornOmegaUpdateCheckState();
@@ -1842,10 +1908,15 @@ static void ProcessRebornOmegaUpdateCheck()
 	{
 		FinishRebornOmegaUpdateCheck();
 
-		MessageBoxOk(
-			TheGameText->fetch("GUI:CheckForUpdates"),
-			TheGameText->fetch("GUI:UpdateConnectionFailed"),
-			RebornOmegaUpdateResultClosed);
+		if (!automaticCheck)
+		{
+			MessageBoxOk(
+				TheGameText->fetch(
+					"GUI:CheckForUpdates"),
+				TheGameText->fetch(
+					"GUI:UpdateConnectionFailed"),
+				nullptr);
+		}
 
 		return;
 	}
@@ -1854,10 +1925,15 @@ static void ProcessRebornOmegaUpdateCheck()
 	{
 		FinishRebornOmegaUpdateCheck();
 
-		MessageBoxOk(
-			TheGameText->fetch("GUI:CheckForUpdates"),
-			TheGameText->fetch("GUI:UpdateDataInvalid"),
-			RebornOmegaUpdateResultClosed);
+		if (!automaticCheck)
+		{
+			MessageBoxOk(
+				TheGameText->fetch(
+					"GUI:CheckForUpdates"),
+				TheGameText->fetch(
+					"GUI:UpdateDataInvalid"),
+				nullptr);
+		}
 
 		return;
 	}
@@ -1877,16 +1953,22 @@ static void ProcessRebornOmegaUpdateCheck()
 
 	if (state == REBORN_UPDATE_UP_TO_DATE)
 	{
+		if (automaticCheck)
+			return;
+
 		UnicodeString message;
+
 		message.format(
-			TheGameText->fetch("GUI:RebornOmegaUpToDate").str(),
+			TheGameText->fetch(
+				"GUI:RebornOmegaUpToDate").str(),
 			REBORN_OMEGA_VERSION_TEXT,
 			latestVersionText.str());
 
 		MessageBoxOk(
-			TheGameText->fetch("GUI:CheckForUpdates"),
+			TheGameText->fetch(
+				"GUI:CheckForUpdates"),
 			message,
-			RebornOmegaUpdateResultClosed);
+			nullptr);
 
 		return;
 	}
@@ -1900,11 +1982,69 @@ static void ProcessRebornOmegaUpdateCheck()
 		REBORN_OMEGA_VERSION_TEXT,
 		latestVersionText.str());
 
-	MessageBoxYesNo(
-		TheGameText->fetch("GUI:CheckForUpdates"),
-		message,
-		RebornOmegaUpdateAccepted,
-		nullptr);
+	UnicodeString messageTitle;
+
+	if (automaticCheck)
+	{
+		messageTitle =
+			TheGameText->fetch(
+				"GUI:RebornOmegaNewVersionAvailable");
+	}
+	else
+	{
+		messageTitle =
+			TheGameText->fetch(
+				"GUI:CheckForUpdates");
+	}
+
+	if (automaticCheck)
+	{
+		GameWindow* messageBox =
+			MessageBoxYesNo(
+				messageTitle,
+				message,
+				RebornOmegaAutomaticUpdateAccepted,
+				RebornOmegaAutomaticUpdateDeclined);
+
+		AsciiString checkboxName;
+
+		if (GetPopupMessageUsesRebornLayout())
+		{
+			checkboxName =
+				"MessageBoxGen.wnd:"
+				"CheckDisableAutomaticUpdateChecks";
+		}
+		else
+		{
+			checkboxName =
+				"MessageBox.wnd:"
+				"CheckDisableAutomaticUpdateChecks";
+		}
+
+		s_rebornOmegaAutomaticUpdateCheckBox =
+			TheWindowManager->winGetWindowFromId(
+				messageBox,
+				TheNameKeyGenerator->nameToKey(
+					checkboxName));
+
+		if (s_rebornOmegaAutomaticUpdateCheckBox)
+		{
+			GadgetCheckBoxSetChecked(
+				s_rebornOmegaAutomaticUpdateCheckBox,
+				FALSE);
+
+			s_rebornOmegaAutomaticUpdateCheckBox->
+				winHide(FALSE);
+		}
+	}
+	else
+	{
+		MessageBoxYesNo(
+			messageTitle,
+			message,
+			RebornOmegaUpdateAccepted,
+			nullptr);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1913,7 +2053,7 @@ static void ProcessRebornOmegaUpdateCheck()
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
 
-	ProcessRebornOmegaUpdateCheck();
+	ProcessRebornOmegaUpdateCheck(FALSE);
 
 	if (s_rebornOmegaDownloadTransitionPending)
 	{
@@ -2172,8 +2312,8 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
 					break;
 
-				//if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
-				if (!StartRebornOmegaUpdateCheck(10399))
+				if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+				//if (!StartRebornOmegaUpdateCheck(10399))
 				{
 					MessageBoxOk(
 						TheGameText->fetch("GUI:CheckForUpdates"),

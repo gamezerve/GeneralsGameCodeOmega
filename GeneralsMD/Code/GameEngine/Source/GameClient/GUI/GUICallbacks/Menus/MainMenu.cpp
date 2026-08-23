@@ -32,6 +32,7 @@
 
 #include "gamespy/ghttp/ghttp.h"
 
+#include "BuildVersion.h"
 #include "Lib/BaseType.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -51,6 +52,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/HeaderTemplate.h"
 #include "GameClient/MapUtil.h"
+#include "GameClient/RebornOmegaUpdater.h"
 #include "GameClient/Shell.h"
 #include "GameClient/ShellHooks.h"
 #include "GameClient/KeyDefs.h"
@@ -101,6 +103,12 @@ static GameWindow *buttonCompressTest = nullptr;
 void DoCompressTest();
 #endif // TEST_COMPRESSION
 #endif
+
+static Bool s_rebornOmegaAutomaticCheckStarted = FALSE;
+static Bool s_rebornOmegaAutomaticCheckPending = FALSE;
+static DWORD s_rebornOmegaAutomaticPromptTime = 0;
+
+static std::string s_rebornOmegaAutomaticUpdateUrl;
 
 static const char* GetSaveLoadMenuFile()
 {
@@ -673,6 +681,21 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	// set keyboard focus to main parent
 	TheWindowManager->winSetFocus( parentMainMenu );
 
+	if (!s_rebornOmegaAutomaticCheckStarted)
+	{
+		s_rebornOmegaAutomaticCheckStarted = TRUE;
+
+		Bool automaticChecksEnabled =
+			GetRebornOmegaAutomaticUpdateChecksEnabled();
+
+		SetRebornOmegaAutomaticUpdateChecksEnabled(
+			automaticChecksEnabled);
+
+		if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+		{
+			s_rebornOmegaAutomaticCheckPending = TRUE;
+		}
+	}
 
 }
 
@@ -681,6 +704,25 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void MainMenuShutdown( WindowLayout *layout, void *userData )
 {
+
+	if (s_rebornOmegaAutomaticCheckPending)
+	{
+		s_rebornOmegaAutomaticCheckPending = FALSE;
+		s_rebornOmegaAutomaticPromptTime = 0;
+
+		RebornOmegaUpdateCheckState state =
+			GetRebornOmegaUpdateCheckState();
+
+		if (state == REBORN_UPDATE_CHECKING)
+		{
+			CancelRebornOmegaUpdateCheck();
+		}
+		else if (state != REBORN_UPDATE_IDLE)
+		{
+			FinishRebornOmegaUpdateCheck();
+		}
+	}
+
 	if (!startGame)
 		isShuttingDown = TRUE;
 
@@ -821,6 +863,7 @@ void ResolutionDialogUpdate()
 void DownloadMenuUpdate( WindowLayout *layout, void *userData );
 void MainMenuUpdate( WindowLayout *layout, void *userData )
 {
+
 	if( TheGameLogic->isInGame() && !TheGameLogic->isInShellGame() )
 	{
 		return;
@@ -853,6 +896,46 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 		}
 		else
 			initialGadgetDelay--;
+	}
+
+	if (s_rebornOmegaAutomaticCheckPending)
+	{
+		RebornOmegaUpdateCheckState state =
+			GetRebornOmegaUpdateCheckState();
+
+		if (state != REBORN_UPDATE_IDLE &&
+			state != REBORN_UPDATE_CHECKING)
+		{
+			Bool mainMenuReady =
+				!justEntered &&
+				TheMouse->getVisibility() &&
+				TheTransitionHandler->isFinished();
+
+			if (!mainMenuReady)
+			{
+				s_rebornOmegaAutomaticPromptTime = 0;
+			}
+			else
+			{
+				DWORD currentTime = timeGetTime();
+
+				if (s_rebornOmegaAutomaticPromptTime == 0)
+				{
+					s_rebornOmegaAutomaticPromptTime =
+						currentTime;
+				}
+				else if (currentTime -
+					s_rebornOmegaAutomaticPromptTime >= 2000)
+				{
+					ProcessRebornOmegaUpdateCheck(TRUE);
+
+					s_rebornOmegaAutomaticCheckPending =
+						FALSE;
+
+					s_rebornOmegaAutomaticPromptTime = 0;
+				}
+			}
+		}
 	}
 
 	if(dontAllowTransitions && TheTransitionHandler->isFinished())

@@ -36,6 +36,9 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include "Common/GlobalData.h"
+#include "Common/UserPreferences.h"
+
 static bool DownloadHttpsText(const std::string& url, std::string& content)
 {
 	content.clear();
@@ -1020,4 +1023,46 @@ bool RetryRebornOmegaInstallerDownload()
 
 	return StartRebornOmegaInstallerDownload(
 		mirrorUrl);
+}
+
+Bool GetRebornOmegaAutomaticUpdateChecksEnabled()
+{
+	UserPreferences preferences;
+
+	if (!preferences.load(
+		"RebornOmegaOptions\\RebornOmegaOptions.ini"))
+	{
+		return TRUE;
+	}
+
+	AsciiString value =
+		preferences["AutomaticUpdateChecks"];
+
+	if (value.isEmpty())
+		return TRUE;
+
+	return stricmp(value.str(), "no") != 0;
+}
+
+Bool SetRebornOmegaAutomaticUpdateChecksEnabled(
+	Bool enabled)
+{
+	AsciiString directory =
+		TheGlobalData->getPath_UserData();
+
+	directory.concat("RebornOmegaOptions");
+
+	CreateDirectoryA(
+		directory.str(),
+		nullptr);
+
+	UserPreferences preferences;
+
+	preferences.load(
+		"RebornOmegaOptions\\RebornOmegaOptions.ini");
+
+	preferences["AutomaticUpdateChecks"] =
+		enabled ? "yes" : "no";
+
+	return preferences.write();
 }

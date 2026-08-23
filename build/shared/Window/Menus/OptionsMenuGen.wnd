@@ -782,6 +782,55 @@ WINDOW
         END
         CHILD
         WINDOW
+          WINDOWTYPE = CHECKBOX;
+          SCREENRECT = UPPERLEFT: 160 492,
+                       BOTTOMRIGHT: 452 516,
+                       CREATIONRESOLUTION: 800 600;
+          NAME = "OptionsMenuGen.wnd:CheckAutomaticUpdateChecks";
+          STATUS = ENABLED+IMAGE+BORDER;
+          STYLE = CHECKBOX+MOUSETRACK;
+          SYSTEMCALLBACK = "[None]";
+          INPUTCALLBACK = "[None]";
+          TOOLTIPCALLBACK = "[None]";
+          DRAWCALLBACK = "[None]";
+          FONT = NAME: "Arial", SIZE: 14, BOLD: 0;
+          HEADERTEMPLATE = "MinorTitle";
+          TOOLTIPTEXT = "TOOLTIP:AutomaticUpdateChecks";
+          TOOLTIPDELAY = -1;
+          TEXT = "GUI:AutomaticUpdateChecks";
+          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                      HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
+          ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                            IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-CheckedGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
+                           IMAGE: Active-HiLightedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                           IMAGE: Active-CheckedGen, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        END
+        CHILD
+        WINDOW
           WINDOWTYPE = ENTRYFIELD;
           SCREENRECT = UPPERLEFT: 304 464,
                        BOTTOMRIGHT: 448 488,
@@ -1947,9 +1996,9 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:CheckZoomFactor";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:ZoomFactor";
-          TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
-                      HILITE:   186 255 12 255, HILITEBORDER:   0 0 0 255;
+                      HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
                             IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
                             IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
@@ -2050,9 +2099,9 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:CheckMaxCameraHeight";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:MaxCameraHeight";
-          TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
-                      HILITE:   186 255 12 255, HILITEBORDER:   0 0 0 255;
+                      HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
                             IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
                             IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
@@ -3674,36 +3723,36 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:SaveCamera";
-        TEXTCOLOR = ENABLED:  226 76 76 255, ENABLEDBORDER:  0 0 0 255,
-                    DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
-                    HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
-        ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
-                          IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
-                          IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
-        DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
-                           IMAGE: Disabled-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
-                           IMAGE: Disabled-CheckedGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                      HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
+          ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                            IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: Disabled-CheckedGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
+                           IMAGE: Active-HiLightedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                           IMAGE: Active-CheckedGen, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
-        HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
-                         IMAGE: Active-HiLightedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
-                         IMAGE: Active-CheckedGen, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
-                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
       END
       CHILD
       WINDOW
@@ -3722,9 +3771,9 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:UseCamera";
-        TEXTCOLOR = ENABLED:  226 76 76 255, ENABLEDBORDER:  0 0 0 255,
-                    DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
-                    HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
+          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                      HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
         ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
                           IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
                           IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,

@@ -88,8 +88,7 @@ struct RebornOmegaDownloadProgress
 	unsigned long totalBytes;
 };
 
-bool StartRebornOmegaInstallerDownload(
-	const std::string& mirrorUrl);
+bool StartRebornOmegaInstallerDownload(const std::string& mirrorUrl);
 
 void CancelRebornOmegaInstallerDownload();
 
@@ -106,3 +105,6 @@ void FinishRebornOmegaInstallerDownload();
 void PauseRebornOmegaInstallerDownload();
 void ResumeRebornOmegaInstallerDownload();
 bool RetryRebornOmegaInstallerDownload();
+
+Bool GetRebornOmegaAutomaticUpdateChecksEnabled();
+Bool SetRebornOmegaAutomaticUpdateChecksEnabled(Bool enabled);
