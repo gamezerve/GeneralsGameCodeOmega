@@ -32,6 +32,8 @@
 
 #include "gamespy/ghttp/ghttp.h"
 
+#include "BuildVersion.h" // Reborn
+
 #include "Common/AudioAffect.h"
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
@@ -55,9 +57,11 @@
 #include "GameClient/GadgetComboBox.h"
 #include "GameClient/GadgetRadioButton.h"
 #include "GameClient/GadgetSlider.h"
+#include "GameClient/GameWindowTransitions.h"
 #include "GameClient/HeaderTemplate.h"
 #include "GameClient/Shell.h"
 #include "GameClient/KeyDefs.h"
+#include "GameClient/RebornOmegaUpdater.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/GameText.h"
@@ -206,6 +210,8 @@ static GameWindow *   checkUnlockFps   = nullptr;
 static NameKeyType    checkHeatEffectsID = NAMEKEY_INVALID;
 static GameWindow *   checkHeatEffects   = nullptr;
 
+static GameWindow*		s_rebornOmegaCheckingWindow = nullptr;
+static GameWindow* s_rebornOmegaOldCheckingWindow = nullptr;
 /*
 
 static NameKeyType    radioHighID = NAMEKEY_INVALID;
@@ -227,6 +233,10 @@ WindowLayout *OptionsLayout = nullptr;
 static OptionPreferences *pref = nullptr;
 
 static Bool s_optionsMenuUsesRebornLayout = FALSE;
+
+static Bool s_rebornOmegaUpdateCheckIgnored = FALSE;
+
+static Bool s_rebornOmegaDownloadTransitionPending = FALSE;
 
 void SetOptionsMenuUsesRebornLayout(Bool useReborn)
 {
@@ -1089,6 +1099,56 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkLanguageFilterID = GetOptionsMenuChildKey("CheckLanguageFilter");
 	//checkSendDelayID = GetOptionsMenuChildKey("CheckSendDelay");
 	buttonFirewallRefreshID = GetOptionsMenuChildKey("ButtonFirewallRefresh");
+
+	GameWindow* checkUpdatesButton =
+		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonCheckUpdates"));
+	GameWindow* defaultsButton =
+		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonDefaults"));
+	GameWindow* acceptButton =
+		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonAccept"));
+	GameWindow* backButton =
+		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonBack"));
+
+	if (checkUpdatesButton)
+	{
+		Bool inInteractiveGame = TheGameLogic->isInInteractiveGame();
+		checkUpdatesButton->winHide(inInteractiveGame);
+
+		if (inInteractiveGame && defaultsButton && acceptButton && backButton)
+		{
+			ICoord2D defaultsPos;
+			ICoord2D defaultsSize;
+			ICoord2D backPos;
+			ICoord2D backSize;
+
+			defaultsButton->winGetPosition(&defaultsPos.x, &defaultsPos.y);
+			defaultsButton->winGetSize(&defaultsSize.x, &defaultsSize.y);
+			backButton->winGetPosition(&backPos.x, &backPos.y);
+			backButton->winGetSize(&backSize.x, &backSize.y);
+
+			Real scaleX =
+				(Real)(backPos.x + backSize.x - defaultsPos.x) / 483.0f;
+
+			defaultsButton->winSetSize(
+				(Int)(156.0f * scaleX + 0.5f),
+				defaultsSize.y);
+
+			acceptButton->winSetPosition(
+				defaultsPos.x + (Int)(160.0f * scaleX + 0.5f),
+				defaultsPos.y);
+			acceptButton->winSetSize(
+				(Int)(159.0f * scaleX + 0.5f),
+				defaultsSize.y);
+
+			backButton->winSetPosition(
+				defaultsPos.x + (Int)(324.0f * scaleX + 0.5f),
+				defaultsPos.y);
+			backButton->winSetSize(
+				(Int)(159.0f * scaleX + 0.5f),
+				defaultsSize.y);
+		}
+	}
+
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
 
@@ -1651,7 +1711,6 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 
 	}
 
-
 	TheWindowManager->winSetModal(parent);
 	ignoreSelected = FALSE;
 }
@@ -1681,11 +1740,197 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 
 }
 
+static std::string s_pendingRebornOmegaUpdateUrl;
+
+static void DestroyRebornOmegaOldCheckingWindow()
+{
+	if (!s_rebornOmegaOldCheckingWindow)
+		return;
+
+	TheWindowManager->winDestroy(
+		s_rebornOmegaOldCheckingWindow);
+
+	s_rebornOmegaOldCheckingWindow = nullptr;
+}
+
+static void RebornOmegaCheckingWindowClosed()
+{
+	s_rebornOmegaCheckingWindow = nullptr;
+}
+
+static void RebornOmegaUpdateAccepted()
+{
+
+	DestroyRebornOmegaOldCheckingWindow();
+
+	std::string mirrorUrl;
+
+	if (!ResolveRebornOmegaMirrorUrl(
+		s_pendingRebornOmegaUpdateUrl,
+		mirrorUrl))
+	{
+		MessageBoxOk(
+			TheGameText->fetch("GUI:CheckForUpdates"),
+			TheGameText->fetch("GUI:RebornOmegaDownloadLinkFailed"),
+			nullptr);
+		return;
+	}
+
+	if (!StartRebornOmegaInstallerDownload(mirrorUrl))
+	{
+		MessageBoxOk(
+			TheGameText->fetch("GUI:CheckForUpdates"),
+			TheGameText->fetch("GUI:RebornOmegaDownloadLinkFailed"),
+			nullptr);
+		return;
+	}
+
+	s_rebornOmegaDownloadTransitionPending = TRUE;
+
+	TheTransitionHandler->setGroup(
+		"RebornOmegaMenusFade",
+		TRUE);
+
+	TheTransitionHandler->reverse(
+		"RebornOmegaMenusFade");
+}
+
+static void RebornOmegaUpdateResultClosed()
+{
+	DestroyRebornOmegaOldCheckingWindow();
+}
+
+static void RebornOmegaUpdateDeclined()
+{
+	DestroyRebornOmegaOldCheckingWindow();
+}
+
+static void ProcessRebornOmegaUpdateCheck()
+{
+	RebornOmegaUpdateCheckState state =
+		GetRebornOmegaUpdateCheckState();
+
+	if (state == REBORN_UPDATE_IDLE ||
+		state == REBORN_UPDATE_CHECKING)
+	{
+		return;
+	}
+
+	if (s_rebornOmegaUpdateCheckIgnored)
+	{
+		s_rebornOmegaUpdateCheckIgnored = FALSE;
+		FinishRebornOmegaUpdateCheck();
+		return;
+	}
+
+	if (s_rebornOmegaCheckingWindow)
+	{
+		s_rebornOmegaCheckingWindow->winHide(TRUE);
+
+		s_rebornOmegaOldCheckingWindow =
+			s_rebornOmegaCheckingWindow;
+
+		s_rebornOmegaCheckingWindow = nullptr;
+	}
+
+	if (state == REBORN_UPDATE_CONNECTION_FAILED)
+	{
+		FinishRebornOmegaUpdateCheck();
+
+		MessageBoxOk(
+			TheGameText->fetch("GUI:CheckForUpdates"),
+			TheGameText->fetch("GUI:UpdateConnectionFailed"),
+			RebornOmegaUpdateResultClosed);
+
+		return;
+	}
+
+	if (state == REBORN_UPDATE_DATA_INVALID)
+	{
+		FinishRebornOmegaUpdateCheck();
+
+		MessageBoxOk(
+			TheGameText->fetch("GUI:CheckForUpdates"),
+			TheGameText->fetch("GUI:UpdateDataInvalid"),
+			RebornOmegaUpdateResultClosed);
+
+		return;
+	}
+
+	RebornOmegaVersionInfo latestVersion;
+
+	if (!GetRebornOmegaUpdateCheckResult(latestVersion))
+	{
+		FinishRebornOmegaUpdateCheck();
+		return;
+	}
+
+	FinishRebornOmegaUpdateCheck();
+
+	UnicodeString latestVersionText;
+	latestVersionText.translate(latestVersion.displayName.c_str());
+
+	if (state == REBORN_UPDATE_UP_TO_DATE)
+	{
+		UnicodeString message;
+		message.format(
+			TheGameText->fetch("GUI:RebornOmegaUpToDate").str(),
+			REBORN_OMEGA_VERSION_TEXT,
+			latestVersionText.str());
+
+		MessageBoxOk(
+			TheGameText->fetch("GUI:CheckForUpdates"),
+			message,
+			RebornOmegaUpdateResultClosed);
+
+		return;
+	}
+
+	s_pendingRebornOmegaUpdateUrl =
+		latestVersion.downloadStartUrl;
+
+	UnicodeString message;
+	message.format(
+		TheGameText->fetch("GUI:RebornOmegaUpdateAvailable").str(),
+		REBORN_OMEGA_VERSION_TEXT,
+		latestVersionText.str());
+
+	MessageBoxYesNo(
+		TheGameText->fetch("GUI:CheckForUpdates"),
+		message,
+		RebornOmegaUpdateAccepted,
+		nullptr);
+}
+
 //-------------------------------------------------------------------------------------------------
 /** options menu update method */
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
+
+	ProcessRebornOmegaUpdateCheck();
+
+	if (s_rebornOmegaDownloadTransitionPending)
+	{
+		if (!TheTransitionHandler->isFinished())
+			return;
+
+		s_rebornOmegaDownloadTransitionPending = FALSE;
+
+		if (pref)
+		{
+			delete pref;
+			pref = nullptr;
+		}
+
+		comboBoxLANIP = nullptr;
+		comboBoxOnlineIP = nullptr;
+
+		DestroyOptionsLayout();
+		TheShell->push("Menus/DownloadMenuRO.wnd");
+		return;
+	}
+
 	if (!checkMaxCameraHeight || !textEntryMaxCameraHeight)
 		return;
 
@@ -1774,6 +2019,13 @@ WindowMsgHandledType OptionsMenuInput( GameWindow *window, UnsignedInt msg,
 
 }
 
+static void RebornOmegaUpdateCheckCanceled()
+{
+	s_rebornOmegaCheckingWindow = nullptr;
+	s_rebornOmegaUpdateCheckIgnored = TRUE;
+	CancelRebornOmegaUpdateCheck();
+}
+
 //-------------------------------------------------------------------------------------------------
 /** options menu window system callback */
 //-------------------------------------------------------------------------------------------------
@@ -1785,6 +2037,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 	static NameKeyType buttonAccept = NAMEKEY_INVALID;
 	static NameKeyType buttonReplayMenu = NAMEKEY_INVALID;
 	static NameKeyType buttonKeyboardOptionsMenu = NAMEKEY_INVALID;
+	static NameKeyType buttonCheckUpdates = NAMEKEY_INVALID; // Reborn: Mod update check button
 
 	switch( msg )
 	{
@@ -1802,6 +2055,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			buttonDefaults = GetOptionsMenuChildKey("ButtonDefaults");
 			buttonAccept = GetOptionsMenuChildKey("ButtonAccept");
 			buttonKeyboardOptionsMenu = GetOptionsMenuChildKey("ButtonKeyboardOptions");
+			buttonCheckUpdates = GetOptionsMenuChildKey("ButtonCheckUpdates");
 
 			break;
 
@@ -1907,6 +2161,28 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			else if (controlID == buttonDefaults )
 			{
 				setDefaults();
+			}
+			else if (controlID == buttonCheckUpdates)
+			{
+				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
+					break;
+
+				//if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+				if (!StartRebornOmegaUpdateCheck(10399))
+				{
+					MessageBoxOk(
+						TheGameText->fetch("GUI:CheckForUpdates"),
+						TheGameText->fetch("GUI:UpdateConnectionFailed"),
+						nullptr);
+					break;
+				}
+
+				s_rebornOmegaUpdateCheckIgnored = FALSE;
+
+				s_rebornOmegaCheckingWindow = MessageBoxCancel(
+					TheGameText->fetch("GUI:CheckForUpdates"),
+					TheGameText->fetch("GUI:CheckingForUpdates"),
+					RebornOmegaUpdateCheckCanceled);
 			}
 			else if (controlID == ButtonAdvancedAcceptID )
 			{
