@@ -1,4 +1,100 @@
 
+GUI:RebornOmegaInstallerLaunchFailed
+"The update installer could not be started."
+END
+
+GUI:RebornOmegaDownloadComplete
+"Download complete. Press Install to close the game and continue."
+END
+
+GUI:InstallUpdate
+"INSTALL"
+END
+
+GUI:RebornOmegaDownloadFailed
+"Download failed. Please check your connection and try again."
+END
+
+GUI:RetryDownload
+"RETRY"
+END
+
+GUI:RebornOmegaDownloadPausedTiming
+"0.0 MB/s | ETA --:--:-- | Elapsed %02d:%02d:%02d"
+END
+
+GUI:RebornOmegaDownloadTiming
+"%.1f MB/s | ETA %02d:%02d:%02d | Elapsed %02d:%02d:%02d"
+END
+
+GUI:PauseDownload
+"PAUSE"
+END
+
+GUI:ResumeDownload
+"RESUME"
+END
+
+GUI:DownloadPaused
+"Download paused."
+END
+
+GUI:RebornOmegaDownloading
+"Downloading update... %d%%"
+END
+
+GUI:RebornOmegaInstallerFile
+"Reborn Omega Update Tool"
+END
+
+GUI:RebornOmegaPreparingDownload
+"Preparing update download..."
+END
+
+GUI:RebornOmegaUpToDate
+"Installed version: %ls\nLatest available version: %ls\n\nYou already have the latest version of Reborn Omega."
+END
+
+GUI:RebornOmegaUpdateAvailable
+"Installed version: %ls\nLatest available version: %ls\n\nWould you like to download and install the update now?"
+END
+
+GUI:RebornOmegaDownloadLinkReady
+"The update download link was resolved successfully."
+END
+
+GUI:RebornOmegaDownloadLinkFailed
+"The update download link could not be obtained from ModDB. Please try again later."
+END
+
+GUI:LatestRebornOmegaVersion
+"Latest available version: %ls"
+END
+
+GUI:UpdateDataInvalid
+"The update information received from ModDB could not be read."
+END
+
+GUI:CheckingForUpdates
+"Checking for Reborn Omega updates..."
+END
+
+GUI:UpdateConnectionFailed
+"Unable to connect to the Reborn Omega update service. Please check your internet connection and try again."
+END
+
+GUI:InstalledRebornOmegaVersion
+"Installed version: %ls"
+END
+
+GUI:CheckForUpdates
+"UPDATE"
+END
+
+TOOLTIP:CheckForUpdates
+"Check for available Reborn Omega updates."
+END
+
 GUI:GLA08
 "Baikonur Cosmodrome"
 END

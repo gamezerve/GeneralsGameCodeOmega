@@ -172,6 +172,13 @@ extern void DownloadMenuShutdown( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType DownloadMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 
+// (Patch) Reborn Omega Download Menu ----------------------------------------------------------------------------------
+extern void DownloadMenuROInit(WindowLayout* layout, void* userData);
+extern void DownloadMenuROUpdate(WindowLayout* layout, void* userData);
+extern void DownloadMenuROShutdown(WindowLayout* layout, void* userData);
+extern WindowMsgHandledType DownloadMenuROSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+extern WindowMsgHandledType DownloadMenuROInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+
 // Popup host Game Internet -----------------------------------------------------------------------------------
 extern void DifficultySelectInit( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType DifficultySelectSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );

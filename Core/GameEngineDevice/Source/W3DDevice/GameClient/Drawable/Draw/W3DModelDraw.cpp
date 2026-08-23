@@ -3153,13 +3153,13 @@ static Bool textureSwapDiffers(
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 {
-	if (getDrawable() &&
-		getDrawable()->getTemplate() &&
-		!stricmp(getDrawable()->getTemplate()->getName().str(), "GLAVehicleCombatBike"))
-	{
-		DEBUG_LOG(("CombatBike setModelState -> %s",
-			newState ? newState->m_description.str() : "<null>"));
-	}
+	//if (getDrawable() &&
+	//	getDrawable()->getTemplate() &&
+	//	!stricmp(getDrawable()->getTemplate()->getName().str(), "GLAVehicleCombatBike"))
+	//{
+	//	DEBUG_LOG(("CombatBike setModelState -> %s",
+	//		newState ? newState->m_description.str() : "<null>"));
+	//}
 
 	DEBUG_ASSERTCRASH(newState, ("invalid state in W3DModelDraw::setModelState"));
 
