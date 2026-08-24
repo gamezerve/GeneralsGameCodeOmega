@@ -265,7 +265,7 @@ W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 	DEBUG_ASSERTCRASH(m_pSrcTexture != nullptr, ("Reading empty shroud"));
 
 
-	if (x >= 0 && y >= 0 && x < m_numCellsX && y < m_numCellsY)
+	if (x >= 0 && y >= 0 && x < m_numCellsX && y >= m_numCellsY)
 	{
 		DEBUG_LOG(("W3DShroud::getShroudLevel called with invalid shroud texture."));
 		return 0;

@@ -735,12 +735,9 @@ static DWORD WINAPI RebornOmegaInstallerDownloadThread(
 						sizeof(buffer),
 						&bytesRead))
 					{
-						DWORD errorCode =
-							GetLastError();
-
 						DEBUG_LOG((
 							"Reborn updater: WinHttpReadData failed error=%lu\n",
-							errorCode));
+							GetLastError()));
 
 						success = false;
 						break;
@@ -981,15 +978,13 @@ void ResumeRebornOmegaInstallerDownload()
 		REBORN_DOWNLOAD_PAUSED,
 		REBORN_DOWNLOAD_PAUSED);
 
-	LONG paused = InterlockedCompareExchange(
-		&s_downloadPaused,
-		FALSE,
-		FALSE);
-
 	DEBUG_LOG((
 		"Reborn updater: Resume requested state=%ld paused=%ld\n",
 		state,
-		paused));
+		InterlockedCompareExchange(
+			&s_downloadPaused,
+			FALSE,
+			FALSE)));
 
 	if (state != REBORN_DOWNLOAD_PAUSED)
 		return;

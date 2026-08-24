@@ -72,7 +72,7 @@ if (IS_VS6_BUILD)
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
     add_subdirectory(Dependencies/MaxSDK)
 endif()
-add_subdirectory(Dependencies/Utility)
+add_subdirectory(Dependencies/Utility) 
 
 # To be removed when abandoning VC6
 if (IS_VS6_BUILD)

@@ -472,6 +472,9 @@ static void initLabelVersion()
 //-------------------------------------------------------------------------------------------------
 void MainMenuInit( WindowLayout *layout, void *userData )
 {
+
+	SetPopupMessageUsesRebornLayout(FALSE);
+
 	TheWritableGlobalData->m_breakTheMovie = FALSE;
 
 	TheShell->showShellMap(TRUE);
