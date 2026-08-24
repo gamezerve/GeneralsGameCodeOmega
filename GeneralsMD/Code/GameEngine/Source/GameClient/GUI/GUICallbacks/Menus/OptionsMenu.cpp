@@ -2315,8 +2315,8 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
 					break;
 
-				//if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
-				if (!StartRebornOmegaUpdateCheck(10399))
+				if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+				//if (!StartRebornOmegaUpdateCheck(10399))
 				{
 					MessageBoxOk(
 						TheGameText->fetch("GUI:CheckForUpdates"),
