@@ -218,6 +218,7 @@ set(GAMEENGINE_SRC
     Include/GameClient/ProcessAnimateWindow.h
     Include/GameClient/RadiusDecal.h
     Include/GameClient/RayEffect.h
+    Include/GameClient/SaveLoadFeedback.h
     Include/GameClient/SelectionInfo.h
     Include/GameClient/SelectionXlat.h
 #    Include/GameClient/Shadow.h
@@ -797,6 +798,7 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
     Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
     Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
+    Source/GameClient/GUI/GUICallbacks/SaveLoadFeedback.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
     Source/GameClient/GUI/IMEManager.cpp
     Source/GameClient/GUI/LoadScreen.cpp

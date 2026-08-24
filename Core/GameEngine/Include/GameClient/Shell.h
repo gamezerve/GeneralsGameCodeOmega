@@ -163,6 +163,7 @@ protected:
 
 	void construct();
 	void deconstruct();
+	void destroyScreenStack();													///< tear down all screens without initializing uncovered layouts
 
 	void linkScreen( WindowLayout *screen );								///< link screen to list
 	void unlinkScreen( WindowLayout *screen );							///< remove screen from list
