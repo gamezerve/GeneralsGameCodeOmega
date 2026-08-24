@@ -110,6 +110,11 @@ static DWORD s_rebornOmegaAutomaticPromptTime = 0;
 
 static std::string s_rebornOmegaAutomaticUpdateUrl;
 
+Bool IsRebornOmegaAutomaticUpdateCheckPending()
+{
+	return s_rebornOmegaAutomaticCheckPending;
+}
+
 static const char* GetSaveLoadMenuFile()
 {
 	//return IsRebornCampaign() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd";
@@ -903,8 +908,12 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 		RebornOmegaUpdateCheckState state =
 			GetRebornOmegaUpdateCheckState();
 
-		if (state != REBORN_UPDATE_IDLE &&
-			state != REBORN_UPDATE_CHECKING)
+		if (state == REBORN_UPDATE_IDLE)
+		{
+			s_rebornOmegaAutomaticCheckPending = FALSE;
+			s_rebornOmegaAutomaticPromptTime = 0;
+		}
+		else if (state != REBORN_UPDATE_CHECKING)
 		{
 			Bool mainMenuReady =
 				!justEntered &&

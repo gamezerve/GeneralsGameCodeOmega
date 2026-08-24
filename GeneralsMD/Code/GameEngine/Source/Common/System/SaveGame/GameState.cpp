@@ -648,7 +648,8 @@ SaveResult GameState::missionSave()
 
 	// do an automatic mission save
 	//return saveGame("", desc, SAVE_FILE_TYPE_MISSION);
-	SaveCode result = saveGame("", desc, SAVE_FILE_TYPE_MISSION);
+	//SaveCode result = saveGame("", desc, SAVE_FILE_TYPE_MISSION);
+	SaveResult result = saveGame("", desc, SAVE_FILE_TYPE_MISSION);
 
 	return result;
 

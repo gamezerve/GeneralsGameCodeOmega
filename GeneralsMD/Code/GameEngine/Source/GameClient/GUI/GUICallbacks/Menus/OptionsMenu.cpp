@@ -2053,7 +2053,8 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
 
-	ProcessRebornOmegaUpdateCheck(FALSE);
+	ProcessRebornOmegaUpdateCheck(
+		IsRebornOmegaAutomaticUpdateCheckPending());
 
 	if (s_rebornOmegaDownloadTransitionPending)
 	{

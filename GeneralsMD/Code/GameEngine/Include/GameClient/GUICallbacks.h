@@ -179,6 +179,7 @@ extern void DownloadMenuROShutdown(WindowLayout* layout, void* userData);
 extern WindowMsgHandledType DownloadMenuROSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
 extern WindowMsgHandledType DownloadMenuROInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
 extern void ProcessRebornOmegaUpdateCheck(Bool automaticCheck);
+extern Bool IsRebornOmegaAutomaticUpdateCheckPending();
 
 // Popup host Game Internet -----------------------------------------------------------------------------------
 extern void DifficultySelectInit( WindowLayout *layout, void *userData );
