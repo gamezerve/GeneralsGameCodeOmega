@@ -54,6 +54,7 @@
 #include "GameLogic/WeaponSet.h"
 #include "GameLogic/FPUControl.h"
 #include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/NeutronMissileUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
@@ -2297,12 +2298,37 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
 		Matrix3D mtx = *transformMtx;
 		adjustTransformMtx(mtx);
 
-		const Object* object = getDrawable()->getObject();
+		Object* object = getDrawable()->getObject();
 
 		if (object != nullptr &&
 			object->getTemplate()->getName().compare("SupW_NeutronMissile") == 0)
 		{
-			mtx.Rotate_Z(PI / 2.0f);
+			static const NameKeyType moduleKey = NAMEKEY("NeutronMissileUpdate");
+
+			NeutronMissileUpdate* missileUpdate =
+				static_cast<NeutronMissileUpdate*>(object->findUpdateModule(moduleKey));
+
+			if (missileUpdate != nullptr)
+			{
+				const Coord3D* velocity = missileUpdate->getVelocity();
+
+				Vector3 direction(
+					velocity->x,
+					velocity->y,
+					velocity->z);
+
+				if (direction.Length2() > 0.0001f)
+				{
+					direction.Normalize();
+
+					Matrix3D renderTransform;
+					renderTransform.buildTransformMatrix(
+						mtx.Get_Translation(),
+						direction);
+
+					mtx = renderTransform;
+				}
+			}
 		}
 
 		m_renderObject->Set_Transform(mtx);
