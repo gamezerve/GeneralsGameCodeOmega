@@ -1536,7 +1536,7 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			// get special power module from the object to execute it
 			SpecialPowerModuleInterface *mod = obj->getSpecialPowerModule( command->getSpecialPowerTemplate() );
 
-			DEBUG_LOG(("SPECIAL POWER: object=%s command=%s module=%p ready=%d percent=%d\n", obj->getTemplate()->getName().str(), command->getName().str(), mod, mod ? mod->isReady() : -1, mod ? Int(mod->getPercentReady() * 100) : -1));
+			//DEBUG_LOG(("SPECIAL POWER: object=%s command=%s module=%p ready=%d percent=%d\n", obj->getTemplate()->getName().str(), command->getName().str(), mod, mod ? mod->isReady() : -1, mod ? Int(mod->getPercentReady() * 100) : -1));
 
 			if( mod == nullptr )
 			{
