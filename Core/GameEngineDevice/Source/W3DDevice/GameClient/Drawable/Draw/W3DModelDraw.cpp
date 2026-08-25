@@ -2286,10 +2286,25 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
 	adjustAnimSpeedToMovementSpeed();
 
 	// set our position in the render object to our position of the drawable
+	//if (m_renderObject)
+	//{
+	//	Matrix3D mtx = *transformMtx;
+	//	adjustTransformMtx(mtx);
+	//	m_renderObject->Set_Transform(mtx);
+	//}
 	if (m_renderObject)
 	{
 		Matrix3D mtx = *transformMtx;
 		adjustTransformMtx(mtx);
+
+		const Object* object = getDrawable()->getObject();
+
+		if (object != nullptr &&
+			object->getTemplate()->getName().compare("SupW_NeutronMissile") == 0)
+		{
+			mtx.Rotate_Z(PI / 2.0f);
+		}
+
 		m_renderObject->Set_Transform(mtx);
 	}
 

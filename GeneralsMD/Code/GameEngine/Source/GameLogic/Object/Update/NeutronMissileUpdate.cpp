@@ -234,7 +234,16 @@ void NeutronMissileUpdate::doLaunch()
 		// that we don't see any decals on the side of the missile 'pop' to the new angle
 		/// @todo, this should not be a hard coded value ... I love demos!!!
 		//
-		worldTransform.Rotate_X( (PI / 2.0f) );
+		//worldTransform.Rotate_X( (PI / 2.0f) );
+		if (getObject()->getTemplate()->getName().compare("SupW_NeutronMissile") == 0)
+		{
+			Vector3 launchDirection(0.0f, 0.0f, 1.0f);
+			worldTransform.buildTransformMatrix(tmp, launchDirection);
+		}
+		else
+		{
+			worldTransform.Rotate_X(PI / 2.0f);
+		}
 
 		getObject()->getDrawable()->setDrawableHidden(false);
 		getObject()->setTransformMatrix(&worldTransform);
