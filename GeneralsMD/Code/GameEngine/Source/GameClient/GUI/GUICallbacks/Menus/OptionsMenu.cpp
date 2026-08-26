@@ -2105,6 +2105,15 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
 
+	if (IsChangeLogMenuROOptionsOverlayActive())
+	{
+		ChangeLogMenuROUpdate(
+			nullptr,
+			nullptr);
+
+		return;
+	}
+
 	ProcessRebornOmegaUpdateCheck(
 		IsRebornOmegaAutomaticUpdateCheckPending());
 

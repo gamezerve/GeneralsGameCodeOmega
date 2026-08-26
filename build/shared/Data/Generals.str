@@ -1,4 +1,12 @@
 
+GUI:RebornOmegaChangeLogLoading
+"Loading change log"
+END
+
+GUI:RebornOmegaChangeLogUnavailable
+"Change log is unavailable."
+END
+
 GUI:ChangeLog
 "CHANGE LOG"
 END

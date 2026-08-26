@@ -191,6 +191,7 @@ extern WindowMsgHandledType ChangeLogMenuROSystem(GameWindow* window, UnsignedIn
 extern WindowMsgHandledType ChangeLogMenuROInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
 extern void ShowChangeLogMenuRO();
 extern void SkipNextMainMenuTransition();
+extern Bool IsChangeLogMenuROOptionsOverlayActive();
 
 // Popup host Game Internet -----------------------------------------------------------------------------------
 extern void DifficultySelectInit( WindowLayout *layout, void *userData );

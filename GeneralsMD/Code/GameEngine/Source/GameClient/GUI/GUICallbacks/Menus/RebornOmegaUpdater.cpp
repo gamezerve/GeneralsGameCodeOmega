@@ -30,6 +30,7 @@
 
 #include "GameClient/RebornOmegaUpdater.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -282,6 +283,124 @@ bool DownloadRebornOmegaChangeLog(
 	return !changeLog.empty();
 }
 
+static volatile LONG s_changeLogDownloadState =
+REBORN_CHANGELOG_IDLE;
+
+static std::string s_changeLogDownloadResult;
+
+static DWORD WINAPI RebornOmegaChangeLogDownloadThread(
+	LPVOID parameter)
+{
+	std::string* pageUrlParameter =
+		static_cast<std::string*>(parameter);
+
+	std::string pageUrl =
+		*pageUrlParameter;
+
+	delete pageUrlParameter;
+
+	std::string changeLog;
+
+	if (!DownloadRebornOmegaChangeLog(
+		pageUrl,
+		changeLog))
+	{
+		InterlockedExchange(
+			&s_changeLogDownloadState,
+			REBORN_CHANGELOG_FAILED);
+
+		return 0;
+	}
+
+	s_changeLogDownloadResult =
+		changeLog;
+
+	InterlockedExchange(
+		&s_changeLogDownloadState,
+		REBORN_CHANGELOG_COMPLETED);
+
+	return 0;
+}
+
+bool StartRebornOmegaChangeLogDownload(
+	const std::string& pageUrl)
+{
+	if (pageUrl.empty())
+		return false;
+
+	if (InterlockedCompareExchange(
+		&s_changeLogDownloadState,
+		REBORN_CHANGELOG_DOWNLOADING,
+		REBORN_CHANGELOG_IDLE) !=
+		REBORN_CHANGELOG_IDLE)
+	{
+		return false;
+	}
+
+	s_changeLogDownloadResult.clear();
+
+	std::string* threadPageUrl =
+		new std::string(pageUrl);
+
+	HANDLE thread =
+		CreateThread(
+			nullptr,
+			0,
+			RebornOmegaChangeLogDownloadThread,
+			threadPageUrl,
+			0,
+			nullptr);
+
+	if (!thread)
+	{
+		delete threadPageUrl;
+
+		InterlockedExchange(
+			&s_changeLogDownloadState,
+			REBORN_CHANGELOG_IDLE);
+
+		return false;
+	}
+
+	CloseHandle(thread);
+	return true;
+}
+
+RebornOmegaChangeLogDownloadState
+GetRebornOmegaChangeLogDownloadState()
+{
+	return static_cast<
+		RebornOmegaChangeLogDownloadState>(
+			InterlockedCompareExchange(
+				&s_changeLogDownloadState,
+				REBORN_CHANGELOG_IDLE,
+				REBORN_CHANGELOG_IDLE));
+}
+
+bool GetRebornOmegaChangeLogDownloadResult(
+	std::string& changeLog)
+{
+	if (GetRebornOmegaChangeLogDownloadState() !=
+		REBORN_CHANGELOG_COMPLETED)
+	{
+		return false;
+	}
+
+	changeLog =
+		s_changeLogDownloadResult;
+
+	return true;
+}
+
+void FinishRebornOmegaChangeLogDownload()
+{
+	s_changeLogDownloadResult.clear();
+
+	InterlockedExchange(
+		&s_changeLogDownloadState,
+		REBORN_CHANGELOG_IDLE);
+}
+
 bool ResolveRebornOmegaMirrorUrl(
 	const std::string& startUrl,
 	std::string& mirrorUrl)
@@ -464,6 +583,119 @@ bool FindLatestRebornOmegaVersion(
 	return found;
 }
 
+bool FindAllRebornOmegaVersions(
+	const std::string& feed,
+	std::vector<RebornOmegaVersionInfo>& versions)
+{
+	versions.clear();
+
+	size_t itemStart = 0;
+
+	while ((itemStart = feed.find("<item", itemStart)) !=
+		std::string::npos)
+	{
+		size_t itemEnd =
+			feed.find("</item>", itemStart);
+
+		if (itemEnd == std::string::npos)
+			break;
+
+		size_t titleStart =
+			feed.find("<title>", itemStart);
+
+		size_t titleEnd =
+			feed.find("</title>", titleStart);
+
+		if (titleStart != std::string::npos &&
+			titleEnd != std::string::npos &&
+			titleEnd < itemEnd)
+		{
+			titleStart += 7;
+
+			RebornOmegaVersionInfo version;
+
+			if (ParseRebornOmegaVersion(
+				feed.substr(
+					titleStart,
+					titleEnd - titleStart),
+				version))
+			{
+				size_t linkStart =
+					feed.find("<link>", itemStart);
+
+				size_t linkEnd =
+					feed.find("</link>", linkStart);
+
+				if (linkStart != std::string::npos &&
+					linkEnd != std::string::npos &&
+					linkEnd < itemEnd)
+				{
+					linkStart += 6;
+
+					version.pageUrl =
+						feed.substr(
+							linkStart,
+							linkEnd - linkStart);
+				}
+
+				size_t guidStart =
+					feed.find("<guid", itemStart);
+
+				size_t guidEnd =
+					feed.find("</guid>", guidStart);
+
+				if (guidStart != std::string::npos &&
+					guidEnd != std::string::npos &&
+					guidEnd < itemEnd)
+				{
+					guidStart =
+						feed.find('>', guidStart);
+
+					if (guidStart != std::string::npos &&
+						guidStart < guidEnd)
+					{
+						++guidStart;
+
+						std::string guid =
+							feed.substr(
+								guidStart,
+								guidEnd - guidStart);
+
+						const std::string guidPrefix =
+							"downloads";
+
+						if (guid.compare(
+							0,
+							guidPrefix.size(),
+							guidPrefix) == 0)
+						{
+							version.downloadStartUrl =
+								"https://www.moddb.com/downloads/start/" +
+								guid.substr(
+									guidPrefix.size());
+						}
+					}
+				}
+
+				versions.push_back(version);
+			}
+		}
+
+		itemStart = itemEnd + 7;
+	}
+
+	std::sort(
+		versions.begin(),
+		versions.end(),
+		[](const RebornOmegaVersionInfo& left,
+			const RebornOmegaVersionInfo& right)
+		{
+			return left.buildRank < right.buildRank;
+		});
+
+	return !versions.empty();
+}
+
 bool FindRebornOmegaVersionByBuildRank(
 	const std::string& feed,
 	int buildRank,
@@ -534,6 +766,7 @@ static volatile LONG s_updateCheckState = REBORN_UPDATE_IDLE;
 static int s_installedBuildRank = 0;
 static RebornOmegaVersionInfo s_updateCheckResult;
 static RebornOmegaVersionInfo s_installedVersionResult;
+static std::vector<RebornOmegaVersionInfo> s_rebornOmegaVersionList;
 static volatile LONG s_updateCheckCanceled = FALSE;
 static volatile LONG s_downloadPaused = FALSE;
 
@@ -569,6 +802,16 @@ static DWORD WINAPI RebornOmegaUpdateCheckThread(LPVOID)
 			&s_updateCheckState,
 			REBORN_UPDATE_DATA_INVALID);
 		return 0;
+	}
+
+	std::vector<RebornOmegaVersionInfo> versions;
+
+	if (FindAllRebornOmegaVersions(
+		feed,
+		versions))
+	{
+		s_rebornOmegaVersionList =
+			versions;
 	}
 
 	if (!version.pageUrl.empty())
@@ -638,6 +881,7 @@ bool StartRebornOmegaUpdateCheck(int installedBuildRank)
 	s_installedBuildRank = installedBuildRank;
 	s_updateCheckResult = RebornOmegaVersionInfo();
 	s_installedVersionResult = RebornOmegaVersionInfo();
+	s_rebornOmegaVersionList.clear();
 
 	InterlockedExchange(&s_updateCheckCanceled, FALSE);
 
@@ -692,6 +936,16 @@ bool GetRebornOmegaInstalledVersionInfo(
 		return false;
 
 	version = s_installedVersionResult;
+	return true;
+}
+
+bool GetRebornOmegaVersionList(
+	std::vector<RebornOmegaVersionInfo>& versions)
+{
+	if (s_rebornOmegaVersionList.empty())
+		return false;
+
+	versions = s_rebornOmegaVersionList;
 	return true;
 }
 

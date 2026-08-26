@@ -32,21 +32,37 @@
 
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/GadgetListBox.h"
-#include "GameClient/GadgetRadioButton.h"
+#include "GameClient/GadgetPushButton.h"
+#include "GameClient/GadgetStaticText.h"
+#include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/KeyDefs.h"
 #include "GameClient/MessageBox.h"
+#include "GameClient/RebornOmegaUpdater.h"
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
 
 #include <string>
+#include <vector>
 
 static GameWindow* s_changeLogMenuROParent = nullptr;
 static GameWindow* s_changeLogMenuROListBox = nullptr;
-static GameWindow* s_changeLogMenuROCurrentVersion = nullptr;
-static GameWindow* s_changeLogMenuRONewVersion = nullptr;
 static Bool s_changeLogMenuROCloseRequested = FALSE;
+static Bool s_changeLogMenuROOptionsOverlay = FALSE;
+
+static GameWindow* s_changeLogMenuROVersionLabel = nullptr;
+static GameWindow* s_changeLogMenuROPreviousButton = nullptr;
+static GameWindow* s_changeLogMenuRONextButton = nullptr;
+
+static std::vector<RebornOmegaVersionInfo>
+s_changeLogMenuROVersions;
+
+static Int s_changeLogMenuROSelectedVersion = -1;
+static Int s_changeLogMenuRODownloadingVersion = -1;
+
+static DWORD s_changeLogMenuROLastLoadingUpdate = 0;
+static Int s_changeLogMenuROLoadingDots = 0;
 
 static void PopulateChangeLogMenuRO(const char* changeLog)
 {
@@ -91,6 +107,132 @@ static void PopulateChangeLogMenuRO(const char* changeLog)
 	}
 }
 
+static void SetChangeLogMenuROStatus(
+	const UnicodeString& text)
+{
+	if (!s_changeLogMenuROListBox)
+		return;
+
+	GadgetListBoxReset(
+		s_changeLogMenuROListBox);
+
+	GadgetListBoxAddEntryText(
+		s_changeLogMenuROListBox,
+		text,
+		GameMakeColor(254, 254, 254, 255),
+		-1);
+}
+
+static void UpdateChangeLogMenuRONavigation()
+{
+	Bool downloading =
+		GetRebornOmegaChangeLogDownloadState() ==
+		REBORN_CHANGELOG_DOWNLOADING;
+
+	if (s_changeLogMenuROPreviousButton)
+	{
+		s_changeLogMenuROPreviousButton->winEnable(
+			!downloading &&
+			s_changeLogMenuROSelectedVersion > 0);
+	}
+
+	if (s_changeLogMenuRONextButton)
+	{
+		s_changeLogMenuRONextButton->winEnable(
+			!downloading &&
+			s_changeLogMenuROSelectedVersion >= 0 &&
+			s_changeLogMenuROSelectedVersion <
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()) - 1);
+	}
+}
+
+static void UpdateChangeLogMenuROLoadingText()
+{
+	UnicodeString loadingText =
+		TheGameText->fetch(
+			"GUI:RebornOmegaChangeLogLoading");
+
+	switch (s_changeLogMenuROLoadingDots)
+	{
+	case 1:
+		loadingText.concat(L".");
+		break;
+
+	case 2:
+		loadingText.concat(L"..");
+		break;
+
+	case 3:
+		loadingText.concat(L"...");
+		break;
+	}
+
+	SetChangeLogMenuROStatus(
+		loadingText);
+}
+
+static void ShowSelectedChangeLogMenuROVersion()
+{
+	if (s_changeLogMenuROSelectedVersion < 0 ||
+		s_changeLogMenuROSelectedVersion >=
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size()))
+	{
+		return;
+	}
+
+	RebornOmegaVersionInfo& version =
+		s_changeLogMenuROVersions[
+			s_changeLogMenuROSelectedVersion];
+
+	if (s_changeLogMenuROVersionLabel)
+	{
+		UnicodeString versionText;
+		versionText.translate(
+			version.displayName.c_str());
+
+		GadgetStaticTextSetText(
+			s_changeLogMenuROVersionLabel,
+			versionText);
+	}
+
+	if (!version.changeLog.empty())
+	{
+		PopulateChangeLogMenuRO(
+			version.changeLog.c_str());
+
+		UpdateChangeLogMenuRONavigation();
+		return;
+	}
+
+	s_changeLogMenuROLoadingDots = 0;
+	s_changeLogMenuROLastLoadingUpdate =
+		timeGetTime();
+
+	UpdateChangeLogMenuROLoadingText();
+
+	s_changeLogMenuRODownloadingVersion =
+		s_changeLogMenuROSelectedVersion;
+
+	if (!StartRebornOmegaChangeLogDownload(
+		version.pageUrl))
+	{
+		s_changeLogMenuRODownloadingVersion = -1;
+
+		SetChangeLogMenuROStatus(
+			TheGameText->fetch(
+				"GUI:RebornOmegaChangeLogUnavailable"));
+	}
+
+	UpdateChangeLogMenuRONavigation();
+}
+
+Bool IsChangeLogMenuROOptionsOverlayActive()
+{
+	return s_changeLogMenuROOptionsOverlay;
+}
+
 static void CloseChangeLogMenuRO()
 {
 	if (!s_changeLogMenuROParent)
@@ -98,16 +240,98 @@ static void CloseChangeLogMenuRO()
 
 	s_changeLogMenuROCloseRequested = FALSE;
 
-	if (IsChangeLogMessageBoxFromOptions())
-		SkipNextMainMenuTransition();
+	if (!s_changeLogMenuROOptionsOverlay)
+	{
+		RequestChangeLogMessageBoxRestore();
+		TheShell->pop();
+		return;
+	}
 
-	RequestChangeLogMessageBoxRestore();
-	TheShell->pop();
+	GameWindow* changeLogWindow =
+		s_changeLogMenuROParent;
+
+	s_changeLogMenuROOptionsOverlay = FALSE;
+	s_changeLogMenuROListBox = nullptr;
+	s_changeLogMenuROParent = nullptr;
+	s_changeLogMenuROVersionLabel = nullptr;
+	s_changeLogMenuROPreviousButton = nullptr;
+	s_changeLogMenuRONextButton = nullptr;
+	s_changeLogMenuROVersions.clear();
+	s_changeLogMenuROSelectedVersion = -1;
+	s_changeLogMenuRODownloadingVersion = -1;
+	s_changeLogMenuROLastLoadingUpdate = 0;
+	s_changeLogMenuROLoadingDots = 0;
+
+	TheWindowManager->winDestroy(
+		changeLogWindow);
+
+	GameWindow* mainMenuWindow =
+		TheWindowManager->winGetWindowFromId(
+			nullptr,
+			NAMEKEY(
+				"MainMenu.wnd:MainMenuParent"));
+
+	if (mainMenuWindow)
+	{
+		mainMenuWindow->winHide(FALSE);
+		mainMenuWindow->winEnable(TRUE);
+	}
+
+	RestoreChangeLogMessageBox();
 }
 
 void ShowChangeLogMenuRO()
 {
-	TheShell->push("Menus/ChangeLogMenuRO.wnd");
+	if (!IsChangeLogMessageBoxFromOptions())
+	{
+		TheShell->push(
+			"Menus/ChangeLogMenuRO.wnd");
+
+		return;
+	}
+
+	GameWindow* mainMenuWindow =
+		TheWindowManager->winGetWindowFromId(
+			nullptr,
+			NAMEKEY(
+				"MainMenu.wnd:MainMenuParent"));
+
+	if (mainMenuWindow)
+	{
+		mainMenuWindow->winHide(TRUE);
+		mainMenuWindow->winEnable(FALSE);
+	}
+
+	s_changeLogMenuROOptionsOverlay = TRUE;
+
+	GameWindow* changeLogWindow =
+		TheWindowManager->winCreateFromScript(
+			"Menus/ChangeLogMenuRO.wnd");
+
+	if (!changeLogWindow)
+	{
+		s_changeLogMenuROOptionsOverlay = FALSE;
+
+		if (mainMenuWindow)
+		{
+			mainMenuWindow->winHide(FALSE);
+			mainMenuWindow->winEnable(TRUE);
+		}
+
+		RestoreChangeLogMessageBox();
+		return;
+	}
+
+	ChangeLogMenuROInit(
+		nullptr,
+		nullptr);
+
+	changeLogWindow->winHide(FALSE);
+	changeLogWindow->winEnable(TRUE);
+	changeLogWindow->winBringToTop();
+
+	TheWindowManager->winSetModal(
+		changeLogWindow);
 }
 
 void ChangeLogMenuROInit(
@@ -126,52 +350,64 @@ void ChangeLogMenuROInit(
 			s_changeLogMenuROParent,
 			NAMEKEY("ChangeLogMenuRO.wnd:ListboxChangeLog"));
 
-	s_changeLogMenuROCurrentVersion =
+	s_changeLogMenuROVersionLabel =
 		TheWindowManager->winGetWindowFromId(
 			s_changeLogMenuROParent,
-			NAMEKEY("ChangeLogMenuRO.wnd:RadioButtonCurrentVersion"));
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:StaticTextVersion"));
 
-	s_changeLogMenuRONewVersion =
+	s_changeLogMenuROPreviousButton =
 		TheWindowManager->winGetWindowFromId(
 			s_changeLogMenuROParent,
-			NAMEKEY("ChangeLogMenuRO.wnd:RadioButtonNewVersion"));
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:ButtonPreviousVersion"));
 
-	const char* currentChangeLog =
-		GetRebornOmegaCurrentChangeLog();
+	s_changeLogMenuRONextButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:ButtonNextVersion"));
 
-	const char* newChangeLog =
-		GetRebornOmegaNewChangeLog();
+	s_changeLogMenuROVersions.clear();
+	s_changeLogMenuROSelectedVersion = -1;
+	s_changeLogMenuRODownloadingVersion = -1;
 
-	Bool hasCurrentChangeLog =
-		currentChangeLog && *currentChangeLog;
+	RebornOmegaChangeLogDownloadState downloadState =
+		GetRebornOmegaChangeLogDownloadState();
 
-	Bool hasNewChangeLog =
-		newChangeLog && *newChangeLog;
-
-	if (s_changeLogMenuROCurrentVersion)
-		s_changeLogMenuROCurrentVersion->winEnable(
-			hasCurrentChangeLog);
-
-	if (s_changeLogMenuRONewVersion)
-		s_changeLogMenuRONewVersion->winEnable(
-			hasNewChangeLog);
-
-	if (hasNewChangeLog)
+	if (downloadState ==
+		REBORN_CHANGELOG_COMPLETED ||
+		downloadState ==
+		REBORN_CHANGELOG_FAILED)
 	{
-		GadgetRadioSetSelection(
-			s_changeLogMenuRONewVersion,
-			TRUE);
-
-		PopulateChangeLogMenuRO(newChangeLog);
+		FinishRebornOmegaChangeLogDownload();
 	}
-	else if (hasCurrentChangeLog)
+
+	if (!GetRebornOmegaVersionList(
+		s_changeLogMenuROVersions))
 	{
-		GadgetRadioSetSelection(
-			s_changeLogMenuROCurrentVersion,
-			TRUE);
+		if (s_changeLogMenuROVersionLabel)
+		{
+			GadgetStaticTextSetText(
+				s_changeLogMenuROVersionLabel,
+				TheGameText->fetch(
+					"GUI:RebornOmegaChangeLogUnavailable"));
+		}
 
-		PopulateChangeLogMenuRO(currentChangeLog);
+		SetChangeLogMenuROStatus(
+			TheGameText->fetch(
+				"GUI:RebornOmegaChangeLogUnavailable"));
+
+		UpdateChangeLogMenuRONavigation();
+		return;
 	}
+
+	s_changeLogMenuROSelectedVersion =
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size()) - 1;
+
+	ShowSelectedChangeLogMenuROVersion();
+	
 }
 
 void ChangeLogMenuROUpdate(
@@ -179,7 +415,79 @@ void ChangeLogMenuROUpdate(
 	void* userData)
 {
 	if (s_changeLogMenuROCloseRequested)
+	{
 		CloseChangeLogMenuRO();
+		return;
+	}
+
+	RebornOmegaChangeLogDownloadState state =
+		GetRebornOmegaChangeLogDownloadState();
+
+	if (state == REBORN_CHANGELOG_DOWNLOADING)
+	{
+		DWORD currentTime =
+			timeGetTime();
+
+		if (currentTime -
+			s_changeLogMenuROLastLoadingUpdate >= 350)
+		{
+			s_changeLogMenuROLastLoadingUpdate =
+				currentTime;
+
+			s_changeLogMenuROLoadingDots =
+				(s_changeLogMenuROLoadingDots + 1) % 4;
+
+			UpdateChangeLogMenuROLoadingText();
+		}
+
+		return;
+	}
+
+	if (state == REBORN_CHANGELOG_COMPLETED)
+	{
+		std::string changeLog;
+
+		if (GetRebornOmegaChangeLogDownloadResult(
+			changeLog) &&
+			s_changeLogMenuRODownloadingVersion >= 0 &&
+			s_changeLogMenuRODownloadingVersion <
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()))
+		{
+			RebornOmegaVersionInfo& version =
+				s_changeLogMenuROVersions[
+					s_changeLogMenuRODownloadingVersion];
+
+			version.changeLog =
+				changeLog;
+
+			if (s_changeLogMenuROSelectedVersion ==
+				s_changeLogMenuRODownloadingVersion)
+			{
+				PopulateChangeLogMenuRO(
+					version.changeLog.c_str());
+			}
+		}
+
+		s_changeLogMenuRODownloadingVersion = -1;
+
+		FinishRebornOmegaChangeLogDownload();
+		UpdateChangeLogMenuRONavigation();
+		return;
+	}
+
+	if (state == REBORN_CHANGELOG_FAILED)
+	{
+		s_changeLogMenuRODownloadingVersion = -1;
+
+		FinishRebornOmegaChangeLogDownload();
+
+		SetChangeLogMenuROStatus(
+			TheGameText->fetch(
+				"GUI:RebornOmegaChangeLogUnavailable"));
+
+		UpdateChangeLogMenuRONavigation();
+	}
 }
 
 void ChangeLogMenuROShutdown(
@@ -191,8 +499,14 @@ void ChangeLogMenuROShutdown(
 
 	s_changeLogMenuROParent = nullptr;
 	s_changeLogMenuROListBox = nullptr;
-	s_changeLogMenuROCurrentVersion = nullptr;
-	s_changeLogMenuRONewVersion = nullptr;
+	s_changeLogMenuROVersionLabel = nullptr;
+	s_changeLogMenuROPreviousButton = nullptr;
+	s_changeLogMenuRONextButton = nullptr;
+	s_changeLogMenuROVersions.clear();
+	s_changeLogMenuROSelectedVersion = -1;
+	s_changeLogMenuRODownloadingVersion = -1;
+	s_changeLogMenuROLastLoadingUpdate = 0;
+	s_changeLogMenuROLoadingDots = 0;
 	s_changeLogMenuROCloseRequested = FALSE;
 
 	TheShell->shutdownComplete(layout);
@@ -216,19 +530,34 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 	Int controlID = control->winGetWindowId();
 
 	if (controlID ==
-		NAMEKEY("ChangeLogMenuRO.wnd:RadioButtonCurrentVersion"))
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:ButtonPreviousVersion"))
 	{
-		PopulateChangeLogMenuRO(
-			GetRebornOmegaCurrentChangeLog());
+		if (s_changeLogMenuROSelectedVersion > 0 &&
+			GetRebornOmegaChangeLogDownloadState() !=
+			REBORN_CHANGELOG_DOWNLOADING)
+		{
+			--s_changeLogMenuROSelectedVersion;
+			ShowSelectedChangeLogMenuROVersion();
+		}
 
 		return MSG_HANDLED;
 	}
 
 	if (controlID ==
-		NAMEKEY("ChangeLogMenuRO.wnd:RadioButtonNewVersion"))
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:ButtonNextVersion"))
 	{
-		PopulateChangeLogMenuRO(
-			GetRebornOmegaNewChangeLog());
+		if (s_changeLogMenuROSelectedVersion >= 0 &&
+			s_changeLogMenuROSelectedVersion <
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()) - 1 &&
+			GetRebornOmegaChangeLogDownloadState() !=
+			REBORN_CHANGELOG_DOWNLOADING)
+		{
+			++s_changeLogMenuROSelectedVersion;
+			ShowSelectedChangeLogMenuROVersion();
+		}
 
 		return MSG_HANDLED;
 	}

@@ -31,6 +31,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct RebornOmegaVersionInfo
 {
@@ -60,6 +61,7 @@ enum RebornOmegaUpdateCheckState
 bool DownloadRebornOmegaUpdateFeed(std::string& feed);
 bool DownloadRebornOmegaChangeLog(const std::string& pageUrl, std::string& changeLog);
 bool FindLatestRebornOmegaVersion(const std::string& feed, RebornOmegaVersionInfo& version);
+bool FindAllRebornOmegaVersions(const std::string& feed, std::vector<RebornOmegaVersionInfo>& versions);
 bool FindRebornOmegaVersionByBuildRank(const std::string& feed, int buildRank, RebornOmegaVersionInfo& version);
 bool ResolveRebornOmegaMirrorUrl(const std::string& startUrl,	std::string& mirrorUrl);
 
@@ -67,10 +69,10 @@ bool StartRebornOmegaUpdateCheck(int installedBuildRank);
 RebornOmegaUpdateCheckState GetRebornOmegaUpdateCheckState();
 bool GetRebornOmegaUpdateCheckResult(RebornOmegaVersionInfo& version);
 bool GetRebornOmegaInstalledVersionInfo(RebornOmegaVersionInfo& version);
+bool GetRebornOmegaVersionList(std::vector<RebornOmegaVersionInfo>& versions);
 void FinishRebornOmegaUpdateCheck();
 
 void CancelRebornOmegaUpdateCheck();
-
 
 // Download functions for Reborn Omega installer
 
@@ -112,3 +114,24 @@ bool RetryRebornOmegaInstallerDownload();
 
 Bool GetRebornOmegaAutomaticUpdateChecksEnabled();
 Bool SetRebornOmegaAutomaticUpdateChecksEnabled(Bool enabled);
+
+
+
+enum RebornOmegaChangeLogDownloadState
+{
+	REBORN_CHANGELOG_IDLE,
+	REBORN_CHANGELOG_DOWNLOADING,
+	REBORN_CHANGELOG_COMPLETED,
+	REBORN_CHANGELOG_FAILED
+};
+
+bool StartRebornOmegaChangeLogDownload(
+	const std::string& pageUrl);
+
+RebornOmegaChangeLogDownloadState
+GetRebornOmegaChangeLogDownloadState();
+
+bool GetRebornOmegaChangeLogDownloadResult(
+	std::string& changeLog);
+
+void FinishRebornOmegaChangeLogDownload();
