@@ -109,10 +109,16 @@ static Bool s_rebornOmegaAutomaticCheckPending = FALSE;
 static DWORD s_rebornOmegaAutomaticPromptTime = 0;
 
 static std::string s_rebornOmegaAutomaticUpdateUrl;
+static Bool s_skipNextMainMenuTransition = FALSE;
 
 Bool IsRebornOmegaAutomaticUpdateCheckPending()
 {
 	return s_rebornOmegaAutomaticCheckPending;
+}
+
+void SkipNextMainMenuTransition()
+{
+	s_skipNextMainMenuTransition = TRUE;
 }
 
 static const char* GetSaveLoadMenuFile()
@@ -699,7 +705,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 		SetRebornOmegaAutomaticUpdateChecksEnabled(
 			automaticChecksEnabled);
 
-		if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+		//if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+		if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(10399))
 		{
 			s_rebornOmegaAutomaticCheckPending = TRUE;
 		}
@@ -876,6 +883,14 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	{
 		return;
 	}
+
+	if (s_skipNextMainMenuTransition)
+	{
+		s_skipNextMainMenuTransition = FALSE;
+		justEntered = FALSE;
+		initialGadgetDelay = 2;
+	}
+
 	if(DontShowMainMenu && justEntered)
 		justEntered = FALSE;
 
@@ -904,6 +919,11 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 		}
 		else
 			initialGadgetDelay--;
+	}
+
+	if (IsChangeLogMessageBoxRestorePending(FALSE))
+	{
+		RestoreChangeLogMessageBox();
 	}
 
 	if (s_rebornOmegaAutomaticCheckPending)

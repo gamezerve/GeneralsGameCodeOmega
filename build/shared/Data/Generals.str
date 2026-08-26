@@ -1,4 +1,16 @@
 
+GUI:ChangeLog
+"CHANGE LOG"
+END
+
+GUI:RebornOmegaCurrentVersion
+"Current Version"
+END
+
+GUI:RebornOmegaNewVersion
+"New Version"
+END
+
 TOOLTIP:DisableAutomaticUpdateChecks
 "Stops Reborn Omega from automatically checking for new versions when the main menu opens. You can re-enable this setting or check for updates manually from the Options menu."
 END

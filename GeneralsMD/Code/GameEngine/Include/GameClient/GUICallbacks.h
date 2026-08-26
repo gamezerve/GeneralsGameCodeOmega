@@ -180,6 +180,17 @@ extern WindowMsgHandledType DownloadMenuROSystem(GameWindow* window, UnsignedInt
 extern WindowMsgHandledType DownloadMenuROInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
 extern void ProcessRebornOmegaUpdateCheck(Bool automaticCheck);
 extern Bool IsRebornOmegaAutomaticUpdateCheckPending();
+const char* GetRebornOmegaCurrentChangeLog();
+const char* GetRebornOmegaNewChangeLog();
+
+// (Patch) Reborn Omega Change Log Menu ----------------------------------------------------------------------------------
+extern void ChangeLogMenuROInit(WindowLayout* layout, void* userData);
+extern void ChangeLogMenuROUpdate(WindowLayout* layout, void* userData);
+extern void ChangeLogMenuROShutdown(WindowLayout* layout, void* userData);
+extern WindowMsgHandledType ChangeLogMenuROSystem(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+extern WindowMsgHandledType ChangeLogMenuROInput(GameWindow* window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2);
+extern void ShowChangeLogMenuRO();
+extern void SkipNextMainMenuTransition();
 
 // Popup host Game Internet -----------------------------------------------------------------------------------
 extern void DifficultySelectInit( WindowLayout *layout, void *userData );

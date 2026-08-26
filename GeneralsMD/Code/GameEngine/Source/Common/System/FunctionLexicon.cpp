@@ -150,6 +150,7 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 	{ NAMEKEY_INVALID, "ScoreScreenSystem",                  (void*)ScoreScreenSystem },
 	{ NAMEKEY_INVALID, "DownloadMenuSystem",                 (void*)DownloadMenuSystem },
 	{ NAMEKEY_INVALID, "DownloadMenuROSystem",							 (void*)DownloadMenuROSystem },
+	{ NAMEKEY_INVALID, "ChangeLogMenuROSystem",							 (void*)ChangeLogMenuROSystem },
 
 	{ NAMEKEY_INVALID, nullptr,                              nullptr }
 
@@ -223,6 +224,7 @@ static FunctionLexicon::TableEntry gameWinInputTable[] =
 
 	{ NAMEKEY_INVALID, "DownloadMenuInput",                 (void*)DownloadMenuInput },
 	{ NAMEKEY_INVALID, "DownloadMenuROInput",               (void*)DownloadMenuROInput },
+	{ NAMEKEY_INVALID, "ChangeLogMenuROInput",              (void*)ChangeLogMenuROInput },
 
 	{ NAMEKEY_INVALID, "IMECandidateWindowInput",           (void*)IMECandidateWindowInput },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
@@ -287,6 +289,7 @@ static FunctionLexicon::TableEntry winLayoutInitTable[] =
 	{ NAMEKEY_INVALID, "ScoreScreenInit",               (void*)ScoreScreenInit },
 	{ NAMEKEY_INVALID, "DownloadMenuInit",              (void*)DownloadMenuInit },
 	{ NAMEKEY_INVALID, "DownloadMenuROInit",						(void*)DownloadMenuROInit },
+	{ NAMEKEY_INVALID, "ChangeLogMenuROInit",						(void*)ChangeLogMenuROInit },
 	{ NAMEKEY_INVALID, "DifficultySelectInit",          (void*)DifficultySelectInit },
 	{ NAMEKEY_INVALID, "PopupReplayInit",               (void*)PopupReplayInit },
 
@@ -332,6 +335,7 @@ static FunctionLexicon::TableEntry winLayoutUpdateTable[] =
 	{ NAMEKEY_INVALID, "ScoreScreenUpdate",               (void*)ScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "DownloadMenuUpdate",              (void*)DownloadMenuUpdate },
 	{ NAMEKEY_INVALID, "DownloadMenuROUpdate",						(void*)DownloadMenuROUpdate },
+	{ NAMEKEY_INVALID, "ChangeLogMenuROUpdate",						(void*)ChangeLogMenuROUpdate },
 	{ NAMEKEY_INVALID, "PopupReplayUpdate",               (void*)PopupReplayUpdate },
 	{ NAMEKEY_INVALID, nullptr,                           nullptr }
 
@@ -375,6 +379,7 @@ static FunctionLexicon::TableEntry winLayoutShutdownTable[] =
 	{ NAMEKEY_INVALID, "ScoreScreenShutdown",               (void*)ScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "DownloadMenuShutdown",              (void*)DownloadMenuShutdown },
 	{ NAMEKEY_INVALID, "DownloadMenuROShutdown",						(void*)DownloadMenuROShutdown },
+	{ NAMEKEY_INVALID, "ChangeLogMenuROShutdown",						(void*)ChangeLogMenuROShutdown },
 	{ NAMEKEY_INVALID, "PopupReplayShutdown",               (void*)PopupReplayShutdown },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
 

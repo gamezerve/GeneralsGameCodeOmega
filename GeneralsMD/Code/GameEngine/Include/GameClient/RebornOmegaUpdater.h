@@ -42,6 +42,7 @@ struct RebornOmegaVersionInfo
 	std::string displayName;
 	std::string pageUrl;
 	std::string downloadStartUrl;
+	std::string changeLog;
 };
 
 // Update check functions for Reborn Omega
@@ -57,12 +58,15 @@ enum RebornOmegaUpdateCheckState
 };
 
 bool DownloadRebornOmegaUpdateFeed(std::string& feed);
+bool DownloadRebornOmegaChangeLog(const std::string& pageUrl, std::string& changeLog);
 bool FindLatestRebornOmegaVersion(const std::string& feed, RebornOmegaVersionInfo& version);
+bool FindRebornOmegaVersionByBuildRank(const std::string& feed, int buildRank, RebornOmegaVersionInfo& version);
 bool ResolveRebornOmegaMirrorUrl(const std::string& startUrl,	std::string& mirrorUrl);
 
 bool StartRebornOmegaUpdateCheck(int installedBuildRank);
 RebornOmegaUpdateCheckState GetRebornOmegaUpdateCheckState();
 bool GetRebornOmegaUpdateCheckResult(RebornOmegaVersionInfo& version);
+bool GetRebornOmegaInstalledVersionInfo(RebornOmegaVersionInfo& version);
 void FinishRebornOmegaUpdateCheck();
 
 void CancelRebornOmegaUpdateCheck();

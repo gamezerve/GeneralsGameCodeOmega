@@ -162,6 +162,126 @@ bool DownloadRebornOmegaUpdateFeed(std::string& feed)
 		feed);
 }
 
+static void ReplaceAll(
+	std::string& text,
+	const std::string& from,
+	const std::string& to)
+{
+	size_t position = 0;
+
+	while ((position = text.find(from, position)) != std::string::npos)
+	{
+		text.replace(position, from.size(), to);
+		position += to.size();
+	}
+}
+
+static std::string ConvertHtmlToPlainText(
+	const std::string& html)
+{
+	std::string text = html;
+
+	ReplaceAll(text, "<br>", "\n");
+	ReplaceAll(text, "<br/>", "\n");
+	ReplaceAll(text, "<br />", "\n");
+	ReplaceAll(text, "</p>", "\n\n");
+	ReplaceAll(text, "</h1>", "\n\n");
+	ReplaceAll(text, "</h2>", "\n\n");
+	ReplaceAll(text, "</h3>", "\n\n");
+	ReplaceAll(text, "<li>", "- ");
+	ReplaceAll(text, "</li>", "\n");
+	ReplaceAll(text, "<hr>", "\n");
+	ReplaceAll(text, "<hr/>", "\n");
+	ReplaceAll(text, "<hr />", "\n");
+
+	std::string plainText;
+	bool insideTag = false;
+
+	for (size_t i = 0; i < text.size(); ++i)
+	{
+		if (text[i] == '<')
+		{
+			insideTag = true;
+			continue;
+		}
+
+		if (text[i] == '>')
+		{
+			insideTag = false;
+			continue;
+		}
+
+		if (!insideTag)
+			plainText += text[i];
+	}
+
+	ReplaceAll(plainText, "&amp;", "&");
+	ReplaceAll(plainText, "&quot;", "\"");
+	ReplaceAll(plainText, "&#039;", "'");
+	ReplaceAll(plainText, "&#39;", "'");
+	ReplaceAll(plainText, "&apos;", "'");
+	ReplaceAll(plainText, "&lt;", "<");
+	ReplaceAll(plainText, "&gt;", ">");
+	ReplaceAll(plainText, "&nbsp;", " ");
+
+	while (plainText.find("\r") != std::string::npos)
+		ReplaceAll(plainText, "\r", "");
+
+	while (plainText.find("\n\n\n") != std::string::npos)
+		ReplaceAll(plainText, "\n\n\n", "\n\n");
+
+	return plainText;
+}
+
+bool DownloadRebornOmegaChangeLog(
+	const std::string& pageUrl,
+	std::string& changeLog)
+{
+	changeLog.clear();
+
+	std::string html;
+
+	if (!DownloadHttpsText(pageUrl, html))
+		return false;
+
+	const std::string descriptionMarker =
+		"<h2>Description</h2>";
+
+	size_t descriptionStart =
+		html.find(descriptionMarker);
+
+	if (descriptionStart == std::string::npos)
+		return false;
+
+	descriptionStart =
+		html.find("<div", descriptionStart);
+
+	if (descriptionStart == std::string::npos)
+		return false;
+
+	descriptionStart =
+		html.find('>', descriptionStart);
+
+	if (descriptionStart == std::string::npos)
+		return false;
+
+	++descriptionStart;
+
+	size_t descriptionEnd =
+		html.find("</div>", descriptionStart);
+
+	if (descriptionEnd == std::string::npos)
+		return false;
+
+	changeLog =
+		ConvertHtmlToPlainText(
+			html.substr(
+				descriptionStart,
+				descriptionEnd - descriptionStart));
+
+	return !changeLog.empty();
+}
+
 bool ResolveRebornOmegaMirrorUrl(
 	const std::string& startUrl,
 	std::string& mirrorUrl)
@@ -344,9 +464,76 @@ bool FindLatestRebornOmegaVersion(
 	return found;
 }
 
+bool FindRebornOmegaVersionByBuildRank(
+	const std::string& feed,
+	int buildRank,
+	RebornOmegaVersionInfo& version)
+{
+	size_t itemStart = 0;
+
+	while ((itemStart = feed.find("<item", itemStart)) !=
+		std::string::npos)
+	{
+		size_t itemEnd =
+			feed.find("</item>", itemStart);
+
+		if (itemEnd == std::string::npos)
+			break;
+
+		size_t titleStart =
+			feed.find("<title>", itemStart);
+
+		size_t titleEnd =
+			feed.find("</title>", titleStart);
+
+		if (titleStart != std::string::npos &&
+			titleEnd != std::string::npos &&
+			titleEnd < itemEnd)
+		{
+			titleStart += 7;
+
+			RebornOmegaVersionInfo candidate;
+
+			if (ParseRebornOmegaVersion(
+				feed.substr(
+					titleStart,
+					titleEnd - titleStart),
+				candidate) &&
+				candidate.buildRank == buildRank)
+			{
+				size_t linkStart =
+					feed.find("<link>", itemStart);
+
+				size_t linkEnd =
+					feed.find("</link>", linkStart);
+
+				if (linkStart != std::string::npos &&
+					linkEnd != std::string::npos &&
+					linkEnd < itemEnd)
+				{
+					linkStart += 6;
+
+					candidate.pageUrl =
+						feed.substr(
+							linkStart,
+							linkEnd - linkStart);
+				}
+
+				version = candidate;
+				return true;
+			}
+		}
+
+		itemStart = itemEnd + 7;
+	}
+
+	return false;
+}
+
 static volatile LONG s_updateCheckState = REBORN_UPDATE_IDLE;
 static int s_installedBuildRank = 0;
 static RebornOmegaVersionInfo s_updateCheckResult;
+static RebornOmegaVersionInfo s_installedVersionResult;
 static volatile LONG s_updateCheckCanceled = FALSE;
 static volatile LONG s_downloadPaused = FALSE;
 
@@ -384,6 +571,38 @@ static DWORD WINAPI RebornOmegaUpdateCheckThread(LPVOID)
 		return 0;
 	}
 
+	if (!version.pageUrl.empty())
+	{
+		DownloadRebornOmegaChangeLog(
+			version.pageUrl,
+			version.changeLog);
+	}
+
+	if (version.buildRank == s_installedBuildRank)
+	{
+		s_installedVersionResult = version;
+	}
+	else
+	{
+		RebornOmegaVersionInfo installedVersion;
+
+		if (FindRebornOmegaVersionByBuildRank(
+			feed,
+			s_installedBuildRank,
+			installedVersion))
+		{
+			if (!installedVersion.pageUrl.empty())
+			{
+				DownloadRebornOmegaChangeLog(
+					installedVersion.pageUrl,
+					installedVersion.changeLog);
+			}
+
+			s_installedVersionResult =
+				installedVersion;
+		}
+	}
+
 	if (InterlockedCompareExchange(
 		&s_updateCheckCanceled,
 		FALSE,
@@ -418,6 +637,7 @@ bool StartRebornOmegaUpdateCheck(int installedBuildRank)
 
 	s_installedBuildRank = installedBuildRank;
 	s_updateCheckResult = RebornOmegaVersionInfo();
+	s_installedVersionResult = RebornOmegaVersionInfo();
 
 	InterlockedExchange(&s_updateCheckCanceled, FALSE);
 
@@ -462,6 +682,16 @@ bool GetRebornOmegaUpdateCheckResult(RebornOmegaVersionInfo& version)
 	}
 
 	version = s_updateCheckResult;
+	return true;
+}
+
+bool GetRebornOmegaInstalledVersionInfo(
+	RebornOmegaVersionInfo& version)
+{
+	if (s_installedVersionResult.buildRank == 0)
+		return false;
+
+	version = s_installedVersionResult;
 	return true;
 }
 

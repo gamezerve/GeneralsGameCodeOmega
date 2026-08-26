@@ -51,15 +51,21 @@
 #include "Common/GameEngine.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/PlayerTemplate.h" // Reborn
-#include "GameClient/WindowLayout.h"
 #include "GameClient/CampaignManager.h"
 #include "GameClient/Gadget.h"
-#include "GameClient/Shell.h"
-#include "GameClient/KeyDefs.h"
+#include "GameClient/GadgetPushButton.h"
+#include "GameClient/GameFont.h"
+#include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
+#include "GameClient/KeyDefs.h"
 #include "GameClient/MessageBox.h"
+#include "GameClient/Shell.h"
+#include "GameClient/WindowLayout.h"
 
 static Bool s_popupMessageUsesRebornLayout = FALSE;
+static GameWindow* s_changeLogMessageBox = nullptr;
+static Bool s_changeLogMessageBoxFromOptions = FALSE;
+static Bool s_changeLogMessageBoxRestorePending = FALSE;
 
 void SetPopupMessageUsesRebornLayout(Bool useReborn)
 {
@@ -103,6 +109,185 @@ GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,
 	return TheWindowManager->gogoMessageBox(-1,-1,-1,-1, MSG_BOX_CANCEL, titleString, bodyString, nullptr, nullptr, nullptr, cancelCallback);
 }
 
+GameWindow* MessageBoxYesNoChangeLog(UnicodeString titleString,	UnicodeString bodyString,	GameWinMsgBoxFunc yesCallback, GameWinMsgBoxFunc noCallback, GameWinMsgBoxFunc changeLogCallback)
+{
+	GameWindow* messageBox =
+		TheWindowManager->gogoMessageBox(
+			-1,
+			-1,
+			-1,
+			-1,
+			MSG_BOX_NO | MSG_BOX_YES | MSG_BOX_CANCEL,
+			titleString,
+			bodyString,
+			yesCallback,
+			noCallback,
+			nullptr,
+			changeLogCallback);
+
+	if (!messageBox)
+		return nullptr;
+
+	s_changeLogMessageBox = messageBox;
+
+	const char* buttonName =
+		s_popupMessageUsesRebornLayout
+		? "MessageBoxGen.wnd:ButtonCancel"
+		: "MessageBox.wnd:ButtonCancel";
+
+	GameWindow* changeLogButton =
+		TheWindowManager->winGetWindowFromId(
+			messageBox,
+			TheNameKeyGenerator->nameToKey(buttonName));
+
+	if (changeLogButton)
+	{
+		GadgetButtonSetText(
+			changeLogButton,
+			TheGameText->fetch("GUI:ChangeLog"));
+	}
+
+	const char* yesButtonName =
+		s_popupMessageUsesRebornLayout
+		? "MessageBoxGen.wnd:ButtonYes"
+		: "MessageBox.wnd:ButtonYes";
+
+	const char* noButtonName =
+		s_popupMessageUsesRebornLayout
+		? "MessageBoxGen.wnd:ButtonNo"
+		: "MessageBox.wnd:ButtonNo";
+
+	GameWindow* yesButton =
+		TheWindowManager->winGetWindowFromId(
+			messageBox,
+			TheNameKeyGenerator->nameToKey(
+				yesButtonName));
+
+	GameWindow* noButton =
+		TheWindowManager->winGetWindowFromId(
+			messageBox,
+			TheNameKeyGenerator->nameToKey(
+				noButtonName));
+
+	if (yesButton &&
+		noButton &&
+		changeLogButton)
+	{
+		changeLogButton->winSetFont(
+			yesButton->winGetFont());
+
+		changeLogButton->winSetFont(
+			TheFontLibrary->getFont(
+				"Generals",
+				21,
+				FALSE));
+
+		Int leftX = 0;
+		Int buttonY = 0;
+		Int rightX = 0;
+		Int rightY = 0;
+
+		yesButton->winGetPosition(
+			&leftX,
+			&buttonY);
+
+		changeLogButton->winGetPosition(
+			&rightX,
+			&rightY);
+
+		Int middleX =
+			leftX +
+			(rightX - leftX) / 2;
+
+		changeLogButton->winSetPosition(
+			middleX,
+			buttonY);
+
+		noButton->winSetPosition(
+			rightX,
+			buttonY);
+	}
+
+	return messageBox;
+}
+
+void SetChangeLogMessageBoxFromOptions(
+	Bool fromOptions)
+{
+	s_changeLogMessageBoxFromOptions =
+		fromOptions;
+}
+
+void RequestChangeLogMessageBoxRestore()
+{
+	s_changeLogMessageBoxRestorePending =
+		TRUE;
+}
+
+Bool IsChangeLogMessageBoxRestorePending(
+	Bool fromOptions)
+{
+	return
+		s_changeLogMessageBoxRestorePending &&
+		s_changeLogMessageBoxFromOptions ==
+		fromOptions;
+}
+
+void RestoreChangeLogMessageBox()
+{
+	if (!s_changeLogMessageBox)
+		return;
+
+	s_changeLogMessageBoxRestorePending =
+		FALSE;
+
+	if (s_changeLogMessageBoxFromOptions)
+	{
+		GameWindow* optionsMenuWindow =
+			TheWindowManager->winGetWindowFromId(
+				nullptr,
+				NAMEKEY("OptionsMenu.wnd:"));
+
+		if (optionsMenuWindow)
+		{
+			optionsMenuWindow->winHide(FALSE);
+			optionsMenuWindow->winEnable(TRUE);
+			optionsMenuWindow->winBringToTop();
+		}
+	}
+
+	s_changeLogMessageBox->winHide(FALSE);
+	s_changeLogMessageBox->winEnable(TRUE);
+
+	const char* parentName =
+		s_popupMessageUsesRebornLayout
+		? "MessageBoxGen.wnd:MessageBoxParent"
+		: "MessageBox.wnd:MessageBoxParent";
+
+	GameWindow* messageBoxParent =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMessageBox,
+			TheNameKeyGenerator->nameToKey(
+				parentName));
+
+	TheWindowManager->winSetModal(
+		s_changeLogMessageBox);
+
+	TheWindowManager->winSetFocus(nullptr);
+
+	if (messageBoxParent)
+	{
+		TheWindowManager->winSetFocus(
+			messageBoxParent);
+	}
+
+	s_changeLogMessageBox->winBringToTop();
+}
+
+Bool IsChangeLogMessageBoxFromOptions()
+{
+	return s_changeLogMessageBoxFromOptions;
+}
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -120,10 +305,15 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
-			delete (WindowMessageBoxData *)window->winGetUserData();
-			window->winSetUserData( nullptr );
-			break;
+			if (window == s_changeLogMessageBox)
+			{
+				s_changeLogMessageBox = nullptr;
+				s_changeLogMessageBoxRestorePending = FALSE;
+			}
 
+			delete (WindowMessageBoxData*)window->winGetUserData();
+			window->winSetUserData(nullptr);
+			break;
 		}
 
 		// --------------------------------------------------------------------------------------------
@@ -189,11 +379,23 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 					MsgBoxCallbacks->noCallback();
 				TheWindowManager->winDestroy(window);
 			}
-			else if( controlID == buttonCancelID )
+			else if (controlID == buttonCancelID)
 			{
-				if (MsgBoxCallbacks->cancelCallback)
-					MsgBoxCallbacks->cancelCallback();
-				TheWindowManager->winDestroy(window);
+				if (window == s_changeLogMessageBox)
+				{
+					window->winHide(TRUE);
+					window->winEnable(FALSE);
+
+					if (MsgBoxCallbacks->cancelCallback)
+						MsgBoxCallbacks->cancelCallback();
+				}
+				else
+				{
+					if (MsgBoxCallbacks->cancelCallback)
+						MsgBoxCallbacks->cancelCallback();
+
+					TheWindowManager->winDestroy(window);
+				}
 			}
 
 			break;

@@ -1775,6 +1775,18 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 }
 
 static std::string s_pendingRebornOmegaUpdateUrl;
+static std::string s_rebornOmegaCurrentChangeLog;
+static std::string s_rebornOmegaNewChangeLog;
+
+const char* GetRebornOmegaCurrentChangeLog()
+{
+	return s_rebornOmegaCurrentChangeLog.c_str();
+}
+
+const char* GetRebornOmegaNewChangeLog()
+{
+	return s_rebornOmegaNewChangeLog.c_str();
+}
 
 static void DestroyRebornOmegaOldCheckingWindow()
 {
@@ -1878,6 +1890,28 @@ static void RebornOmegaUpdateDeclined()
 	DestroyRebornOmegaOldCheckingWindow();
 }
 
+static void RebornOmegaShowChangeLog()
+{
+	GameWindow* optionsMenuWindow =
+		TheWindowManager->winGetWindowFromId(
+			nullptr,
+			NAMEKEY("OptionsMenu.wnd:"));
+
+	Bool fromOptions =
+		optionsMenuWindow != nullptr;
+
+	SetChangeLogMessageBoxFromOptions(
+		fromOptions);
+
+	if (optionsMenuWindow)
+	{
+		optionsMenuWindow->winHide(TRUE);
+		optionsMenuWindow->winEnable(FALSE);
+	}
+
+	ShowChangeLogMenuRO();
+}
+
 void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 {
 	RebornOmegaUpdateCheckState state =
@@ -1948,6 +1982,17 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 		return;
 	}
 
+	s_rebornOmegaCurrentChangeLog.clear();
+	s_rebornOmegaNewChangeLog.clear();
+
+	RebornOmegaVersionInfo installedVersion;
+
+	if (GetRebornOmegaInstalledVersionInfo(installedVersion))
+	{
+		s_rebornOmegaCurrentChangeLog =
+			installedVersion.changeLog;
+	}
+
 	FinishRebornOmegaUpdateCheck();
 
 	UnicodeString latestVersionText;
@@ -1978,6 +2023,9 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 	s_pendingRebornOmegaUpdateUrl =
 		latestVersion.downloadStartUrl;
 
+	s_rebornOmegaNewChangeLog =
+		latestVersion.changeLog;
+
 	UnicodeString message;
 	message.format(
 		TheGameText->fetch("GUI:RebornOmegaUpdateAvailable").str(),
@@ -2002,11 +2050,12 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 	if (automaticCheck)
 	{
 		GameWindow* messageBox =
-			MessageBoxYesNo(
+			MessageBoxYesNoChangeLog(
 				messageTitle,
 				message,
 				RebornOmegaAutomaticUpdateAccepted,
-				RebornOmegaAutomaticUpdateDeclined);
+				RebornOmegaAutomaticUpdateDeclined,
+				RebornOmegaShowChangeLog);
 
 		AsciiString checkboxName;
 
@@ -2041,11 +2090,12 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 	}
 	else
 	{
-		MessageBoxYesNo(
+		MessageBoxYesNoChangeLog(
 			messageTitle,
 			message,
 			RebornOmegaUpdateAccepted,
-			nullptr);
+			nullptr,
+			RebornOmegaShowChangeLog);
 	}
 }
 
@@ -2057,6 +2107,11 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 
 	ProcessRebornOmegaUpdateCheck(
 		IsRebornOmegaAutomaticUpdateCheckPending());
+
+	if (IsChangeLogMessageBoxRestorePending(TRUE))
+	{
+		RestoreChangeLogMessageBox();
+	}
 
 	if (s_rebornOmegaDownloadTransitionPending)
 	{
@@ -2315,8 +2370,8 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
 					break;
 
-				if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
-				//if (!StartRebornOmegaUpdateCheck(10399))
+				//if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+				if (!StartRebornOmegaUpdateCheck(10399))
 				{
 					MessageBoxOk(
 						TheGameText->fetch("GUI:CheckForUpdates"),
