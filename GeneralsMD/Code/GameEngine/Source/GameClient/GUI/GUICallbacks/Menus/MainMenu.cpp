@@ -110,6 +110,13 @@ static DWORD s_rebornOmegaAutomaticPromptTime = 0;
 
 static std::string s_rebornOmegaAutomaticUpdateUrl;
 static Bool s_skipNextMainMenuTransition = FALSE;
+static Bool s_rebornOmegaDownloadMenuRequested = FALSE;
+
+void RequestRebornOmegaDownloadMenu()
+{
+	s_rebornOmegaDownloadMenuRequested =
+		TRUE;
+}
 
 Bool IsRebornOmegaAutomaticUpdateCheckPending()
 {
@@ -924,6 +931,17 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	if (IsChangeLogMessageBoxRestorePending(FALSE))
 	{
 		RestoreChangeLogMessageBox();
+	}
+
+	if (s_rebornOmegaDownloadMenuRequested)
+	{
+		s_rebornOmegaDownloadMenuRequested =
+			FALSE;
+
+		TheShell->push(
+			"Menus/DownloadMenuRO.wnd");
+
+		return;
 	}
 
 	if (s_rebornOmegaAutomaticCheckPending)

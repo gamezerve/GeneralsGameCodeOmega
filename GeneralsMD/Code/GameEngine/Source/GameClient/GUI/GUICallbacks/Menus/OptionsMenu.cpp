@@ -1775,18 +1775,6 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 }
 
 static std::string s_pendingRebornOmegaUpdateUrl;
-static std::string s_rebornOmegaCurrentChangeLog;
-static std::string s_rebornOmegaNewChangeLog;
-
-const char* GetRebornOmegaCurrentChangeLog()
-{
-	return s_rebornOmegaCurrentChangeLog.c_str();
-}
-
-const char* GetRebornOmegaNewChangeLog()
-{
-	return s_rebornOmegaNewChangeLog.c_str();
-}
 
 static void DestroyRebornOmegaOldCheckingWindow()
 {
@@ -1878,6 +1866,21 @@ static void RebornOmegaUpdateAccepted()
 		TheShell->push(
 			"Menus/DownloadMenuRO.wnd");
 	}
+}
+
+Bool RebornOmegaUpdateAcceptedFromChangeLog(const std::string& downloadStartUrl)
+{
+	s_pendingRebornOmegaUpdateUrl =
+		downloadStartUrl;
+
+	RebornOmegaUpdateAccepted();
+
+	RebornOmegaDownloadState state =
+		GetRebornOmegaDownloadState();
+
+	return
+		state == REBORN_DOWNLOAD_STARTING ||
+		state == REBORN_DOWNLOAD_DOWNLOADING;
 }
 
 static void RebornOmegaUpdateResultClosed()
@@ -1982,17 +1985,6 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 		return;
 	}
 
-	s_rebornOmegaCurrentChangeLog.clear();
-	s_rebornOmegaNewChangeLog.clear();
-
-	RebornOmegaVersionInfo installedVersion;
-
-	if (GetRebornOmegaInstalledVersionInfo(installedVersion))
-	{
-		s_rebornOmegaCurrentChangeLog =
-			installedVersion.changeLog;
-	}
-
 	FinishRebornOmegaUpdateCheck();
 
 	UnicodeString latestVersionText;
@@ -2022,9 +2014,6 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 
 	s_pendingRebornOmegaUpdateUrl =
 		latestVersion.downloadStartUrl;
-
-	s_rebornOmegaNewChangeLog =
-		latestVersion.changeLog;
 
 	UnicodeString message;
 	message.format(

@@ -52,6 +52,7 @@
 #include "Common/NameKeyGenerator.h"
 #include "Common/PlayerTemplate.h" // Reborn
 #include "GameClient/CampaignManager.h"
+#include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GameFont.h"
@@ -140,13 +141,6 @@ GameWindow* MessageBoxYesNoChangeLog(UnicodeString titleString,	UnicodeString bo
 			messageBox,
 			TheNameKeyGenerator->nameToKey(buttonName));
 
-	if (changeLogButton)
-	{
-		GadgetButtonSetText(
-			changeLogButton,
-			TheGameText->fetch("GUI:ChangeLog"));
-	}
-
 	const char* yesButtonName =
 		s_popupMessageUsesRebornLayout
 		? "MessageBoxGen.wnd:ButtonYes"
@@ -173,14 +167,22 @@ GameWindow* MessageBoxYesNoChangeLog(UnicodeString titleString,	UnicodeString bo
 		noButton &&
 		changeLogButton)
 	{
-		changeLogButton->winSetFont(
-			yesButton->winGetFont());
+		Int changeLogFontSize =
+			TheDisplay->getHeight() * 21 /
+			1080;
+
+		if (changeLogFontSize < 11)
+			changeLogFontSize = 11;
 
 		changeLogButton->winSetFont(
 			TheFontLibrary->getFont(
 				"Generals",
-				21,
+				changeLogFontSize,
 				FALSE));
+
+		GadgetButtonSetText(
+			changeLogButton,
+			TheGameText->fetch("GUI:ChangeLog"));
 
 		Int leftX = 0;
 		Int buttonY = 0;
@@ -287,6 +289,24 @@ void RestoreChangeLogMessageBox()
 Bool IsChangeLogMessageBoxFromOptions()
 {
 	return s_changeLogMessageBoxFromOptions;
+}
+
+void DiscardChangeLogMessageBox()
+{
+	s_changeLogMessageBoxRestorePending =
+		FALSE;
+
+	if (s_changeLogMessageBox)
+	{
+		TheWindowManager->winDestroy(
+			s_changeLogMessageBox);
+
+		s_changeLogMessageBox =
+			nullptr;
+	}
+
+	s_changeLogMessageBoxFromOptions =
+		FALSE;
 }
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////

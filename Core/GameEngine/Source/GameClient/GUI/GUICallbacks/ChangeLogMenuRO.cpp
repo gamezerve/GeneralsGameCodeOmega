@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "BuildVersion.h"
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/GadgetListBox.h"
 #include "GameClient/GadgetPushButton.h"
@@ -43,6 +44,7 @@
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
 
+#include <shellapi.h>
 #include <string>
 #include <vector>
 
@@ -50,13 +52,28 @@ static GameWindow* s_changeLogMenuROParent = nullptr;
 static GameWindow* s_changeLogMenuROListBox = nullptr;
 static Bool s_changeLogMenuROCloseRequested = FALSE;
 static Bool s_changeLogMenuROOptionsOverlay = FALSE;
+static Bool s_changeLogMenuRODownloadRequested = FALSE;
+static Bool s_changeLogMenuRORestoreModalRequested = FALSE;
+static Bool s_changeLogMenuROBringConfirmationToTopRequested = FALSE;
 
 static GameWindow* s_changeLogMenuROVersionLabel = nullptr;
 static GameWindow* s_changeLogMenuROPreviousButton = nullptr;
 static GameWindow* s_changeLogMenuRONextButton = nullptr;
+static GameWindow* s_changeLogMenuRODecreaseFontSizeButton = nullptr;
+static GameWindow* s_changeLogMenuROIncreaseFontSizeButton = nullptr;
+static GameWindow* s_changeLogMenuROInstallButton = nullptr;
+static GameWindow* s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
+
+static const Int s_changeLogMenuROMinimumFontSize = 10;
+static const Int s_changeLogMenuROMaximumFontSize = 20;
+static Int s_changeLogMenuROFontSize = 14;
 
 static std::vector<RebornOmegaVersionInfo>
 s_changeLogMenuROVersions;
+static std::vector<std::string>
+s_changeLogMenuROLinkUrls;
+static std::string
+s_changeLogMenuROPendingInstallUrl;
 
 static Int s_changeLogMenuROSelectedVersion = -1;
 static Int s_changeLogMenuRODownloadingVersion = -1;
@@ -64,18 +81,144 @@ static Int s_changeLogMenuRODownloadingVersion = -1;
 static DWORD s_changeLogMenuROLastLoadingUpdate = 0;
 static Int s_changeLogMenuROLoadingDots = 0;
 
+static void UpdateChangeLogMenuROInstallButton()
+{
+	if (!s_changeLogMenuROInstallButton)
+		return;
+
+	Bool enabled = FALSE;
+
+	if (
+		s_changeLogMenuROSelectedVersion >= 0 &&
+		s_changeLogMenuROSelectedVersion <
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size()))
+	{
+		const RebornOmegaVersionInfo& version =
+			s_changeLogMenuROVersions[
+				s_changeLogMenuROSelectedVersion];
+
+		//enabled =	version.buildRank >	REBORN_OMEGA_BUILD_RANK;
+		enabled =	version.buildRank >	10399;
+	}
+
+	DEBUG_LOG((
+		"ChangeLog INSTALL update: button=%p enabled=%d index=%d rank=%d\n",
+		s_changeLogMenuROInstallButton,
+		enabled,
+		s_changeLogMenuROSelectedVersion,
+		s_changeLogMenuROSelectedVersion >= 0 &&
+		s_changeLogMenuROSelectedVersion <
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size())
+		? s_changeLogMenuROVersions[
+			s_changeLogMenuROSelectedVersion].buildRank
+		: -1));
+
+	s_changeLogMenuROInstallButton->
+		winEnable(enabled);
+}
+
+static std::string CreateChangeLogDivider()
+{
+	if (!s_changeLogMenuROListBox)
+		return std::string();
+
+	Int width = 0;
+	Int height = 0;
+
+	s_changeLogMenuROListBox->winGetSize(
+		&width,
+		&height);
+
+	Int characterCount = width / 8;
+
+	if (characterCount < 1)
+		characterCount = 1;
+
+	return std::string(
+		static_cast<size_t>(characterCount),
+		'-');
+}
+
+static Bool RemoveChangeLogStyleMarker(
+	std::string& text,
+	const char* marker)
+{
+	const std::string markerText =
+		marker;
+
+	Bool styleEntireLine =
+		text.find(markerText) == 0;
+
+	size_t position = 0;
+
+	while (
+		(position =
+			text.find(
+				markerText,
+				position)) !=
+		std::string::npos)
+	{
+		text.erase(
+			position,
+			markerText.size());
+	}
+
+	return styleEntireLine;
+}
+
+static void UpdateChangeLogMenuROFontButtons()
+{
+	if (s_changeLogMenuRODecreaseFontSizeButton)
+	{
+		s_changeLogMenuRODecreaseFontSizeButton->
+			winEnable(
+				s_changeLogMenuROFontSize >
+				s_changeLogMenuROMinimumFontSize);
+	}
+
+	if (s_changeLogMenuROIncreaseFontSizeButton)
+	{
+		s_changeLogMenuROIncreaseFontSizeButton->
+			winEnable(
+				s_changeLogMenuROFontSize <
+				s_changeLogMenuROMaximumFontSize);
+	}
+}
+
 static void PopulateChangeLogMenuRO(const char* changeLog)
 {
+
 	if (!s_changeLogMenuROListBox)
 		return;
 
 	GadgetListBoxReset(s_changeLogMenuROListBox);
+	s_changeLogMenuROLinkUrls.clear();
 
 	if (!changeLog || !*changeLog)
 		return;
 
 	std::string text = changeLog;
+
+	const std::string dividerMarker =
+		"REBORN_OMEGA_CHANGELOG_DIVIDER";
+
+	size_t dividerPosition =
+		text.find(dividerMarker);
+
+	if (dividerPosition != std::string::npos)
+	{
+		text.replace(
+			dividerPosition,
+			dividerMarker.size(),
+			CreateChangeLogDivider());
+	}
+
 	size_t position = 0;
+
+	Bool previousLineEmpty = TRUE;
+	Bool bulletPending = FALSE;
 
 	while (position <= text.size())
 	{
@@ -91,14 +234,170 @@ static void PopulateChangeLogMenuRO(const char* changeLog)
 		if (!line.empty() && line[line.size() - 1] == '\r')
 			line.erase(line.size() - 1);
 
-		UnicodeString translated;
-		translated.translate(line.c_str());
+		size_t textStart =
+			line.find_first_not_of(" \t");
 
-		GadgetListBoxAddEntryText(
-			s_changeLogMenuROListBox,
-			translated,
-			GameMakeColor(254, 254, 254, 255),
-			-1);
+		if (textStart == std::string::npos)
+		{
+			line.clear();
+		}
+		else
+		{
+			size_t textEnd =
+				line.find_last_not_of(" \t");
+
+			line =
+				line.substr(
+					textStart,
+					textEnd - textStart + 1);
+		}
+
+		Bool heading1 =
+			RemoveChangeLogStyleMarker(
+				line,
+				"REBORN_OMEGA_STYLE_H1");
+
+		Bool heading2 =
+			RemoveChangeLogStyleMarker(
+				line,
+				"REBORN_OMEGA_STYLE_H2");
+
+		Bool heading3 =
+			RemoveChangeLogStyleMarker(
+				line,
+				"REBORN_OMEGA_STYLE_H3");
+
+		Bool bold =
+			RemoveChangeLogStyleMarker(
+				line,
+				"REBORN_OMEGA_STYLE_BOLD");
+
+		if (line == "-")
+		{
+			bulletPending = TRUE;
+			line.clear();
+		}
+		else if (bulletPending && !line.empty())
+		{
+			line.insert(0, "- ");
+			bulletPending = FALSE;
+		}
+
+		Bool lineEmpty = line.empty();
+
+		std::string linkUrl;
+
+		const std::string linkBegin =
+			"REBORN_OMEGA_LINK_BEGIN";
+
+		const std::string linkTextMarker =
+			"REBORN_OMEGA_LINK_TEXT";
+
+		const std::string linkEnd =
+			"REBORN_OMEGA_LINK_END";
+
+		size_t linkBeginPosition =
+			line.find(linkBegin);
+
+		if (linkBeginPosition != std::string::npos)
+		{
+			size_t urlStart =
+				linkBeginPosition +
+				linkBegin.size();
+
+			size_t linkTextPosition =
+				line.find(
+					linkTextMarker,
+					urlStart);
+
+			if (linkTextPosition != std::string::npos)
+			{
+				size_t linkEndPosition =
+					line.find(
+						linkEnd,
+						linkTextPosition +
+						linkTextMarker.size());
+
+				if (linkEndPosition != std::string::npos)
+				{
+					linkUrl =
+						line.substr(
+							urlStart,
+							linkTextPosition - urlStart);
+
+					std::string visibleLinkText =
+						line.substr(
+							linkTextPosition +
+							linkTextMarker.size(),
+							linkEndPosition -
+							linkTextPosition -
+							linkTextMarker.size());
+
+					line =
+						line.substr(
+							0,
+							linkBeginPosition) +
+						visibleLinkText +
+						line.substr(
+							linkEndPosition +
+							linkEnd.size());
+				}
+			}
+		}
+
+		if (!lineEmpty || !previousLineEmpty)
+		{
+			UnicodeString translated;
+			translated.translate(line.c_str());
+
+			Color textColor =
+				linkUrl.empty()
+				? GameMakeColor(254, 254, 254, 255)
+				: GameMakeColor(80, 160, 255, 255);
+
+			GameFont* entryFont =
+				TheFontLibrary->getFont(
+					"Arial",
+					s_changeLogMenuROFontSize,
+					FALSE);
+
+			if (heading1 || heading2)
+			{
+				entryFont =
+					TheFontLibrary->getFont(
+						"Arial",
+						s_changeLogMenuROFontSize + 6,
+						TRUE);
+			}
+			else if (heading3)
+			{
+				entryFont =
+					TheFontLibrary->getFont(
+						"Arial",
+						s_changeLogMenuROFontSize + 2,
+						TRUE);
+			}
+			else if (bold)
+			{
+				entryFont =
+					TheFontLibrary->getFont(
+						"Arial",
+						s_changeLogMenuROFontSize,
+						TRUE);
+			}
+
+			GadgetListBoxAddEntryTextWithFont(
+				s_changeLogMenuROListBox,
+				translated,
+				textColor,
+				entryFont,
+				-1);
+
+			s_changeLogMenuROLinkUrls.push_back(
+				linkUrl);
+		}
+
+		previousLineEmpty = lineEmpty;
 
 		if (lineEnd == std::string::npos)
 			break;
@@ -145,6 +444,9 @@ static void UpdateChangeLogMenuRONavigation()
 			static_cast<Int>(
 				s_changeLogMenuROVersions.size()) - 1);
 	}
+
+	UpdateChangeLogMenuROInstallButton();
+
 }
 
 static void UpdateChangeLogMenuROLoadingText()
@@ -228,6 +530,59 @@ static void ShowSelectedChangeLogMenuROVersion()
 	UpdateChangeLogMenuRONavigation();
 }
 
+static void AdjustChangeLogMenuROFontSize(Int adjustment)
+{
+
+	Int newFontSize =
+		s_changeLogMenuROFontSize +
+		adjustment;
+
+	if (
+		newFontSize <
+		s_changeLogMenuROMinimumFontSize)
+	{
+		newFontSize =
+			s_changeLogMenuROMinimumFontSize;
+	}
+	else if (
+		newFontSize >
+		s_changeLogMenuROMaximumFontSize)
+	{
+		newFontSize =
+			s_changeLogMenuROMaximumFontSize;
+	}
+
+	if (
+		newFontSize ==
+		s_changeLogMenuROFontSize)
+	{
+		return;
+	}
+
+	Int topVisibleEntry = 0;
+
+	if (s_changeLogMenuROListBox)
+	{
+		topVisibleEntry =
+			GadgetListBoxGetTopVisibleEntry(
+				s_changeLogMenuROListBox);
+	}
+
+	s_changeLogMenuROFontSize =
+		newFontSize;
+
+	ShowSelectedChangeLogMenuROVersion();
+
+	if (s_changeLogMenuROListBox)
+	{
+		GadgetListBoxSetTopVisibleEntry(
+			s_changeLogMenuROListBox,
+			topVisibleEntry);
+	}
+
+	UpdateChangeLogMenuROFontButtons();
+}
+
 Bool IsChangeLogMenuROOptionsOverlayActive()
 {
 	return s_changeLogMenuROOptionsOverlay;
@@ -256,6 +611,7 @@ static void CloseChangeLogMenuRO()
 	s_changeLogMenuROVersionLabel = nullptr;
 	s_changeLogMenuROPreviousButton = nullptr;
 	s_changeLogMenuRONextButton = nullptr;
+	s_changeLogMenuROInstallButton = nullptr;
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;
 	s_changeLogMenuRODownloadingVersion = -1;
@@ -339,6 +695,10 @@ void ChangeLogMenuROInit(
 	void* userData)
 {
 	s_changeLogMenuROCloseRequested = FALSE;
+	s_changeLogMenuRORestoreModalRequested = FALSE;
+	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
+	s_changeLogMenuROBringConfirmationToTopRequested = FALSE;
+	s_changeLogMenuROPendingInstallUrl.clear();
 
 	s_changeLogMenuROParent =
 		TheWindowManager->winGetWindowFromId(
@@ -367,6 +727,36 @@ void ChangeLogMenuROInit(
 			s_changeLogMenuROParent,
 			NAMEKEY(
 				"ChangeLogMenuRO.wnd:ButtonNextVersion"));
+
+	s_changeLogMenuRODecreaseFontSizeButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"ButtonDecreaseFontSize"));
+
+	s_changeLogMenuROIncreaseFontSizeButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"ButtonIncreaseFontSize"));
+
+	s_changeLogMenuROInstallButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"ButtonInstall"));
+
+	if (s_changeLogMenuROListBox)
+	{
+		GadgetListBoxSetPreserveItemFonts(
+			s_changeLogMenuROListBox,
+			TRUE);
+	}
+
+	UpdateChangeLogMenuROFontButtons();
 
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;
@@ -414,6 +804,101 @@ void ChangeLogMenuROUpdate(
 	WindowLayout* layout,
 	void* userData)
 {
+
+	if (s_changeLogMenuRODownloadRequested)
+	{
+		s_changeLogMenuRODownloadRequested =
+			FALSE;
+
+		if (
+			s_changeLogMenuROBringConfirmationToTopRequested &&
+			s_changeLogMenuROInstallConfirmationMessageBox)
+		{
+			s_changeLogMenuROBringConfirmationToTopRequested =
+				FALSE;
+
+			TheWindowManager->winSetModal(
+				s_changeLogMenuROInstallConfirmationMessageBox);
+
+			TheWindowManager->winSetFocus(
+				nullptr);
+
+			s_changeLogMenuROInstallConfirmationMessageBox->
+				winBringToTop();
+		}
+
+		if (s_changeLogMenuRORestoreModalRequested)
+		{
+			s_changeLogMenuRORestoreModalRequested =
+				FALSE;
+
+			if (s_changeLogMenuROParent)
+			{
+				s_changeLogMenuROParent->
+					winEnable(TRUE);
+
+				TheWindowManager->winSetModal(
+					s_changeLogMenuROParent);
+
+				TheWindowManager->winSetFocus(
+					nullptr);
+
+				s_changeLogMenuROParent->
+					winBringToTop();
+			}
+		}
+
+		if (s_changeLogMenuROOptionsOverlay)
+		{
+			GameWindow* changeLogWindow =
+				s_changeLogMenuROParent;
+
+			s_changeLogMenuROOptionsOverlay =
+				FALSE;
+
+			s_changeLogMenuROParent = nullptr;
+			s_changeLogMenuROListBox = nullptr;
+			s_changeLogMenuROVersionLabel = nullptr;
+			s_changeLogMenuROPreviousButton = nullptr;
+			s_changeLogMenuRONextButton = nullptr;
+			s_changeLogMenuROInstallButton = nullptr;
+			s_changeLogMenuRODecreaseFontSizeButton = nullptr;
+			s_changeLogMenuROIncreaseFontSizeButton = nullptr;
+
+			s_changeLogMenuROVersions.clear();
+			s_changeLogMenuROLinkUrls.clear();
+			s_changeLogMenuROSelectedVersion = -1;
+			s_changeLogMenuRODownloadingVersion = -1;
+			s_changeLogMenuROLastLoadingUpdate = 0;
+			s_changeLogMenuROLoadingDots = 0;
+
+			DiscardChangeLogMessageBox();
+
+			if (changeLogWindow)
+			{
+				TheWindowManager->winDestroy(
+					changeLogWindow);
+			}
+
+			GameWindow* mainMenuWindow =
+				TheWindowManager->winGetWindowFromId(
+					nullptr,
+					NAMEKEY(
+						"MainMenu.wnd:"
+						"MainMenuParent"));
+
+			if (mainMenuWindow)
+			{
+				mainMenuWindow->winHide(FALSE);
+				mainMenuWindow->winEnable(TRUE);
+			}
+
+			return;
+		}
+
+		return;
+	}
+
 	if (s_changeLogMenuROCloseRequested)
 	{
 		CloseChangeLogMenuRO();
@@ -461,6 +946,10 @@ void ChangeLogMenuROUpdate(
 			version.changeLog =
 				changeLog;
 
+			CacheRebornOmegaVersionChangeLog(
+				version.buildRank,
+				changeLog);
+
 			if (s_changeLogMenuROSelectedVersion ==
 				s_changeLogMenuRODownloadingVersion)
 			{
@@ -502,14 +991,54 @@ void ChangeLogMenuROShutdown(
 	s_changeLogMenuROVersionLabel = nullptr;
 	s_changeLogMenuROPreviousButton = nullptr;
 	s_changeLogMenuRONextButton = nullptr;
+	s_changeLogMenuRODecreaseFontSizeButton =	nullptr;
+	s_changeLogMenuROIncreaseFontSizeButton =	nullptr;
+	s_changeLogMenuROInstallButton = nullptr;
+	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;
 	s_changeLogMenuRODownloadingVersion = -1;
 	s_changeLogMenuROLastLoadingUpdate = 0;
 	s_changeLogMenuROLoadingDots = 0;
 	s_changeLogMenuROCloseRequested = FALSE;
+	s_changeLogMenuRODownloadRequested = FALSE;
+	s_changeLogMenuRORestoreModalRequested = FALSE;
+	s_changeLogMenuROBringConfirmationToTopRequested = FALSE;
+	s_changeLogMenuROLinkUrls.clear();
+	s_changeLogMenuROPendingInstallUrl.clear();
 
 	TheShell->shutdownComplete(layout);
+}
+
+static void ConfirmChangeLogMenuROInstall()
+{
+
+	s_changeLogMenuRORestoreModalRequested = FALSE;
+	s_changeLogMenuROBringConfirmationToTopRequested = FALSE;
+	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
+
+	if (s_changeLogMenuROPendingInstallUrl.empty())
+		return;
+
+	std::string downloadStartUrl =
+		s_changeLogMenuROPendingInstallUrl;
+
+	s_changeLogMenuROPendingInstallUrl.clear();
+
+	if (RebornOmegaUpdateAcceptedFromChangeLog(
+		downloadStartUrl))
+	{
+		s_changeLogMenuRODownloadRequested =
+			TRUE;
+	}
+}
+
+static void DeclineChangeLogMenuROInstall()
+{
+	s_changeLogMenuROPendingInstallUrl.clear();
+
+	s_changeLogMenuRORestoreModalRequested =
+		TRUE;
 }
 
 WindowMsgHandledType ChangeLogMenuROSystem(
@@ -518,6 +1047,71 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 	WindowMsgData mData1,
 	WindowMsgData mData2)
 {
+
+	if (
+		reinterpret_cast<GameWindow*>(mData1) ==
+		s_changeLogMenuROInstallButton)
+	{
+		DEBUG_LOG((
+			"ChangeLog INSTALL message: msg=%u\n",
+			msg));
+	}
+
+	if (msg == GLM_DOUBLE_CLICKED)
+	{
+		GameWindow* listbox =
+			reinterpret_cast<GameWindow*>(mData1);
+
+		if (!listbox)
+			return MSG_HANDLED;
+
+		if (listbox->winGetWindowId() !=
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:ListboxChangeLog"))
+		{
+			return MSG_HANDLED;
+		}
+
+		Int selectedIndex =
+			static_cast<Int>(mData2);
+
+		if (selectedIndex < 0)
+		{
+			GadgetListBoxGetSelected(
+				listbox,
+				&selectedIndex);
+		}
+
+		if (selectedIndex < 0 ||
+			selectedIndex >=
+			static_cast<Int>(
+				s_changeLogMenuROLinkUrls.size()))
+		{
+			return MSG_HANDLED;
+		}
+
+		const std::string& url =
+			s_changeLogMenuROLinkUrls[
+				selectedIndex];
+
+		if (
+			url.compare(0, 8, "https://") != 0 &&
+			url.compare(0, 7, "http://") != 0)
+		{
+			return MSG_HANDLED;
+		}
+
+		ShellExecuteA(
+			nullptr,
+			"open",
+			url.c_str(),
+			nullptr,
+			nullptr,
+			SW_SHOWNORMAL);
+
+		return MSG_HANDLED;
+	}
+
 	if (msg != GBM_SELECTED)
 		return MSG_IGNORED;
 
@@ -528,6 +1122,77 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 		return MSG_IGNORED;
 
 	Int controlID = control->winGetWindowId();
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonDecreaseFontSize"))
+	{
+		AdjustChangeLogMenuROFontSize(-1);
+		return MSG_HANDLED;
+	}
+
+	DEBUG_LOG((
+		"ChangeLog GBM_SELECTED: controlID=%d installID=%d\n",
+		controlID,
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonInstall")));
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonDecreaseFontSize"))
+	{
+		AdjustChangeLogMenuROFontSize(-1);
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonIncreaseFontSize"))
+	{
+		AdjustChangeLogMenuROFontSize(1);
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonVisit"))
+	{
+		if (
+			s_changeLogMenuROSelectedVersion >= 0 &&
+			s_changeLogMenuROSelectedVersion <
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()))
+		{
+			const std::string& url =
+				s_changeLogMenuROVersions[
+					s_changeLogMenuROSelectedVersion].
+				pageUrl;
+
+					if (
+						url.compare(0, 8, "https://") == 0 ||
+						url.compare(0, 7, "http://") == 0)
+					{
+						ShellExecuteA(
+							nullptr,
+							"open",
+							url.c_str(),
+							nullptr,
+							nullptr,
+							SW_SHOWNORMAL);
+					}
+		}
+
+		return MSG_HANDLED;
+	}
 
 	if (controlID ==
 		NAMEKEY(
@@ -557,6 +1222,110 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 		{
 			++s_changeLogMenuROSelectedVersion;
 			ShowSelectedChangeLogMenuROVersion();
+		}
+
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonInstall"))
+	{
+		if (
+			s_changeLogMenuROSelectedVersion >= 0 &&
+			s_changeLogMenuROSelectedVersion <
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()))
+		{
+			const RebornOmegaVersionInfo& version =
+				s_changeLogMenuROVersions[
+					s_changeLogMenuROSelectedVersion];
+
+			//if (version.buildRank > REBORN_OMEGA_BUILD_RANK)
+			if (version.buildRank > 10399)
+			{
+				s_changeLogMenuROPendingInstallUrl =
+					version.downloadStartUrl;
+
+				if (s_changeLogMenuROOptionsOverlay)
+				{
+					TheWindowManager->winSetModal(
+						nullptr);
+
+					TheWindowManager->winSetFocus(
+						nullptr);
+				}
+
+				GameWindow* confirmationMessageBox =
+					MessageBoxYesNo(
+						TheGameText->fetch(
+							"GUI:InstallUpdate"),
+						TheGameText->fetch(
+							"GUI:ConfirmInstallUpdate"),
+						ConfirmChangeLogMenuROInstall,
+						DeclineChangeLogMenuROInstall);
+
+				GameWindow* confirmationRoot =
+					confirmationMessageBox;
+
+				while (
+					confirmationRoot &&
+					confirmationRoot->winGetParent())
+				{
+					confirmationRoot =
+						confirmationRoot->winGetParent();
+				}
+
+				GameWindow* changeLogRoot =
+					s_changeLogMenuROParent;
+
+				while (
+					changeLogRoot &&
+					changeLogRoot->winGetParent())
+				{
+					changeLogRoot =
+						changeLogRoot->winGetParent();
+				}
+
+				DEBUG_LOG((
+					"Install confirmation hierarchy: "
+					"confirmation=%p confirmationParent=%p "
+					"confirmationRoot=%p "
+					"changeLog=%p changeLogParent=%p "
+					"changeLogRoot=%p\n",
+					confirmationMessageBox,
+					confirmationMessageBox
+					? confirmationMessageBox->winGetParent()
+					: nullptr,
+					confirmationRoot,
+					s_changeLogMenuROParent,
+					s_changeLogMenuROParent
+					? s_changeLogMenuROParent->winGetParent()
+					: nullptr,
+					changeLogRoot));
+
+				Int bringResult =
+					confirmationRoot
+					? confirmationRoot->winBringToTop()
+					: WIN_ERR_INVALID_PARAMETER;
+
+				DEBUG_LOG((
+					"Install confirmation bring result=%d\n",
+					bringResult));
+
+				if (confirmationRoot)
+				{
+					TheWindowManager->winSetModal(
+						confirmationRoot);
+
+					TheWindowManager->winSetFocus(
+						nullptr);
+
+					confirmationRoot->winBringToTop();
+				}
+			}
 		}
 
 		return MSG_HANDLED;

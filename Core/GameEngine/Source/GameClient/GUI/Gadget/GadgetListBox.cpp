@@ -81,6 +81,7 @@ typedef struct _AddMessageStruct
 	Bool overwrite;	// Do we overwrite existing data?
 	Int width;			// set to -1 if we want the defaults
 	Int height;			// set to -1 if we want the defaults
+	GameFont* font;
 } AddMessageStruct;
 
 
@@ -438,10 +439,28 @@ static Int moveRowsDown(ListboxData *list, Int startingRow)
 	return 1;
 }
 
+void GadgetListBoxSetPreserveItemFonts(
+	GameWindow* listbox,
+	Bool preserve)
+{
+	if (!listbox)
+		return;
+
+	ListboxData* listData =
+		(ListboxData*)
+		listbox->winGetUserData();
+
+	if (!listData)
+		return;
+
+	listData->preserveItemFonts =
+		preserve;
+}
+
 // addEntry ===================================================================
 /** Add and process one string at insertPos */
 //=============================================================================
-static Int addEntry( UnicodeString *string, Int color, Int row, Int column, GameWindow *window, Bool overwrite )
+static Int addEntry( UnicodeString *string, Int color, Int row, Int column, GameWindow *window, Bool overwrite, GameFont* font)
 {
 //	WinInstanceData *instData = window->winGetInstanceData();
 	ListboxData *list = (ListboxData *)window->winGetUserData();
@@ -500,14 +519,34 @@ static Int addEntry( UnicodeString *string, Int color, Int row, Int column, Game
 	// copy text
 	if( !listRow->cell[column].data )
 		listRow->cell[column].data = (void *) TheDisplayStringManager->newDisplayString();
-	displayString = (DisplayString *) listRow->cell[column].data;
-	if ( BitIsSet( window->winGetStatus(), WIN_STATUS_ONE_LINE ) == FALSE )
-		displayString->setWordWrap( width );
-	displayString->setText( *string );
+	//displayString = (DisplayString *) listRow->cell[column].data;
+	//if ( BitIsSet( window->winGetStatus(), WIN_STATUS_ONE_LINE ) == FALSE )
+	//	displayString->setWordWrap( width );
+	//displayString->setText( *string );
 
-	/** @todo we need for formalize this, but for now just set the font
-	of this listbox entry to the font of the window */
-	displayString->setFont( window->winGetFont() );
+	///** @todo we need for formalize this, but for now just set the font
+	//of this listbox entry to the font of the window */
+	////displayString->setFont( window->winGetFont() );
+	//displayString->setFont(	font ? font	: window->winGetFont());
+
+	displayString =
+		(DisplayString*)
+		listRow->cell[column].data;
+
+	displayString->setFont(
+		font
+		? font
+		: window->winGetFont());
+
+	if (
+		BitIsSet(
+			window->winGetStatus(),
+			WIN_STATUS_ONE_LINE) == FALSE)
+	{
+		displayString->setWordWrap(width);
+	}
+
+	displayString->setText(*string);
 
 	if (overwrite)
 	{
@@ -1573,7 +1612,8 @@ WindowMsgHandledType GadgetListBoxSystem( GameWindow *window, UnsignedInt msg,
 			{
 				if( addInfo->type == LISTBOX_TEXT )
 				{
-					addedIndex = addEntry( (UnicodeString *)addInfo->data, mData2, addInfo->row, addInfo->column, window, addInfo->overwrite );
+					//addedIndex = addEntry( (UnicodeString *)addInfo->data, mData2, addInfo->row, addInfo->column, window, addInfo->overwrite );
+					addedIndex = addEntry( (UnicodeString*)addInfo->data, mData2,	addInfo->row,	addInfo->column, window, addInfo->overwrite, addInfo->font);
 				}
 				else if ( addInfo->type == LISTBOX_IMAGE )
 				{
@@ -2306,6 +2346,9 @@ Int GadgetListBoxAddEntryText( GameWindow *listbox,
 	addInfo.height = -1;
 	addInfo.width = -1;
 
+	addInfo.font =
+		listbox->winGetFont();
+
 	ListboxData *listData = (ListboxData *)listbox->winGetUserData();
 	if (listData == nullptr)
 		return -1;
@@ -2324,6 +2367,70 @@ Int GadgetListBoxAddEntryText( GameWindow *listbox,
 	}
 
 	return (index);
+}
+
+Int GadgetListBoxAddEntryTextWithFont(
+	GameWindow* listbox,
+	UnicodeString text,
+	Color color,
+	GameFont* font,
+	Int row,
+	Int column,
+	Bool overwrite)
+{
+	if (!listbox)
+		return -1;
+
+	if (text.isEmpty())
+		text = L" ";
+
+	AddMessageStruct addInfo;
+	addInfo.row = row;
+	addInfo.column = column;
+	addInfo.type = LISTBOX_TEXT;
+	addInfo.data = &text;
+	addInfo.overwrite = overwrite;
+	addInfo.height = -1;
+	addInfo.width = -1;
+	addInfo.font = font;
+
+	ListboxData* listData =
+		(ListboxData*)listbox->winGetUserData();
+
+	if (!listData)
+		return -1;
+
+	Bool wasFull =
+		listData->listLength <=
+		listData->endPos;
+
+	Int newEntryOffset =
+		wasFull ? 0 : 1;
+
+	Int oldBottomIndex =
+		GadgetListBoxGetBottomVisibleEntry(
+			listbox);
+
+	Int index =
+		(Int)TheWindowManager->
+		winSendSystemMsg(
+			listbox,
+			GLM_ADD_ENTRY,
+			(WindowMsgData)&addInfo,
+			color);
+
+	if (
+		listData->scrollIfAtEnd &&
+		index - oldBottomIndex ==
+		newEntryOffset &&
+		GadgetListBoxIsFull(listbox))
+	{
+		GadgetListBoxSetBottomVisibleEntry(
+			listbox,
+			index);
+	}
+
+	return index;
 }
 
 // GadgetListBoxAddEntryImage =================================================

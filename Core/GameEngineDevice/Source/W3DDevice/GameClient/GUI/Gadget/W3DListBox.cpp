@@ -419,8 +419,16 @@ static void drawListBoxText( GameWindow *window, WinInstanceData *instData,
 					{
 						string->setWordWrap(0);
 						// make sure the font of the text is the same as the windows
-						if( string->getFont() != window->winGetFont() )
-							string->setFont( window->winGetFont() );
+						//if( string->getFont() != window->winGetFont() )
+						//	string->setFont( window->winGetFont() );
+						if (
+							!list->preserveItemFonts &&
+							string->getFont() !=
+							window->winGetFont())
+						{
+							string->setFont(
+								window->winGetFont());
+						}
 
 						// draw this text after setting the clip region for it
 						string->setClipRegion( &columnRegion );
@@ -434,8 +442,16 @@ static void drawListBoxText( GameWindow *window, WinInstanceData *instData,
 					{
 
 						// make sure the font of the text is the same as the windows
-						if( string->getFont() != window->winGetFont() )
-							string->setFont( window->winGetFont() );
+						//if( string->getFont() != window->winGetFont() )
+						//	string->setFont( window->winGetFont() );
+						if (
+							!list->preserveItemFonts &&
+							string->getFont() !=
+							window->winGetFont())
+						{
+							string->setFont(
+								window->winGetFont());
+						}
 
 						// set clip region and draw
 						string->setClipRegion( &columnRegion );

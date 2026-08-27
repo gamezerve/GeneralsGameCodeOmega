@@ -39,6 +39,7 @@
 
 #include "Common/GlobalData.h"
 #include "Common/UserPreferences.h"
+#include "GameClient/GameFont.h"
 
 static bool DownloadHttpsText(const std::string& url, std::string& content)
 {
@@ -182,6 +183,111 @@ static std::string ConvertHtmlToPlainText(
 {
 	std::string text = html;
 
+	size_t anchorPosition = 0;
+
+	while (
+		(anchorPosition =
+			text.find("<a ", anchorPosition)) !=
+		std::string::npos)
+	{
+		size_t tagEnd =
+			text.find('>', anchorPosition);
+
+		if (tagEnd == std::string::npos)
+			break;
+
+		size_t hrefStart =
+			text.find(
+				"href=\"",
+				anchorPosition);
+
+		if (hrefStart == std::string::npos ||
+			hrefStart > tagEnd)
+		{
+			anchorPosition = tagEnd + 1;
+			continue;
+		}
+
+		hrefStart += 6;
+
+		size_t hrefEnd =
+			text.find('"', hrefStart);
+
+		if (hrefEnd == std::string::npos ||
+			hrefEnd > tagEnd)
+		{
+			anchorPosition = tagEnd + 1;
+			continue;
+		}
+
+		size_t anchorEnd =
+			text.find(
+				"</a>",
+				tagEnd + 1);
+
+		if (anchorEnd == std::string::npos)
+			break;
+
+		std::string url =
+			text.substr(
+				hrefStart,
+				hrefEnd - hrefStart);
+
+		std::string linkText =
+			text.substr(
+				tagEnd + 1,
+				anchorEnd - tagEnd - 1);
+
+		std::string replacement =
+			"REBORN_OMEGA_LINK_BEGIN" +
+			url +
+			"REBORN_OMEGA_LINK_TEXT" +
+			linkText +
+			"REBORN_OMEGA_LINK_END";
+
+		text.replace(
+			anchorPosition,
+			anchorEnd + 4 - anchorPosition,
+			replacement);
+
+		anchorPosition += replacement.size();
+	}
+
+	ReplaceAll(
+		text,
+		"<h1>",
+		"REBORN_OMEGA_STYLE_H1");
+
+	ReplaceAll(
+		text,
+		"<h2>",
+		"REBORN_OMEGA_STYLE_H2");
+
+	ReplaceAll(
+		text,
+		"<h3>",
+		"REBORN_OMEGA_STYLE_H3");
+
+	ReplaceAll(
+		text,
+		"<strong>",
+		"REBORN_OMEGA_STYLE_BOLD");
+
+	ReplaceAll(
+		text,
+		"</strong>",
+		"");
+
+	ReplaceAll(
+		text,
+		"<b>",
+		"REBORN_OMEGA_STYLE_BOLD");
+
+	ReplaceAll(
+		text,
+		"</b>",
+		"");
+
 	ReplaceAll(text, "<br>", "\n");
 	ReplaceAll(text, "<br/>", "\n");
 	ReplaceAll(text, "<br />", "\n");
@@ -194,6 +300,16 @@ static std::string ConvertHtmlToPlainText(
 	ReplaceAll(text, "<hr>", "\n");
 	ReplaceAll(text, "<hr/>", "\n");
 	ReplaceAll(text, "<hr />", "\n");
+	ReplaceAll(text, "&ldquo;", "\"");
+	ReplaceAll(text, "&rdquo;", "\"");
+	ReplaceAll(text, "&lsquo;", "'");
+	ReplaceAll(text, "&rsquo;", "'");
+	ReplaceAll(text, "&quot;", "\"");
+	ReplaceAll(text, "&apos;", "'");
+	ReplaceAll(text, "&ndash;", "-");
+	ReplaceAll(text, "&mdash;", " - ");
+	ReplaceAll(text, "&nbsp;", " ");
+	ReplaceAll(text, "&amp;", "&");
 
 	std::string plainText;
 	bool insideTag = false;
@@ -234,37 +350,134 @@ static std::string ConvertHtmlToPlainText(
 	return plainText;
 }
 
+//bool DownloadRebornOmegaChangeLog(
+//	const std::string& pageUrl,
+//	std::string& changeLog)
+//{
+//	changeLog.clear();
+//
+//	std::string html;
+//
+//	if (!DownloadHttpsText(pageUrl, html))
+//		return false;
+//
+//	const std::string descriptionMarker =
+//		"<h2>Description</h2>";
+//
+//	size_t descriptionStart =
+//		html.find(descriptionMarker);
+//
+//	if (descriptionStart == std::string::npos)
+//		return false;
+//
+//	descriptionStart =
+//		html.find("<div", descriptionStart);
+//
+//	if (descriptionStart == std::string::npos)
+//		return false;
+//
+//	descriptionStart =
+//		html.find('>', descriptionStart);
+//
+//	if (descriptionStart == std::string::npos)
+//		return false;
+//
+//	++descriptionStart;
+//
+//	size_t descriptionEnd =
+//		html.find("</div>", descriptionStart);
+//
+//	if (descriptionEnd == std::string::npos)
+//		return false;
+//
+//	changeLog =
+//		ConvertHtmlToPlainText(
+//			html.substr(
+//				descriptionStart,
+//				descriptionEnd - descriptionStart));
+//
+//	return !changeLog.empty();
+//}
+
 bool DownloadRebornOmegaChangeLog(
 	const std::string& pageUrl,
 	std::string& changeLog)
 {
 	changeLog.clear();
 
+	DEBUG_LOG((
+		"Reborn changelog: downloading page url=%s\n",
+		pageUrl.c_str()));
+
 	std::string html;
 
 	if (!DownloadHttpsText(pageUrl, html))
+	{
+		DEBUG_LOG((
+			"Reborn changelog: page download failed url=%s\n",
+			pageUrl.c_str()));
+
 		return false;
+	}
+
+	DEBUG_LOG((
+		"Reborn changelog: page downloaded bytes=%u\n",
+		static_cast<UnsignedInt>(html.size())));
+
+	std::string summaryHtml;
+
+	const std::string summaryMarker =
+		"<p id=\"downloadsummary\"";
+
+	size_t summaryStart =
+		html.find(summaryMarker);
+
+	if (summaryStart != std::string::npos)
+	{
+		summaryStart =
+			html.find('>', summaryStart);
+
+		if (summaryStart != std::string::npos)
+		{
+			++summaryStart;
+
+			size_t summaryEnd =
+				html.find("</p>", summaryStart);
+
+			if (summaryEnd != std::string::npos)
+			{
+				summaryHtml =
+					html.substr(
+						summaryStart,
+						summaryEnd - summaryStart);
+			}
+		}
+	}
 
 	const std::string descriptionMarker =
-		"<h2>Description</h2>";
+		"<div id=\"downloaddescription\"";
 
 	size_t descriptionStart =
 		html.find(descriptionMarker);
 
 	if (descriptionStart == std::string::npos)
-		return false;
+	{
+		DEBUG_LOG((
+			"Reborn changelog: download description not found\n"));
 
-	descriptionStart =
-		html.find("<div", descriptionStart);
-
-	if (descriptionStart == std::string::npos)
 		return false;
+	}
 
 	descriptionStart =
 		html.find('>', descriptionStart);
 
 	if (descriptionStart == std::string::npos)
+	{
+		DEBUG_LOG((
+			"Reborn changelog: download description opening tag invalid\n"));
+
 		return false;
+	}
 
 	++descriptionStart;
 
@@ -272,13 +485,39 @@ bool DownloadRebornOmegaChangeLog(
 		html.find("</div>", descriptionStart);
 
 	if (descriptionEnd == std::string::npos)
+	{
+		DEBUG_LOG((
+			"Reborn changelog: download description ending not found\n"));
+
 		return false;
+	}
+
+	std::string changeLogHtml;
+
+	if (!summaryHtml.empty())
+	{
+		changeLogHtml = summaryHtml;
+		changeLogHtml += "<br /><br />";
+		changeLogHtml += "REBORN_OMEGA_CHANGELOG_DIVIDER";
+		changeLogHtml += "<br /><br />";
+	}
+
+	changeLogHtml +=
+		html.substr(
+			descriptionStart,
+			descriptionEnd - descriptionStart);
 
 	changeLog =
-		ConvertHtmlToPlainText(
-			html.substr(
-				descriptionStart,
-				descriptionEnd - descriptionStart));
+		ConvertHtmlToPlainText(changeLogHtml);
+
+	DEBUG_LOG((
+		"Reborn changelog: parsed characters=%u\n",
+		static_cast<UnsignedInt>(
+			changeLog.size())));
+
+	DEBUG_LOG((
+		"Reborn changelog parsed text:\n%s\n",
+		changeLog.c_str()));
 
 	return !changeLog.empty();
 }
@@ -696,76 +935,9 @@ bool FindAllRebornOmegaVersions(
 	return !versions.empty();
 }
 
-bool FindRebornOmegaVersionByBuildRank(
-	const std::string& feed,
-	int buildRank,
-	RebornOmegaVersionInfo& version)
-{
-	size_t itemStart = 0;
-
-	while ((itemStart = feed.find("<item", itemStart)) !=
-		std::string::npos)
-	{
-		size_t itemEnd =
-			feed.find("</item>", itemStart);
-
-		if (itemEnd == std::string::npos)
-			break;
-
-		size_t titleStart =
-			feed.find("<title>", itemStart);
-
-		size_t titleEnd =
-			feed.find("</title>", titleStart);
-
-		if (titleStart != std::string::npos &&
-			titleEnd != std::string::npos &&
-			titleEnd < itemEnd)
-		{
-			titleStart += 7;
-
-			RebornOmegaVersionInfo candidate;
-
-			if (ParseRebornOmegaVersion(
-				feed.substr(
-					titleStart,
-					titleEnd - titleStart),
-				candidate) &&
-				candidate.buildRank == buildRank)
-			{
-				size_t linkStart =
-					feed.find("<link>", itemStart);
-
-				size_t linkEnd =
-					feed.find("</link>", linkStart);
-
-				if (linkStart != std::string::npos &&
-					linkEnd != std::string::npos &&
-					linkEnd < itemEnd)
-				{
-					linkStart += 6;
-
-					candidate.pageUrl =
-						feed.substr(
-							linkStart,
-							linkEnd - linkStart);
-				}
-
-				version = candidate;
-				return true;
-			}
-		}
-
-		itemStart = itemEnd + 7;
-	}
-
-	return false;
-}
-
 static volatile LONG s_updateCheckState = REBORN_UPDATE_IDLE;
 static int s_installedBuildRank = 0;
 static RebornOmegaVersionInfo s_updateCheckResult;
-static RebornOmegaVersionInfo s_installedVersionResult;
 static std::vector<RebornOmegaVersionInfo> s_rebornOmegaVersionList;
 static volatile LONG s_updateCheckCanceled = FALSE;
 static volatile LONG s_downloadPaused = FALSE;
@@ -814,38 +986,6 @@ static DWORD WINAPI RebornOmegaUpdateCheckThread(LPVOID)
 			versions;
 	}
 
-	if (!version.pageUrl.empty())
-	{
-		DownloadRebornOmegaChangeLog(
-			version.pageUrl,
-			version.changeLog);
-	}
-
-	if (version.buildRank == s_installedBuildRank)
-	{
-		s_installedVersionResult = version;
-	}
-	else
-	{
-		RebornOmegaVersionInfo installedVersion;
-
-		if (FindRebornOmegaVersionByBuildRank(
-			feed,
-			s_installedBuildRank,
-			installedVersion))
-		{
-			if (!installedVersion.pageUrl.empty())
-			{
-				DownloadRebornOmegaChangeLog(
-					installedVersion.pageUrl,
-					installedVersion.changeLog);
-			}
-
-			s_installedVersionResult =
-				installedVersion;
-		}
-	}
-
 	if (InterlockedCompareExchange(
 		&s_updateCheckCanceled,
 		FALSE,
@@ -880,7 +1020,6 @@ bool StartRebornOmegaUpdateCheck(int installedBuildRank)
 
 	s_installedBuildRank = installedBuildRank;
 	s_updateCheckResult = RebornOmegaVersionInfo();
-	s_installedVersionResult = RebornOmegaVersionInfo();
 	s_rebornOmegaVersionList.clear();
 
 	InterlockedExchange(&s_updateCheckCanceled, FALSE);
@@ -929,16 +1068,6 @@ bool GetRebornOmegaUpdateCheckResult(RebornOmegaVersionInfo& version)
 	return true;
 }
 
-bool GetRebornOmegaInstalledVersionInfo(
-	RebornOmegaVersionInfo& version)
-{
-	if (s_installedVersionResult.buildRank == 0)
-		return false;
-
-	version = s_installedVersionResult;
-	return true;
-}
-
 bool GetRebornOmegaVersionList(
 	std::vector<RebornOmegaVersionInfo>& versions)
 {
@@ -947,6 +1076,25 @@ bool GetRebornOmegaVersionList(
 
 	versions = s_rebornOmegaVersionList;
 	return true;
+}
+
+void CacheRebornOmegaVersionChangeLog(
+	int buildRank,
+	const std::string& changeLog)
+{
+	for (size_t i = 0;
+		i < s_rebornOmegaVersionList.size();
+		++i)
+	{
+		if (s_rebornOmegaVersionList[i].buildRank ==
+			buildRank)
+		{
+			s_rebornOmegaVersionList[i].changeLog =
+				changeLog;
+
+			return;
+		}
+	}
 }
 
 void FinishRebornOmegaUpdateCheck()

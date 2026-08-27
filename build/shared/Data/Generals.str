@@ -1,4 +1,24 @@
 
+GUI:ConfirmInstallUpdate
+"Would you like to download and install the selected update?"
+END
+
+TOOLTIP:InstallUpdate
+"Update your game to the currently shown version."
+END
+
+TOOLTIP:Visit
+"Visit the source webpage."
+END
+
+GUI:Visit
+"VISIT"
+END
+
+GUI:TextSize
+"Text Size"
+END
+
 GUI:RebornOmegaChangeLogLoading
 "Loading change log"
 END

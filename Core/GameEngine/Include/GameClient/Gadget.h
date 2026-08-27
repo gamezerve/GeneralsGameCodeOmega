@@ -380,6 +380,7 @@ typedef struct _ListboxData
 																// of a title or not.
 	UnsignedInt doubleClickTime;	//
 	Int					displayPos;				// Position of current display entry in pixels
+	Bool        preserveItemFonts;
 
 } ListboxData;
 

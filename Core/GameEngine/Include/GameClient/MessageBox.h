@@ -54,3 +54,4 @@ void RequestChangeLogMessageBoxRestore();
 Bool IsChangeLogMessageBoxRestorePending(Bool fromOptions);
 void RestoreChangeLogMessageBox();
 Bool IsChangeLogMessageBoxFromOptions();
+extern void DiscardChangeLogMessageBox();
