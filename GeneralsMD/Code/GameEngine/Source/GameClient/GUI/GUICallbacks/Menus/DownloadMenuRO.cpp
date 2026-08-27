@@ -73,6 +73,7 @@ static GameWindow* s_downloadMenuROFile = nullptr;
 static GameWindow* s_downloadMenuROStatus = nullptr;
 static GameWindow* s_downloadMenuROActionButton = nullptr;
 static GameWindow* s_downloadMenuROResumeButton = nullptr;
+static GameWindow* s_downloadMenuRODownloadedFileName = nullptr;
 static Bool s_downloadMenuROCloseRequested = FALSE;
 
 static DWORD s_downloadMenuROStartTime = 0;
@@ -114,6 +115,12 @@ void DownloadMenuROInit(WindowLayout* layout, void* userData)
 		TheWindowManager->winGetWindowFromId(
 			s_downloadMenuROParent,
 			NAMEKEY("DownloadMenuRO.wnd:StaticTextSize"));
+
+	s_downloadMenuRODownloadedFileName =
+		TheWindowManager->winGetWindowFromId(
+			s_downloadMenuROParent,
+			NAMEKEY(
+				"DownloadMenuRO.wnd:StaticTextDownloadedFileName"));
 
 	s_downloadMenuROTime =
 		TheWindowManager->winGetWindowFromId(
@@ -162,7 +169,20 @@ void DownloadMenuROInit(WindowLayout* layout, void* userData)
 	{
 		GadgetButtonSetText(
 			s_downloadMenuROActionButton,
-			TheGameText->fetch("GUI:PauseDownload"));
+			TheGameText->fetch(
+				"GUI:Cancel"));
+	}
+
+	if (s_downloadMenuRODownloadedFileName)
+	{
+		UnicodeString versionName;
+
+		versionName.translate(
+			GetRebornOmegaDownloadDisplayName().c_str());
+
+		GadgetStaticTextSetText(
+			s_downloadMenuRODownloadedFileName,
+			versionName);
 	}
 
 }
@@ -178,6 +198,20 @@ void DownloadMenuROUpdate(WindowLayout* layout, void* userData)
 
 	RebornOmegaDownloadState state =
 		GetRebornOmegaDownloadState();
+
+	if (
+		state ==
+		REBORN_DOWNLOAD_DOWNLOADING &&
+		s_downloadMenuROActionButton)
+	{
+		s_downloadMenuROActionButton->
+			winEnable(TRUE);
+
+		GadgetButtonSetText(
+			s_downloadMenuROActionButton,
+			TheGameText->fetch(
+				"GUI:PauseDownload"));
+	}
 
 	static DWORD lastDownloadLogTime = 0;
 	DWORD downloadLogTime = timeGetTime();
@@ -569,6 +603,7 @@ void DownloadMenuROShutdown(
 	s_downloadMenuROActionButton = nullptr;
 	s_downloadMenuROResumeButton = nullptr;
 	s_downloadMenuROParent = nullptr;
+	s_downloadMenuRODownloadedFileName = nullptr;
 	s_downloadMenuROCloseRequested = FALSE;
 
 	TheWindowManager->winSetModal(nullptr);
@@ -612,6 +647,18 @@ WindowMsgHandledType DownloadMenuROSystem(
 		{
 			RebornOmegaDownloadState state =
 				GetRebornOmegaDownloadState();
+
+			if (s_downloadMenuRODownloadedFileName)
+			{
+				UnicodeString versionName;
+
+				versionName.translate(
+					GetRebornOmegaDownloadDisplayName().c_str());
+
+				GadgetStaticTextSetText(
+					s_downloadMenuRODownloadedFileName,
+					versionName);
+			}
 
 			if (state == REBORN_DOWNLOAD_COMPLETED)
 			{
@@ -747,16 +794,12 @@ WindowMsgHandledType DownloadMenuROSystem(
 
 			if (state == REBORN_DOWNLOAD_STARTING)
 			{
-				if (s_downloadMenuROResumeButton)
-					s_downloadMenuROResumeButton->winHide(TRUE);
+				CancelRebornOmegaInstallerDownload();
 
-				if (s_downloadMenuROActionButton)
-				{
-					GadgetButtonSetText(
-						s_downloadMenuROActionButton,
-						TheGameText->fetch(
-							"GUI:PauseDownload"));
-				}
+				s_downloadMenuROCloseRequested =
+					TRUE;
+
+				return MSG_HANDLED;
 			}
 
 		}

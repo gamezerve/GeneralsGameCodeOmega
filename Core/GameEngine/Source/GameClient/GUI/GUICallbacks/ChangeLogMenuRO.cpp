@@ -1312,6 +1312,9 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 				s_changeLogMenuROPendingInstallUrl =
 					version.downloadStartUrl;
 
+				SetRebornOmegaDownloadDisplayName(
+					version.displayName);
+
 				if (s_changeLogMenuROInstallConfirmation)
 				{
 					s_changeLogMenuROInstallConfirmation->

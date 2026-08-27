@@ -41,6 +41,22 @@
 #include "Common/UserPreferences.h"
 #include "GameClient/GameFont.h"
 
+static std::string s_downloadInstallerFileName;
+static std::string s_rebornOmegaDownloadDisplayName;
+
+void SetRebornOmegaDownloadDisplayName(
+	const std::string& displayName)
+{
+	s_rebornOmegaDownloadDisplayName =
+		displayName;
+}
+
+const std::string&
+GetRebornOmegaDownloadDisplayName()
+{
+	return s_rebornOmegaDownloadDisplayName;
+}
+
 static bool DownloadHttpsText(const std::string& url, std::string& content)
 {
 	content.clear();
@@ -1257,6 +1273,60 @@ static DWORD WINAPI RebornOmegaInstallerDownloadThread(
 			statusCode >= 200 &&
 			statusCode < 300)
 		{
+
+			wchar_t contentDisposition[512] = {};
+			DWORD contentDispositionSize =
+				sizeof(contentDisposition);
+
+			if (WinHttpQueryHeaders(
+				request,
+				WINHTTP_QUERY_CONTENT_DISPOSITION,
+				WINHTTP_HEADER_NAME_BY_INDEX,
+				contentDisposition,
+				&contentDispositionSize,
+				WINHTTP_NO_HEADER_INDEX))
+			{
+				std::wstring disposition =
+					contentDisposition;
+
+				size_t fileNameStart =
+					disposition.find(
+						L"filename=");
+
+				if (fileNameStart != std::wstring::npos)
+				{
+					fileNameStart += 9;
+
+					while (
+						fileNameStart < disposition.size() &&
+						(disposition[fileNameStart] == L' ' ||
+							disposition[fileNameStart] == L'"'))
+					{
+						++fileNameStart;
+					}
+
+					size_t fileNameEnd =
+						disposition.find_first_of(
+							L"\";",
+							fileNameStart);
+
+					if (fileNameEnd == std::wstring::npos)
+						fileNameEnd = disposition.size();
+
+					std::wstring wideFileName =
+						disposition.substr(
+							fileNameStart,
+							fileNameEnd - fileNameStart);
+
+					if (!wideFileName.empty())
+					{
+						s_downloadInstallerFileName.assign(
+							wideFileName.begin(),
+							wideFileName.end());
+					}
+				}
+			}
+
 			file = CreateFileA(
 				installerPath.c_str(),
 				GENERIC_WRITE,
@@ -1495,6 +1565,9 @@ bool StartRebornOmegaInstallerDownload(
 
 	s_downloadMirrorUrl = mirrorUrl;
 
+	s_downloadInstallerFileName =
+		"RebornOmegaUpdateSetup.exe";
+
 	InterlockedExchange(&s_downloadCanceled, FALSE);
 	InterlockedExchange(&s_downloadPaused, FALSE);
 	InterlockedExchange(&s_downloadedBytes, 0);
@@ -1578,6 +1651,12 @@ const std::string&
 GetRebornOmegaDownloadedInstallerPath()
 {
 	return s_downloadedInstallerPath;
+}
+
+const std::string&
+GetRebornOmegaInstallerFileName()
+{
+	return s_downloadInstallerFileName;
 }
 
 void FinishRebornOmegaInstallerDownload()

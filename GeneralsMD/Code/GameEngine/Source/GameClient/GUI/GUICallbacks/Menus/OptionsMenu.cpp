@@ -2053,6 +2053,9 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 	s_pendingRebornOmegaUpdateUrl =
 		latestVersion.downloadStartUrl;
 
+	SetRebornOmegaDownloadDisplayName(
+		latestVersion.displayName);
+
 	UnicodeString message;
 	message.format(
 		TheGameText->fetch("GUI:RebornOmegaUpdateAvailable").str(),

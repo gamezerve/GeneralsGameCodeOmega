@@ -104,6 +104,15 @@ GetRebornOmegaDownloadProgress();
 const std::string&
 GetRebornOmegaDownloadedInstallerPath();
 
+const std::string&
+GetRebornOmegaInstallerFileName();
+
+void SetRebornOmegaDownloadDisplayName(
+	const std::string& displayName);
+
+const std::string&
+GetRebornOmegaDownloadDisplayName();
+
 void FinishRebornOmegaInstallerDownload();
 
 void PauseRebornOmegaInstallerDownload();
