@@ -243,6 +243,8 @@ static Bool s_rebornOmegaUpdateCheckIgnored = FALSE;
 
 static Bool s_rebornOmegaDownloadTransitionPending = FALSE;
 
+static Bool s_rebornOmegaConnectionErrorPending = FALSE;
+
 static void RebornOmegaUpdateAccepted();
 
 void SetOptionsMenuUsesRebornLayout(Bool useReborn)
@@ -1955,6 +1957,22 @@ static void RebornOmegaShowChangeLog()
 
 void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 {
+
+	if (s_rebornOmegaConnectionErrorPending)
+	{
+		s_rebornOmegaConnectionErrorPending =
+			FALSE;
+
+		MessageBoxOk(
+			TheGameText->fetch(
+				"GUI:CheckForUpdates"),
+			TheGameText->fetch(
+				"GUI:UpdateConnectionFailed"),
+			nullptr);
+
+		return;
+	}
+
 	RebornOmegaUpdateCheckState state =
 		GetRebornOmegaUpdateCheckState();
 
@@ -1973,17 +1991,30 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 
 	if (s_rebornOmegaCheckingWindow)
 	{
-		s_rebornOmegaCheckingWindow->winHide(TRUE);
+		TheWindowManager->winUnsetModal(
+			s_rebornOmegaCheckingWindow);
+
+		TheWindowManager->winSetFocus(
+			nullptr);
+
+		s_rebornOmegaCheckingWindow->
+			winHide(TRUE);
+
+		s_rebornOmegaCheckingWindow->
+			winEnable(FALSE);
 
 		s_rebornOmegaOldCheckingWindow =
 			s_rebornOmegaCheckingWindow;
 
-		s_rebornOmegaCheckingWindow = nullptr;
+		s_rebornOmegaCheckingWindow =
+			nullptr;
 	}
 
 	if (state == REBORN_UPDATE_CONNECTION_FAILED)
 	{
 		FinishRebornOmegaUpdateCheck();
+
+		DestroyRebornOmegaOldCheckingWindow();
 
 		if (!automaticCheck)
 		{

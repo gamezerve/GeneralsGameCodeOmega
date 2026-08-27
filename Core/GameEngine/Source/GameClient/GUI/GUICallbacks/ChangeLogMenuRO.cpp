@@ -64,6 +64,7 @@ static GameWindow* s_changeLogMenuROIncreaseFontSizeButton = nullptr;
 static GameWindow* s_changeLogMenuROInstallButton = nullptr;
 static GameWindow* s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
 static GameWindow* s_changeLogMenuROInstallConfirmation = nullptr;
+static GameWindow* s_changeLogMenuROVersionInfo = nullptr;
 
 static const Int s_changeLogMenuROMinimumFontSize = 10;
 static const Int s_changeLogMenuROMaximumFontSize = 20;
@@ -423,6 +424,60 @@ static void SetChangeLogMenuROStatus(
 		-1);
 }
 
+static void UpdateChangeLogMenuROVersionInfo()
+{
+	if (!s_changeLogMenuROVersionInfo)
+		return;
+
+	UnicodeString currentVersion =
+		REBORN_OMEGA_VERSION_TEXT;
+
+	UnicodeString latestVersion;
+	latestVersion = L"-";
+
+	const RebornOmegaVersionInfo* latest =
+		nullptr;
+
+	for (
+		size_t index = 0;
+		index <
+		s_changeLogMenuROVersions.size();
+		++index)
+	{
+		const RebornOmegaVersionInfo& version =
+			s_changeLogMenuROVersions[index];
+
+		if (
+			!latest ||
+			version.buildRank >
+			latest->buildRank)
+		{
+			latest = &version;
+		}
+	}
+
+	if (latest)
+	{
+		latestVersion.translate(
+			latest->displayName.c_str());
+	}
+
+	UnicodeString text;
+
+	text.format(
+		L"%ls %ls\n%ls %ls",
+		TheGameText->fetch(
+			"GUI:CurrentVersion").str(),
+		currentVersion.str(),
+		TheGameText->fetch(
+			"GUI:LatestAvailableVersion").str(),
+		latestVersion.str());
+
+	GadgetStaticTextSetText(
+		s_changeLogMenuROVersionInfo,
+		text);
+}
+
 static void UpdateChangeLogMenuRONavigation()
 {
 	Bool downloading =
@@ -610,6 +665,7 @@ static void CloseChangeLogMenuRO()
 	s_changeLogMenuROListBox = nullptr;
 	s_changeLogMenuROParent = nullptr;
 	s_changeLogMenuROVersionLabel = nullptr;
+	s_changeLogMenuROVersionInfo = nullptr;
 	s_changeLogMenuROPreviousButton = nullptr;
 	s_changeLogMenuRONextButton = nullptr;
 	s_changeLogMenuROInstallButton = nullptr;
@@ -757,6 +813,13 @@ void ChangeLogMenuROInit(
 				"ChangeLogMenuRO.wnd:"
 				"InstallConfirmation"));
 
+	s_changeLogMenuROVersionInfo =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"StaticTextVersionInfo"));
+
 	if (s_changeLogMenuROInstallConfirmation)
 	{
 		s_changeLogMenuROInstallConfirmation->
@@ -808,6 +871,8 @@ void ChangeLogMenuROInit(
 		UpdateChangeLogMenuRONavigation();
 		return;
 	}
+
+	UpdateChangeLogMenuROVersionInfo();
 
 	s_changeLogMenuROSelectedVersion =
 		static_cast<Int>(
@@ -889,6 +954,7 @@ void ChangeLogMenuROUpdate(
 			s_changeLogMenuROParent = nullptr;
 			s_changeLogMenuROListBox = nullptr;
 			s_changeLogMenuROVersionLabel = nullptr;
+			s_changeLogMenuROVersionInfo = nullptr;
 			s_changeLogMenuROPreviousButton = nullptr;
 			s_changeLogMenuRONextButton = nullptr;
 			s_changeLogMenuROInstallButton = nullptr;
@@ -1057,6 +1123,7 @@ void ChangeLogMenuROShutdown(
 	s_changeLogMenuROInstallButton = nullptr;
 	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
 	s_changeLogMenuROInstallConfirmation = nullptr;
+	s_changeLogMenuROVersionInfo = nullptr;
 	s_changeLogMenuROPendingInstallUrl.clear();
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;

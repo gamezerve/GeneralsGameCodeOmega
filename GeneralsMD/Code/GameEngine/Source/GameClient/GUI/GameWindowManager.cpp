@@ -1426,8 +1426,44 @@ Int GameWindowManager::winDestroy( GameWindow *window )
 	if( m_keyboardFocus == window )
 		winSetFocus( nullptr );
 
-	if( (m_modalHead != nullptr) && (window == m_modalHead->window) )
-		winUnsetModal( m_modalHead->window );
+	//if( (m_modalHead != nullptr) && (window == m_modalHead->window) )
+	//	winUnsetModal( m_modalHead->window );
+	ModalWindow* previousModal =
+		nullptr;
+
+	ModalWindow* modal =
+		m_modalHead;
+
+	while (modal)
+	{
+		ModalWindow* nextModal =
+			modal->next;
+
+		if (modal->window == window)
+		{
+			if (previousModal)
+			{
+				previousModal->next =
+					nextModal;
+			}
+			else
+			{
+				m_modalHead =
+					nextModal;
+			}
+
+			deleteInstance(
+				modal);
+		}
+		else
+		{
+			previousModal =
+				modal;
+		}
+
+		modal =
+			nextModal;
+	}
 
 	if( m_currMouseRgn == window )
 		m_currMouseRgn = nullptr;

@@ -1,4 +1,12 @@
 
+GUI:CurrentVersion
+"Current Version:"
+END
+
+GUI:LatestAvailableVersion
+"Latest Available Version:"
+END
+
 GUI:ConfirmInstallUpdate
 "Would you like to download and install the selected update?"
 END
