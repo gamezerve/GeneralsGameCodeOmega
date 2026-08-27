@@ -571,6 +571,9 @@ void DownloadMenuROShutdown(
 	s_downloadMenuROParent = nullptr;
 	s_downloadMenuROCloseRequested = FALSE;
 
+	TheWindowManager->winSetModal(nullptr);
+	TheWindowManager->winSetFocus(nullptr);
+
 	GameWindow* mainMenuWindow =
 		TheWindowManager->winGetWindowFromId(
 			nullptr,
@@ -582,14 +585,9 @@ void DownloadMenuROShutdown(
 	{
 		mainMenuWindow->winHide(FALSE);
 		mainMenuWindow->winEnable(TRUE);
-		mainMenuWindow->winBringToTop();
 	}
 
-	TheWindowManager->winSetFocus(
-		nullptr);
-
-	TheShell->shutdownComplete(
-		layout);
+	TheShell->shutdownComplete(layout);
 }
 
 WindowMsgHandledType DownloadMenuROSystem(

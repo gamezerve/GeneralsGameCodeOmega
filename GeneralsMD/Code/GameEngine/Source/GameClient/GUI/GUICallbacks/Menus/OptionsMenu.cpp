@@ -1868,19 +1868,57 @@ static void RebornOmegaUpdateAccepted()
 	}
 }
 
-Bool RebornOmegaUpdateAcceptedFromChangeLog(const std::string& downloadStartUrl)
+Bool RebornOmegaUpdateAcceptedFromChangeLog(
+	const std::string& downloadStartUrl)
 {
-	s_pendingRebornOmegaUpdateUrl =
-		downloadStartUrl;
+	std::string mirrorUrl;
 
-	RebornOmegaUpdateAccepted();
+	if (!ResolveRebornOmegaMirrorUrl(
+		downloadStartUrl,
+		mirrorUrl))
+	{
+		MessageBoxOk(
+			TheGameText->fetch(
+				"GUI:CheckForUpdates"),
+			TheGameText->fetch(
+				"GUI:RebornOmegaDownloadLinkFailed"),
+			nullptr);
 
-	RebornOmegaDownloadState state =
-		GetRebornOmegaDownloadState();
+		return FALSE;
+	}
 
-	return
-		state == REBORN_DOWNLOAD_STARTING ||
-		state == REBORN_DOWNLOAD_DOWNLOADING;
+	if (!StartRebornOmegaInstallerDownload(
+		mirrorUrl))
+	{
+		MessageBoxOk(
+			TheGameText->fetch(
+				"GUI:CheckForUpdates"),
+			TheGameText->fetch(
+				"GUI:RebornOmegaDownloadLinkFailed"),
+			nullptr);
+
+		return FALSE;
+	}
+
+	GameWindow* optionsMenuWindow =
+		TheWindowManager->winGetWindowFromId(
+			nullptr,
+			NAMEKEY("OptionsMenu.wnd:"));
+
+	if (optionsMenuWindow)
+	{
+		s_rebornOmegaDownloadTransitionPending =
+			TRUE;
+
+		TheTransitionHandler->setGroup(
+			"RebornOmegaMenusFade",
+			TRUE);
+
+		TheTransitionHandler->reverse(
+			"RebornOmegaMenusFade");
+	}
+
+	return TRUE;
 }
 
 static void RebornOmegaUpdateResultClosed()

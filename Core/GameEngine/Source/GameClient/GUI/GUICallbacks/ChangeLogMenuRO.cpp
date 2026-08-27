@@ -63,6 +63,7 @@ static GameWindow* s_changeLogMenuRODecreaseFontSizeButton = nullptr;
 static GameWindow* s_changeLogMenuROIncreaseFontSizeButton = nullptr;
 static GameWindow* s_changeLogMenuROInstallButton = nullptr;
 static GameWindow* s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
+static GameWindow* s_changeLogMenuROInstallConfirmation = nullptr;
 
 static const Int s_changeLogMenuROMinimumFontSize = 10;
 static const Int s_changeLogMenuROMaximumFontSize = 20;
@@ -749,6 +750,22 @@ void ChangeLogMenuROInit(
 				"ChangeLogMenuRO.wnd:"
 				"ButtonInstall"));
 
+	s_changeLogMenuROInstallConfirmation =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"InstallConfirmation"));
+
+	if (s_changeLogMenuROInstallConfirmation)
+	{
+		s_changeLogMenuROInstallConfirmation->
+			winHide(TRUE);
+
+		s_changeLogMenuROInstallConfirmation->
+			winEnable(FALSE);
+	}
+
 	if (s_changeLogMenuROListBox)
 	{
 		GadgetListBoxSetPreserveItemFonts(
@@ -848,6 +865,19 @@ void ChangeLogMenuROUpdate(
 			}
 		}
 
+		GameWindow* mainMenuWindow =
+			TheWindowManager->winGetWindowFromId(
+				nullptr,
+				NAMEKEY(
+					"MainMenu.wnd:"
+					"MainMenuParent"));
+
+		if (mainMenuWindow)
+		{
+			mainMenuWindow->winHide(TRUE);
+			mainMenuWindow->winEnable(FALSE);
+		}
+
 		if (s_changeLogMenuROOptionsOverlay)
 		{
 			GameWindow* changeLogWindow =
@@ -874,6 +904,12 @@ void ChangeLogMenuROUpdate(
 
 			DiscardChangeLogMessageBox();
 
+			TheWindowManager->winSetModal(
+				nullptr);
+
+			TheWindowManager->winSetFocus(
+				nullptr);
+
 			if (changeLogWindow)
 			{
 				TheWindowManager->winDestroy(
@@ -896,8 +932,33 @@ void ChangeLogMenuROUpdate(
 			return;
 		}
 
+		TheWindowManager->winSetModal(
+			nullptr);
+
+		TheWindowManager->winSetFocus(
+			nullptr);
+
+		mainMenuWindow =
+			TheWindowManager->winGetWindowFromId(
+				nullptr,
+				NAMEKEY(
+					"MainMenu.wnd:"
+					"MainMenuParent"));
+
+		if (mainMenuWindow)
+		{
+			mainMenuWindow->winHide(TRUE);
+			mainMenuWindow->winEnable(FALSE);
+		}
+
+		TheShell->popImmediate(
+			TRUE);
+
+		TheShell->push(
+			"Menus/DownloadMenuRO.wnd");
+
 		return;
-	}
+  }
 
 	if (s_changeLogMenuROCloseRequested)
 	{
@@ -995,6 +1056,8 @@ void ChangeLogMenuROShutdown(
 	s_changeLogMenuROIncreaseFontSizeButton =	nullptr;
 	s_changeLogMenuROInstallButton = nullptr;
 	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
+	s_changeLogMenuROInstallConfirmation = nullptr;
+	s_changeLogMenuROPendingInstallUrl.clear();
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;
 	s_changeLogMenuRODownloadingVersion = -1;
@@ -1249,84 +1312,83 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 				s_changeLogMenuROPendingInstallUrl =
 					version.downloadStartUrl;
 
-				if (s_changeLogMenuROOptionsOverlay)
+				if (s_changeLogMenuROInstallConfirmation)
 				{
+					s_changeLogMenuROInstallConfirmation->
+						winHide(FALSE);
+
+					s_changeLogMenuROInstallConfirmation->
+						winEnable(TRUE);
+
+					s_changeLogMenuROInstallConfirmation->
+						winBringToTop();
+
 					TheWindowManager->winSetModal(
-						nullptr);
-
-					TheWindowManager->winSetFocus(
-						nullptr);
-				}
-
-				GameWindow* confirmationMessageBox =
-					MessageBoxYesNo(
-						TheGameText->fetch(
-							"GUI:InstallUpdate"),
-						TheGameText->fetch(
-							"GUI:ConfirmInstallUpdate"),
-						ConfirmChangeLogMenuROInstall,
-						DeclineChangeLogMenuROInstall);
-
-				GameWindow* confirmationRoot =
-					confirmationMessageBox;
-
-				while (
-					confirmationRoot &&
-					confirmationRoot->winGetParent())
-				{
-					confirmationRoot =
-						confirmationRoot->winGetParent();
-				}
-
-				GameWindow* changeLogRoot =
-					s_changeLogMenuROParent;
-
-				while (
-					changeLogRoot &&
-					changeLogRoot->winGetParent())
-				{
-					changeLogRoot =
-						changeLogRoot->winGetParent();
-				}
-
-				DEBUG_LOG((
-					"Install confirmation hierarchy: "
-					"confirmation=%p confirmationParent=%p "
-					"confirmationRoot=%p "
-					"changeLog=%p changeLogParent=%p "
-					"changeLogRoot=%p\n",
-					confirmationMessageBox,
-					confirmationMessageBox
-					? confirmationMessageBox->winGetParent()
-					: nullptr,
-					confirmationRoot,
-					s_changeLogMenuROParent,
-					s_changeLogMenuROParent
-					? s_changeLogMenuROParent->winGetParent()
-					: nullptr,
-					changeLogRoot));
-
-				Int bringResult =
-					confirmationRoot
-					? confirmationRoot->winBringToTop()
-					: WIN_ERR_INVALID_PARAMETER;
-
-				DEBUG_LOG((
-					"Install confirmation bring result=%d\n",
-					bringResult));
-
-				if (confirmationRoot)
-				{
-					TheWindowManager->winSetModal(
-						confirmationRoot);
-
-					TheWindowManager->winSetFocus(
-						nullptr);
-
-					confirmationRoot->winBringToTop();
+						s_changeLogMenuROInstallConfirmation);
 				}
 			}
 		}
+
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonConfirmInstallYes"))
+	{
+		if (s_changeLogMenuROInstallConfirmation)
+		{
+			s_changeLogMenuROInstallConfirmation->
+				winHide(TRUE);
+
+			s_changeLogMenuROInstallConfirmation->
+				winEnable(FALSE);
+		}
+
+		TheWindowManager->winSetModal(
+			nullptr);
+
+		TheWindowManager->winSetFocus(
+			nullptr);
+
+		if (
+			!s_changeLogMenuROPendingInstallUrl.empty() &&
+			RebornOmegaUpdateAcceptedFromChangeLog(
+				s_changeLogMenuROPendingInstallUrl))
+		{
+			s_changeLogMenuRODownloadRequested =
+				TRUE;
+		}
+
+		s_changeLogMenuROPendingInstallUrl.clear();
+
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonConfirmInstallNo"))
+	{
+		s_changeLogMenuROPendingInstallUrl.clear();
+
+		if (s_changeLogMenuROInstallConfirmation)
+		{
+			s_changeLogMenuROInstallConfirmation->
+				winHide(TRUE);
+
+			s_changeLogMenuROInstallConfirmation->
+				winEnable(FALSE);
+		}
+
+		TheWindowManager->winSetModal(
+			s_changeLogMenuROParent);
+
+		s_changeLogMenuROParent->
+			winBringToTop();
 
 		return MSG_HANDLED;
 	}
