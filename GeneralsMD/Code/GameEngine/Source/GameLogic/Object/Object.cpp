@@ -6523,6 +6523,10 @@ Real Object::getCarrierDeckHeight() const
 			ParkingPlaceBehaviorInterface* pp = (*i)->getParkingPlaceBehaviorInterface();
 			if( pp )
 			{
+				if (pp->useDynamicDeckHeight())
+					return producer->getPosition()->z + pp->getLandingDeckHeightOffset()
+					- TheTerrainLogic->getLayerHeight(getPosition()->x, getPosition()->y, getLayer());
+
 				return pp->getLandingDeckHeightOffset();
 			}
 		}

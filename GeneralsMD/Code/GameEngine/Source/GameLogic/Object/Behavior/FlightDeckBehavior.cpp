@@ -292,6 +292,151 @@ void FlightDeckBehavior::buildInfo(Bool createUnits)
 	m_gotInfo = true;
 }
 
+void FlightDeckBehavior::refreshMovingCarrierGeometry()
+{
+	if (!m_gotInfo)
+		return;
+
+	const FlightDeckBehaviorModuleData* data = getFlightDeckBehaviorModuleData();
+
+	Int index = 0;
+
+	for (Int row = 0; row < data->m_numRows; ++row)
+	{
+		for (Int col = 0; col < data->m_numCols; ++col)
+		{
+			if (index >= static_cast<Int>(m_spaces.size()))
+				return;
+
+			const std::vector<AsciiString>& spaces =
+				data->m_runwayInfo[col].m_spacesBoneNames;
+
+			if (row >= static_cast<Int>(spaces.size()))
+				return;
+
+			Matrix3D mtx;
+
+			getObject()->getSingleLogicalBonePosition(
+				spaces[row].str(),
+				&m_spaces[index].m_prep,
+				&mtx);
+
+			m_spaces[index].m_orientation = mtx.Get_Z_Rotation();
+
+			++index;
+		}
+	}
+
+	for (Int col = 0; col < data->m_numCols; ++col)
+	{
+		if (col >= static_cast<Int>(m_runways.size()))
+			return;
+
+		RunwayInfo& info = m_runways[col];
+
+		getObject()->getSingleLogicalBonePosition(
+			data->m_runwayInfo[col].m_takeoffBoneNames[RUNWAY_START_BONE].str(),
+			&info.m_start,
+			nullptr);
+
+		getObject()->getSingleLogicalBonePosition(
+			data->m_runwayInfo[col].m_takeoffBoneNames[RUNWAY_END_BONE].str(),
+			&info.m_end,
+			nullptr);
+
+		getObject()->getSingleLogicalBonePosition(
+			data->m_runwayInfo[col].m_landingBoneNames[RUNWAY_START_BONE].str(),
+			&info.m_landingStart,
+			nullptr);
+
+		getObject()->getSingleLogicalBonePosition(
+			data->m_runwayInfo[col].m_landingBoneNames[RUNWAY_END_BONE].str(),
+			&info.m_landingEnd,
+			nullptr);
+
+		info.m_taxi.clear();
+
+		const std::vector<AsciiString>& taxiLocations =
+			data->m_runwayInfo[col].m_taxiBoneNames;
+
+		for (std::vector<AsciiString>::const_iterator it = taxiLocations.begin();
+			it != taxiLocations.end();
+			++it)
+		{
+			Coord3D pos;
+
+			getObject()->getSingleLogicalBonePosition(
+				it->str(),
+				&pos,
+				nullptr);
+
+			info.m_taxi.push_back(pos);
+		}
+
+		info.m_creation.clear();
+
+		const std::vector<AsciiString>& creationLocations =
+			data->m_runwayInfo[col].m_creationBoneNames;
+
+		Bool firstTime = TRUE;
+
+		for (std::vector<AsciiString>::const_iterator it = creationLocations.begin();
+			it != creationLocations.end();
+			++it)
+		{
+			Coord3D pos;
+			Matrix3D mtx;
+
+			getObject()->getSingleLogicalBonePosition(
+				it->str(),
+				&pos,
+				&mtx);
+
+			if (firstTime)
+			{
+				firstTime = FALSE;
+				info.m_startOrient = mtx.Get_Z_Rotation();
+				info.m_startTransform = mtx;
+			}
+
+			info.m_creation.push_back(pos);
+		}
+	}
+}
+
+void FlightDeckBehavior::updateMovingCarrierParkedJets()
+{
+	for (std::vector<FlightDeckInfo>::iterator it = m_spaces.begin();
+		it != m_spaces.end();
+		++it)
+	{
+		if (it->m_objectInSpace == INVALID_ID)
+			continue;
+
+		Object* jet = TheGameLogic->findObjectByID(it->m_objectInSpace);
+
+		if (!jet)
+			continue;
+
+		if (jet->isAirborneTarget())
+			continue;
+
+		JetAIUpdate* ai = static_cast<JetAIUpdate*>(jet->getAI());
+
+		if (!ai)
+			continue;
+
+		if (!ai->isIdle())
+			continue;
+
+		Coord3D pos = it->m_prep;
+		pos.z = jet->getPosition()->z;
+
+		jet->setPosition(&pos);
+		jet->setOrientation(it->m_orientation);
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 void FlightDeckBehavior::purgeDead()
 {
@@ -1105,6 +1250,8 @@ UpdateSleepTime FlightDeckBehavior::update()
 
 	if (data->m_movingCarrier)
 	{
+		refreshMovingCarrierGeometry();
+		updateMovingCarrierParkedJets();
 		AIUpdateInterface::update();
 	}
 

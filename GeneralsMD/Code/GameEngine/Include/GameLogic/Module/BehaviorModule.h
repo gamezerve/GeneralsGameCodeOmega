@@ -249,6 +249,7 @@ public:
 	virtual void transferRunwayReservationToNextInLineForTakeoff(ObjectID id) = 0;
 	virtual Real getApproachHeight() const = 0;
 	virtual Real getLandingDeckHeightOffset() const = 0;
+	virtual Bool useDynamicDeckHeight() const { return FALSE; }
 	virtual void setHealee(Object* healee, Bool add) = 0;
 	virtual void killAllParkedUnits() = 0;
 	virtual void defectAllParkedUnits(Team* newTeam, UnsignedInt detectionTime) = 0;

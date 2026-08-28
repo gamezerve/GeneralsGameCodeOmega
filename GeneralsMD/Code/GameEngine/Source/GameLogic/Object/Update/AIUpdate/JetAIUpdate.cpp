@@ -2111,6 +2111,9 @@ UpdateSleepTime JetAIUpdate::update()
 	if( pp )
 	{
 		minHeight += pp->getLandingDeckHeightOffset();
+
+		if (pp->useDynamicDeckHeight())
+			minHeight += getObject()->getCarrierDeckHeight() - pp->getLandingDeckHeightOffset();
 	}
 
 	Drawable* draw = jet->getDrawable();

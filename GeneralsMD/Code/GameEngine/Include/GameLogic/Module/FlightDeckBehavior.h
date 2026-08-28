@@ -143,6 +143,7 @@ public:
 	virtual void transferRunwayReservationToNextInLineForTakeoff(ObjectID id) override;
 	virtual Real getApproachHeight() const override { return getFlightDeckBehaviorModuleData()->m_approachHeight; }
 	virtual Real getLandingDeckHeightOffset() const override { return getFlightDeckBehaviorModuleData()->m_landingDeckHeightOffset; }
+	virtual Bool useDynamicDeckHeight() const override { return getFlightDeckBehaviorModuleData()->m_movingCarrier; }
 	virtual void setHealee(Object* healee, Bool add) override;
 	virtual void killAllParkedUnits() override;
 	virtual void defectAllParkedUnits(Team* newTeam, UnsignedInt detectionTime) override;
@@ -201,6 +202,8 @@ private:
 	};
 
 	void buildInfo( Bool createUnits = TRUE);
+	void refreshMovingCarrierGeometry();
+	void updateMovingCarrierParkedJets();
 	void purgeDead();
 	void resetWakeFrame();
 	FlightDeckInfo* findPPI(ObjectID id);
