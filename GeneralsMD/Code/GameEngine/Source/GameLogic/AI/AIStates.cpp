@@ -1624,6 +1624,10 @@ StateReturnType AIInternalMoveToState::onEnter()
 		return STATE_FAILURE;
 	}
 
+	DEBUG_LOG(("AIInternalMoveToState::onEnter object=%s locomotor=%p\n",
+		obj->getTemplate()->getName().str(),
+		ai->getCurLocomotor()));
+
 	if (ai->getCurLocomotor()) {
 		ai->getCurLocomotor()->startMove();
 		if (ai->getCurLocomotor()->isUltraAccurate())
@@ -1668,7 +1672,15 @@ StateReturnType AIInternalMoveToState::onEnter()
 	}
 
 	// request a path to the destination
-	if (!computePath())
+	Bool pathResult = computePath();
+
+	DEBUG_LOG(("AIInternalMoveToState computePath object=%s result=%d path=%p waiting=%d\n",
+		obj->getTemplate()->getName().str(),
+		pathResult,
+		ai->getPath(),
+		ai->isWaitingForPath()));
+
+	if (!pathResult)
 	{
 		ai->friend_endingMove();
 		return STATE_FAILURE;
@@ -1785,6 +1797,11 @@ StateReturnType AIInternalMoveToState::update()
 	Path *thePath = ai->getPath();
 	if (m_waitingForPath)
 	{
+		DEBUG_LOG(("MovingCarrier path wait object=%s waiting=%d path=%p\n",
+			obj->getTemplate()->getName().str(),
+			ai->isWaitingForPath(),
+			thePath));
+
 		// bump the timer.
 		m_pathTimestamp = TheGameLogic->getFrame();
 		if (ai->isWaitingForPath()) {
@@ -1798,8 +1815,14 @@ StateReturnType AIInternalMoveToState::update()
 			{
 				blah = blah;
 			}
+			DEBUG_LOG(("MovingCarrier path FAILED after wait object=%s\n",
+				obj->getTemplate()->getName().str()));
 			return STATE_FAILURE;
 		}
+
+		DEBUG_LOG(("MovingCarrier path READY object=%s path=%p\n",
+			obj->getTemplate()->getName().str(),
+			thePath));
 		m_waitingForPath = false;
 		m_pathGoalPosition = m_goalPosition;
 		if (this->getAdjustsDestination()) {

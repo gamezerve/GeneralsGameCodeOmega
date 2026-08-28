@@ -1400,15 +1400,20 @@ void ThingTemplate::validate()
 		return;
 
 	Bool isImmobile = isKindOf(KINDOF_IMMOBILE);
+	Bool isMobileStructure = isKindOf(KINDOF_MOBILE_STRUCTURE);
 
 	if (isKindOf(KINDOF_SHRUBBERY) && !isImmobile)
 	{
 		DEBUG_CRASH(("SHRUBBERY %s must be marked IMMOBILE!",getName().str()));
 	}
 
-	if (isKindOf(KINDOF_STRUCTURE) && !isImmobile)
+	//if (isKindOf(KINDOF_STRUCTURE) && !isImmobile)
+	//{
+	//	DEBUG_CRASH(("Structure %s is not marked immobile, but probably should be -- please fix it. (If we ever add mobile structures, this debug sniffer will need to be revised.)",getName().str()));
+	//}
+	if (isKindOf(KINDOF_STRUCTURE) && !isImmobile && !isMobileStructure)
 	{
-		DEBUG_CRASH(("Structure %s is not marked immobile, but probably should be -- please fix it. (If we ever add mobile structures, this debug sniffer will need to be revised.)",getName().str()));
+		DEBUG_CRASH(("Structure %s is not marked immobile, but probably should be -- please fix it. (If we ever add mobile structures, this debug sniffer will need to be revised.)", getName().str()));
 	}
 
 	if (isKindOf(KINDOF_STICK_TO_TERRAIN_SLOPE) && !isImmobile)

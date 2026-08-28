@@ -50,6 +50,7 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_CAN_CAST_REFLECTIONS,		///< can cast reflections in water
 	KINDOF_SHRUBBERY,								///< tree, bush, etc.
 	KINDOF_STRUCTURE,								///< structure of some sort (buildable or not)
+	KINDOF_MOBILE_STRUCTURE,				///< structure that is allowed to move
 	KINDOF_INFANTRY,								///< unit like soldier etc
 	KINDOF_VEHICLE,									///< unit like tank, jeep, plane, helicopter, etc.
 	KINDOF_AIRCRAFT,								///< unit like plane, helicopter, etc., that is predominantly a flyer. (hovercraft are NOT aircraft)

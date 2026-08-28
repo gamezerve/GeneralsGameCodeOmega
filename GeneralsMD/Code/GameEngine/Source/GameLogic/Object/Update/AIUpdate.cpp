@@ -2930,8 +2930,19 @@ void AIUpdateInterface::aiDoCommand(const AICommandParms* parms)
  */
 void AIUpdateInterface::privateMoveToPosition( const Coord3D *pos, CommandSourceType cmdSource )
 {
+
+	DEBUG_LOG(("privateMoveToPosition object=%s mobile=%d pos=(%.2f, %.2f, %.2f) cmdSource=%d\n",
+		getObject()->getTemplate()->getName().str(),
+		getObject()->isMobile(),
+		pos->x,
+		pos->y,
+		pos->z,
+		cmdSource));
+
 	if (getObject()->isMobile() == FALSE)
 		return;
+
+	DEBUG_LOG(("privateMoveToPosition passed mobile check\n"));
 
 	//Resetting the locomotor here was initially added for scripting purposes. It has been moved
 	//to the responsibility of the script to reset the locomotor before moving. This is needed because

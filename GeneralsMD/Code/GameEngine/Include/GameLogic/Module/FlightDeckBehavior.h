@@ -71,6 +71,7 @@ public:
 	Real					m_landingDeckHeightOffset;
 	Int						m_numRows;
 	Int						m_numCols;
+	Int						m_movingCarrier;
 	UnsignedInt		m_cleanupFrames;
 	UnsignedInt		m_humanFollowFrames;
 	UnsignedInt		m_replacementFrames;

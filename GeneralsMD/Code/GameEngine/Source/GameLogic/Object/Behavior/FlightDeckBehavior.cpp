@@ -59,6 +59,7 @@ FlightDeckBehaviorModuleData::FlightDeckBehaviorModuleData()
 	m_healAmount = 0;
 	m_numRows = 0;
 	m_numCols = 0;
+	m_movingCarrier = false;
 	m_approachHeight = 0.0f;
 	m_landingDeckHeightOffset = 0.0f;
 	m_dockAnimationFrames = 0;
@@ -118,6 +119,7 @@ void FlightDeckBehaviorModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "LaunchRampDelay",				INI::parseDurationUnsignedInt,		nullptr, offsetof( FlightDeckBehaviorModuleData, m_launchRampFrames ) },
 		{ "LowerRampDelay",					INI::parseDurationUnsignedInt,		nullptr, offsetof( FlightDeckBehaviorModuleData, m_lowerRampFrames ) },
 		{ "CatapultFireDelay",			INI::parseDurationUnsignedInt,		nullptr, offsetof( FlightDeckBehaviorModuleData, m_catapultFireFrames ) },
+		{ "MovingCarrier",					INI::parseBool,										nullptr, offsetof( FlightDeckBehaviorModuleData, m_movingCarrier) },
 
 		{ nullptr, nullptr, nullptr, 0 }
 	};
@@ -1100,6 +1102,12 @@ UpdateSleepTime FlightDeckBehavior::update()
 	purgeDead();
 
 	const FlightDeckBehaviorModuleData* data = getFlightDeckBehaviorModuleData();
+
+	if (data->m_movingCarrier)
+	{
+		AIUpdateInterface::update();
+	}
+
 	UnsignedInt now = TheGameLogic->getFrame();
 	if( now >= m_nextHealFrame )
 	{
@@ -1392,6 +1400,16 @@ void FlightDeckBehavior::unreserveDoorForExit( ExitDoorType exitDoor )
 //-------------------------------------------------------------------------------------------------
 void FlightDeckBehavior::aiDoCommand(const AICommandParms* parms)
 {
+
+	const FlightDeckBehaviorModuleData* moduleData =
+		static_cast<const FlightDeckBehaviorModuleData*>(getModuleData());
+
+	DEBUG_LOG(("FlightDeckBehavior::aiDoCommand object=%s cmd=%d source=%d movingCarrier=%d\n",
+		getObject()->getTemplate()->getName().str(),
+		parms->m_cmd,
+		parms->m_cmdSource,
+		getFlightDeckBehaviorModuleData()->m_movingCarrier));
+
 	//Inspect the command and reset everything when necessary.
 	if( parms->m_cmdSource != CMD_FROM_AI )
 	{
@@ -1428,6 +1446,16 @@ void FlightDeckBehavior::aiDoCommand(const AICommandParms* parms)
 				m_designatedPosition.zero();
 				m_designatedCommand = parms->m_cmd;
 				propagateOrdersToPlanes();
+				if (moduleData->m_movingCarrier)
+					AIUpdateInterface::aiDoCommand(parms);
+				break;
+			case AICMD_MOVE_TO_POSITION:
+			case AICMD_MOVE_TO_POSITION_EVEN_IF_SLEEPING:
+				if (moduleData->m_movingCarrier)
+				{
+					DEBUG_LOG(("MovingCarrier forwarding MOVE to AIUpdateInterface\n"));
+					AIUpdateInterface::aiDoCommand(parms);
+				}
 				break;
 			default:
 				m_designatedCommand = AICMD_NO_COMMAND;
