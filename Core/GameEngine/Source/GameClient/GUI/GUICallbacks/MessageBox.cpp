@@ -213,6 +213,67 @@ GameWindow* MessageBoxYesNoChangeLog(UnicodeString titleString,	UnicodeString bo
 	return messageBox;
 }
 
+GameWindow* MessageBoxOkChangeLog(
+	UnicodeString titleString,
+	UnicodeString bodyString,
+	GameWinMsgBoxFunc okCallback,
+	GameWinMsgBoxFunc changeLogCallback)
+{
+	GameWindow* messageBox =
+		TheWindowManager->gogoMessageBox(
+			-1,
+			-1,
+			-1,
+			-1,
+			MSG_BOX_OK | MSG_BOX_CANCEL,
+			titleString,
+			bodyString,
+			nullptr,
+			nullptr,
+			okCallback,
+			changeLogCallback);
+
+	if (!messageBox)
+		return nullptr;
+
+	s_changeLogMessageBox =
+		messageBox;
+
+	const char* buttonName =
+		s_popupMessageUsesRebornLayout
+		? "MessageBoxGen.wnd:ButtonCancel"
+		: "MessageBox.wnd:ButtonCancel";
+
+	GameWindow* changeLogButton =
+		TheWindowManager->winGetWindowFromId(
+			messageBox,
+			TheNameKeyGenerator->nameToKey(
+				buttonName));
+
+	if (changeLogButton)
+	{
+		Int changeLogFontSize =
+			TheDisplay->getHeight() * 21 /
+			1080;
+
+		if (changeLogFontSize < 11)
+			changeLogFontSize = 11;
+
+		changeLogButton->winSetFont(
+			TheFontLibrary->getFont(
+				"Generals",
+				changeLogFontSize,
+				FALSE));
+
+		GadgetButtonSetText(
+			changeLogButton,
+			TheGameText->fetch(
+				"GUI:ChangeLog"));
+	}
+
+	return messageBox;
+}
+
 void SetChangeLogMessageBoxFromOptions(
 	Bool fromOptions)
 {

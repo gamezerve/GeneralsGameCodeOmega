@@ -2072,11 +2072,12 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 			REBORN_OMEGA_VERSION_TEXT,
 			latestVersionText.str());
 
-		MessageBoxOk(
+		MessageBoxOkChangeLog(
 			TheGameText->fetch(
 				"GUI:CheckForUpdates"),
 			message,
-			nullptr);
+			nullptr,
+			RebornOmegaShowChangeLog);
 
 		return;
 	}
@@ -2440,8 +2441,8 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
 					break;
 
-				//if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
-				if (!StartRebornOmegaUpdateCheck(10399))
+				if (!StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+				//if (!StartRebornOmegaUpdateCheck(10399))
 				{
 					MessageBoxOk(
 						TheGameText->fetch("GUI:CheckForUpdates"),

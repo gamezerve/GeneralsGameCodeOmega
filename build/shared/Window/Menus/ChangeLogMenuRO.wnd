@@ -346,7 +346,7 @@ WINDOW
                  BOTTOMRIGHT: 151 546,
                  CREATIONRESOLUTION: 800 600;
     NAME = "ChangeLogMenuRO.wnd:ButtonInstall";
-    STATUS = ENABLED+IMAGE+NOFOCUS;
+    STATUS = IMAGE+NOFOCUS;
     STYLE = PUSHBUTTON+MOUSETRACK;
     SYSTEMCALLBACK = "[None]";
     INPUTCALLBACK = "[None]";
@@ -395,7 +395,7 @@ WINDOW
                  BOTTOMRIGHT: 243 546,
                  CREATIONRESOLUTION: 800 600;
     NAME = "ChangeLogMenuRO.wnd:ButtonVisit";
-    STATUS = ENABLED+IMAGE+NOFOCUS;
+    STATUS = IMAGE+NOFOCUS;
     STYLE = PUSHBUTTON+MOUSETRACK;
     SYSTEMCALLBACK = "[None]";
     INPUTCALLBACK = "[None]";
@@ -838,6 +838,53 @@ WINDOW
   END
   CHILD
   WINDOW
+    WINDOWTYPE = PUSHBUTTON;
+    SCREENRECT = UPPERLEFT: 704 54,
+                 BOTTOMRIGHT: 726 75,
+                 CREATIONRESOLUTION: 800 600;
+    NAME = "ChangeLogMenuRO.wnd:ButtonRefresh";
+    STATUS = ENABLED+IMAGE+NOFOCUS;
+    STYLE = PUSHBUTTON+MOUSETRACK;
+    SYSTEMCALLBACK = "[None]";
+    INPUTCALLBACK = "[None]";
+    TOOLTIPCALLBACK = "[None]";
+    DRAWCALLBACK = "[None]";
+    FONT = NAME: "Generals", SIZE: 15, BOLD: 0;
+    HEADERTEMPLATE = "MainButton";
+    TOOLTIPDELAY = -1;
+        TEXTCOLOR = ENABLED:  254 254 254 255, ENABLEDBORDER:  0 0 0 255,
+                    DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                    HILITE:   128 128 255 255, HILITEBORDER:   0 0 128 255;
+        ENABLEDDRAWDATA = IMAGE: LobbyRefresh, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                          IMAGE: LobbyRefreshMouseDown, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                          IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                           IMAGE: NoImage, COLOR: 192 192 192 255, BORDERCOLOR: 128 128 128 255,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        HILITEDRAWDATA = IMAGE: LobbyRefreshMouseOver, COLOR: 0 255 0 255, BORDERCOLOR: 0 128 0 255,
+                         IMAGE: LobbyRefreshMouseDown, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                         IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+  END
+  CHILD
+  WINDOW
     WINDOWTYPE = STATICTEXT;
     SCREENRECT = UPPERLEFT: 357 522,
                  BOTTOMRIGHT: 443 546,
@@ -932,7 +979,7 @@ WINDOW
                      IMAGE: NoImage, COLOR: 255 255 255 255, BORDERCOLOR: 255 255 255 255,
                      IMAGE: NoImage, COLOR: 255 255 255 255, BORDERCOLOR: 255 255 255 255,
                      IMAGE: NoImage, COLOR: 255 255 255 255, BORDERCOLOR: 255 255 255 255;
-    STATICTEXTDATA = CENTERED: 1;
+    STATICTEXTDATA = CENTERED: 0;
   END
   CHILD
   WINDOW

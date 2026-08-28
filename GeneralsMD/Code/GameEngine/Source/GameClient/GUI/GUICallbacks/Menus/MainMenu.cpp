@@ -712,8 +712,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 		SetRebornOmegaAutomaticUpdateChecksEnabled(
 			automaticChecksEnabled);
 
-		//if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
-		if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(10399))
+		if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(REBORN_OMEGA_BUILD_RANK))
+		//if (automaticChecksEnabled &&	StartRebornOmegaUpdateCheck(10399))
 		{
 			s_rebornOmegaAutomaticCheckPending = TRUE;
 		}

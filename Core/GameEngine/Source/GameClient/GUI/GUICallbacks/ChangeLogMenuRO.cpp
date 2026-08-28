@@ -65,6 +65,8 @@ static GameWindow* s_changeLogMenuROInstallButton = nullptr;
 static GameWindow* s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
 static GameWindow* s_changeLogMenuROInstallConfirmation = nullptr;
 static GameWindow* s_changeLogMenuROVersionInfo = nullptr;
+static GameWindow* s_changeLogMenuROVisitButton = nullptr;
+static GameWindow* s_changeLogMenuRORefreshButton = nullptr;
 
 static const Int s_changeLogMenuROMinimumFontSize = 10;
 static const Int s_changeLogMenuROMaximumFontSize = 20;
@@ -83,6 +85,61 @@ static Int s_changeLogMenuRODownloadingVersion = -1;
 static DWORD s_changeLogMenuROLastLoadingUpdate = 0;
 static Int s_changeLogMenuROLoadingDots = 0;
 
+static void UpdateChangeLogMenuRORefreshButton()
+{
+	if (!s_changeLogMenuRORefreshButton)
+		return;
+
+	Bool enabled = FALSE;
+
+	if (
+		s_changeLogMenuROSelectedVersion >= 0 &&
+		s_changeLogMenuROSelectedVersion <
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size()) &&
+		GetRebornOmegaChangeLogDownloadState() !=
+		REBORN_CHANGELOG_DOWNLOADING)
+	{
+		const RebornOmegaVersionInfo& version =
+			s_changeLogMenuROVersions[
+				s_changeLogMenuROSelectedVersion];
+
+		enabled =
+			version.changeLog.empty() &&
+			!version.pageUrl.empty();
+	}
+
+	s_changeLogMenuRORefreshButton->
+		winEnable(enabled);
+}
+
+static void UpdateChangeLogMenuROVisitButton()
+{
+	if (!s_changeLogMenuROVisitButton)
+		return;
+
+	Bool enabled = FALSE;
+
+	if (
+		s_changeLogMenuROSelectedVersion >= 0 &&
+		s_changeLogMenuROSelectedVersion <
+		static_cast<Int>(
+			s_changeLogMenuROVersions.size()))
+	{
+		const std::string& url =
+			s_changeLogMenuROVersions[
+				s_changeLogMenuROSelectedVersion].
+			pageUrl;
+
+				enabled =
+					url.compare(0, 8, "https://") == 0 ||
+					url.compare(0, 7, "http://") == 0;
+	}
+
+	s_changeLogMenuROVisitButton->
+		winEnable(enabled);
+}
+
 static void UpdateChangeLogMenuROInstallButton()
 {
 	if (!s_changeLogMenuROInstallButton)
@@ -100,22 +157,37 @@ static void UpdateChangeLogMenuROInstallButton()
 			s_changeLogMenuROVersions[
 				s_changeLogMenuROSelectedVersion];
 
-		//enabled =	version.buildRank >	REBORN_OMEGA_BUILD_RANK;
-		enabled =	version.buildRank >	10399;
+		enabled =	version.buildRank >	REBORN_OMEGA_BUILD_RANK && !version.downloadStartUrl.empty();
+		//enabled =	version.buildRank >	10399 && !version.downloadStartUrl.empty();
 	}
 
-	DEBUG_LOG((
-		"ChangeLog INSTALL update: button=%p enabled=%d index=%d rank=%d\n",
-		s_changeLogMenuROInstallButton,
-		enabled,
-		s_changeLogMenuROSelectedVersion,
+	Int selectedRank = -1;
+	Bool hasDownloadUrl = FALSE;
+
+	if (
 		s_changeLogMenuROSelectedVersion >= 0 &&
 		s_changeLogMenuROSelectedVersion <
 		static_cast<Int>(
-			s_changeLogMenuROVersions.size())
-		? s_changeLogMenuROVersions[
-			s_changeLogMenuROSelectedVersion].buildRank
-		: -1));
+			s_changeLogMenuROVersions.size()))
+	{
+		const RebornOmegaVersionInfo& selectedVersion =
+			s_changeLogMenuROVersions[
+				s_changeLogMenuROSelectedVersion];
+
+		selectedRank =
+			selectedVersion.buildRank;
+
+		hasDownloadUrl =
+			!selectedVersion.downloadStartUrl.empty();
+	}
+
+	DEBUG_LOG((
+		"ChangeLog INSTALL update: enabled=%d index=%d selectedRank=%d installedRank=%d hasUrl=%d\n",
+		enabled,
+		s_changeLogMenuROSelectedVersion,
+		selectedRank,
+		REBORN_OMEGA_BUILD_RANK,
+		hasDownloadUrl));
 
 	s_changeLogMenuROInstallButton->
 		winEnable(enabled);
@@ -501,6 +573,8 @@ static void UpdateChangeLogMenuRONavigation()
 				s_changeLogMenuROVersions.size()) - 1);
 	}
 
+	UpdateChangeLogMenuRORefreshButton();
+	UpdateChangeLogMenuROVisitButton();
 	UpdateChangeLogMenuROInstallButton();
 
 }
@@ -669,6 +743,8 @@ static void CloseChangeLogMenuRO()
 	s_changeLogMenuROPreviousButton = nullptr;
 	s_changeLogMenuRONextButton = nullptr;
 	s_changeLogMenuROInstallButton = nullptr;
+	s_changeLogMenuROVisitButton = nullptr;
+	s_changeLogMenuRORefreshButton = nullptr;
 	s_changeLogMenuROVersions.clear();
 	s_changeLogMenuROSelectedVersion = -1;
 	s_changeLogMenuRODownloadingVersion = -1;
@@ -735,12 +811,13 @@ void ShowChangeLogMenuRO()
 		return;
 	}
 
+	changeLogWindow->winHide(FALSE);
+	changeLogWindow->winEnable(TRUE);
+
 	ChangeLogMenuROInit(
 		nullptr,
 		nullptr);
 
-	changeLogWindow->winHide(FALSE);
-	changeLogWindow->winEnable(TRUE);
 	changeLogWindow->winBringToTop();
 
 	TheWindowManager->winSetModal(
@@ -806,6 +883,25 @@ void ChangeLogMenuROInit(
 				"ChangeLogMenuRO.wnd:"
 				"ButtonInstall"));
 
+	if (s_changeLogMenuROInstallButton)
+	{
+		s_changeLogMenuROInstallButton->
+			winEnable(FALSE);
+	}
+
+	s_changeLogMenuROVisitButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"ButtonVisit"));
+
+	if (s_changeLogMenuROVisitButton)
+	{
+		s_changeLogMenuROVisitButton->
+			winEnable(FALSE);
+	}
+
 	s_changeLogMenuROInstallConfirmation =
 		TheWindowManager->winGetWindowFromId(
 			s_changeLogMenuROParent,
@@ -819,6 +915,23 @@ void ChangeLogMenuROInit(
 			NAMEKEY(
 				"ChangeLogMenuRO.wnd:"
 				"StaticTextVersionInfo"));
+
+	if (s_changeLogMenuROVersionInfo)
+	{
+		s_changeLogMenuROVersionInfo->
+			winSetFont(
+				TheFontLibrary->getFont(
+					"Arial",
+					12,
+					FALSE));
+	}
+
+	s_changeLogMenuRORefreshButton =
+		TheWindowManager->winGetWindowFromId(
+			s_changeLogMenuROParent,
+			NAMEKEY(
+				"ChangeLogMenuRO.wnd:"
+				"ButtonRefresh"));
 
 	if (s_changeLogMenuROInstallConfirmation)
 	{
@@ -960,6 +1073,8 @@ void ChangeLogMenuROUpdate(
 			s_changeLogMenuROInstallButton = nullptr;
 			s_changeLogMenuRODecreaseFontSizeButton = nullptr;
 			s_changeLogMenuROIncreaseFontSizeButton = nullptr;
+			s_changeLogMenuROVisitButton = nullptr;
+			s_changeLogMenuRORefreshButton = nullptr;
 
 			s_changeLogMenuROVersions.clear();
 			s_changeLogMenuROLinkUrls.clear();
@@ -1123,6 +1238,8 @@ void ChangeLogMenuROShutdown(
 	s_changeLogMenuROInstallButton = nullptr;
 	s_changeLogMenuROInstallConfirmationMessageBox = nullptr;
 	s_changeLogMenuROInstallConfirmation = nullptr;
+	s_changeLogMenuROVisitButton = nullptr;
+	s_changeLogMenuRORefreshButton = nullptr;
 	s_changeLogMenuROVersionInfo = nullptr;
 	s_changeLogMenuROPendingInstallUrl.clear();
 	s_changeLogMenuROVersions.clear();
@@ -1302,23 +1419,25 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 			static_cast<Int>(
 				s_changeLogMenuROVersions.size()))
 		{
-			const std::string& url =
+			const RebornOmegaVersionInfo& version =
 				s_changeLogMenuROVersions[
-					s_changeLogMenuROSelectedVersion].
-				pageUrl;
+					s_changeLogMenuROSelectedVersion];
 
-					if (
-						url.compare(0, 8, "https://") == 0 ||
-						url.compare(0, 7, "http://") == 0)
-					{
-						ShellExecuteA(
-							nullptr,
-							"open",
-							url.c_str(),
-							nullptr,
-							nullptr,
-							SW_SHOWNORMAL);
-					}
+			const std::string& url =
+				version.pageUrl;
+
+			if (
+				url.compare(0, 8, "https://") == 0 ||
+				url.compare(0, 7, "http://") == 0)
+			{
+				ShellExecuteA(
+					nullptr,
+					"open",
+					url.c_str(),
+					nullptr,
+					nullptr,
+					SW_SHOWNORMAL);
+			}
 		}
 
 		return MSG_HANDLED;
@@ -1373,8 +1492,8 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 				s_changeLogMenuROVersions[
 					s_changeLogMenuROSelectedVersion];
 
-			//if (version.buildRank > REBORN_OMEGA_BUILD_RANK)
-			if (version.buildRank > 10399)
+			if (version.buildRank > REBORN_OMEGA_BUILD_RANK)
+			//if (version.buildRank > 10399)
 			{
 				s_changeLogMenuROPendingInstallUrl =
 					version.downloadStartUrl;
@@ -1467,6 +1586,39 @@ WindowMsgHandledType ChangeLogMenuROSystem(
 		NAMEKEY("ChangeLogMenuRO.wnd:ButtonClose"))
 	{
 		s_changeLogMenuROCloseRequested = TRUE;
+		return MSG_HANDLED;
+	}
+
+	if (
+		controlID ==
+		NAMEKEY(
+			"ChangeLogMenuRO.wnd:"
+			"ButtonRefresh"))
+	{
+		if (
+			s_changeLogMenuROSelectedVersion < 0 ||
+			s_changeLogMenuROSelectedVersion >=
+			static_cast<Int>(
+				s_changeLogMenuROVersions.size()))
+		{
+			UpdateChangeLogMenuRONavigation();
+			return MSG_HANDLED;
+		}
+
+		RebornOmegaChangeLogDownloadState state =
+			GetRebornOmegaChangeLogDownloadState();
+
+		if (state == REBORN_CHANGELOG_DOWNLOADING)
+			return MSG_HANDLED;
+
+		if (
+			state == REBORN_CHANGELOG_COMPLETED ||
+			state == REBORN_CHANGELOG_FAILED)
+		{
+			FinishRebornOmegaChangeLogDownload();
+		}
+
+		ShowSelectedChangeLogMenuROVersion();
 		return MSG_HANDLED;
 	}
 

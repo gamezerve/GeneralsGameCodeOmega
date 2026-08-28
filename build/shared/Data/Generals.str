@@ -12,11 +12,11 @@ GUI:ConfirmInstallUpdate
 END
 
 TOOLTIP:InstallUpdate
-"Update your game to the currently shown version."
+"Update your game to the currently shown version"
 END
 
 TOOLTIP:Visit
-"Visit the source webpage."
+"Visit the source webpage""
 END
 
 GUI:Visit

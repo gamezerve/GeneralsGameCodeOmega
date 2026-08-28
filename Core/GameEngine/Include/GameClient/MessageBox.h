@@ -47,6 +47,8 @@ GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,
 
 GameWindow* MessageBoxYesNoChangeLog(UnicodeString titleString,	UnicodeString bodyString,	GameWinMsgBoxFunc yesCallback, GameWinMsgBoxFunc noCallback, GameWinMsgBoxFunc changeLogCallback);
 
+GameWindow* MessageBoxOkChangeLog(UnicodeString titleString, UnicodeString bodyString,	GameWinMsgBoxFunc okCallback,	GameWinMsgBoxFunc changeLogCallback);
+
 void SetPopupMessageUsesRebornLayout(Bool useReborn);
 Bool GetPopupMessageUsesRebornLayout();
 void SetChangeLogMessageBoxFromOptions(Bool fromOptions);
