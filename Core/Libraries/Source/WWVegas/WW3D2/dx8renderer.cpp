@@ -65,6 +65,7 @@
 ** Global Instance of the DX8MeshRender
 */
 DX8MeshRendererClass TheDX8MeshRenderer;
+bool g_rebornRenderUnderwaterCarrierPass = false;
 bool DX8TextureCategoryClass::m_gForceMultiply = false; // Forces opaque materials to use the multiply blend - pseudo transparent effect.  jba.
 // ----------------------------------------------------------------------------
 
@@ -1734,6 +1735,21 @@ void DX8TextureCategoryClass::Render()
 		DX8PolygonRendererClass * renderer = prt->Peek_Polygon_Renderer();
 		MeshClass * mesh = prt->Peek_Mesh();
 
+		if (g_rebornRenderUnderwaterCarrierPass &&
+			stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") != 0)
+		{
+			PolyRenderTaskClass* next_prt = prt->Get_Next_Visible();
+
+			if (last_prt == nullptr)
+				render_task_head = next_prt;
+			else
+				last_prt->Set_Next_Visible(next_prt);
+
+			delete prt;
+			prt = next_prt;
+			continue;
+		}
+
 		if (mesh->Get_Base_Vertex_Offset() == VERTEX_BUFFER_OVERFLOW)	//check if this mesh is valid
 		{	//skip this mesh so it gets rendered later after vertices are filled in.
 			last_prt = prt;
@@ -1858,77 +1874,122 @@ void DX8TextureCategoryClass::Render()
 		}
 
 
-//--------------------------------------------------------------------
+		//--------------------------------------------------------------------
 		if (mesh->Get_ObjectScale() != 1.0f)
 			DX8Wrapper::Set_DX8_Render_State(D3DRS_NORMALIZENORMALS, TRUE);
-//--------------------------------------------------------------------
-		/*
-		** Render mesh using either sorting or immediate pipeline
-		*/
-		//(gth) this if statement's contents are not tabbed to avoid perforce merge problems...
+		//--------------------------------------------------------------------
+				/*
+				** Render mesh using either sorting or immediate pipeline
+				*/
+				//(gth) this if statement's contents are not tabbed to avoid perforce merge problems...
 		if (!DX8RendererDebugger::Is_Enabled() || !mesh->Is_Disabled_By_Debugger()) {
 
-		if ((!!mesh->Peek_Model()->Get_Flag(MeshGeometryClass::SORT)) && WW3D::Is_Sorting_Enabled()) {
-			renderer->Render_Sorted(mesh->Get_Base_Vertex_Offset(),mesh->Get_Bounding_Sphere());
-		} else {
-			//non-transparent mesh that will be rendered immediately.  Okay to adjust the shader/material
-			//if necessary
-			if (mesh->Get_Alpha_Override() != 1.0 || (mesh->Get_User_Data() && *(int *)mesh->Get_User_Data() == RenderObjClass::USER_DATA_MATERIAL_OVERRIDE))
-			{	//mesh has material override of some kind
-				//adjust the opacity of this model
-				float oldOpacity=vmaterial->Get_Opacity();
-				Vector3 oldDiffuse;
-				Vector2 oldUVOffset;
-				unsigned int oldUVOffsetSyncTime;
-				vmaterial->Get_Diffuse(&oldDiffuse);
-				LinearOffsetTextureMapperClass *oldMapper=(LinearOffsetTextureMapperClass *)vmaterial->Peek_Mapper();
-				if ( mesh->Get_User_Data() && *(int *)mesh->Get_User_Data() == RenderObjClass::USER_DATA_MATERIAL_OVERRIDE && oldMapper && oldMapper->Mapper_ID() == TextureMapperClass::MAPPER_ID_LINEAR_OFFSET)
-				{	RenderObjClass::Material_Override *matOverride=(RenderObjClass::Material_Override *)mesh->Get_User_Data();
-					oldUVOffsetSyncTime = oldMapper->Get_LastUsedSyncTime();
-					oldMapper->Set_LastUsedSyncTime(WW3D::Get_Sync_Time());	//make sure zero time passes for the mapper.
-					oldMapper->Get_Current_UV_Offset(oldUVOffset);
-					oldMapper->Set_Current_UV_Offset(matOverride->customUVOffset);
-				}
-				else
-					oldMapper=nullptr;
-
-				if (mesh->Get_Alpha_Override() != 1.0)
+			if (stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") == 0)
+			{
+				if (g_rebornRenderUnderwaterCarrierPass)
 				{
-					if (mesh->Is_Additive())
-					{	//additvie blended mesh can't switch to alpha or we will get a black outline.
-						//so adjust diffuse color instead.
-						vmaterial->Set_Diffuse(mesh->Get_Alpha_Override(),mesh->Get_Alpha_Override(),mesh->Get_Alpha_Override());
-						theAlphaShader = theShader;	//keep using additive blending.
-					}
-					vmaterial->Set_Opacity(mesh->Get_Alpha_Override());
-					DX8Wrapper::Set_Shader(theAlphaShader);
+					float lowerPlane[4] = { 0.0f, 0.0f, -1.0f, 25.0f };
+
+					DX8Wrapper::Set_DX8_Clip_Plane(0, lowerPlane);
+					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
+
+					float oldOpacity = vmaterial->Get_Opacity();
+					vmaterial->Set_Opacity(0.30f);
+
+					ShaderClass underwaterShader = theAlphaShader;
+					underwaterShader.Set_Depth_Mask(ShaderClass::DEPTH_WRITE_DISABLE);
+
+					DX8Wrapper::Set_Shader(underwaterShader);
 					DX8Wrapper::Apply_Render_State_Changes();
-					DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,(int)((float)0x60*mesh->Get_Alpha_Override()));
 
 					renderer->Render(mesh->Get_Base_Vertex_Offset());
 
-					DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,0x60);
-					vmaterial->Set_Opacity(oldOpacity);	//restore previous value
-					vmaterial->Set_Diffuse(oldDiffuse.X,oldDiffuse.Y,oldDiffuse.Z);
-					DX8Wrapper::Set_Shader(theShader);	//restore previous value
+					vmaterial->Set_Opacity(oldOpacity);
+					DX8Wrapper::Set_Shader(theShader);
+					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, 0);
+
+					DX8Wrapper::Set_Material(nullptr);
+					DX8Wrapper::Set_Material(vmaterial);
 				}
 				else
+				{
+					float upperPlane[4] = { 0.0f, 0.0f, 1.0f, -25.0f };
+
+					DX8Wrapper::Set_DX8_Clip_Plane(0, upperPlane);
+					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
+
 					renderer->Render(mesh->Get_Base_Vertex_Offset());
 
-				if (oldMapper)	//did we override the uv offset?
-				{	oldMapper->Set_LastUsedSyncTime(oldUVOffsetSyncTime);
-					oldMapper->Set_Current_UV_Offset(oldUVOffset);
+					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, 0);
 				}
-				DX8Wrapper::Set_Material(nullptr);	//force a reset of vertex material since we secretly changed opacity
-				DX8Wrapper::Set_Material(vmaterial);	//restore previous material.
 			}
 			else
-				renderer->Render(mesh->Get_Base_Vertex_Offset());
-		}
-//--------------------------------------------------------------------
-		if (mesh->Get_ObjectScale() != 1.0f)
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_NORMALIZENORMALS, FALSE);
-//--------------------------------------------------------------------
+			{
+				if ((!!mesh->Peek_Model()->Get_Flag(MeshGeometryClass::SORT)) && WW3D::Is_Sorting_Enabled()) {
+					renderer->Render_Sorted(mesh->Get_Base_Vertex_Offset(), mesh->Get_Bounding_Sphere());
+				}
+				else {
+					//non-transparent mesh that will be rendered immediately.  Okay to adjust the shader/material
+					//if necessary
+					if (mesh->Get_Alpha_Override() != 1.0 || (mesh->Get_User_Data() && *(int*)mesh->Get_User_Data() == RenderObjClass::USER_DATA_MATERIAL_OVERRIDE))
+					{	//mesh has material override of some kind
+						//adjust the opacity of this model
+						float oldOpacity = vmaterial->Get_Opacity();
+						Vector3 oldDiffuse;
+						Vector2 oldUVOffset;
+						unsigned int oldUVOffsetSyncTime;
+						vmaterial->Get_Diffuse(&oldDiffuse);
+						LinearOffsetTextureMapperClass* oldMapper = (LinearOffsetTextureMapperClass*)vmaterial->Peek_Mapper();
+						if (mesh->Get_User_Data() && *(int*)mesh->Get_User_Data() == RenderObjClass::USER_DATA_MATERIAL_OVERRIDE && oldMapper && oldMapper->Mapper_ID() == TextureMapperClass::MAPPER_ID_LINEAR_OFFSET)
+						{
+							RenderObjClass::Material_Override* matOverride = (RenderObjClass::Material_Override*)mesh->Get_User_Data();
+							oldUVOffsetSyncTime = oldMapper->Get_LastUsedSyncTime();
+							oldMapper->Set_LastUsedSyncTime(WW3D::Get_Sync_Time());	//make sure zero time passes for the mapper.
+							oldMapper->Get_Current_UV_Offset(oldUVOffset);
+							oldMapper->Set_Current_UV_Offset(matOverride->customUVOffset);
+						}
+						else
+							oldMapper = nullptr;
+
+						if (mesh->Get_Alpha_Override() != 1.0)
+						{
+							if (mesh->Is_Additive())
+							{	//additvie blended mesh can't switch to alpha or we will get a black outline.
+								//so adjust diffuse color instead.
+								vmaterial->Set_Diffuse(mesh->Get_Alpha_Override(), mesh->Get_Alpha_Override(), mesh->Get_Alpha_Override());
+								theAlphaShader = theShader;	//keep using additive blending.
+							}
+							vmaterial->Set_Opacity(mesh->Get_Alpha_Override());
+							DX8Wrapper::Set_Shader(theAlphaShader);
+							DX8Wrapper::Apply_Render_State_Changes();
+							DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF, (int)((float)0x60 * mesh->Get_Alpha_Override()));
+
+							renderer->Render(mesh->Get_Base_Vertex_Offset());
+
+							DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF, 0x60);
+							vmaterial->Set_Opacity(oldOpacity);	//restore previous value
+							vmaterial->Set_Diffuse(oldDiffuse.X, oldDiffuse.Y, oldDiffuse.Z);
+							DX8Wrapper::Set_Shader(theShader);	//restore previous value
+						}
+						else
+							renderer->Render(mesh->Get_Base_Vertex_Offset());
+
+						if (oldMapper)	//did we override the uv offset?
+						{
+							oldMapper->Set_LastUsedSyncTime(oldUVOffsetSyncTime);
+							oldMapper->Set_Current_UV_Offset(oldUVOffset);
+						}
+						DX8Wrapper::Set_Material(nullptr);	//force a reset of vertex material since we secretly changed opacity
+						DX8Wrapper::Set_Material(vmaterial);	//restore previous material.
+					}
+					else
+						renderer->Render(mesh->Get_Base_Vertex_Offset());
+				}
+			}
+			//--------------------------------------------------------------------
+			if (mesh->Get_ObjectScale() != 1.0f)
+				DX8Wrapper::Set_DX8_Render_State(D3DRS_NORMALIZENORMALS, FALSE);
+			//--------------------------------------------------------------------
 
 
 

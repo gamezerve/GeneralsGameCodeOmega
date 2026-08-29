@@ -136,7 +136,9 @@ protected:
 	Int m_numPotentialOccludees;
 	Int m_numNonOccluderOrOccludee;
 
-	CameraClass *m_camera;
+	RenderObjClass* m_rebornMovingCarrierRenderObj;
+
+	CameraClass* m_camera;
 };
 
 //-----------------------------------------------------------------------------

@@ -41,6 +41,7 @@
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/ThingTemplate.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/GameLogic.h"
 #include "GameClient/Drawable.h"
@@ -169,6 +170,8 @@ RTS3DScene::RTS3DScene()
 		m_potentialOccludees = NEW RenderObjClass* [TheGlobalData->m_maxVisibleOccludeeObjects];
 	else
 		m_potentialOccludees = nullptr;
+
+	m_rebornMovingCarrierRenderObj = nullptr;
 
 	if (TheGlobalData->m_maxVisibleNonOccluderOrOccludeeObjects > 0)
 		m_nonOccludersOrOccludees = NEW RenderObjClass* [TheGlobalData->m_maxVisibleNonOccluderOrOccludeeObjects];
@@ -404,10 +407,11 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 	Drawable	*draw = nullptr;
 	RenderObjClass * robj;
 
-	m_numPotentialOccluders=0;
-	m_numPotentialOccludees=0;
-	m_translucentObjectsCount=0;
-	m_numNonOccluderOrOccludee=0;
+	m_numPotentialOccluders = 0;
+	m_numPotentialOccludees = 0;
+	m_translucentObjectsCount = 0;
+	m_numNonOccluderOrOccludee = 0;
+	m_rebornMovingCarrierRenderObj = nullptr;
 
 	Int currentFrame = TheGameLogic ? TheGameLogic->getFrame() : 0;
 	if (currentFrame <= TheGlobalData->m_defaultOcclusionDelay)
@@ -481,6 +485,14 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 
             if ( ! isVisible )
               continue;
+
+						Object* object = draw->getObject();
+
+						if (object &&
+							object->getTemplate()->getName().compare("AmericaNavyAircraftCarrier") == 0)
+						{
+							m_rebornMovingCarrierRenderObj = robj;
+						}
 
 						if (draw->getEffectiveOpacity() != 1.0f && m_translucentObjectsCount < TheGlobalData->m_maxVisibleTranslucentObjects)
 						{
@@ -874,6 +886,21 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 		DoShadows(rinfo, true);	//draw all stencil shadows
 
 	WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);	//draws things like water
+
+	if (m_rebornMovingCarrierRenderObj)
+	{
+		g_rebornRenderUnderwaterCarrierPass = true;
+
+		rinfo.alphaOverride = 0.30f;
+
+		const Int localPlayerIndex = rts::getObservedOrLocalPlayerIndex_Safe();
+		renderOneObject(rinfo, m_rebornMovingCarrierRenderObj, localPlayerIndex);
+		TheDX8MeshRenderer.Flush();
+
+		rinfo.alphaOverride = 1.0f;
+
+		g_rebornRenderUnderwaterCarrierPass = false;
+	}
 
 	if (m_customPassMode == SCENE_PASS_DEFAULT && Get_Extra_Pass_Polygon_Mode() == EXTRA_PASS_DISABLE)
 		flushTranslucentObjects(rinfo);	//draw all translucent meshes which don't need per-polygon sorting.

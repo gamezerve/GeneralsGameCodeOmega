@@ -348,4 +348,5 @@ protected:
 
 };
 
+extern bool g_rebornRenderUnderwaterCarrierPass;
 extern DX8MeshRendererClass TheDX8MeshRenderer;
