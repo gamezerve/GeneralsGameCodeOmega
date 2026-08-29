@@ -32,6 +32,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameState.h"
+#include "Common/RebornOmegaPreferences.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/View.h"
@@ -398,10 +399,13 @@ static void RestorePersonalMaxCameraHeight()
 {
 	Real value = 310.0f;
 
-	OptionPreferences prefs;
-	if (prefs["UseCustomMaxCameraHeight"] == "yes" && !prefs["MaxCameraHeight"].isEmpty())
+	UserPreferences preferences;
+	LoadRebornOmegaPreferences(preferences);
+
+	if (preferences["UseCustomMaxCameraHeight"] == "yes" &&
+		!preferences["MaxCameraHeight"].isEmpty())
 	{
-		value = (Real)atof(prefs["MaxCameraHeight"].str());
+		value = (Real)atof(preferences["MaxCameraHeight"].str());
 		value = clamp(310.0f, value, 750.0f);
 	}
 

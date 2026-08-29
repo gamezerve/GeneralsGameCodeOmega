@@ -37,6 +37,7 @@
 #include "Common/Recorder.h"
 #include "Common/StatsCollector.h"
 #include "Common/OptionPreferences.h"
+#include "Common/RebornOmegaPreferences.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameClient/Display.h"
@@ -322,8 +323,11 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 				TheTacticalView->userSetAngleToDefault();
 				TheTacticalView->userSetPitchToDefault();
 
-				OptionPreferences prefs;
-				Bool useZoomOut = (prefs["UseMiddleMouseCameraZoomOut"] == "yes");
+				UserPreferences rebornPreferences;
+				LoadRebornOmegaPreferences(rebornPreferences);
+
+				Bool useZoomOut =
+					(rebornPreferences["UseMiddleMouseCameraZoomOut"] == "yes");
 
 				if (TheGameLogic)
 				{

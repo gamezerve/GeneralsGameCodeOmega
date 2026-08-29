@@ -39,6 +39,7 @@
 
 #include "Common/GlobalData.h"
 #include "Common/UserPreferences.h"
+#include "Common/RebornOmegaPreferences.h"
 #include "GameClient/GameFont.h"
 
 static std::string s_downloadInstallerFileName;
@@ -1735,8 +1736,7 @@ Bool GetRebornOmegaAutomaticUpdateChecksEnabled()
 {
 	UserPreferences preferences;
 
-	if (!preferences.load(
-		"RebornOmegaOptions\\RebornOmegaOptions.ini"))
+	LoadRebornOmegaPreferences(preferences);
 	{
 		return TRUE;
 	}
@@ -1753,22 +1753,12 @@ Bool GetRebornOmegaAutomaticUpdateChecksEnabled()
 Bool SetRebornOmegaAutomaticUpdateChecksEnabled(
 	Bool enabled)
 {
-	AsciiString directory =
-		TheGlobalData->getPath_UserData();
-
-	directory.concat("RebornOmegaOptions");
-
-	CreateDirectoryA(
-		directory.str(),
-		nullptr);
-
 	UserPreferences preferences;
 
-	preferences.load(
-		"RebornOmegaOptions\\RebornOmegaOptions.ini");
+	LoadRebornOmegaPreferences(preferences);
 
 	preferences["AutomaticUpdateChecks"] =
 		enabled ? "yes" : "no";
 
-	return preferences.write();
+	return WriteRebornOmegaPreferences(preferences);
 }

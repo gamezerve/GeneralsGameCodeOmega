@@ -36,6 +36,7 @@
 #include "Common/GameLOD.h"
 #include "Common/GlobalData.h"
 #include "Common/OptionPreferences.h"
+#include "Common/RebornOmegaPreferences.h"
 
 #include "GameClient/ClientInstance.h"
 #include "GameClient/Display.h"
@@ -52,15 +53,19 @@ OptionPreferences::OptionPreferences()
 
 	loadFromIniFile();
 
-	if ((*this)["UseCustomMaxCameraHeight"] == "yes" && !(*this)["MaxCameraHeight"].isEmpty())
+	UserPreferences rebornPreferences;
+	LoadRebornOmegaPreferences(rebornPreferences);
+
+	if (rebornPreferences["UseCustomMaxCameraHeight"] == "yes" &&
+		!rebornPreferences["MaxCameraHeight"].isEmpty())
 	{
-		Real value = (Real)atof((*this)["MaxCameraHeight"].str());
+		Real value = (Real)atof(rebornPreferences["MaxCameraHeight"].str());
 		value = clamp(310.0f, value, 750.0f);
 		TheWritableGlobalData->m_maxCameraHeight = value;
 	}
 
 	TheWritableGlobalData->m_middleMouseCameraZoomOut =
-		((*this)["UseMiddleMouseCameraZoomOut"] == "yes");
+		(rebornPreferences["UseMiddleMouseCameraZoomOut"] == "yes");
 }
 
 OptionPreferences::~OptionPreferences()

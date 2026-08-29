@@ -36,6 +36,7 @@
 #include "Common/UserPreferences.h"
 #include "Common/QuotedPrintable.h"
 #include "Common/OptionPreferences.h"
+#include "Common/RebornOmegaPreferences.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
@@ -1085,10 +1086,13 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	{
 		Real value = 310.0f;
 
-		OptionPreferences prefs;
-		if (prefs["UseCustomMaxCameraHeight"] == "yes" && !prefs["MaxCameraHeight"].isEmpty())
+		UserPreferences preferences;
+		LoadRebornOmegaPreferences(preferences);
+
+		if (preferences["UseCustomMaxCameraHeight"] == "yes" &&
+			!preferences["MaxCameraHeight"].isEmpty())
 		{
-			value = (Real)atof(prefs["MaxCameraHeight"].str());
+			value = (Real)atof(preferences["MaxCameraHeight"].str());
 			value = clamp(310.0f, value, 750.0f);
 		}
 

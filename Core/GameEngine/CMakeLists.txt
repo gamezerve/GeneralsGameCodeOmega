@@ -100,6 +100,7 @@ set(GAMEENGINE_SRC
     Include/Common/RAMFile.h
     Include/Common/RandomValue.h
     Include/Common/RebornLog.h
+    Include/Common/RebornOmegaPreferences.h
 #    Include/Common/Recorder.h
 #    Include/Common/Registry.h
     Include/Common/ReplaySimulation.h
@@ -623,6 +624,7 @@ set(GAMEENGINE_SRC
     Source/Common/PerfTimer.cpp
     Source/Common/RandomValue.cpp
     Source/Common/RebornLog.cpp
+    Source/Common/RebornOmegaPreferences.cpp
 #    Source/Common/Recorder.cpp
     Source/Common/ReplaySimulation.cpp
     Source/Common/RTS/AcademyStats.cpp

@@ -38,9 +38,10 @@
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
-#include "Common/OptionPreferences.h"
 #include "Common/GameLOD.h"
+#include "Common/OptionPreferences.h"
 #include "Common/PlayerTemplate.h" // Reborn
+#include "Common/RebornOmegaPreferences.h"
 #include "Common/Recorder.h"
 #include "Common/Registry.h"
 #include "Common/version.h"
@@ -603,20 +604,33 @@ static void saveOptions()
 	if (checkMaxCameraHeight && textEntryMaxCameraHeight)
 	{
 		Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
-		(*pref)["UseCustomMaxCameraHeight"] = enabled ? "yes" : "no";
+
+		UserPreferences rebornPreferences;
+
+		LoadRebornOmegaPreferences(rebornPreferences);
+
+		rebornPreferences["UseCustomMaxCameraHeight"] =
+			enabled ? "yes" : "no";
 
 		if (enabled)
 		{
-			UnicodeString uStr = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+			UnicodeString uStr =
+				GadgetTextEntryGetText(textEntryMaxCameraHeight);
+
 			AsciiString aStr;
 			aStr.translate(uStr);
 
-			Real oldValue = TheGlobalData->m_maxCameraHeight;
-			Real value = (Real)atof(aStr.str());
+			Real oldValue =
+				TheGlobalData->m_maxCameraHeight;
 
-			value = clamp(310.0f, value, 750.0f);
+			Real value =
+				(Real)atof(aStr.str());
 
-			TheWritableGlobalData->m_maxCameraHeight = value;
+			value =
+				clamp(310.0f, value, 750.0f);
+
+			TheWritableGlobalData->m_maxCameraHeight =
+				value;
 
 			if (oldValue != value && TheTacticalView)
 			{
@@ -627,19 +641,27 @@ static void saveOptions()
 
 			AsciiString prefString;
 			prefString.format("%.0f", value);
-			(*pref)["MaxCameraHeight"] = prefString;
+
+			rebornPreferences["MaxCameraHeight"] =
+				prefString;
 
 			UnicodeString correctedUStr;
 			correctedUStr.translate(prefString);
-			GadgetTextEntrySetText(textEntryMaxCameraHeight, correctedUStr);
+
+			GadgetTextEntrySetText(
+				textEntryMaxCameraHeight,
+				correctedUStr);
 		}
 		else
 		{
+			Real oldValue =
+				TheGlobalData->m_maxCameraHeight;
 
-			Real oldValue = TheGlobalData->m_maxCameraHeight;
-			Real value = TheGlobalData->m_defaultMaxCameraHeight;
+			Real value =
+				TheGlobalData->m_defaultMaxCameraHeight;
 
-			TheWritableGlobalData->m_maxCameraHeight = value;
+			TheWritableGlobalData->m_maxCameraHeight =
+				value;
 
 			if (oldValue != value && TheTacticalView)
 			{
@@ -650,16 +672,33 @@ static void saveOptions()
 
 			UnicodeString uStr;
 			AsciiString aStr;
-			aStr.format("%.0f", TheGlobalData->m_defaultMaxCameraHeight);
+
+			aStr.format(
+				"%.0f",
+				TheGlobalData->m_defaultMaxCameraHeight);
+
 			uStr.translate(aStr);
-			GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+
+			GadgetTextEntrySetText(
+				textEntryMaxCameraHeight,
+				uStr);
 		}
+
+		WriteRebornOmegaPreferences(rebornPreferences);
 	}
 
 	if (checkZoomFactor)
 	{
 		Bool enabled = GadgetCheckBoxIsChecked(checkZoomFactor);
-		(*pref)["UseMiddleMouseCameraZoomOut"] = enabled ? "yes" : "no";
+
+		UserPreferences rebornPreferences;
+		LoadRebornOmegaPreferences(rebornPreferences);
+
+		rebornPreferences["UseMiddleMouseCameraZoomOut"] =
+			enabled ? "yes" : "no";
+
+		WriteRebornOmegaPreferences(rebornPreferences);
+
 		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
 	}
 
@@ -1436,7 +1475,11 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 
 	// Max Camera Height
 
-	Bool useCustomMaxCameraHeight = ((*pref)["UseCustomMaxCameraHeight"] == "yes");
+	UserPreferences rebornPreferences;
+	LoadRebornOmegaPreferences(rebornPreferences);
+
+	Bool useCustomMaxCameraHeight =
+		(rebornPreferences["UseCustomMaxCameraHeight"] == "yes");
 
 	if (checkMaxCameraHeight)
 		GadgetCheckBoxSetChecked(checkMaxCameraHeight, useCustomMaxCameraHeight);
@@ -1446,17 +1489,23 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 		UnicodeString uStr;
 		AsciiString aStr;
 
-		if (useCustomMaxCameraHeight && !(*pref)["MaxCameraHeight"].isEmpty())
-			aStr = (*pref)["MaxCameraHeight"];
+		if (useCustomMaxCameraHeight &&
+			!rebornPreferences["MaxCameraHeight"].isEmpty())
+		{
+			aStr = rebornPreferences["MaxCameraHeight"];
+		}
 		else
+		{
 			aStr.format("%.0f", 310.0f);
+		}
 
 		uStr.translate(aStr);
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 		textEntryMaxCameraHeight->winEnable(useCustomMaxCameraHeight);
 	}
 
-	Bool useZoomFactor = ((*pref)["UseMiddleMouseCameraZoomOut"] == "yes");
+	Bool useZoomFactor =
+		(rebornPreferences["UseMiddleMouseCameraZoomOut"] == "yes");
 
 	if (checkZoomFactor)
 		GadgetCheckBoxSetChecked(checkZoomFactor, useZoomFactor);
@@ -2483,8 +2532,11 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 					UnicodeString uStr;
 					AsciiString aStr;
 
-					if (enabled && !(*pref)["MaxCameraHeight"].isEmpty())
-						aStr = (*pref)["MaxCameraHeight"];
+					UserPreferences rebornPreferences;
+					LoadRebornOmegaPreferences(rebornPreferences);
+
+					if (enabled && !rebornPreferences["MaxCameraHeight"].isEmpty())
+						aStr = rebornPreferences["MaxCameraHeight"];
 					else
 						aStr.format("%.0f", TheGlobalData->m_defaultMaxCameraHeight);
 
