@@ -348,5 +348,9 @@ protected:
 
 };
 
-extern bool g_rebornRenderUnderwaterCarrierPass;
+extern bool g_rebornRenderUnderwaterPass;
+
+void Reborn_Clear_Underwater_Render_Objects();
+void Reborn_Add_Underwater_Render_Object(RenderObjClass* renderObject, float waterZ);
+bool Reborn_Get_Underwater_Render_Object_Water_Z(RenderObjClass* renderObject, float* waterZ);
 extern DX8MeshRendererClass TheDX8MeshRenderer;

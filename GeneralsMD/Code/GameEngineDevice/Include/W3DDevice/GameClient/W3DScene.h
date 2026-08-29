@@ -136,7 +136,13 @@ protected:
 	Int m_numPotentialOccludees;
 	Int m_numNonOccluderOrOccludee;
 
-	RenderObjClass* m_rebornMovingCarrierRenderObj;
+	struct RebornUnderwaterRenderObject
+	{
+		RenderObjClass* renderObject;
+		Real waterZ;
+	};
+
+	std::vector<RebornUnderwaterRenderObject> m_rebornUnderwaterRenderObjects;
 
 	CameraClass* m_camera;
 };

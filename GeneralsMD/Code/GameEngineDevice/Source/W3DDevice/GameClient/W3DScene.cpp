@@ -44,6 +44,7 @@
 #include "Common/ThingTemplate.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/GameLogic.h"
+#include "GameLogic/TerrainLogic.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/ParticleSys.h"
 #include "GameClient/Color.h"
@@ -170,8 +171,6 @@ RTS3DScene::RTS3DScene()
 		m_potentialOccludees = NEW RenderObjClass* [TheGlobalData->m_maxVisibleOccludeeObjects];
 	else
 		m_potentialOccludees = nullptr;
-
-	m_rebornMovingCarrierRenderObj = nullptr;
 
 	if (TheGlobalData->m_maxVisibleNonOccluderOrOccludeeObjects > 0)
 		m_nonOccludersOrOccludees = NEW RenderObjClass* [TheGlobalData->m_maxVisibleNonOccluderOrOccludeeObjects];
@@ -411,7 +410,8 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 	m_numPotentialOccludees = 0;
 	m_translucentObjectsCount = 0;
 	m_numNonOccluderOrOccludee = 0;
-	m_rebornMovingCarrierRenderObj = nullptr;
+	m_rebornUnderwaterRenderObjects.clear();
+	Reborn_Clear_Underwater_Render_Objects();
 
 	Int currentFrame = TheGameLogic ? TheGameLogic->getFrame() : 0;
 	if (currentFrame <= TheGlobalData->m_defaultOcclusionDelay)
@@ -488,11 +488,64 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 
 						Object* object = draw->getObject();
 
-						if (object &&
-							object->getTemplate()->getName().compare("AmericaNavyAircraftCarrier") == 0 &&
-							stricmp(robj->Get_Name(), "PSAIRCARRIER") == 0)
+						if (object)
 						{
-							m_rebornMovingCarrierRenderObj = robj;
+							const Coord3D* pos = object->getPosition();
+
+							Real waterZ;
+							Real groundZ;
+
+							if (TheTerrainLogic->isUnderwater(
+								pos->x,
+								pos->y,
+								&waterZ,
+								&groundZ))
+							{
+								RenderObjClass* rootRenderObj = robj;
+
+								while (rootRenderObj->Get_Container() != nullptr)
+									rootRenderObj = rootRenderObj->Get_Container();
+
+								if (rootRenderObj->Is_Really_Visible())
+								{
+									const AABoxClass& box = rootRenderObj->Get_Bounding_Box();
+
+									const Real bottomZ = box.Center.Z - box.Extent.Z;
+									const Real topZ = box.Center.Z + box.Extent.Z;
+
+									if (bottomZ >= waterZ || topZ <= waterZ)
+										continue;
+
+									Bool alreadyAdded = FALSE;
+
+									for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
+										m_rebornUnderwaterRenderObjects.begin();
+										it != m_rebornUnderwaterRenderObjects.end();
+										++it)
+									{
+										if (it->renderObject == rootRenderObj)
+										{
+											alreadyAdded = TRUE;
+											break;
+										}
+									}
+
+									if (!alreadyAdded)
+									{
+										RebornUnderwaterRenderObject underwaterObject;
+
+										underwaterObject.renderObject = rootRenderObj;
+										underwaterObject.waterZ = waterZ;
+
+										m_rebornUnderwaterRenderObjects.push_back(
+											underwaterObject);
+
+										Reborn_Add_Underwater_Render_Object(
+											rootRenderObj,
+											waterZ);
+									}
+								}
+							}
 						}
 
 						if (draw->getEffectiveOpacity() != 1.0f && m_translucentObjectsCount < TheGlobalData->m_maxVisibleTranslucentObjects)
@@ -888,22 +941,32 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 
 	WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);	//draws things like water
 
-	if (m_rebornMovingCarrierRenderObj)
+	if (!m_rebornUnderwaterRenderObjects.empty())
 	{
-		g_rebornRenderUnderwaterCarrierPass = true;
+		g_rebornRenderUnderwaterPass = true;
 
 		rinfo.alphaOverride = 0.30f;
 
-		const Int localPlayerIndex = rts::getObservedOrLocalPlayerIndex_Safe();
+		const Int localPlayerIndex =
+			rts::getObservedOrLocalPlayerIndex_Safe();
 
-		renderOneObject(rinfo, m_rebornMovingCarrierRenderObj, localPlayerIndex);
+		for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
+			m_rebornUnderwaterRenderObjects.begin();
+			it != m_rebornUnderwaterRenderObjects.end();
+			++it)
+		{
+			renderOneObject(
+				rinfo,
+				it->renderObject,
+				localPlayerIndex);
+		}
 
 		TheDX8MeshRenderer.Flush();
 		WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);
 
 		rinfo.alphaOverride = 1.0f;
 
-		g_rebornRenderUnderwaterCarrierPass = false;
+		g_rebornRenderUnderwaterPass = false;
 	}
 
 	if (m_customPassMode == SCENE_PASS_DEFAULT && Get_Extra_Pass_Polygon_Mode() == EXTRA_PASS_DISABLE)

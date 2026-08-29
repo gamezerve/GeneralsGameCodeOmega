@@ -61,11 +61,74 @@
 #include "stripoptimizer.h"
 #include "meshgeometry.h"
 
+#include <vector>
+
 /*
 ** Global Instance of the DX8MeshRender
 */
 DX8MeshRendererClass TheDX8MeshRenderer;
-bool g_rebornRenderUnderwaterCarrierPass = false;
+
+struct RebornUnderwaterRenderObject
+{
+	RenderObjClass* renderObject;
+	float waterZ;
+};
+
+static std::vector<RebornUnderwaterRenderObject> g_rebornUnderwaterRenderObjects;
+
+bool g_rebornRenderUnderwaterPass = false;
+
+void Reborn_Clear_Underwater_Render_Objects()
+{
+	g_rebornUnderwaterRenderObjects.clear();
+}
+
+void Reborn_Add_Underwater_Render_Object(RenderObjClass* renderObject, float waterZ)
+{
+	if (!renderObject)
+		return;
+
+	for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
+		g_rebornUnderwaterRenderObjects.begin();
+		it != g_rebornUnderwaterRenderObjects.end();
+		++it)
+	{
+		if (it->renderObject == renderObject)
+			return;
+	}
+
+	RebornUnderwaterRenderObject entry;
+
+	entry.renderObject = renderObject;
+	entry.waterZ = waterZ;
+
+	g_rebornUnderwaterRenderObjects.push_back(entry);
+}
+
+bool Reborn_Get_Underwater_Render_Object_Water_Z(
+	RenderObjClass* renderObject,
+	float* waterZ)
+{
+	if (!renderObject)
+		return false;
+
+	for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
+		g_rebornUnderwaterRenderObjects.begin();
+		it != g_rebornUnderwaterRenderObjects.end();
+		++it)
+	{
+		if (it->renderObject == renderObject)
+		{
+			if (waterZ)
+				*waterZ = it->waterZ;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool DX8TextureCategoryClass::m_gForceMultiply = false; // Forces opaque materials to use the multiply blend - pseudo transparent effect.  jba.
 // ----------------------------------------------------------------------------
 
@@ -1735,6 +1798,18 @@ void DX8TextureCategoryClass::Render()
 		DX8PolygonRendererClass * renderer = prt->Peek_Polygon_Renderer();
 		MeshClass * mesh = prt->Peek_Mesh();
 
+		RenderObjClass* rebornRootRenderObject = mesh;
+
+		while (rebornRootRenderObject->Get_Container() != nullptr)
+			rebornRootRenderObject = rebornRootRenderObject->Get_Container();
+
+		float rebornWaterZ = 0.0f;
+
+		const bool isRebornUnderwaterRenderObject =
+			Reborn_Get_Underwater_Render_Object_Water_Z(
+				rebornRootRenderObject,
+				&rebornWaterZ);
+
 		if (mesh->Get_Base_Vertex_Offset() == VERTEX_BUFFER_OVERFLOW)	//check if this mesh is valid
 		{	//skip this mesh so it gets rendered later after vertices are filled in.
 			last_prt = prt;
@@ -1869,15 +1944,11 @@ void DX8TextureCategoryClass::Render()
 				//(gth) this if statement's contents are not tabbed to avoid perforce merge problems...
 		if (!DX8RendererDebugger::Is_Enabled() || !mesh->Is_Disabled_By_Debugger()) {
 
-			//if (stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") == 0)
-			const bool isAircraftCarrierMesh =
-				strnicmp(mesh->Get_Name(), "PSAIRCARRIER", 12) == 0;
-
-			if (isAircraftCarrierMesh)
+			if (isRebornUnderwaterRenderObject)
 			{
-				if (g_rebornRenderUnderwaterCarrierPass)
+				if (g_rebornRenderUnderwaterPass)
 				{
-					float lowerPlane[4] = { 0.0f, 0.0f, -1.0f, 25.0f };
+					float lowerPlane[4] = {	0.0f,	0.0f,	-1.0f, rebornWaterZ };
 
 					DX8Wrapper::Set_DX8_Clip_Plane(0, lowerPlane);
 					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
@@ -1902,7 +1973,7 @@ void DX8TextureCategoryClass::Render()
 				}
 				else
 				{
-					float upperPlane[4] = { 0.0f, 0.0f, 1.0f, -25.0f };
+					float upperPlane[4] = {	0.0f,	0.0f,	1.0f,	-rebornWaterZ };
 
 					DX8Wrapper::Set_DX8_Clip_Plane(0, upperPlane);
 					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
