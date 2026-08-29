@@ -489,7 +489,8 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 						Object* object = draw->getObject();
 
 						if (object &&
-							object->getTemplate()->getName().compare("AmericaNavyAircraftCarrier") == 0)
+							object->getTemplate()->getName().compare("AmericaNavyAircraftCarrier") == 0 &&
+							stricmp(robj->Get_Name(), "PSAIRCARRIER") == 0)
 						{
 							m_rebornMovingCarrierRenderObj = robj;
 						}
@@ -894,8 +895,11 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 		rinfo.alphaOverride = 0.30f;
 
 		const Int localPlayerIndex = rts::getObservedOrLocalPlayerIndex_Safe();
+
 		renderOneObject(rinfo, m_rebornMovingCarrierRenderObj, localPlayerIndex);
+
 		TheDX8MeshRenderer.Flush();
+		WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);
 
 		rinfo.alphaOverride = 1.0f;
 

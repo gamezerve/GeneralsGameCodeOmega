@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// LookAtXlat.cpp
+// LookAtXlat.cpp 
 // Translate raw input events into camera movement commands
 // Author: Michael S. Booth, April 2001
 

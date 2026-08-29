@@ -1735,21 +1735,6 @@ void DX8TextureCategoryClass::Render()
 		DX8PolygonRendererClass * renderer = prt->Peek_Polygon_Renderer();
 		MeshClass * mesh = prt->Peek_Mesh();
 
-		if (g_rebornRenderUnderwaterCarrierPass &&
-			stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") != 0)
-		{
-			PolyRenderTaskClass* next_prt = prt->Get_Next_Visible();
-
-			if (last_prt == nullptr)
-				render_task_head = next_prt;
-			else
-				last_prt->Set_Next_Visible(next_prt);
-
-			delete prt;
-			prt = next_prt;
-			continue;
-		}
-
 		if (mesh->Get_Base_Vertex_Offset() == VERTEX_BUFFER_OVERFLOW)	//check if this mesh is valid
 		{	//skip this mesh so it gets rendered later after vertices are filled in.
 			last_prt = prt;
@@ -1884,7 +1869,11 @@ void DX8TextureCategoryClass::Render()
 				//(gth) this if statement's contents are not tabbed to avoid perforce merge problems...
 		if (!DX8RendererDebugger::Is_Enabled() || !mesh->Is_Disabled_By_Debugger()) {
 
-			if (stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") == 0)
+			//if (stricmp(mesh->Get_Name(), "PSAIRCARRIER.CHASSIS") == 0)
+			const bool isAircraftCarrierMesh =
+				strnicmp(mesh->Get_Name(), "PSAIRCARRIER", 12) == 0;
+
+			if (isAircraftCarrierMesh)
 			{
 				if (g_rebornRenderUnderwaterCarrierPass)
 				{
