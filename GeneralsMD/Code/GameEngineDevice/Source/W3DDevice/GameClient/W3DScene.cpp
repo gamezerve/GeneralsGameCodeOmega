@@ -945,7 +945,7 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 	{
 		g_rebornRenderUnderwaterPass = true;
 
-		rinfo.alphaOverride = 0.30f;
+		rinfo.alphaOverride = 1.0f;
 
 		const Int localPlayerIndex =
 			rts::getObservedOrLocalPlayerIndex_Safe();

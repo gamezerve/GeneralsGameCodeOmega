@@ -1948,25 +1948,83 @@ void DX8TextureCategoryClass::Render()
 			{
 				if (g_rebornRenderUnderwaterPass)
 				{
-					float lowerPlane[4] = {	0.0f,	0.0f,	-1.0f, rebornWaterZ };
-
-					DX8Wrapper::Set_DX8_Clip_Plane(0, lowerPlane);
-					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
+					const float maxOpacity = 0.50f;
+					const float fadeDepth = 25.0f;
+					const float bandDepth = 1.0f;
 
 					float oldOpacity = vmaterial->Get_Opacity();
-					vmaterial->Set_Opacity(0.30f);
 
 					ShaderClass underwaterShader = theAlphaShader;
 					underwaterShader.Set_Depth_Mask(ShaderClass::DEPTH_WRITE_DISABLE);
 
 					DX8Wrapper::Set_Shader(underwaterShader);
-					DX8Wrapper::Apply_Render_State_Changes();
 
-					renderer->Render(mesh->Get_Base_Vertex_Offset());
+					for (float depth = 0.0f; depth < fadeDepth; depth += bandDepth)
+					{
+						const float nextDepth =
+							(depth + bandDepth < fadeDepth)
+							? depth + bandDepth
+							: fadeDepth;
+
+						const float topZ =
+							rebornWaterZ - depth;
+
+						const float bottomZ =
+							rebornWaterZ - nextDepth;
+
+						const float midpointDepth =
+							(depth + nextDepth) * 0.5f;
+
+						const float opacity =
+							maxOpacity *
+							(1.0f - midpointDepth / fadeDepth);
+
+						float upperBandPlane[4] =
+						{
+							0.0f,
+							0.0f,
+							-1.0f,
+							topZ
+						};
+
+						float lowerBandPlane[4] =
+						{
+							0.0f,
+							0.0f,
+							1.0f,
+							-bottomZ
+						};
+
+						DX8Wrapper::Set_DX8_Clip_Plane(
+							0,
+							upperBandPlane);
+
+						DX8Wrapper::Set_DX8_Clip_Plane(
+							1,
+							lowerBandPlane);
+
+						DX8Wrapper::Set_DX8_Render_State(
+							D3DRS_CLIPPLANEENABLE,
+							D3DCLIPPLANE0 | D3DCLIPPLANE1);
+
+						vmaterial->Set_Opacity(opacity);
+
+						DX8Wrapper::Set_Material(nullptr);
+						DX8Wrapper::Set_Material(vmaterial);
+
+						DX8Wrapper::Apply_Render_State_Changes();
+
+						renderer->Render(
+							mesh->Get_Base_Vertex_Offset());
+					}
+
+					DX8Wrapper::Set_DX8_Render_State(
+						D3DRS_CLIPPLANEENABLE,
+						0);
 
 					vmaterial->Set_Opacity(oldOpacity);
+
 					DX8Wrapper::Set_Shader(theShader);
-					DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, 0);
 
 					DX8Wrapper::Set_Material(nullptr);
 					DX8Wrapper::Set_Material(vmaterial);
