@@ -513,36 +513,36 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 									const Real bottomZ = box.Center.Z - box.Extent.Z;
 									const Real topZ = box.Center.Z + box.Extent.Z;
 
-									if (bottomZ >= waterZ || topZ <= waterZ)
-										continue;
-
-									Bool alreadyAdded = FALSE;
-
-									for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
-										m_rebornUnderwaterRenderObjects.begin();
-										it != m_rebornUnderwaterRenderObjects.end();
-										++it)
+									if (bottomZ < waterZ && topZ > waterZ)
 									{
-										if (it->renderObject == rootRenderObj)
+										Bool alreadyAdded = FALSE;
+
+										for (std::vector<RebornUnderwaterRenderObject>::const_iterator it =
+											m_rebornUnderwaterRenderObjects.begin();
+											it != m_rebornUnderwaterRenderObjects.end();
+											++it)
 										{
-											alreadyAdded = TRUE;
-											break;
+											if (it->renderObject == rootRenderObj)
+											{
+												alreadyAdded = TRUE;
+												break;
+											}
 										}
-									}
 
-									if (!alreadyAdded)
-									{
-										RebornUnderwaterRenderObject underwaterObject;
+										if (!alreadyAdded)
+										{
+											RebornUnderwaterRenderObject underwaterObject;
 
-										underwaterObject.renderObject = rootRenderObj;
-										underwaterObject.waterZ = waterZ;
+											underwaterObject.renderObject = rootRenderObj;
+											underwaterObject.waterZ = waterZ;
 
-										m_rebornUnderwaterRenderObjects.push_back(
-											underwaterObject);
+											m_rebornUnderwaterRenderObjects.push_back(
+												underwaterObject);
 
-										Reborn_Add_Underwater_Render_Object(
-											rootRenderObj,
-											waterZ);
+											Reborn_Add_Underwater_Render_Object(
+												rootRenderObj,
+												waterZ);
+										}
 									}
 								}
 							}
