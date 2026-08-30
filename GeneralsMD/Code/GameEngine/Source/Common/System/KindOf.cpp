@@ -43,6 +43,7 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"SHRUBBERY",
 	"STRUCTURE",
   "MOBILE_STRUCTURE",
+  "MOVES_REVERSE",
 	"INFANTRY",
 	"VEHICLE",
 	"AIRCRAFT",

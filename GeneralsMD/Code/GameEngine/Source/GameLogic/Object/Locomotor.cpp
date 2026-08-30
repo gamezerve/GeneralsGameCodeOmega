@@ -939,12 +939,24 @@ void Locomotor::locoUpdate_moveTowardsAngle(Object* obj, Real goalAngle)
 }
 
 //-------------------------------------------------------------------------------------------------
-PhysicsTurningType Locomotor::rotateTowardsPosition(Object* obj, const Coord3D& goalPos, Real *relAngle)
+PhysicsTurningType Locomotor::rotateTowardsPosition(Object* obj, const Coord3D& goalPos, Real* relAngle)
 {
 	BodyDamageType bdt = obj->getBodyModule()->getDamageState();
 	Real turnRate = getMaxTurnRate(bdt);
 
-	PhysicsTurningType rotating = rotateObjAroundLocoPivot(obj, goalPos, turnRate, relAngle);
+	Coord3D rotationGoal = goalPos;
+
+	if (obj->isKindOf(KINDOF_MOVES_REVERSE))
+	{
+		const Coord3D* pos = obj->getPosition();
+
+		rotationGoal.x = pos->x - (goalPos.x - pos->x);
+		rotationGoal.y = pos->y - (goalPos.y - pos->y);
+	}
+
+	PhysicsTurningType rotating =
+		rotateObjAroundLocoPivot(obj, rotationGoal, turnRate, relAngle);
+
 	return rotating;
 }
 
@@ -2410,6 +2422,11 @@ void Locomotor::moveTowardsPositionOther(Object* obj, PhysicsBehavior *physics, 
 	Real goalSpeed = desiredSpeed;
 	Real actualSpeed = physics->getForwardSpeed2D();
 
+	if (obj->isKindOf(KINDOF_MOVES_REVERSE))
+	{
+		actualSpeed = -actualSpeed;
+	}
+
 	// Locomotion for other things, ie don't know what it is jba :)
 	//
 	// Orient toward goal position
@@ -2418,6 +2435,12 @@ void Locomotor::moveTowardsPositionOther(Object* obj, PhysicsBehavior *physics, 
 	//
 	const Coord3D* pos =  obj->getPosition();
 	Coord3D dirToApplyForce = *obj->getUnitDirectionVector2D();
+
+	if (obj->isKindOf(KINDOF_MOVES_REVERSE))
+	{
+		dirToApplyForce.x = -dirToApplyForce.x;
+		dirToApplyForce.y = -dirToApplyForce.y;
+	}
 
 //DEBUG_ASSERTLOG(!getFlag(ULTRA_ACCURATE),("thresh %f %f (%f %f)",
 //fabs(goalPos.y - pos->y),fabs(goalPos.x - pos->x),
