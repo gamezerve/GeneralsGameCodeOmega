@@ -1507,7 +1507,7 @@ GameMessageDisposition SelectionTranslator::onMetaSelectTeam(MAYBE_UNUSED const 
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					if (numObjs > 0)
 					{
@@ -1532,7 +1532,7 @@ GameMessageDisposition SelectionTranslator::onMetaSelectTeam(MAYBE_UNUSED const 
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					for (Int i = 0; i < numObjs; ++i)
 					{
@@ -1575,7 +1575,7 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					if (numObjs > 0)
 					{
@@ -1606,7 +1606,7 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 
 					// TheSuperHackers @bugfix skyaero 22/07/2025 Can't select other units if you have a structure selected. So deselect the structure to prevent group force attack exploit.
@@ -1642,7 +1642,7 @@ GameMessageDisposition SelectionTranslator::onMetaViewTeam(MAYBE_UNUSED const Ga
 			Squad *selectedSquad = player->getHotkeySquad(group);
 			if (selectedSquad != nullptr)
 			{
-				VecObjectPtr objlist = selectedSquad->getLiveObjects();
+				const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 				Int numObjs = objlist.size();
 				if (numObjs > 0)
 				{

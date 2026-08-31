@@ -287,7 +287,7 @@ Bool UpgradeMuxData::isTriggeredBy(const std::string &upgrade) const
 	std::vector<AsciiString>::const_iterator it;
 	for( it = m_triggerUpgradeNames.begin(); it != m_triggerUpgradeNames.end();	++it)
 	{
-		AsciiString trigger = *it;
+		const AsciiString &trigger = *it;
 		if (stricmp(trigger.str(), upgrade.c_str()) == 0)
 		{
 			return TRUE;
