@@ -204,6 +204,7 @@ private:
 	void buildInfo( Bool createUnits = TRUE);
 	void refreshMovingCarrierGeometry();
 	void updateMovingCarrierParkedJets();
+	void updateMovingCarrierDeckAircraft();
 	void purgeDead();
 	void resetWakeFrame();
 	FlightDeckInfo* findPPI(ObjectID id);
@@ -227,6 +228,11 @@ private:
 	AICommandType									m_designatedCommand;
 	Coord3D												m_designatedPosition;
 	Bool													m_gotInfo;
+
+	Matrix3D											m_previousCarrierTransform;
+	Real													m_previousCarrierOrientation;
+	Bool													m_hasPreviousCarrierTransform;
+
 	Bool													m_rampUp[ MAX_RUNWAYS ];
 
 };

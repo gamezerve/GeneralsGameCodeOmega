@@ -133,6 +133,10 @@ FlightDeckBehavior::FlightDeckBehavior( Thing *thing, const ModuleData* moduleDa
 {
 	m_gotInfo = false;
 
+	m_hasPreviousCarrierTransform = FALSE;
+	m_previousCarrierOrientation = 0.0f;
+	m_hasPreviousCarrierTransform = FALSE;
+
 	m_nextHealFrame = FOREVER;
 	setWakeFrame(getObject(), UPDATE_SLEEP_NONE);
 	m_nextCleanupFrame = 0;
@@ -402,6 +406,159 @@ void FlightDeckBehavior::refreshMovingCarrierGeometry()
 			info.m_creation.push_back(pos);
 		}
 	}
+}
+
+void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
+{
+	Object* carrier = getObject();
+
+	if (!carrier)
+		return;
+
+	const Matrix3D* currentCarrierTransform =
+		carrier->getTransformMatrix();
+
+	if (!currentCarrierTransform)
+		return;
+
+	const Real currentCarrierOrientation =
+		carrier->getOrientation();
+
+	if (!m_hasPreviousCarrierTransform)
+	{
+		m_previousCarrierTransform = *currentCarrierTransform;
+		m_previousCarrierOrientation = currentCarrierOrientation;
+		m_hasPreviousCarrierTransform = TRUE;
+		return;
+	}
+
+	Matrix3D inversePreviousCarrierTransform;
+	m_previousCarrierTransform.Get_Orthogonal_Inverse(
+		inversePreviousCarrierTransform);
+
+	const Real orientationDelta =
+		stdAngleDiff(
+			currentCarrierOrientation,
+			m_previousCarrierOrientation);
+
+	for (std::vector<FlightDeckInfo>::iterator it = m_spaces.begin();
+		it != m_spaces.end();
+		++it)
+	{
+		if (it->m_objectInSpace == INVALID_ID)
+			continue;
+
+		Object* jet =
+			TheGameLogic->findObjectByID(it->m_objectInSpace);
+
+		if (!jet || jet->isEffectivelyDead())
+			continue;
+
+		JetAIUpdate* jetAI =
+			static_cast<JetAIUpdate*>(jet->getAI());
+
+		if (!jetAI)
+			continue;
+
+		//
+		// Keep aircraft attached to the carrier while they are
+		// on the deck, taxiing, landing or taking off.
+		//
+		const Bool followsCarrier =
+			!jet->isAirborneTarget() ||
+			jetAI->friend_isTakeoffOrLandingInProgress();
+
+		if (!followsCarrier)
+			continue;
+
+		//
+		// Convert the aircraft position from the previous carrier
+		// coordinate system into the current carrier coordinate system.
+		//
+		Vector3 localPosition(
+			jet->getPosition()->x,
+			jet->getPosition()->y,
+			jet->getPosition()->z);
+
+		Matrix3D::Transform_Vector(
+			inversePreviousCarrierTransform,
+			localPosition,
+			&localPosition);
+
+		Vector3 newWorldPosition;
+
+		Matrix3D::Transform_Vector(
+			*currentCarrierTransform,
+			localPosition,
+			&newWorldPosition);
+
+		Coord3D newPosition;
+		newPosition.x = newWorldPosition.X;
+		newPosition.y = newWorldPosition.Y;
+		newPosition.z = newWorldPosition.Z;
+
+		jet->setPosition(&newPosition);
+
+		//
+		// Rotate the aircraft by the same amount as the carrier.
+		//
+		jet->setOrientation(
+			jet->getOrientation() + orientationDelta);
+
+		//
+		// Move the aircraft's existing path with the carrier as well.
+		//
+		Path* path = jetAI->friend_getPath();
+
+		if (path)
+		{
+			for (PathNode* node = path->getFirstNode();
+				node;
+				node = node->getNext())
+			{
+				Vector3 localNode(
+					node->getPosition()->x,
+					node->getPosition()->y,
+					node->getPosition()->z);
+
+				Matrix3D::Transform_Vector(
+					inversePreviousCarrierTransform,
+					localNode,
+					&localNode);
+
+				Vector3 newWorldNode;
+
+				Matrix3D::Transform_Vector(
+					*currentCarrierTransform,
+					localNode,
+					&newWorldNode);
+
+				Coord3D newNodePosition;
+				newNodePosition.x = newWorldNode.X;
+				newNodePosition.y = newWorldNode.Y;
+				newNodePosition.z = newWorldNode.Z;
+
+				node->setPosition(&newNodePosition);
+			}
+
+			//
+			// Node positions changed, so refresh the cached optimized
+			// direction and distance values.
+			//
+			for (PathNode* node = path->getFirstNode();
+				node;
+				node = node->getNext())
+			{
+				PathNode* nextOptimized =
+					node->getNextOptimized();
+
+				node->setNextOptimized(nextOptimized);
+			}
+		}
+	}
+
+	m_previousCarrierTransform = *currentCarrierTransform;
+	m_previousCarrierOrientation = currentCarrierOrientation;
 }
 
 void FlightDeckBehavior::updateMovingCarrierParkedJets()
@@ -1292,9 +1449,11 @@ UpdateSleepTime FlightDeckBehavior::update()
 
 	if (data->m_movingCarrier)
 	{
-		refreshMovingCarrierGeometry();
-		updateMovingCarrierParkedJets();
 		AIUpdateInterface::update();
+
+		refreshMovingCarrierGeometry();
+		updateMovingCarrierDeckAircraft();
+		updateMovingCarrierParkedJets();
 	}
 
 	UnsignedInt now = TheGameLogic->getFrame();
