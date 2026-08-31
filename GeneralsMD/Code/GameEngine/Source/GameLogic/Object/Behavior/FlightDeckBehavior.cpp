@@ -1220,8 +1220,13 @@ void FlightDeckBehavior::killAllParkedUnits()
 			JetAIUpdate* ju = (JetAIUpdate *)obj->findUpdateModule(jetKey);
 			Bool takeoffOrLanding = ju ? ju->friend_isTakeoffOrLandingInProgress() : false;
 
-			if (obj->isAboveTerrain() && !takeoffOrLanding)
-				continue;
+			//if (obj->isAboveTerrain() && !takeoffOrLanding)
+			//	continue;
+			if (!getObject()->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				if (obj->isAboveTerrain() && !takeoffOrLanding)
+					continue;
+			}
 
 			obj->kill();
 		}
@@ -1234,6 +1239,37 @@ void FlightDeckBehavior::killAllParkedUnits()
 void FlightDeckBehavior::onDie( const DamageInfo *damageInfo )
 {
 	killAllParkedUnits();
+
+	Object* object = getObject();
+
+	if (!object || !object->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+		return;
+
+	Drawable* draw = object->getDrawable();
+
+	if (draw)
+	{
+		for (Int i = 0; i < getFlightDeckBehaviorModuleData()->m_numCols; ++i)
+		{
+			ModelConditionFlagType opening =
+				(ModelConditionFlagType)(
+					MODELCONDITION_DOOR_2_OPENING +
+					i * NUM_MODELCONDITION_DOOR_STATES);
+
+			ModelConditionFlagType closing =
+				(ModelConditionFlagType)(
+					MODELCONDITION_DOOR_2_CLOSING +
+					i * NUM_MODELCONDITION_DOOR_STATES);
+
+			draw->clearModelConditionState(opening);
+			draw->clearModelConditionState(closing);
+
+			m_rampUp[i] = FALSE;
+			m_rampUpFrame[i] = FOREVER;
+			m_lowerRampFrame[i] = FOREVER;
+			m_catapultSystemFrame[i] = FOREVER;
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1247,6 +1283,12 @@ UpdateSleepTime FlightDeckBehavior::update()
 	purgeDead();
 
 	const FlightDeckBehaviorModuleData* data = getFlightDeckBehaviorModuleData();
+
+	if (getObject()->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
+		getObject()->isEffectivelyDead())
+	{
+		return UPDATE_SLEEP_NONE;
+	}
 
 	if (data->m_movingCarrier)
 	{

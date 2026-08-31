@@ -173,6 +173,7 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_DEMOTRAP,								///< Added strictly only for disarming purposes. They don't act like mines which have rendering and selection implications!
 	KINDOF_CONSERVATIVE_BUILDING,		///< Conservative structures aren't considered part of your base for sneak attack boundary calculations...
 	KINDOF_IGNORE_DOCKING_BONES,		///< Structure will not look up docking bones. Patch 1.03 hack.
+	KINDOF_AIRCRAFT_CARRIER_RO,		  ///< Reborn: Aircraft carrier that is buildable
 	KINDOF_CAN_ATTACK_RIDER,
 	KINDOF_NAVAL_YARD,
 	KINDOF_TAUNT,

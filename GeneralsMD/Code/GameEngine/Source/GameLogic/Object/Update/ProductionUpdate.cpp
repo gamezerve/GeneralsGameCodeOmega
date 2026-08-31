@@ -610,6 +610,12 @@ UpdateSleepTime ProductionUpdate::update()
 	UnsignedInt now = TheGameLogic->getFrame();
 	Object *us = getObject();
 
+	if (us->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
+		us->isEffectivelyDead())
+	{
+		return UPDATE_SLEEP_NONE;
+	}
+
 	// update the door behaviors
 	if( d->m_numDoorAnimations > 0 )
 		updateDoors();
@@ -1128,6 +1134,33 @@ void ProductionUpdate::onDie( const DamageInfo *damageInfo )
 {
 	// we need to cancel all of our production on death
 	cancelAndRefundAllProduction();
+
+	Object* object = getObject();
+
+	if (object && object->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+	{
+		Drawable* draw = object->getDrawable();
+
+		if (draw)
+		{
+			draw->clearModelConditionState(MODELCONDITION_DOOR_1_OPENING);
+			draw->clearModelConditionState(MODELCONDITION_DOOR_1_WAITING_OPEN);
+			draw->clearModelConditionState(MODELCONDITION_DOOR_1_WAITING_TO_CLOSE);
+			draw->clearModelConditionState(MODELCONDITION_DOOR_1_CLOSING);
+		}
+
+		for (Int i = 0; i < DOOR_COUNT_MAX; ++i)
+		{
+			m_doors[i].m_doorOpenedFrame = 0;
+			m_doors[i].m_doorWaitOpenFrame = 0;
+			m_doors[i].m_doorClosedFrame = 0;
+			m_doors[i].m_holdOpen = false;
+		}
+
+		m_clearFlags.clear();
+		m_setFlags.clear();
+		m_flagsDirty = FALSE;
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
