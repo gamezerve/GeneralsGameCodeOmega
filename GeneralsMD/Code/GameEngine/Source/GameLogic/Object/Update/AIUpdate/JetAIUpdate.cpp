@@ -806,9 +806,27 @@ public:
 		setAdjustsDestination(false);	// precision is necessary
 		setAdjustFinalDestination(false); // especially at the endpoint!
 
-		jetAI->friend_setGoalPath( &path );
+		jetAI->friend_setGoalPath(&path);
 
 		StateReturnType ret = AIFollowPathState::onEnter();
+
+		if (!m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				Coord3D runwayDirection = ppinfo.runwayEnd;
+				runwayDirection.sub(ppinfo.runwayStart);
+
+				Real runwayOrientation =
+					atan2(runwayDirection.y, runwayDirection.x);
+
+				jet->setOrientation(runwayOrientation);
+			}
+		}
 
 		return ret;
 	}
@@ -1474,6 +1492,32 @@ public:
 		if (jet->isEffectivelyDead())
 			return STATE_FAILURE;
 
+		Object* producer =
+			TheGameLogic->findObjectByID(jet->getProducerID());
+
+		if (producer &&
+			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+		{
+			ParkingPlaceBehaviorInterface* pp =
+				getPP(jet->getProducerID());
+
+			if (pp)
+			{
+				ParkingPlaceBehaviorInterface::PPInfo ppinfo;
+
+				pp->calcPPInfo(
+					jet->getID(),
+					&ppinfo);
+
+				//
+				// Keep the facing target attached to the moving carrier
+				// while waiting for takeoff.
+				//
+				getMachine()->setGoalPosition(
+					&ppinfo.runwayEnd);
+			}
+		}
+
 		// always call this.
 		StateReturnType superStatus = AIFaceState::update();
 
@@ -1995,6 +2039,12 @@ void JetAIUpdate::getProducerLocation()
 
 	setFlag(HAS_PRODUCER_LOCATION, true);
 
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool JetAIUpdate::friend_isTakingOff() const
+{
+	return getStateMachine()->getCurrentStateID() == TAKING_OFF;
 }
 
 //-------------------------------------------------------------------------------------------------

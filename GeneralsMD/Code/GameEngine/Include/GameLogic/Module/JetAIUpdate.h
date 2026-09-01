@@ -127,6 +127,8 @@ public:
 	AICommandType friend_getPendingCommandType() const;
 	void friend_purgePendingCommand();
 
+	Bool friend_isTakingOff() const;
+
 protected:
 
 	virtual AIStateMachine* makeStateMachine() override;

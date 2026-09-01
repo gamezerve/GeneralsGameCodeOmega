@@ -464,9 +464,11 @@ void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
 		// Keep aircraft attached to the carrier while they are
 		// on the deck, taxiing, landing or taking off.
 		//
+
+
 		const Bool followsCarrier =
 			!jet->isAirborneTarget() ||
-			jetAI->friend_isTakeoffOrLandingInProgress();
+			jetAI->friend_isTakingOff();
 
 		if (!followsCarrier)
 			continue;
