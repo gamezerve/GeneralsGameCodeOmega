@@ -910,38 +910,13 @@ public:
 					{
 						if (!m_movingCarrierDepartureCaptured)
 						{
-							const Coord3D* jetPos =
-								jet->getPosition();
-
-							Coord3D direction =
-								ppinfo.runwayEnd;
-
-							direction.sub(
-								ppinfo.runwayApproach);
-
-							Real length =
-								direction.length();
-
-							if (length > 0.001f)
-							{
-								direction.x /= length;
-								direction.y /= length;
-								direction.z = 0.0f;
-							}
-
-							const Real departureDistance =
-								600.0f;
-
-							m_movingCarrierDepartureGoal.x =
-								jetPos->x +
-								direction.x * departureDistance;
-
-							m_movingCarrierDepartureGoal.y =
-								jetPos->y +
-								direction.y * departureDistance;
-
-							m_movingCarrierDepartureGoal.z =
-								ppinfo.runwayApproach.z;
+							//
+							// Capture the current takeoff runway exit when the jet
+							// leaves the moving carrier. From this point on, the
+							// departure target must no longer move with the carrier.
+							//
+							m_movingCarrierDepartureGoal =
+								ppinfo.runwayExit;
 
 							m_movingCarrierDepartureCaptured =
 								true;
@@ -949,10 +924,7 @@ public:
 							m_goalPosition =
 								m_movingCarrierDepartureGoal;
 
-							// The existing path was calculated from the old carrier-relative
-							// runway approach. Rebuild it once using the fixed departure goal.
 							computePath();
-
 						}
 
 						m_goalPosition =
