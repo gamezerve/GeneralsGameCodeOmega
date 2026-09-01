@@ -712,14 +712,41 @@ private:
 #endif
 	Bool			m_landing;
 	Bool			m_landingSoundPlayed;
+	Bool      m_movingCarrierDepartureCaptured;
+	Coord3D   m_movingCarrierDepartureGoal;
 
 public:
-	JetTakeoffOrLandingState( StateMachine *machine, Bool landing ) : m_landing(landing), AIFollowPathState( machine, "JetTakeoffOrLandingState" ) { }
+	JetTakeoffOrLandingState( StateMachine *machine, Bool landing ) : m_landing(landing), AIFollowPathState( machine, "JetTakeoffOrLandingState")
+		, m_movingCarrierDepartureCaptured(false)
+	{
+		m_movingCarrierDepartureGoal.x = 0.0f;
+		m_movingCarrierDepartureGoal.y = 0.0f;
+		m_movingCarrierDepartureGoal.z = 0.0f;
+	}
 
 	virtual StateReturnType onEnter() override
 	{
 		Object* jet = getMachineOwner();
 		JetAIUpdate* jetAI = (JetAIUpdate*)jet->getAIUpdateInterface();
+
+		m_movingCarrierDepartureCaptured = false;
+
+		m_movingCarrierDepartureGoal.x = 0.0f;
+		m_movingCarrierDepartureGoal.y = 0.0f;
+		m_movingCarrierDepartureGoal.z = 0.0f;
+
+		if (!m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				jetAI->friend_setFollowMovingCarrierDeck(true);
+			}
+		}
+
 		if (!jetAI)
 			return STATE_FAILURE;
 
@@ -841,6 +868,103 @@ public:
 		if( !jetAI )
 			return STATE_FAILURE;
 
+		if (!m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				ParkingPlaceBehaviorInterface* pp =
+					getPP(jet->getProducerID());
+
+				if (pp)
+				{
+					ParkingPlaceBehaviorInterface::PPInfo ppinfo;
+					pp->calcPPInfo(jet->getID(), &ppinfo);
+
+					ppinfo.runwayEnd.z =
+						ppinfo.runwayApproach.z;
+
+					const Int currentIndex =
+						getCurPathIndex();
+
+					if (!m_landing &&
+						currentIndex >= 1)
+					{
+						jetAI->friend_setFollowMovingCarrierDeck(false);
+					}
+
+					if (currentIndex == 0)
+					{
+						// While the jet is still leaving the deck, keep the
+						// takeoff goal attached to the moving carrier.
+						m_goalPosition =
+							ppinfo.runwayEnd;
+
+						m_movingCarrierDepartureCaptured =
+							false;
+					}
+					else if (currentIndex == 1)
+					{
+						if (!m_movingCarrierDepartureCaptured)
+						{
+							const Coord3D* jetPos =
+								jet->getPosition();
+
+							Coord3D direction =
+								ppinfo.runwayEnd;
+
+							direction.sub(
+								ppinfo.runwayApproach);
+
+							Real length =
+								direction.length();
+
+							if (length > 0.001f)
+							{
+								direction.x /= length;
+								direction.y /= length;
+								direction.z = 0.0f;
+							}
+
+							const Real departureDistance =
+								600.0f;
+
+							m_movingCarrierDepartureGoal.x =
+								jetPos->x +
+								direction.x * departureDistance;
+
+							m_movingCarrierDepartureGoal.y =
+								jetPos->y +
+								direction.y * departureDistance;
+
+							m_movingCarrierDepartureGoal.z =
+								ppinfo.runwayApproach.z;
+
+							m_movingCarrierDepartureCaptured =
+								true;
+
+							m_goalPosition =
+								m_movingCarrierDepartureGoal;
+
+							// The existing path was calculated from the old carrier-relative
+							// runway approach. Rebuild it once using the fixed departure goal.
+							computePath();
+
+						}
+
+						m_goalPosition =
+							m_movingCarrierDepartureGoal;
+					}
+
+					getMachine()->setGoalPosition(
+						&m_goalPosition);
+				}
+			}
+		}
+
 		if (m_landing)
 		{
 #ifdef CIRCLE_FOR_LANDING
@@ -904,7 +1028,102 @@ public:
 			jetAI->getCurLocomotor()->setMaxLift(m_maxLift * ratio);
 		}
 
+#if defined(RTS_DEBUG)
+		if (!m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				ParkingPlaceBehaviorInterface* pp =
+					getPP(jet->getProducerID());
+
+				if (pp)
+				{
+					ParkingPlaceBehaviorInterface::PPInfo ppinfo;
+					pp->calcPPInfo(jet->getID(), &ppinfo);
+
+					DEBUG_LOG((
+						"ROCarrierJet TAKEOFF PATH "
+						"frame=%u id=%u index=%d "
+						"jetOrient=%.4f carrierOrient=%.4f "
+						"goal=(%.2f, %.2f, %.2f) "
+						"runwayEnd=(%.2f, %.2f, %.2f) "
+						"approach=(%.2f, %.2f, %.2f)\n",
+
+						TheGameLogic->getFrame(),
+						jet->getID(),
+						getCurPathIndex(),
+
+						jet->getOrientation(),
+						producer->getOrientation(),
+
+						m_goalPosition.x,
+						m_goalPosition.y,
+						m_goalPosition.z,
+
+						ppinfo.runwayEnd.x,
+						ppinfo.runwayEnd.y,
+						ppinfo.runwayEnd.z,
+
+						ppinfo.runwayApproach.x,
+						ppinfo.runwayApproach.y,
+						ppinfo.runwayApproach.z
+						));
+				}
+			}
+		}
+#endif
+
+#if defined(RTS_DEBUG)
+		Real orientBeforeFollowPath = jet->getOrientation();
+		Coord3D posBeforeFollowPath = *jet->getPosition();
+		Int pathIndexBefore = getCurPathIndex();
+#endif
+
 		StateReturnType ret = AIFollowPathState::update();
+
+#if defined(RTS_DEBUG)
+		Object* producer =
+			TheGameLogic->findObjectByID(jet->getProducerID());
+
+		if (!m_landing &&
+			producer &&
+			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+		{
+			DEBUG_LOG((
+				"ROCarrierJet FOLLOWPATH "
+				"frame=%u id=%u "
+				"indexBefore=%d indexAfter=%d "
+				"orientBefore=%.4f orientAfter=%.4f "
+				"posBefore=(%.2f,%.2f,%.2f) "
+				"posAfter=(%.2f,%.2f,%.2f) "
+				"followCarrier=%d\n",
+
+				TheGameLogic->getFrame(),
+				jet->getID(),
+
+				pathIndexBefore,
+				getCurPathIndex(),
+
+				orientBeforeFollowPath,
+				jet->getOrientation(),
+
+				posBeforeFollowPath.x,
+				posBeforeFollowPath.y,
+				posBeforeFollowPath.z,
+
+				jet->getPosition()->x,
+				jet->getPosition()->y,
+				jet->getPosition()->z,
+
+				jetAI->friend_shouldFollowMovingCarrierDeck()
+				));
+		}
+#endif
+
 		return ret;
 	}
 
@@ -915,6 +1134,32 @@ public:
 		// just in case.
 		Object* jet = getMachineOwner();
 		JetAIUpdate* jetAI = (JetAIUpdate*)jet->getAIUpdateInterface();
+
+		jetAI->friend_setFollowMovingCarrierDeck(false);
+
+		Object* producer =
+			TheGameLogic->findObjectByID(jet->getProducerID());
+
+		if (!m_landing &&
+			producer &&
+			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+		{
+			DEBUG_LOG((
+				"ROCarrierJet TAKEOFF EXIT "
+				"frame=%u id=%u "
+				"jetOrient=%.4f carrierOrient=%.4f "
+				"pos=(%.2f, %.2f, %.2f)\n",
+
+				TheGameLogic->getFrame(),
+				jet->getID(),
+				jet->getOrientation(),
+				producer->getOrientation(),
+				jet->getPosition()->x,
+				jet->getPosition()->y,
+				jet->getPosition()->z
+				));
+		}
+
 		if( !jetAI )
 			return;
 

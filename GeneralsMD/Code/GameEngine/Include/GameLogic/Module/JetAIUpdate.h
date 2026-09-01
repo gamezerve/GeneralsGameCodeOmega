@@ -129,6 +129,16 @@ public:
 
 	Bool friend_isTakingOff() const;
 
+	void friend_setFollowMovingCarrierDeck(Bool v)
+	{
+		setFlag(FOLLOW_MOVING_CARRIER_DECK, v);
+	}
+
+	Bool friend_shouldFollowMovingCarrierDeck() const
+	{
+		return getFlag(FOLLOW_MOVING_CARRIER_DECK);
+	}
+
 protected:
 
 	virtual AIStateMachine* makeStateMachine() override;
@@ -156,7 +166,8 @@ private:
 		USE_SPECIAL_RETURN_LOCO,
 		ALLOW_CIRCLING,
 		ALLOW_INTERRUPT_AND_RESUME_OF_CUR_STATE_FOR_RELOAD,
-		TAXI_IN_PROGRESS
+		TAXI_IN_PROGRESS,
+		FOLLOW_MOVING_CARRIER_DECK
 	};
 
 	Coord3D									m_producerLocation;		///< remember this, so that if our producer dies, we have a place to circle aimlessly
