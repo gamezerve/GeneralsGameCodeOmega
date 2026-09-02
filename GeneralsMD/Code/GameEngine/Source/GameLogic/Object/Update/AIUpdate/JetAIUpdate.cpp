@@ -750,6 +750,18 @@ public:
 		if (!jetAI)
 			return STATE_FAILURE;
 
+		if (m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				jetAI->friend_setFollowMovingCarrierDeck(true);
+			}
+		}
+
 		if (jet->isEffectivelyDead())
 			return STATE_FAILURE;
 
@@ -801,6 +813,13 @@ public:
 			}
 		}
 
+		Object* producer =
+			TheGameLogic->findObjectByID(jet->getProducerID());
+
+		const Bool isMovingCarrier =
+			producer &&
+			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO);
+
 		std::vector<Coord3D> path;
 		if (m_landing)
 		{
@@ -808,7 +827,17 @@ public:
 			m_circleForLandingPos = ppinfo.runwayApproach;
 			m_circleForLandingPos.z = (ppinfo.runwayEnd.z + ppinfo.runwayApproach.z)*0.5f;
 #else
-			path.push_back(ppinfo.runwayApproach);
+
+			if (isMovingCarrier)
+			{
+				path.push_back(ppinfo.runwayLandingStart);
+				path.push_back(ppinfo.runwayLandingEnd);
+			}
+			else
+			{
+				path.push_back(ppinfo.runwayEnd);
+				path.push_back(ppinfo.runwayStart);
+			}
 #endif
 			if( jet->testStatus( OBJECT_STATUS_DECK_HEIGHT_OFFSET ) )
 			{
@@ -1055,6 +1084,54 @@ public:
 		Int pathIndexBefore = getCurPathIndex();
 #endif
 
+		if (m_landing)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(jet->getProducerID());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			{
+				ParkingPlaceBehaviorInterface* pp =
+					getPP(jet->getProducerID());
+
+				if (pp)
+				{
+					ParkingPlaceBehaviorInterface::PPInfo ppinfo;
+					pp->calcPPInfo(jet->getID(), &ppinfo);
+
+					const Int currentIndex =
+						getCurPathIndex();
+
+					if (currentIndex == 0)
+					{
+						m_goalPosition =
+							ppinfo.runwayApproach;
+					}
+					else if (currentIndex == 1)
+					{
+						m_goalPosition =
+							ppinfo.runwayLandingStart;
+					}
+					else if (currentIndex == 2)
+					{
+						m_goalPosition =
+							ppinfo.runwayLandingEnd;
+					}
+
+					getMachine()->setGoalPosition(
+						&m_goalPosition);
+
+					//
+					// The carrier may move or rotate while the jet is on
+					// final approach. Rebuild the active path so the jet
+					// continues to approach along the current runway line.
+					//
+					computePath();
+				}
+			}
+		}
+
 		StateReturnType ret = AIFollowPathState::update();
 
 #if defined(RTS_DEBUG)
@@ -1130,6 +1207,11 @@ public:
 				jet->getPosition()->y,
 				jet->getPosition()->z
 				));
+		}
+
+		if (m_landing)
+		{
+			jetAI->friend_setFollowMovingCarrierDeck(false);
 		}
 
 		if( !jetAI )
