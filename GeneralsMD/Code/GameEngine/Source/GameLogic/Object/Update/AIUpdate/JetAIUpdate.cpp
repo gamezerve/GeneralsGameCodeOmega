@@ -825,25 +825,33 @@ public:
 		{
 #ifdef CIRCLE_FOR_LANDING
 			m_circleForLandingPos = ppinfo.runwayApproach;
-			m_circleForLandingPos.z = (ppinfo.runwayEnd.z + ppinfo.runwayApproach.z)*0.5f;
+
+			if (isMovingCarrier)
+			{
+				m_circleForLandingPos.z =
+					(ppinfo.runwayLandingStart.z +
+						ppinfo.runwayApproach.z) * 0.5f;
+			}
+			else
+			{
+				m_circleForLandingPos.z =
+					(ppinfo.runwayEnd.z +
+						ppinfo.runwayApproach.z) * 0.5f;
+			}
 #else
+			path.push_back(ppinfo.runwayApproach);
+#endif
 
 			if (isMovingCarrier)
 			{
 				path.push_back(ppinfo.runwayLandingStart);
 				path.push_back(ppinfo.runwayLandingEnd);
 			}
-			else
-			{
-				path.push_back(ppinfo.runwayEnd);
-				path.push_back(ppinfo.runwayStart);
-			}
-#endif
-			if( jet->testStatus( OBJECT_STATUS_DECK_HEIGHT_OFFSET ) )
+			else if (jet->testStatus(OBJECT_STATUS_DECK_HEIGHT_OFFSET))
 			{
 				//Assigned to an aircraft carrier which has separate landing strips.
-				path.push_back( ppinfo.runwayLandingStart );
-				path.push_back( ppinfo.runwayLandingEnd );
+				path.push_back(ppinfo.runwayLandingStart);
+				path.push_back(ppinfo.runwayLandingEnd);
 			}
 			else
 			{
