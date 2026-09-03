@@ -499,11 +499,6 @@ void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
 		newPosition.y = newWorldPosition.Y;
 		newPosition.z = newWorldPosition.Z;
 
-#if defined(RTS_DEBUG)
-		Real orientBeforeCarrierTransform =
-			jet->getOrientation();
-#endif
-
 		jet->setPosition(&newPosition);
 
 		//
@@ -511,21 +506,6 @@ void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
 		//
 		jet->setOrientation(
 			jet->getOrientation() + orientationDelta);
-
-#if defined(RTS_DEBUG)
-		DEBUG_LOG((
-			"ROCarrierJet CARRIERTRANSFORM "
-			"frame=%u id=%u "
-			"follow=%d "
-			"orientBefore=%.4f orientAfter=%.4f\n",
-
-			TheGameLogic->getFrame(),
-			jet->getID(),
-			followsCarrier,
-			orientBeforeCarrierTransform,
-			jet->getOrientation()
-			));
-#endif
 
 		//
 		// Move the aircraft's existing path with the carrier as well.

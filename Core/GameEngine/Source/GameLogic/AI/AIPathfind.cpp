@@ -923,6 +923,13 @@ void Path::computePointOnPath(
 		Real offsetDistSq = toDistSqr - sqr(alongPathDist);
 		Real offsetDist = (offsetDistSq <= 0.0) ? 0.0 : sqrt(offsetDistSq);
 
+		//
+		// Reborn: Boats must account for transient blockers while following
+		// a path so they do not shortcut through other naval units.
+		//
+		Bool considerBlockedUnits =
+			obj->isKindOf(KINDOF_BOAT);
+
 		// If we are basically on the path, return the next path node as the movement goal.
 		// However, the farther off the path we get, the movement goal becomes closer to our
 		// projected position on the path.  If we are very far off the path, we will move
@@ -935,8 +942,16 @@ void Path::computePointOnPath(
 
 		Bool gotPos = false;
 		CRCDEBUG_LOG(("Path::computePointOnPath() calling isLinePassable() 1"));
-		if (TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), out.layer, pos, *nextNodePos,
-			false, true ))
+		//if (TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), out.layer, pos, *nextNodePos,
+		//	false, true ))
+		if (TheAI->pathfinder()->isLinePassable(
+			obj,
+			locomotorSet.getValidSurfaces(),
+			out.layer,
+			pos,
+			*nextNodePos,
+			considerBlockedUnits,
+			true))
 		{
 			out.posOnPath = *nextNodePos;
 			gotPos = true;
@@ -969,7 +984,15 @@ void Path::computePointOnPath(
 					tryPos.y = (nextNodePos->y + next->getPosition()->y) * 0.5;
 					tryPos.z = nextNodePos->z;
 					CRCDEBUG_LOG(("Path::computePointOnPath() calling isLinePassable() 2"));
-					if (veryClose || TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), closeNext->getLayer(), pos, tryPos, false, true ))
+					//if (veryClose || TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), closeNext->getLayer(), pos, tryPos, false, true ))
+					if (veryClose || TheAI->pathfinder()->isLinePassable(
+						obj,
+						locomotorSet.getValidSurfaces(),
+						closeNext->getLayer(),
+						pos,
+						tryPos,
+						considerBlockedUnits,
+						true))
 					{
 						gotPos = true;
 						out.posOnPath = tryPos;
@@ -987,7 +1010,15 @@ void Path::computePointOnPath(
 			out.posOnPath.z = closeNodePos->z;
 
 			CRCDEBUG_LOG(("Path::computePointOnPath() calling isLinePassable() 3"));
-			if (TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), out.layer, pos, out.posOnPath, false, true ))
+			//if (TheAI->pathfinder()->isLinePassable( obj, locomotorSet.getValidSurfaces(), out.layer, pos, out.posOnPath, false, true ))
+			if (TheAI->pathfinder()->isLinePassable(
+				obj,
+				locomotorSet.getValidSurfaces(),
+				out.layer,
+				pos,
+				out.posOnPath,
+				considerBlockedUnits,
+				true))
 			{
 				k = 0.5f;
 				gotPos = true;
@@ -1288,6 +1319,7 @@ void PathfindCell::reset()
 	m_blockedByAlly = false;
 	m_obstacleIsFence = false;
 	m_obstacleIsTransparent = false;
+	m_obstacleWasWater = false;
 
 	m_connectsToLayer = LAYER_INVALID;
 	m_layer = LAYER_GROUND;
@@ -1587,9 +1619,21 @@ inline ObjectID PathfindCell::getObstacleID() const
  */
 Bool PathfindCell::setTypeAsObstacle( Object *obstacle, Bool isFence, const ICoord2D &pos )
 {
-	if (m_type!=PathfindCell::CELL_CLEAR && m_type != PathfindCell::CELL_IMPASSABLE) {
+	//if (m_type!=PathfindCell::CELL_CLEAR && m_type != PathfindCell::CELL_IMPASSABLE) {
+	//	return false;
+	//}
+	Bool boatOnWater =
+		obstacle->isKindOf(KINDOF_BOAT) &&
+		m_type == PathfindCell::CELL_WATER;
+
+	if (m_type != PathfindCell::CELL_CLEAR &&
+		m_type != PathfindCell::CELL_IMPASSABLE &&
+		!boatOnWater)
+	{
 		return false;
 	}
+
+	m_obstacleWasWater = boatOnWater;
 
 	Bool isRubble = false;
 	if (obstacle->getBodyModule() && obstacle->getBodyModule()->getDamageState() == BODY_RUBBLE)
@@ -1673,34 +1717,59 @@ void PathfindCell::setType( CellType type )
  * Unflag this cell as an obstacle, from the given one.
  * Return true if this cell was previously flagged as an obstacle by this object.
  */
-Bool PathfindCell::removeObstacle( Object *obstacle )
+ /**
+	* Unflag this cell as an obstacle, from the given one.
+	* Return true if this cell was previously flagged as an obstacle by this object.
+	*/
+Bool PathfindCell::removeObstacle(Object* obstacle)
 {
-	if (m_type == PathfindCell::CELL_RUBBLE) {
-		m_type = PathfindCell::CELL_CLEAR;
+	PathfindCell::CellType restoredType =
+		m_obstacleWasWater
+		? PathfindCell::CELL_WATER
+		: PathfindCell::CELL_CLEAR;
+
+	if (m_type == PathfindCell::CELL_RUBBLE)
+	{
+		m_type = restoredType;
 	}
+
 #if RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
-	if (s_useFixedPathfinding) {
-		if (m_obstacleID != obstacle->getID()) return false;
-		m_type = PathfindCell::CELL_CLEAR;
+	if (s_useFixedPathfinding)
+	{
+		if (m_obstacleID != obstacle->getID())
+			return false;
+
+		m_type = restoredType;
 		m_obstacleID = INVALID_ID;
 		m_obstacleIsFence = false;
 		m_obstacleIsTransparent = false;
+		m_obstacleWasWater = false;
+
 		return true;
 	}
 
-	if (!m_info) return false;
-	if (m_info->m_obstacleID != obstacle->getID()) return false;
-	m_type = PathfindCell::CELL_CLEAR;
+	if (!m_info)
+		return false;
+
+	if (m_info->m_obstacleID != obstacle->getID())
+		return false;
+
+	m_type = restoredType;
 	m_info->m_obstacleID = INVALID_ID;
 	releaseInfo();
 
 #else
-	if (m_obstacleID != obstacle->getID()) return false;
-	m_type = PathfindCell::CELL_CLEAR;
+	if (m_obstacleID != obstacle->getID())
+		return false;
+
+	m_type = restoredType;
 #endif
+
 	m_obstacleID = INVALID_ID;
 	m_obstacleIsFence = false;
 	m_obstacleIsTransparent = false;
+	m_obstacleWasWater = false;
+
 	return true;
 }
 
@@ -4411,6 +4480,19 @@ void Pathfinder::classifyObjectFootprint( Object *obj, Bool insert )
 		return;  // Only path around structures.
 	}
 	if (obj->isMobile()) {
+
+		if (obj->isKindOf(KINDOF_BOAT))
+		{
+			DEBUG_LOG((
+				"ROBoatPath BEFORE_MOBILE_CHECK "
+				"name=%s id=%u mobile=%d immobileKindOf=%d\n",
+				obj->getTemplate()->getName().str(),
+				obj->getID(),
+				obj->isMobile(),
+				obj->isKindOf(KINDOF_IMMOBILE)
+				));
+		}
+
 		return; // mobile aren't obstacles.
 	}
 	/// For now, all small objects will not be obstacles
@@ -4423,11 +4505,35 @@ void Pathfinder::classifyObjectFootprint( Object *obj, Bool insert )
 		return; // Don't add bounds that are up in the air.
 	}
 #else
-	if (obj->getHeightAboveTerrain() > PATHFIND_CELL_SIZE_F && ( ! obj->isKindOf( KINDOF_BLAST_CRATER ) ) )
+	//if (obj->getHeightAboveTerrain() > PATHFIND_CELL_SIZE_F && ( ! obj->isKindOf( KINDOF_BLAST_CRATER ) ) )
+	if (!obj->isKindOf(KINDOF_BOAT) &&
+		obj->getHeightAboveTerrain() > PATHFIND_CELL_SIZE_F &&
+		(!obj->isKindOf(KINDOF_BLAST_CRATER)))
   {
 		return; // Don't add bounds that are up in the air.... unless a blast crater wants to do just that
 	}
 #endif
+
+	if (obj->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatPath CLASSIFY "
+			"frame=%u name=%s id=%u "
+			"insert=%d structure=%d mobile=%d "
+			"heightAboveTerrain=%.2f geom=%d major=%.2f minor=%.2f\n",
+			TheGameLogic->getFrame(),
+			obj->getTemplate()->getName().str(),
+			obj->getID(),
+			insert,
+			obj->isKindOf(KINDOF_STRUCTURE),
+			obj->isMobile(),
+			obj->getHeightAboveTerrain(),
+			obj->getGeometryInfo().getGeomType(),
+			obj->getGeometryInfo().getMajorRadius(),
+			obj->getGeometryInfo().getMinorRadius()
+			));
+	}
+
 	internal_classifyObjectFootprint(obj, insert);
 }
 
@@ -4636,31 +4742,88 @@ void Pathfinder::internal_classifyObjectFootprint( Object *obj, Bool insert )
 	}
 	// Check for pinched cells, and close them off.
 
-	for( j=cellBounds.lo.y; j<=cellBounds.hi.y; j++ )
-	{
-		for( i=cellBounds.lo.x; i<=cellBounds.hi.x; i++ )
-		{
-			m_map[i][j].setPinched(false);
-			if (m_map[i][j].getType() == PathfindCell::CELL_CLEAR) {
-				Int totalCount = 0;
-				Int orthogonalCount = 0;
-				Int k, l;
-				for (k=i-1; k<i+2; k++) {
-					if (k<m_extent.lo.x || k> m_extent.hi.x) continue;
-					for (l=j-1; l<j+2; l++) {
-						if (l<m_extent.lo.y || l> m_extent.hi.y) continue;
-						if ((k==i) && (j==l)) continue;
-						if (m_map[k][l].getType() == PathfindCell::CELL_CLEAR) {
-							totalCount++;
-							if ((k==i) || (l==j)) {
-								orthogonalCount++;
-							}
-						}
+	//for( j=cellBounds.lo.y; j<=cellBounds.hi.y; j++ )
+	//{
+	//	for( i=cellBounds.lo.x; i<=cellBounds.hi.x; i++ )
+	//	{
+	//		m_map[i][j].setPinched(false);
+	//		if (m_map[i][j].getType() == PathfindCell::CELL_CLEAR) {
+	//			Int totalCount = 0;
+	//			Int orthogonalCount = 0;
+	//			Int k, l;
+	//			for (k=i-1; k<i+2; k++) {
+	//				if (k<m_extent.lo.x || k> m_extent.hi.x) continue;
+	//				for (l=j-1; l<j+2; l++) {
+	//					if (l<m_extent.lo.y || l> m_extent.hi.y) continue;
+	//					if ((k==i) && (j==l)) continue;
+	//					if (m_map[k][l].getType() == PathfindCell::CELL_CLEAR) {
+	//						totalCount++;
+	//						if ((k==i) || (l==j)) {
+	//							orthogonalCount++;
+	//						}
+	//					}
 
+	//				}
+	//			}
+	//			// If the total open cells are < 2 or total cells < 4, we are pinched.
+	//			if (orthogonalCount<2 || totalCount<4) {
+	//				m_map[i][j].setPinched(true);
+	//			}
+	//		}
+	//	}
+	//}
+
+	// Expand building bounds 1 cell.
+	Bool isBoat = obj->isKindOf(KINDOF_BOAT);
+
+	for (j = cellBounds.lo.y; j <= cellBounds.hi.y; j++)
+	{
+		for (i = cellBounds.lo.x; i <= cellBounds.hi.x; i++)
+		{
+			PathfindCell::CellType cellType = m_map[i][j].getType();
+
+			//
+			// Reborn: Boat obstacles are placed on water cells, so allow
+			// the normal one-cell obstacle clearance to extend over water.
+			//
+			Bool canExpandIntoCell =
+				cellType == PathfindCell::CELL_CLEAR ||
+				(isBoat && cellType == PathfindCell::CELL_WATER);
+
+			if (canExpandIntoCell)
+			{
+				Bool objectAdjacent = false;
+				Int k, l;
+
+				for (k = i - 1; k < i + 2; k++)
+				{
+					if (k<m_extent.lo.x || k>m_extent.hi.x)
+						continue;
+
+					for (l = j - 1; l < j + 2; l++)
+					{
+						if (l<m_extent.lo.y || l>m_extent.hi.y)
+							continue;
+
+						if ((k == i) && (l == j))
+							continue;
+
+						if ((k != i) && (l != j))
+							continue;
+
+						if (m_map[k][l].getType() == PathfindCell::CELL_OBSTACLE)
+						{
+							objectAdjacent = true;
+							break;
+						}
 					}
+
+					if (objectAdjacent)
+						break;
 				}
-				// If the total open cells are < 2 or total cells < 4, we are pinched.
-				if (orthogonalCount<2 || totalCount<4) {
+
+				if (objectAdjacent)
+				{
 					m_map[i][j].setPinched(true);
 				}
 			}
@@ -5199,6 +5362,38 @@ Bool Pathfinder::checkForMovement(const Object *obj, TCheckMovementInfo &info)
 			PathfindCell	*cell = getCell(info.layer,i, j);
 			if (!cell) {
 				return false; // off the map, so can't move here.
+			}
+
+			//
+			// Reborn: Boats use their full pathfinding radius so that the path
+			// keeps enough clearance for the moving vessel around other boats.
+			//
+			if (obj->isKindOf(KINDOF_BOAT) &&
+				cell->getType() == PathfindCell::CELL_OBSTACLE)
+			{
+				ObjectID obstacleID = cell->getObstacleID();
+
+				if (obstacleID != INVALID_ID &&
+					obstacleID != obj->getID() &&
+					obstacleID != ignoreId)
+				{
+					Object* obstacle =
+						TheGameLogic->findObjectByID(obstacleID);
+
+					if (obstacle &&
+						obstacle->isKindOf(KINDOF_BOAT))
+					{
+						Bool canCrush =
+							obj->canCrushOrSquish(
+								obstacle,
+								TEST_CRUSH_OR_SQUISH);
+
+						if (!canCrush)
+						{
+							return false;
+						}
+					}
+				}
 			}
 
 			PathfindCell::CellFlags flags = cell->getFlags();
@@ -9854,28 +10049,49 @@ void Pathfinder::changeBridgeState( PathfindLayerEnum layer, Bool repaired)
 	}
 }
 
-void Pathfinder::getRadiusAndCenter(const Object *obj, Int &iRadius, Bool &center)
+void Pathfinder::getRadiusAndCenter(const Object* obj, Int& iRadius, Bool& center)
 {
-	enum {MAX_RADIUS = 2};
+	enum { MAX_RADIUS = 2 };
+
 	if (!obj)
 	{
 		center = true;
 		iRadius = 0;
 		return;
 	}
-	Real diameter = 2*obj->getGeometryInfo().getBoundingCircleRadius();
-	if (diameter>PATHFIND_CELL_SIZE_F && diameter<2.0f*PATHFIND_CELL_SIZE_F) {
-		diameter = 2.0f*PATHFIND_CELL_SIZE_F;
+
+	Real diameter =
+		2 * obj->getGeometryInfo().getBoundingCircleRadius();
+
+	if (diameter > PATHFIND_CELL_SIZE_F &&
+		diameter < 2.0f * PATHFIND_CELL_SIZE_F)
+	{
+		diameter = 2.0f * PATHFIND_CELL_SIZE_F;
 	}
-	iRadius = REAL_TO_INT_FLOOR(diameter/PATHFIND_CELL_SIZE_F+0.3f);
+
+	iRadius =
+		REAL_TO_INT_FLOOR(
+			diameter / PATHFIND_CELL_SIZE_F + 0.3f);
+
 	center = false;
-	if (iRadius==0) iRadius++;
-	if (iRadius&1)
+
+	if (iRadius == 0)
+		iRadius++;
+
+	if (iRadius & 1)
 	{
 		center = true;
 	}
+
 	iRadius /= 2;
-	if (iRadius > MAX_RADIUS)
+
+	//
+	// Reborn: Boats can be substantially larger than normal ground
+	// vehicles. Preserve their actual pathfinding radius so paths are
+	// generated with enough clearance for the moving vessel itself.
+	//
+	if (!obj->isKindOf(KINDOF_BOAT) &&
+		iRadius > MAX_RADIUS)
 	{
 		iRadius = MAX_RADIUS;
 		center = true;

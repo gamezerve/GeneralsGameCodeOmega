@@ -1199,6 +1199,23 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 
 	Object *obj = getObject();
 
+#if defined(RTS_DEBUG)
+	if (obj->isKindOf(KINDOF_BOAT) &&
+		other &&
+		other->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision ONCOLLIDE START "
+			"frame=%u self=%s id=%u other=%s id=%u\n",
+			TheGameLogic->getFrame(),
+			obj->getTemplate()->getName().str(),
+			obj->getID(),
+			other->getTemplate()->getName().str(),
+			other->getID()
+			));
+	}
+#endif
+
 	Object* objContainedBy = obj->getContainedBy();
 
 	// Note that other == null means "collide with ground"
@@ -1297,6 +1314,20 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 		return;
 	}
 
+#if defined(RTS_DEBUG)
+	if (obj->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision AFTER_OVERLAP "
+			"frame=%u self=%u other=%u\n",
+			TheGameLogic->getFrame(),
+			obj->getID(),
+			other->getID()
+			));
+	}
+#endif
+
 	Real mass = getMass();
 	if (immobile)
 		mass = 999999.0f;
@@ -1308,12 +1339,57 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 		// or parachuting and colliding with something immobile. (srj)
 		if (!((obj->isEffectivelyDead() || obj->testStatus(OBJECT_STATUS_PARACHUTING)) && otherImmobile))
 		{
+
+#if defined(RTS_DEBUG)
+			if (obj->isKindOf(KINDOF_BOAT) &&
+				other->isKindOf(KINDOF_BOAT))
+			{
+				DEBUG_LOG((
+					"ROBoatCollision BEFORE_PROCESS "
+					"frame=%u self=%u other=%u\n",
+					TheGameLogic->getFrame(),
+					obj->getID(),
+					other->getID()
+					));
+			}
+#endif
+
 			Bool doForce = ai->processCollision(this, other);
+
+#if defined(RTS_DEBUG)
+			if (obj->isKindOf(KINDOF_BOAT) &&
+				other->isKindOf(KINDOF_BOAT))
+			{
+				DEBUG_LOG((
+					"ROBoatCollision AFTER_PROCESS "
+					"frame=%u self=%u other=%u doForce=%d\n",
+					TheGameLogic->getFrame(),
+					obj->getID(),
+					other->getID(),
+					doForce
+					));
+			}
+#endif
+
 			if (!doForce)
 				return;
 		}
 
 	}
+
+#if defined(RTS_DEBUG)
+	if (obj->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision AFTER_OVERLAP "
+			"frame=%u self=%u other=%u\n",
+			TheGameLogic->getFrame(),
+			obj->getID(),
+			other->getID()
+			));
+	}
+#endif
 
 	Coord3D usCenter, themCenter;
 	obj->getGeometryInfo().getCenterPosition(*obj->getPosition(), usCenter);
@@ -1323,6 +1399,20 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 	delta.x = themCenter.x - usCenter.x;
 	delta.y = themCenter.y - usCenter.y;
 	delta.z = themCenter.z - usCenter.z;
+
+#if defined(RTS_DEBUG)
+	if (obj->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision BEFORE_RADIUS "
+			"frame=%u self=%u other=%u\n",
+			TheGameLogic->getFrame(),
+			obj->getID(),
+			other->getID()
+			));
+	}
+#endif
 
 	Real distSqr, usRadius, themRadius;
 	if (obj->isAboveTerrain())
@@ -1481,7 +1571,7 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 		force.y = factor * delta.y / dist;
 		force.z = factor * delta.z / dist;	// will be zero for 2d case.
 		DEBUG_ASSERTCRASH(!(_isnan(force.x) || _isnan(force.y) || _isnan(force.z)), ("PhysicsBehavior::onCollide force NAN!"));
-
+		
 		applyForce( &force );
 	}
 }

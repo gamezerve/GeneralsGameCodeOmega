@@ -270,6 +270,8 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 	m_pathfindGoalCell.x = m_pathfindGoalCell.y = -1;
 	m_pathfindCurCell.x = m_pathfindCurCell.y = -1;
 	m_blockedFrames = 0;
+	m_rebornBoatRepathPending = FALSE;
+	m_rebornBoatRepathCooldownUntil = 0;
 	m_curMaxBlockedSpeed = 0;
 	m_bumpSpeedLimit = FAST_AS_POSSIBLE;
 	m_ignoreCollisionsUntil = 0;
@@ -497,6 +499,13 @@ void AIUpdateInterface::doPathfind( PathfindServicesInterface *pathfinder )
 			ignoreObstacle(victim);
 		}
 	}
+
+	if (getObject()->isKindOf(KINDOF_BOAT) &&
+		m_rebornBoatRepathPending)
+	{
+		m_isBlockedAndStuck = TRUE;
+	}
+
 	computePath(pathfinder, &m_requestedDestination);
 	if (m_isFinalGoal && isDoingGroundMovement() && getPath()) {
 		TheAI->pathfinder()->updateGoal(getObject(), getPath()->getLastNode()->getPosition(),
@@ -520,6 +529,29 @@ will be processed when we get to the front of the pathfind queue. jba */
 //-------------------------------------------------------------------------------------------------
 void AIUpdateInterface::requestPath( Coord3D *destination, Bool isFinalGoal )
 {
+
+#if defined(RTS_DEBUG)
+	if (getObject()->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision REQUEST_PATH_ENTRY "
+			"frame=%u self=%u "
+			"stuck=%d boatRepathPending=%d "
+			"waiting=%d pathTimestamp=%u queueForPathFrame=%u "
+			"destination=(%.2f, %.2f, %.2f)\n",
+			TheGameLogic->getFrame(),
+			getObject()->getID(),
+			m_isBlockedAndStuck,
+			m_rebornBoatRepathPending,
+			m_waitingForPath,
+			m_pathTimestamp,
+			m_queueForPathFrame,
+			destination->x,
+			destination->y,
+			destination->z
+			));
+	}
+#endif
 
 	if (m_locomotorSet.getValidSurfaces() == 0) {
 		DEBUG_CRASH(("Attempting to path immobile unit."));
@@ -546,11 +578,25 @@ void AIUpdateInterface::requestPath( Coord3D *destination, Bool isFinalGoal )
 		// See if it has been too soon.
 		// jba intense debug
 		//DEBUG_LOG(("Info - RePathing very quickly %d, %d.", m_pathTimestamp, TheGameLogic->getFrame()));
-		if (m_path && m_isBlockedAndStuck) {
-			setIgnoreCollisionTime(2*LOGICFRAMES_PER_SECOND);
+		//if (m_path && m_isBlockedAndStuck) {
+		//	setIgnoreCollisionTime(2*LOGICFRAMES_PER_SECOND);
+		//	m_blockedFrames = 0;
+		//	m_isBlocked = FALSE;
+		//	m_isBlockedAndStuck = FALSE;
+		//}
+		if (m_path && m_isBlockedAndStuck)
+		{
+			//
+			// Reborn: Boats must retain physical collision while waiting
+			// to repath around another naval unit.
+			//
+			if (!getObject()->isKindOf(KINDOF_BOAT))
+			{
+				setIgnoreCollisionTime(2 * LOGICFRAMES_PER_SECOND);
+			}
+
 			m_blockedFrames = 0;
 			m_isBlocked = FALSE;
-			m_isBlockedAndStuck = FALSE;
 		}
 		return;
 	}
@@ -1333,31 +1379,71 @@ Bool AIUpdateInterface::blockedBy(Object *other)
 {
 	Coord3D goalPos = *getStateMachine()->getGoalPosition();
 	Object *obj = getObject();
+
+	Bool bothBoats =
+		obj->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT);
+
 	Coord3D pos = *obj->getPosition();
 	ICoord2D goalCell = *getPathfindGoalCell();
 
 	// If we are near our final goal, don't get stuck.
-	if (goalCell.x>0 && goalCell.y>0) {
-		Real dx = fabs(goalPos.x-pos.x);
-		Real dy = fabs(goalPos.y-pos.y);
-		if (dx<PATHFIND_CELL_SIZE_F && dy<PATHFIND_CELL_SIZE_F) {
+	//if (goalCell.x>0 && goalCell.y>0) {
+	//	Real dx = fabs(goalPos.x-pos.x);
+	//	Real dy = fabs(goalPos.y-pos.y);
+	//	if (dx<PATHFIND_CELL_SIZE_F && dy<PATHFIND_CELL_SIZE_F) {
+	//		return FALSE; // If we're approaching our goal, ignore obstacles.
+	//	}
+	//}
+	if (!bothBoats && goalCell.x > 0 && goalCell.y > 0) {
+		Real dx = fabs(goalPos.x - pos.x);
+		Real dy = fabs(goalPos.y - pos.y);
+		if (dx < PATHFIND_CELL_SIZE_F && dy < PATHFIND_CELL_SIZE_F) {
 			return FALSE; // If we're approaching our goal, ignore obstacles.
 		}
 	}
 
 	Bool canCrush = obj->canCrushOrSquish(other, TEST_CRUSH_OR_SQUISH);
-	if (canCrush) return FALSE; // just run over them.
+	if (canCrush)
+		return FALSE; // just run over them.
 
 	AIUpdateInterface* aiOther = other->getAI();
 
-	if (!aiOther->isDoingGroundMovement()) {
+	if (!aiOther)
+		return FALSE; // Ignore it.
+
+	//
+	// Reborn: Boats physically block other boats.
+	// Crusher logic is checked first so larger ships can later
+	// be configured to run over smaller naval units.
+	//
+	if (bothBoats)
+	{
+		return TRUE;
+	}
+
+	//if (!aiOther->isDoingGroundMovement()) {
+	//	return FALSE; // Can't be blocked if the other is airborne.
+	//}
+	//if (!aiOther) return FALSE; // Ignore it.
+
+	//if (!aiOther)
+	//	return FALSE; // Ignore it.
+
+	if (!bothBoats && !aiOther->isDoingGroundMovement()) {
 		return FALSE; // Can't be blocked if the other is airborne.
 	}
-	if (!aiOther) return FALSE; // Ignore it.
 
-	if (getCurLocomotor() && getCurLocomotor()->isMovingBackwards()) {
-		return false; // don't collide.
+	//if (getCurLocomotor() && getCurLocomotor()->isMovingBackwards()) {
+	//	return false; // don't collide.
+	//}
+	if (!bothBoats &&
+		getCurLocomotor() &&
+		getCurLocomotor()->isMovingBackwards())
+	{
+		return FALSE; // don't collide.
 	}
+
 	Bool otherMoving = ( aiOther->m_locomotorGoalType != NONE );
 	Coord3D otherPos = *other->getPosition();
 	Real dx = pos.x-otherPos.x;
@@ -1474,22 +1560,188 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 #endif
 
 	if (m_ignoreCollisionsUntil > TheGameLogic->getFrame())
+	{
+#if defined(RTS_DEBUG)
+		if (getObject()->isKindOf(KINDOF_BOAT) &&
+			other->isKindOf(KINDOF_BOAT))
+		{
+			DEBUG_LOG((
+				"ROBoatCollision PROCESS_EARLY_RETURN "
+				"frame=%u self=%u other=%u "
+				"reason=IGNORE_COLLISIONS "
+				"ignoreUntil=%u\n",
+				TheGameLogic->getFrame(),
+				getObject()->getID(),
+				other->getID(),
+				m_ignoreCollisionsUntil
+				));
+		}
+#endif
+
 		return FALSE;
+	}
 
 	if (m_canPathThroughUnits)
+	{
+#if defined(RTS_DEBUG)
+		if (getObject()->isKindOf(KINDOF_BOAT) &&
+			other->isKindOf(KINDOF_BOAT))
+		{
+			DEBUG_LOG((
+				"ROBoatCollision PROCESS_EARLY_RETURN "
+				"frame=%u self=%u other=%u "
+				"reason=CAN_PATH_THROUGH_UNITS\n",
+				TheGameLogic->getFrame(),
+				getObject()->getID(),
+				other->getID()
+				));
+		}
+#endif
+
 		return FALSE;
+	}
 
 	AIUpdateInterface* aiOther = other->getAI();
 	if (aiOther == nullptr)
 		return FALSE;
 
+	Bool bothBoats =
+		getObject()->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT);
+
 	Bool selfMoving = isMoving();
 	Bool otherMoving = ( aiOther && aiOther->isMoving() );
-	if (!isDoingGroundMovement()) return FALSE;
-	if (!aiOther->isDoingGroundMovement()) return FALSE;
+	//if (!isDoingGroundMovement()) return FALSE;
+	//if (!aiOther->isDoingGroundMovement()) return FALSE;
+
+	if (bothBoats)
+	{
+		if (selfMoving)
+		{
+			Bool blocked = blockedBy(other);
+
+#if defined(RTS_DEBUG)
+			DEBUG_LOG((
+				"ROBoatCollision BLOCK_CHECK "
+				"frame=%u self=%u other=%u "
+				"selfMoving=%d otherMoving=%d "
+				"blocked=%d blockedFrames=%d "
+				"waitingForPath=%d stuck=%d "
+				"boatRepathPending=%d "
+				"pathTimestamp=%u queueForPathFrame=%u\n",
+				TheGameLogic->getFrame(),
+				getObject()->getID(),
+				other->getID(),
+				selfMoving,
+				otherMoving,
+				blocked,
+				m_blockedFrames,
+				m_waitingForPath,
+				m_isBlockedAndStuck,
+				m_rebornBoatRepathPending,
+				m_pathTimestamp,
+				m_queueForPathFrame
+				));
+#endif
+
+			if (blocked)
+			{
+				m_isBlocked = TRUE;
+
+				//
+				// Reborn: Give a boat a small physical push away from another
+				// boat when contact begins.
+				//
+				if (m_blockedFrames == 0)
+				{
+					Coord3D bounceForce;
+					bounceForce.x =
+						getObject()->getPosition()->x -
+						other->getPosition()->x;
+					bounceForce.y =
+						getObject()->getPosition()->y -
+						other->getPosition()->y;
+					bounceForce.z = 0.0f;
+
+					Real bounceLength =
+						sqrtf(
+							bounceForce.x * bounceForce.x +
+							bounceForce.y * bounceForce.y);
+
+					if (bounceLength > 0.001f)
+					{
+						bounceForce.x /= bounceLength;
+						bounceForce.y /= bounceLength;
+
+						const Real bounceStrength =
+							physics->getMass() * 0.10f;
+
+						bounceForce.x *= bounceStrength;
+						bounceForce.y *= bounceStrength;
+
+						physics->applyForce(&bounceForce);
+					}
+				}
+
+				if (m_blockedFrames == 0)
+					m_blockedFrames = 1;
+
+				if (!m_rebornBoatRepathPending &&
+					!m_waitingForPath &&
+					TheGameLogic->getFrame() >= m_rebornBoatRepathCooldownUntil)
+				{
+					m_rebornBoatRepathPending = TRUE;
+					m_isBlockedAndStuck = TRUE;
+
+					Coord3D destination =
+						*getStateMachine()->getGoalPosition();
+
+					requestPath(&destination, TRUE);
+				}
+			}
+		}
+
+		//
+		// Reborn: Keep physical collision resolution enabled between
+		// boats while the AI computes a path around the obstruction.
+		//
+		return TRUE;
+	}
+
+	if (!bothBoats && !isDoingGroundMovement())
+		return FALSE;
+
+	if (!bothBoats && !aiOther->isDoingGroundMovement())
+		return FALSE;
+
 	if (selfMoving)
 	{
 		Bool blocked = blockedBy(other);
+
+#if defined(RTS_DEBUG)
+		DEBUG_LOG((
+			"ROBoatCollision BLOCK_CHECK "
+			"frame=%u self=%u other=%u "
+			"selfMoving=%d otherMoving=%d "
+			"blocked=%d blockedFrames=%d "
+			"waitingForPath=%d stuck=%d "
+			"boatRepathPending=%d "
+			"pathTimestamp=%u queueForPathFrame=%u\n",
+			TheGameLogic->getFrame(),
+			getObject()->getID(),
+			other->getID(),
+			selfMoving,
+			otherMoving,
+			blocked,
+			m_blockedFrames,
+			m_waitingForPath,
+			m_isBlockedAndStuck,
+			m_rebornBoatRepathPending,
+			m_pathTimestamp,
+			m_queueForPathFrame
+			));
+#endif
+
 		if (blocked)
 		{
 			if (getObject()->isKindOf(KINDOF_INFANTRY))
@@ -1710,6 +1962,28 @@ Bool AIUpdateInterface::computeQuickPath( const Coord3D *destination )
 Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Coord3D *destination )
 {
 
+#if defined(RTS_DEBUG)
+	if (getObject()->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision COMPUTE_PATH_ENTRY "
+			"frame=%u self=%u "
+			"stuck=%d waiting=%d "
+			"hasPath=%d finalGoal=%d "
+			"destination=(%.2f, %.2f, %.2f)\n",
+			TheGameLogic->getFrame(),
+			getObject()->getID(),
+			m_isBlockedAndStuck,
+			m_waitingForPath,
+			m_path != nullptr,
+			m_isFinalGoal,
+			destination->x,
+			destination->y,
+			destination->z
+			));
+	}
+#endif
+
 	if (!m_isBlockedAndStuck)	{
 		destroyPath();
 	}
@@ -1761,10 +2035,41 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 	else
 	{
 		// compute a ground-based path
-		if (m_isBlockedAndStuck) {
-			theNewPath = pathServices->patchPath( getObject(), m_locomotorSet,
-				getPath(), m_isBlockedAndStuck);
-		}	else {
+		if (m_isBlockedAndStuck)
+		{
+#if defined(RTS_DEBUG)
+			if (getObject()->isKindOf(KINDOF_BOAT))
+			{
+				DEBUG_LOG((
+					"ROBoatCollision PATCH_PATH "
+					"frame=%u self=%s id=%u\n",
+					TheGameLogic->getFrame(),
+					getObject()->getTemplate()->getName().str(),
+					getObject()->getID()
+					));
+			}
+#endif
+
+			theNewPath = pathServices->patchPath(
+				getObject(),
+				m_locomotorSet,
+				getPath(),
+				m_isBlockedAndStuck);
+#if defined(RTS_DEBUG)
+			if (getObject()->isKindOf(KINDOF_BOAT) &&
+				m_isBlockedAndStuck)
+			{
+				DEBUG_LOG((
+					"ROBoatCollision PATCH_RESULT "
+					"frame=%u self=%u newPath=%p\n",
+					TheGameLogic->getFrame(),
+					getObject()->getID(),
+					theNewPath
+					));
+			}
+#endif
+		}
+		else {
 			theNewPath = pathServices->findPath( getObject(), m_locomotorSet, getObject()->getPosition(),
 				destination);
 		}
@@ -1780,6 +2085,22 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 		// destroy previous path
 		destroyPath();
 		m_path = theNewPath;
+
+		if (getObject()->isKindOf(KINDOF_BOAT) &&
+			m_rebornBoatRepathPending)
+		{
+			m_rebornBoatRepathPending = FALSE;
+
+			//
+			// Reborn: Give the boat time to begin following its newly
+			// patched path before allowing another collision repath.
+			//
+			m_rebornBoatRepathCooldownUntil =
+				TheGameLogic->getFrame() + 15;
+
+			setQueueForPathTime(0);
+		}
+
 		if (getCurLocomotor() && getCurLocomotor()->isUltraAccurate()) {
 			// Move exactly to the destination.  Normal ground pathfinding moves to a gridded location.
 			theNewPath->updateLastNode(&originalDestination);
