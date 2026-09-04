@@ -3128,8 +3128,16 @@ void InGameUI::createCommandHint( const GameMessage *msg )
 				{
 					case GameMessage::MSG_DO_MOVETO_HINT:
 					{
-						if( !drawSelectable && srcObj && srcObj->isLocallyControlled() && srcObj->isKindOf(KINDOF_STRUCTURE))
-							setMouseCursor( Mouse::GENERIC_INVALID );
+						//if( !drawSelectable && srcObj && srcObj->isLocallyControlled() && srcObj->isKindOf(KINDOF_STRUCTURE))
+						//setMouseCursor(Mouse::GENERIC_INVALID);
+						if (!drawSelectable &&
+							srcObj &&
+							srcObj->isLocallyControlled() &&
+							srcObj->isKindOf(KINDOF_STRUCTURE) &&
+							!srcObj->isKindOf(KINDOF_MOBILE_STRUCTURE))
+						{
+							setMouseCursor(Mouse::GENERIC_INVALID);
+						}
 						else if( drawSelectable && obj->isLocallyControlled() && !obj->isKindOf(KINDOF_MINE))
 							setMouseCursor( Mouse::SELECTING );
 						else if( TheRadar->isRadarWindow( window ) && !rts::localPlayerHasRadar() )
