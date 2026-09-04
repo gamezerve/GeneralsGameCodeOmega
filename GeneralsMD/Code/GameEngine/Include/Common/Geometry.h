@@ -34,6 +34,8 @@
 #include "Common/RandomValue.h"
 #include "Common/Snapshot.h"
 
+#include <vector>
+
 class INI;
 
 //-------------------------------------------------------------------------------------------------
@@ -83,15 +85,46 @@ static const Real EXTENT_BIG_CHANGE = 10.0f;
 //-------------------------------------------------------------------------------------------------
 class GeometryInfo : public Snapshot
 {
-private:
-	GeometryType m_type;
-	Bool m_isSmall;						///< if true, geometry is assumed to fit in a single partition cell
-	Real m_height;
-	Real m_majorRadius;
-	Real m_minorRadius;
 
-	Real m_boundingCircleRadius;	///< not in INI file -- size of bounding circle (2d)
-	Real m_boundingSphereRadius;	///< not in INI -- size of bounding sphere (3d)
+public:
+
+	struct Shape
+	{
+		GeometryType m_type;
+		Real m_height;
+		Real m_majorRadius;
+		Real m_minorRadius;
+		Coord3D m_offset;
+
+		Shape()
+			: m_type(GEOMETRY_SPHERE),
+			m_height(1.0f),
+			m_majorRadius(1.0f),
+			m_minorRadius(1.0f)
+		{
+			m_offset.zero();
+		}
+	};
+
+	typedef std::vector<Shape> ShapeVector;
+
+
+private:
+	//GeometryType m_type;
+	//Bool m_isSmall;						///< if true, geometry is assumed to fit in a single partition cell
+	//Real m_height;
+	//Real m_majorRadius;
+	//Real m_minorRadius;
+
+	//Real m_boundingCircleRadius;	///< not in INI file -- size of bounding circle (2d)
+	//Real m_boundingSphereRadius;	///< not in INI -- size of bounding sphere (3d)
+
+	Bool m_isSmall;						///< if true, geometry is assumed to fit in a single partition cell
+
+	ShapeVector m_shapes;
+
+	Real m_boundingCircleRadius;
+	Real m_boundingSphereRadius;
 
 	void calcBoundingStuff();
 
@@ -109,6 +142,9 @@ public:
 	static void parseGeometryHeight( INI* ini, void * /*instance*/, void *store, const void* /*userData*/ );
 	static void parseGeometryMajorRadius( INI* ini, void * /*instance*/, void *store, const void* /*userData*/ );
 	static void parseGeometryMinorRadius( INI* ini, void * /*instance*/, void *store, const void* /*userData*/ );
+	static void parseGeometry(INI* ini, void* instance, void* store, const void* userData);
+	static void parseShape(INI* ini, void* instance, void* store, const void* userData);
+	static void parseGeometryIsSmallNested(INI* ini, void* instance, void* store, const void* userData);
 
 	GeometryInfo(GeometryType type, Bool isSmall, Real height, Real majorRadius, Real minorRadius)
 	{
@@ -120,23 +156,79 @@ public:
 	void set(GeometryType type, Bool isSmall, Real height, Real majorRadius, Real minorRadius);
 
 	// bleah, icky but needed for legacy code
+	//void setMajorRadius(Real majorRadius)
+	//{
+	//	m_majorRadius = majorRadius;
+	//	calcBoundingStuff();
+	//}
 	void setMajorRadius(Real majorRadius)
 	{
-		m_majorRadius = majorRadius;
+		if (m_shapes.empty())
+			m_shapes.push_back(Shape());
+
+		m_shapes[0].m_majorRadius = majorRadius;
 		calcBoundingStuff();
 	}
 
 	// bleah, icky but needed for legacy code
+	//void setMinorRadius(Real minorRadius)
+	//{
+	//	m_minorRadius = minorRadius;
+	//	calcBoundingStuff();
+	//}
 	void setMinorRadius(Real minorRadius)
 	{
-		m_minorRadius = minorRadius;
+		if (m_shapes.empty())
+			m_shapes.push_back(Shape());
+
+		m_shapes[0].m_minorRadius = minorRadius;
 		calcBoundingStuff();
 	}
 
-	GeometryType getGeomType() const { return m_type; }
-	Bool getIsSmall() const { return m_isSmall; }
-	Real getMajorRadius() const { return m_majorRadius; }	// x-axis
-	Real getMinorRadius() const { return m_minorRadius; }	// y-axis
+	//GeometryType getGeomType() const { return m_type; }
+	//Bool getIsSmall() const { return m_isSmall; }
+	//Real getMajorRadius() const { return m_majorRadius; }	// x-axis
+	//Real getMinorRadius() const { return m_minorRadius; }	// y-axis
+
+	GeometryType getGeomType() const
+	{
+		return m_shapes.empty() ? GEOMETRY_SPHERE : m_shapes[0].m_type;
+	}
+
+	Bool getIsSmall() const
+	{
+		return m_isSmall;
+	}
+
+	Real getMajorRadius() const
+	{
+		return m_shapes.empty() ? 0.0f : m_shapes[0].m_majorRadius;
+	}
+
+	Real getMinorRadius() const
+	{
+		return m_shapes.empty() ? 0.0f : m_shapes[0].m_minorRadius;
+	}
+
+	Int getShapeCount() const
+	{
+		return static_cast<Int>(m_shapes.size());
+	}
+
+	const Shape& getShape(Int index) const
+	{
+		return m_shapes[index];
+	}
+
+	Shape& getShape(Int index)
+	{
+		return m_shapes[index];
+	}
+
+	const ShapeVector& getShapes() const
+	{
+		return m_shapes;
+	}
 
 	// this has been removed and should never need to be called...
 	// you should generally call getMaxHeightAbovePosition() instead. (srj)
