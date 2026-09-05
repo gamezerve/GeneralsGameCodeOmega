@@ -976,6 +976,100 @@ static CollideTestProc theCollideTestProcs[] =
 };
 
 //-----------------------------------------------------------------------------
+// Reborn: Test all individual geometry shape pairs while preserving the
+// existing retail collision routines for each geometry type combination.
+static Bool collideGeometryInfos(
+	const Coord3D* pos1,
+	const GeometryInfo& geom1,
+	Real angle1,
+	const Coord3D* pos2,
+	const GeometryInfo& geom2,
+	Real angle2,
+	CollideLocAndNormal* cinfo)
+{
+	const Int shapeCount1 = geom1.getShapeCount();
+	const Int shapeCount2 = geom2.getShapeCount();
+
+	//
+	// GeometryInfo normally always contains at least one shape. Keep a
+	// compatibility fallback in case an empty geometry is encountered.
+	//
+	if (shapeCount1 <= 0 || shapeCount2 <= 0)
+	{
+		CollideInfo thisInfo(pos1, geom1, angle1);
+		CollideInfo thatInfo(pos2, geom2, angle2);
+
+		GeometryType thisGeom = geom1.getGeomType();
+		GeometryType thatGeom = geom2.getGeomType();
+
+		CollideTestProc collideProc =
+			theCollideTestProcs[
+				(thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES +
+					(thatGeom - GEOMETRY_FIRST)];
+
+		return (*collideProc)(&thisInfo, &thatInfo, cinfo);
+	}
+
+	const Real c1 = (Real)cos(angle1);
+	const Real s1 = (Real)sin(angle1);
+
+	const Real c2 = (Real)cos(angle2);
+	const Real s2 = (Real)sin(angle2);
+
+	for (Int shapeIndex1 = 0; shapeIndex1 < shapeCount1; ++shapeIndex1)
+	{
+		const GeometryInfo::Shape& shape1 = geom1.getShape(shapeIndex1);
+
+		Coord3D shapePos1 = *pos1;
+
+		shapePos1.x += shape1.m_offset.x * c1 - shape1.m_offset.y * s1;
+		shapePos1.y += shape1.m_offset.x * s1 + shape1.m_offset.y * c1;
+		shapePos1.z += shape1.m_offset.z;
+
+		GeometryInfo shapeGeom1(
+			shape1.m_type,
+			geom1.getIsSmall(),
+			shape1.m_height,
+			shape1.m_majorRadius,
+			shape1.m_minorRadius);
+
+		for (Int shapeIndex2 = 0; shapeIndex2 < shapeCount2; ++shapeIndex2)
+		{
+			const GeometryInfo::Shape& shape2 = geom2.getShape(shapeIndex2);
+
+			Coord3D shapePos2 = *pos2;
+
+			shapePos2.x += shape2.m_offset.x * c2 - shape2.m_offset.y * s2;
+			shapePos2.y += shape2.m_offset.x * s2 + shape2.m_offset.y * c2;
+			shapePos2.z += shape2.m_offset.z;
+
+			GeometryInfo shapeGeom2(
+				shape2.m_type,
+				geom2.getIsSmall(),
+				shape2.m_height,
+				shape2.m_majorRadius,
+				shape2.m_minorRadius);
+
+			CollideInfo thisInfo(&shapePos1, shapeGeom1, angle1);
+			CollideInfo thatInfo(&shapePos2, shapeGeom2, angle2);
+
+			GeometryType thisGeom = shape1.m_type;
+			GeometryType thatGeom = shape2.m_type;
+
+			CollideTestProc collideProc =
+				theCollideTestProcs[
+					(thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES +
+						(thatGeom - GEOMETRY_FIRST)];
+
+			if ((*collideProc)(&thisInfo, &thatInfo, cinfo))
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+//-----------------------------------------------------------------------------
 //         Public Data
 //-----------------------------------------------------------------------------
 PartitionManager *ThePartitionManager = nullptr;  ///< the object manager singleton
@@ -2006,74 +2100,115 @@ void PartitionData::addPossibleCollisions(PartitionContactList *ctList)
 	}
 }
 
-//-----------------------------------------------------------------------------
-Bool PartitionData::collidesWith(const PartitionData *that, CollideLocAndNormal *cinfo) const
+////-----------------------------------------------------------------------------
+//Bool PartitionData::collidesWith(const PartitionData *that, CollideLocAndNormal *cinfo) const
+//{
+//	const Object *thisObj = this->getObject();
+//	const Object *thatObj = that->getObject();
+//
+//	if( thisObj->isKindOf( KINDOF_NO_COLLIDE )  ||  thatObj->isKindOf( KINDOF_NO_COLLIDE ) )
+//		return FALSE; // A collision extent of zero size is still a point and can collide, but we don't always want to.
+//
+//	CollideInfo thisInfo(thisObj->getPosition(), thisObj->getGeometryInfo(), thisObj->getOrientation());
+//	CollideInfo thatInfo(thatObj->getPosition(), thatObj->getGeometryInfo(), thatObj->getOrientation());
+//
+//	// invariant for all geometries: first do z collision check.
+//	Real thisTop = thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition();
+//	Real thisBot = thisInfo.position.z - thisInfo.geom.getMaxHeightBelowPosition();
+//	Real thatTop = thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition();
+//	Real thatBot = thatInfo.position.z - thatInfo.geom.getMaxHeightBelowPosition();
+//	if (thisTop >= thatBot && thisBot <= thatTop)
+//	{
+//		GeometryType thisGeom = thisObj->getGeometryInfo().getGeomType();
+//		GeometryType thatGeom = thatObj->getGeometryInfo().getGeomType();
+//
+//		//
+//		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
+//		// order in which they appear in the enum list
+//		//
+//		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
+//		return (*collideProc)(&thisInfo, &thatInfo, cinfo);
+//	}
+//	else
+//	{
+//		// no z-intersection -> no collision.
+//		return false;
+//	}
+//}
+Bool PartitionData::collidesWith(
+	const PartitionData* that,
+	CollideLocAndNormal* cinfo) const
 {
-	const Object *thisObj = this->getObject();
-	const Object *thatObj = that->getObject();
+	const Object* thisObj = this->getObject();
+	const Object* thatObj = that->getObject();
 
-	if( thisObj->isKindOf( KINDOF_NO_COLLIDE )  ||  thatObj->isKindOf( KINDOF_NO_COLLIDE ) )
-		return FALSE; // A collision extent of zero size is still a point and can collide, but we don't always want to.
-
-	CollideInfo thisInfo(thisObj->getPosition(), thisObj->getGeometryInfo(), thisObj->getOrientation());
-	CollideInfo thatInfo(thatObj->getPosition(), thatObj->getGeometryInfo(), thatObj->getOrientation());
-
-	// invariant for all geometries: first do z collision check.
-	Real thisTop = thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition();
-	Real thisBot = thisInfo.position.z - thisInfo.geom.getMaxHeightBelowPosition();
-	Real thatTop = thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition();
-	Real thatBot = thatInfo.position.z - thatInfo.geom.getMaxHeightBelowPosition();
-	if (thisTop >= thatBot && thisBot <= thatTop)
+	if (thisObj->isKindOf(KINDOF_NO_COLLIDE) ||
+		thatObj->isKindOf(KINDOF_NO_COLLIDE))
 	{
-		GeometryType thisGeom = thisObj->getGeometryInfo().getGeomType();
-		GeometryType thatGeom = thatObj->getGeometryInfo().getGeomType();
+		return FALSE;
+	}
 
-		//
-		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
-		// order in which they appear in the enum list
-		//
-		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
-		return (*collideProc)(&thisInfo, &thatInfo, cinfo);
-	}
-	else
-	{
-		// no z-intersection -> no collision.
-		return false;
-	}
+	return collideGeometryInfos(
+		thisObj->getPosition(),
+		thisObj->getGeometryInfo(),
+		thisObj->getOrientation(),
+		thatObj->getPosition(),
+		thatObj->getGeometryInfo(),
+		thatObj->getOrientation(),
+		cinfo);
 }
 
-//-----------------------------------------------------------------------------
-/* See if thisObj collides with geom at pos & angle. */
-Bool PartitionManager::geomCollidesWithGeom(const Coord3D* pos1,
-		const GeometryInfo& geom1,
-		Real angle1,
-		const Coord3D* pos2,
-		const GeometryInfo& geom2,
-		Real angle2) const
+////-----------------------------------------------------------------------------
+///* See if thisObj collides with geom at pos & angle. */
+//Bool PartitionManager::geomCollidesWithGeom(const Coord3D* pos1,
+//		const GeometryInfo& geom1,
+//		Real angle1,
+//		const Coord3D* pos2,
+//		const GeometryInfo& geom2,
+//		Real angle2) const
+//{
+//	CollideInfo thisInfo(pos1, geom1, angle1);
+//	CollideInfo thatInfo(pos2, geom2, angle2);
+//
+//	// invariant for all geometries: first do z collision check.
+//	if (thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition() >= thatInfo.position.z &&
+//			thisInfo.position.z <= thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition())
+//	{
+//		GeometryType thisGeom = geom1.getGeomType();
+//		GeometryType thatGeom = geom2.getGeomType();
+//
+//		//
+//		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
+//		// order in which they appear in the enum list
+//		//
+//		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
+//		CollideLocAndNormal cloc;
+//		return (*collideProc)(&thisInfo, &thatInfo, &cloc);
+//	}
+//	else
+//	{
+//		// no z-intersection -> no collision.
+//		return false;
+//	}
+//}
+Bool PartitionManager::geomCollidesWithGeom(
+	const Coord3D* pos1,
+	const GeometryInfo& geom1,
+	Real angle1,
+	const Coord3D* pos2,
+	const GeometryInfo& geom2,
+	Real angle2) const
 {
-	CollideInfo thisInfo(pos1, geom1, angle1);
-	CollideInfo thatInfo(pos2, geom2, angle2);
+	CollideLocAndNormal cloc;
 
-	// invariant for all geometries: first do z collision check.
-	if (thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition() >= thatInfo.position.z &&
-			thisInfo.position.z <= thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition())
-	{
-		GeometryType thisGeom = geom1.getGeomType();
-		GeometryType thatGeom = geom2.getGeomType();
-
-		//
-		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
-		// order in which they appear in the enum list
-		//
-		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
-		CollideLocAndNormal cloc;
-		return (*collideProc)(&thisInfo, &thatInfo, &cloc);
-	}
-	else
-	{
-		// no z-intersection -> no collision.
-		return false;
-	}
+	return collideGeometryInfos(
+		pos1,
+		geom1,
+		angle1,
+		pos2,
+		geom2,
+		angle2,
+		&cloc);
 }
 
 //-----------------------------------------------------------------------------
@@ -5299,37 +5434,52 @@ PartitionFilterWouldCollide::PartitionFilterWouldCollide(const Coord3D& pos, con
 {
 }
 
-//-----------------------------------------------------------------------------
-
-Bool PartitionFilterWouldCollide::allow(Object *objOther)
+////-----------------------------------------------------------------------------
+//
+//Bool PartitionFilterWouldCollide::allow(Object *objOther)
+//{
+//	CollideInfo thisInfo(&m_position, m_geom, m_angle);
+//	CollideInfo thatInfo(objOther->getPosition(), objOther->getGeometryInfo(), objOther->getOrientation());
+//
+//  Bool doesCollide;
+//
+//	// invariant for all geometries: first do z collision check.
+//	if (thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition() >= thatInfo.position.z &&
+//			thisInfo.position.z <= thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition())
+//	{
+//		GeometryType thisGeom = m_geom.getGeomType();
+//		GeometryType thatGeom = objOther->getGeometryInfo().getGeomType();
+//
+//		//
+//		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
+//		// order in which they appear in the enum list
+//		//
+//		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
+//		CollideLocAndNormal cinfo;
+//		doesCollide = (*collideProc)(&thisInfo, &thatInfo, &cinfo);
+//	}
+//	else
+//	{
+//		// no z-intersection -> no collision.
+//		doesCollide = false;
+//	}
+//
+//  return doesCollide == m_desiredCollisionResult;
+//}
+Bool PartitionFilterWouldCollide::allow(Object* objOther)
 {
-	CollideInfo thisInfo(&m_position, m_geom, m_angle);
-	CollideInfo thatInfo(objOther->getPosition(), objOther->getGeometryInfo(), objOther->getOrientation());
+	CollideLocAndNormal cinfo;
 
-  Bool doesCollide;
+	Bool doesCollide = collideGeometryInfos(
+		&m_position,
+		m_geom,
+		m_angle,
+		objOther->getPosition(),
+		objOther->getGeometryInfo(),
+		objOther->getOrientation(),
+		&cinfo);
 
-	// invariant for all geometries: first do z collision check.
-	if (thisInfo.position.z + thisInfo.geom.getMaxHeightAbovePosition() >= thatInfo.position.z &&
-			thisInfo.position.z <= thatInfo.position.z + thatInfo.geom.getMaxHeightAbovePosition())
-	{
-		GeometryType thisGeom = m_geom.getGeomType();
-		GeometryType thatGeom = objOther->getGeometryInfo().getGeomType();
-
-		//
-		// NOTE: This assumes geometry enumerations that start at GEOMETRY_FIRST AND depends on the
-		// order in which they appear in the enum list
-		//
-		CollideTestProc collideProc = theCollideTestProcs[ (thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES + (thatGeom - GEOMETRY_FIRST) ];
-		CollideLocAndNormal cinfo;
-		doesCollide = (*collideProc)(&thisInfo, &thatInfo, &cinfo);
-	}
-	else
-	{
-		// no z-intersection -> no collision.
-		doesCollide = false;
-	}
-
-  return doesCollide == m_desiredCollisionResult;
+	return doesCollide == m_desiredCollisionResult;
 }
 
 //-----------------------------------------------------------------------------

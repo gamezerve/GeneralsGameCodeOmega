@@ -180,6 +180,17 @@ public:
 	// Throws if the INI file is not found or is not read correctly.
 	UnsignedInt load( AsciiString filename, INILoadType loadType, Xfer *pXfer );
 
+	// Reborn: Capture an INI block so it can be reapplied after deferred inheritance is resolved.
+	void beginBlockCapture();
+	AsciiString endBlockCapture();
+
+	void initFromCapturedBlock(
+		void* what,
+		const FieldParse* parseTable,
+		const AsciiString& blockText,
+		INILoadType loadType,
+		const AsciiString& sourceFilename);
+
 	static Bool isDeclarationOfType( AsciiString blockType, AsciiString blockName, char *bufferToCheck );
 	static Bool isEndOfBlock( char *bufferToCheck );
 
@@ -403,6 +414,11 @@ protected:
 	UnsignedInt m_lineNum;										///< current line number that's been read
 	char m_buffer[ INI_MAX_CHARS_PER_LINE+1 ];///< buffer to read file contents into
 	Bool m_endOfFile;													///< TRUE when we've hit EOF
+
+	// Reborn: Used to preserve ObjectInherit/ObjectReskin override blocks for deferred inheritance.
+	Bool m_captureBlockLines;
+	AsciiString m_capturedBlockText;
+
 #ifdef DEBUG_CRASHING
 	char m_curBlockStart[ INI_MAX_CHARS_PER_LINE+1 ];	///< first line of cur block
 #endif

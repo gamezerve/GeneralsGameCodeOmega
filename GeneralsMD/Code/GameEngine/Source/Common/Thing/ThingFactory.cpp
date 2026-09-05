@@ -74,6 +74,7 @@ void ThingFactory::freeDatabase()
 	}
 
 	m_templateHashMap.clear();
+	m_pendingObjectInheritances.clear();
 
 }
 
@@ -382,6 +383,8 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 	TheThingTemplateBeingParsedName = name;
 #endif
 
+	Bool inheritanceDeferred = FALSE;
+
 	// find existing item if present
 	ThingTemplate *thingTemplate = TheThingFactory->findTemplateInternal( name, FALSE );
 	if( !thingTemplate )
@@ -411,7 +414,8 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 
 	if (inheritFrom.isNotEmpty())
 	{
-		const ThingTemplate* parentTemplate = TheThingFactory->findTemplate(inheritFrom);
+		const ThingTemplate* parentTemplate =
+			TheThingFactory->findTemplate(inheritFrom, FALSE);
 
 		if (parentTemplate)
 		{
@@ -428,12 +432,50 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 				ini->initFromINI(thingTemplate, thingTemplate->getFieldParse());
 			}
 		}
+		else if (ini->getLoadType() != INI_LOAD_CREATE_OVERRIDES)
+		{
+			//
+			// Reborn: The parent may be defined in a later INI file.
+			// Parse and capture the child block now so the INI stream can continue,
+			// then rebuild the child from its parent after all object INIs are loaded.
+			//
+			ini->beginBlockCapture();
+
+			if (reskinOnly)
+			{
+				ini->initFromINI(
+					thingTemplate,
+					thingTemplate->getReskinFieldParse());
+			}
+			else
+			{
+				ini->initFromINI(
+					thingTemplate,
+					thingTemplate->getFieldParse());
+			}
+
+			PendingObjectInheritance pending;
+			pending.m_template = thingTemplate;
+			pending.m_name = name;
+			pending.m_parentName = inheritFrom;
+			pending.m_blockText = ini->endBlockCapture();
+			pending.m_sourceFilename = ini->getFilename();
+			pending.m_loadType = static_cast<Int>(ini->getLoadType());
+			pending.m_reskinOnly = reskinOnly;
+			pending.m_resolved = FALSE;
+
+			TheThingFactory->m_pendingObjectInheritances.push_back(pending);
+			inheritanceDeferred = TRUE;
+		}
 		else
 		{
-			DEBUG_CRASH(("Inherited Object must come after the original Object (%s, %s).", inheritFrom.str(), name.str()));
+			DEBUG_CRASH((
+				"Inherited Object parent '%s' was not found for '%s'.",
+				inheritFrom.str(),
+				name.str()));
 
 			REBORN_LOG(
-				"INI_INVALID_DATA: Object '%s' inherits from unknown or not-yet-defined object '%s'. ReskinOnly=%d, LoadType=%d, INIFile='%s', INILine=%d.",
+				"INI_INVALID_DATA: Object '%s' inherits from unknown object '%s'. ReskinOnly=%d, LoadType=%d, INIFile='%s', INILine=%d.",
 				name.str(),
 				inheritFrom.str(),
 				static_cast<int>(reskinOnly),
@@ -449,7 +491,11 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 		ini->initFromINI(thingTemplate, thingTemplate->getFieldParse());
 	}
 
-	thingTemplate->validate();
+	//thingTemplate->validate();
+	if (!inheritanceDeferred)
+	{
+		thingTemplate->validate();
+	}
 
 	if( ini->getLoadType() == INI_LOAD_CREATE_OVERRIDES )
 	{
@@ -535,6 +581,146 @@ void reportMissingNameInTemplate( AsciiString templateName )
 #endif
 
 //-------------------------------------------------------------------------------------------------
+PendingObjectInheritance* ThingFactory::findPendingObjectInheritance(
+	const AsciiString& name)
+{
+	for (std::vector<PendingObjectInheritance>::iterator it =
+		m_pendingObjectInheritances.begin();
+		it != m_pendingObjectInheritances.end();
+		++it)
+	{
+		if (it->m_name == name)
+			return &(*it);
+	}
+
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool ThingFactory::resolvePendingObjectInheritance(
+	PendingObjectInheritance& pending,
+	std::vector<AsciiString>& resolving)
+{
+	if (pending.m_resolved)
+		return TRUE;
+
+	for (std::vector<AsciiString>::const_iterator it = resolving.begin();
+		it != resolving.end();
+		++it)
+	{
+		if (*it == pending.m_name)
+		{
+			DEBUG_CRASH((
+				"Circular Object inheritance detected while resolving '%s'.",
+				pending.m_name.str()));
+
+			REBORN_LOG(
+				"INI_INVALID_DATA: Circular Object inheritance detected while resolving '%s' from parent '%s'.",
+				pending.m_name.str(),
+				pending.m_parentName.str());
+
+			throw INI_INVALID_DATA;
+		}
+	}
+
+	resolving.push_back(pending.m_name);
+
+	//
+	// If our parent is itself deferred, resolve it first.
+	//
+	PendingObjectInheritance* pendingParent =
+		findPendingObjectInheritance(pending.m_parentName);
+
+	if (pendingParent && !pendingParent->m_resolved)
+	{
+		resolvePendingObjectInheritance(*pendingParent, resolving);
+	}
+
+	const ThingTemplate* parentTemplate =
+		findTemplate(pending.m_parentName, FALSE);
+
+	if (!parentTemplate)
+	{
+		DEBUG_CRASH((
+			"Unable to resolve inherited Object '%s': parent '%s' does not exist.",
+			pending.m_name.str(),
+			pending.m_parentName.str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unable to resolve deferred Object '%s'. Parent '%s' does not exist. OriginalINIFile='%s'.",
+			pending.m_name.str(),
+			pending.m_parentName.str(),
+			pending.m_sourceFilename.str());
+
+		throw INI_INVALID_DATA;
+	}
+
+	ThingTemplate* thingTemplate = pending.m_template;
+
+	DEBUG_ASSERTCRASH(
+		thingTemplate != nullptr,
+		("Deferred Object inheritance has null ThingTemplate"));
+
+	//
+	// Rebuild the child exactly as the normal immediate inheritance path does:
+	// parent first, then the child's own INI fields.
+	//
+	thingTemplate->copyFrom(parentTemplate);
+	thingTemplate->setCopiedFromDefault();
+
+	INI replayIni;
+
+	if (pending.m_reskinOnly)
+	{
+		thingTemplate->setReskinnedFrom(parentTemplate);
+
+		replayIni.initFromCapturedBlock(
+			thingTemplate,
+			thingTemplate->getReskinFieldParse(),
+			pending.m_blockText,
+			static_cast<INILoadType>(pending.m_loadType),
+			pending.m_sourceFilename);
+	}
+	else
+	{
+		replayIni.initFromCapturedBlock(
+			thingTemplate,
+			thingTemplate->getFieldParse(),
+			pending.m_blockText,
+			static_cast<INILoadType>(pending.m_loadType),
+			pending.m_sourceFilename);
+	}
+
+	thingTemplate->validate();
+
+	pending.m_resolved = TRUE;
+	resolving.pop_back();
+
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+void ThingFactory::resolvePendingObjectInheritances()
+{
+	if (m_pendingObjectInheritances.empty())
+		return;
+
+	for (std::vector<PendingObjectInheritance>::iterator it =
+		m_pendingObjectInheritances.begin();
+		it != m_pendingObjectInheritances.end();
+		++it)
+	{
+		if (!it->m_resolved)
+		{
+			std::vector<AsciiString> resolving;
+			resolvePendingObjectInheritance(*it, resolving);
+		}
+	}
+
+	m_pendingObjectInheritances.clear();
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Post process phase after loading the database files */
 //-------------------------------------------------------------------------------------------------
 void ThingFactory::postProcessLoad()
@@ -542,6 +728,8 @@ void ThingFactory::postProcessLoad()
 #ifdef CHECK_THING_NAMES
 	//resetReportFile();
 #endif
+
+	resolvePendingObjectInheritances();
 
 	// go through all thing templates
 	for( ThingTemplate *thingTemplate = m_firstTemplate;

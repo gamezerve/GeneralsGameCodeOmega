@@ -185,6 +185,10 @@ INI::INI()
 	m_lineNum						= 0;
 	m_buffer[0]					= 0;
 	m_endOfFile					= FALSE;
+
+	m_captureBlockLines = FALSE;
+	m_capturedBlockText.clear();
+
 #ifdef DEBUG_CRASHING
 	m_curBlockStart[0]	= 0;
 #endif
@@ -491,6 +495,61 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 }
 
 //-------------------------------------------------------------------------------------------------
+void INI::beginBlockCapture()
+{
+	m_captureBlockLines = TRUE;
+	m_capturedBlockText.clear();
+}
+
+//-------------------------------------------------------------------------------------------------
+AsciiString INI::endBlockCapture()
+{
+	m_captureBlockLines = FALSE;
+
+	AsciiString result = m_capturedBlockText;
+	m_capturedBlockText.clear();
+
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------------
+void INI::initFromCapturedBlock(
+	void* what,
+	const FieldParse* parseTable,
+	const AsciiString& blockText,
+	INILoadType loadType,
+	const AsciiString& sourceFilename)
+{
+	DEBUG_ASSERTCRASH(m_readBuffer == nullptr,
+		("INI::initFromCapturedBlock called while another INI buffer is active"));
+
+	const Int length = blockText.getLength();
+
+	m_readBuffer = new char[length + 1];
+	memcpy(m_readBuffer, blockText.str(), length);
+	m_readBuffer[length] = 0;
+
+	m_readBufferNext = 0;
+	m_readBufferUsed = length;
+	m_filename = sourceFilename;
+	m_loadType = loadType;
+	m_lineNum = 0;
+	m_endOfFile = FALSE;
+
+	try
+	{
+		initFromINI(what, parseTable);
+	}
+	catch (...)
+	{
+		unPrepFile();
+		throw;
+	}
+
+	unPrepFile();
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Read a line from the already open file.  Any comments will be removed and
 	* therefore ignored from any given line
 	* 
@@ -549,6 +608,12 @@ void INI::readLine()
 		}
 
 		*p = 0;
+
+		if (m_captureBlockLines)
+		{
+			m_capturedBlockText.concat(m_buffer);
+			m_capturedBlockText.concat("\n");
+		}
 
 		// increase our line count
 		m_lineNum++;

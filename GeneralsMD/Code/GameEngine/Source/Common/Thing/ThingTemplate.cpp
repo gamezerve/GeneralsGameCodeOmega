@@ -967,7 +967,10 @@ void ThingTemplate::parseRemoveModule(INI *ini, void *instance, void *store, con
 //-------------------------------------------------------------------------------------------------
 /** Replace the existing tagged modules with the new modules. */
 //-------------------------------------------------------------------------------------------------
-void ThingTemplate::parseReplaceModule(INI *ini, void *instance, void *store, const void *userData)
+//-------------------------------------------------------------------------------------------------
+/** Replace the existing tagged modules with the new modules. */
+//-------------------------------------------------------------------------------------------------
+void ThingTemplate::parseReplaceModule(INI* ini, void* instance, void* store, const void* userData)
 {
 	ThingTemplate* self = (ThingTemplate*)instance;
 
@@ -986,13 +989,25 @@ void ThingTemplate::parseReplaceModule(INI *ini, void *instance, void *store, co
 
 	self->m_moduleParsingMode = MODULEPARSE_ADD_REMOVE_REPLACE;
 
-	const char *modToRemove = ini->getNextToken();
+	const char* modToRemove = ini->getNextToken();
+
+	// Reborn: Allow inherited prerequisites to be replaced using the same syntax
+	// as ReplaceModule. Prerequisites are not actual modules, so handle them separately.
+	if (stricmp(modToRemove, "Prerequisites") == 0)
+	{
+		self->m_prereqInfo.clear();
+		ThingTemplate::parsePrerequisites(ini, self, nullptr, nullptr);
+
+		self->m_moduleParsingMode = oldMode;
+		return;
+	}
+
 	AsciiString removedModuleName;
 	Bool removed = self->removeModuleInfo(modToRemove, removedModuleName);
 	if (!removed)
 	{
 		DEBUG_CRASH(("[LINE: %d - FILE: '%s'] ReplaceModule %s was not found for %s; cannot continue.",
-															ini->getLineNum(), ini->getFilename().str(), modToRemove, self->getName().str()));
+			ini->getLineNum(), ini->getFilename().str(), modToRemove, self->getName().str()));
 
 		REBORN_LOG(
 			"INI_INVALID_DATA: ReplaceModule '%s' was not found for ThingTemplate '%s'. INIFile='%s', INILine=%d.",

@@ -39,6 +39,28 @@
 #include "GameClient/Drawable.h"
 #include "GameLogic/Object.h"
 
+#include <vector>
+
+struct PendingObjectInheritance
+{
+	ThingTemplate* m_template;
+	AsciiString m_name;
+	AsciiString m_parentName;
+	AsciiString m_blockText;
+	AsciiString m_sourceFilename;
+	Int m_loadType;
+	Bool m_reskinOnly;
+	Bool m_resolved;
+
+	PendingObjectInheritance()
+		: m_template(nullptr),
+		m_loadType(0),
+		m_reskinOnly(FALSE),
+		m_resolved(FALSE)
+	{
+	}
+};
+
 class ThingTemplate;
 class Object;
 class Drawable;
@@ -121,6 +143,17 @@ private:
 		folks outside of the template system itself shouldn't get access...
 	*/
 	ThingTemplate *findTemplateInternal( const AsciiString& name, Bool check = TRUE );
+
+	void resolvePendingObjectInheritances();
+
+	Bool resolvePendingObjectInheritance(
+		PendingObjectInheritance& pending,
+		std::vector<AsciiString>& resolving);
+
+	PendingObjectInheritance* findPendingObjectInheritance(
+		const AsciiString& name);
+
+	std::vector<PendingObjectInheritance> m_pendingObjectInheritances;
 
 	ThingTemplate					*m_firstTemplate;			///< head of linked list
 	UnsignedShort					m_nextTemplateID;			///< next available ID for templates
