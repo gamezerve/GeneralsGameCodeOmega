@@ -1694,7 +1694,9 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			if (!infoTemplate->isKindOf(KINDOF_STRUCTURE))
+			//if (!infoTemplate->isKindOf(KINDOF_STRUCTURE))
+			if (!infoTemplate->isKindOf(KINDOF_STRUCTURE) ||
+				infoTemplate->isKindOf(KINDOF_MOBILE_STRUCTURE))
 			{
 				Int normalDisplaySpeed = 0;
 				Int upgradedDisplaySpeed = 0;
@@ -2815,7 +2817,10 @@ if (stealthDetectorData)
 
 
 
-if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
+//if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
+if (obj &&
+	(!thing->isKindOf(KINDOF_STRUCTURE) ||
+		thing->isKindOf(KINDOF_MOBILE_STRUCTURE)))
 {
 	Int baseMaxDisplaySpeed = 0;
 	Int upgradedMaxDisplaySpeed = 0;

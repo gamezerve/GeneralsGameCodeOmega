@@ -1620,29 +1620,29 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 		{
 			Bool blocked = blockedBy(other);
 
-#if defined(RTS_DEBUG)
-			DEBUG_LOG((
-				"ROBoatCollision BLOCK_CHECK "
-				"frame=%u self=%u other=%u "
-				"selfMoving=%d otherMoving=%d "
-				"blocked=%d blockedFrames=%d "
-				"waitingForPath=%d stuck=%d "
-				"boatRepathPending=%d "
-				"pathTimestamp=%u queueForPathFrame=%u\n",
-				TheGameLogic->getFrame(),
-				getObject()->getID(),
-				other->getID(),
-				selfMoving,
-				otherMoving,
-				blocked,
-				m_blockedFrames,
-				m_waitingForPath,
-				m_isBlockedAndStuck,
-				m_rebornBoatRepathPending,
-				m_pathTimestamp,
-				m_queueForPathFrame
-				));
-#endif
+//#if defined(RTS_DEBUG)
+//			DEBUG_LOG((
+//				"ROBoatCollision BLOCK_CHECK "
+//				"frame=%u self=%u other=%u "
+//				"selfMoving=%d otherMoving=%d "
+//				"blocked=%d blockedFrames=%d "
+//				"waitingForPath=%d stuck=%d "
+//				"boatRepathPending=%d "
+//				"pathTimestamp=%u queueForPathFrame=%u\n",
+//				TheGameLogic->getFrame(),
+//				getObject()->getID(),
+//				other->getID(),
+//				selfMoving,
+//				otherMoving,
+//				blocked,
+//				m_blockedFrames,
+//				m_waitingForPath,
+//				m_isBlockedAndStuck,
+//				m_rebornBoatRepathPending,
+//				m_pathTimestamp,
+//				m_queueForPathFrame
+//				));
+//#endif
 
 			if (blocked)
 			{
@@ -1718,29 +1718,29 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 	{
 		Bool blocked = blockedBy(other);
 
-#if defined(RTS_DEBUG)
-		DEBUG_LOG((
-			"ROBoatCollision BLOCK_CHECK "
-			"frame=%u self=%u other=%u "
-			"selfMoving=%d otherMoving=%d "
-			"blocked=%d blockedFrames=%d "
-			"waitingForPath=%d stuck=%d "
-			"boatRepathPending=%d "
-			"pathTimestamp=%u queueForPathFrame=%u\n",
-			TheGameLogic->getFrame(),
-			getObject()->getID(),
-			other->getID(),
-			selfMoving,
-			otherMoving,
-			blocked,
-			m_blockedFrames,
-			m_waitingForPath,
-			m_isBlockedAndStuck,
-			m_rebornBoatRepathPending,
-			m_pathTimestamp,
-			m_queueForPathFrame
-			));
-#endif
+//#if defined(RTS_DEBUG)
+//		DEBUG_LOG((
+//			"ROBoatCollision BLOCK_CHECK "
+//			"frame=%u self=%u other=%u "
+//			"selfMoving=%d otherMoving=%d "
+//			"blocked=%d blockedFrames=%d "
+//			"waitingForPath=%d stuck=%d "
+//			"boatRepathPending=%d "
+//			"pathTimestamp=%u queueForPathFrame=%u\n",
+//			TheGameLogic->getFrame(),
+//			getObject()->getID(),
+//			other->getID(),
+//			selfMoving,
+//			otherMoving,
+//			blocked,
+//			m_blockedFrames,
+//			m_waitingForPath,
+//			m_isBlockedAndStuck,
+//			m_rebornBoatRepathPending,
+//			m_pathTimestamp,
+//			m_queueForPathFrame
+//			));
+//#endif
 
 		if (blocked)
 		{
