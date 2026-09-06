@@ -1157,6 +1157,24 @@ static Bool collideGeometryInfos(
 	const Real c2 = (Real)cos(angle2);
 	const Real s2 = (Real)sin(angle2);
 
+	Bool foundCollision = FALSE;
+
+	CollideLocAndNormal bestInfo;
+	bestInfo.loc.zero();
+	bestInfo.normal.zero();
+	bestInfo.penetration = 0.0f;
+
+	Int bestShapeIndex1 = -1;
+	Int bestShapeIndex2 = -1;
+
+	//
+	// For BOX/BOX composite collisions, prefer the contact with the
+	// smallest SAT penetration. This prevents geometry array order from
+	// causing a larger inner hull shape to win over a newly-contacting
+	// bow, stern, or deck shape.
+	//
+	Real bestPenetration = 1.0e30f;
+	
 	for (Int shapeIndex1 = 0;
 		shapeIndex1 < shapeCount1;
 		++shapeIndex1)
@@ -1256,23 +1274,29 @@ static Bool collideGeometryInfos(
 			CollideLocAndNormal pairInfo;
 			pairInfo.loc.zero();
 			pairInfo.normal.zero();
+			pairInfo.penetration = 0.0f;
 
 			Bool collided = FALSE;
+			Real pairPenetration = 1.0e30f;
 
 			if (thisGeom == GEOMETRY_BOX &&
 				thatGeom == GEOMETRY_BOX)
 			{
 				//
-				// Reborn: Composite boxes require a full oriented-box SAT test.
-				// The retail corner-in-rectangle test can miss edge-to-edge
-				// intersections between long shapes.
+				// Reborn: Composite boxes require a full oriented-box SAT
+				// test. Also retain the penetration depth so the shallowest
+				// active contact can be used for collision resolution.
 				//
 				collided =
 					collideCompositeBoxBoxSAT(
 						&thisInfo,
 						&thatInfo,
 						&pairInfo,
-						nullptr);
+						&pairPenetration);
+				if (collided)
+				{
+					pairInfo.penetration = pairPenetration;
+				}
 			}
 			else
 			{
@@ -1283,31 +1307,64 @@ static Bool collideGeometryInfos(
 						&pairInfo);
 			}
 
-			if (collided)
+			if (!collided)
 			{
-				Real normalLengthSqr =
-					pairInfo.normal.x * pairInfo.normal.x +
-					pairInfo.normal.y * pairInfo.normal.y +
-					pairInfo.normal.z * pairInfo.normal.z;
+				continue;
+			}
 
-				if (normalLengthSqr < 0.000001f)
-				{
-					vecDiff_2D(
-						&thatInfo.position,
-						&thisInfo.position,
-						&pairInfo.normal);
+			Real normalLengthSqr =
+				pairInfo.normal.x * pairInfo.normal.x +
+				pairInfo.normal.y * pairInfo.normal.y +
+				pairInfo.normal.z * pairInfo.normal.z;
 
-					pairInfo.normal.normalize();
-				}
+			if (normalLengthSqr < 0.000001f)
+			{
+				vecDiff_2D(
+					&thatInfo.position,
+					&thisInfo.position,
+					&pairInfo.normal);
 
-				if (cinfo)
-				{
-					*cinfo = pairInfo;
-				}
+				pairInfo.normal.normalize();
+			}
 
-				return TRUE;
+			if (!foundCollision ||
+				pairPenetration < bestPenetration)
+			{
+				foundCollision = TRUE;
+				bestPenetration = pairPenetration;
+				bestInfo = pairInfo;
+				bestShapeIndex1 = shapeIndex1;
+				bestShapeIndex2 = shapeIndex2;
 			}
 		}
+	}
+
+	if (foundCollision)
+	{
+#if defined(RTS_DEBUG)
+		if (shapeCount1 > 1 && shapeCount2 > 1)
+		{
+			DEBUG_LOG((
+				"ROCompositeCollision BEST_COMPOSITE "
+				"shape1=%d/%d shape2=%d/%d "
+				"penetration=%.3f normal=(%.3f, %.3f) ",
+				bestShapeIndex1,
+				shapeCount1,
+				bestShapeIndex2,
+				shapeCount2,
+				bestPenetration,
+				bestInfo.normal.x,
+				bestInfo.normal.y
+				));
+		}
+#endif
+
+		if (cinfo)
+		{
+			*cinfo = bestInfo;
+		}
+
+		return TRUE;
 	}
 
 	return FALSE;
@@ -2392,14 +2449,45 @@ Bool PartitionData::collidesWith(
 		return FALSE;
 	}
 
-	return collideGeometryInfos(
-		thisObj->getPosition(),
-		thisObj->getGeometryInfo(),
-		thisObj->getOrientation(),
-		thatObj->getPosition(),
-		thatObj->getGeometryInfo(),
-		thatObj->getOrientation(),
-		cinfo);
+	Bool collided =
+		collideGeometryInfos(
+			thisObj->getPosition(),
+			thisObj->getGeometryInfo(),
+			thisObj->getOrientation(),
+			thatObj->getPosition(),
+			thatObj->getGeometryInfo(),
+			thatObj->getOrientation(),
+			cinfo);
+
+#if defined(RTS_DEBUG)
+	if (collided &&
+		thisObj->isKindOf(KINDOF_BOAT) &&
+		thatObj->isKindOf(KINDOF_BOAT))
+	{
+		DEBUG_LOG((
+			"ROBoatCollision REAL_CONTACT "
+			"frame=%u self=%u other=%u "
+			"orientation=(%.3f, %.3f) "
+			"position1=(%.2f, %.2f) "
+			"position2=(%.2f, %.2f) "
+			"penetration=%.3f normal=(%.3f, %.3f)\n",
+			TheGameLogic->getFrame(),
+			thisObj->getID(),
+			thatObj->getID(),
+			thisObj->getOrientation(),
+			thatObj->getOrientation(),
+			thisObj->getPosition()->x,
+			thisObj->getPosition()->y,
+			thatObj->getPosition()->x,
+			thatObj->getPosition()->y,
+			cinfo ? cinfo->penetration : 0.0f,
+			cinfo ? cinfo->normal.x : 0.0f,
+			cinfo ? cinfo->normal.y : 0.0f
+			));
+	}
+#endif
+
+	return collided;
 }
 
 ////-----------------------------------------------------------------------------
@@ -2492,7 +2580,75 @@ void PartitionData::updateCellsTouched()
 	}
 
 	removeAllTouchedCells();
-	if (isSmall)
+
+	if (obj && obj->getGeometryInfo().getShapeCount() > 1)
+	{
+		//
+		// Reborn: Fill partition coverage for every composite geometry shape.
+		// Shape offsets are local to the object and must therefore be rotated
+		// into world space before filling the partition cells.
+		//
+		const GeometryInfo& geometry =
+			obj->getGeometryInfo();
+
+		const Real c = (Real)Cos(angle);
+		const Real s = (Real)Sin(angle);
+
+		for (Int shapeIndex = 0;
+			shapeIndex < geometry.getShapeCount();
+			++shapeIndex)
+		{
+			const GeometryInfo::Shape& shape =
+				geometry.getShape(shapeIndex);
+
+			Coord3D shapePos = pos;
+
+			shapePos.x +=
+				shape.m_offset.x * c -
+				shape.m_offset.y * s;
+
+			shapePos.y +=
+				shape.m_offset.x * s +
+				shape.m_offset.y * c;
+
+			shapePos.z += shape.m_offset.z;
+
+			switch (shape.m_type)
+			{
+			case GEOMETRY_SPHERE:
+			case GEOMETRY_CYLINDER:
+			{
+#if RETAIL_COMPATIBLE_CRC || RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
+				doCircleFill(
+					shapePos.x,
+					shapePos.y,
+					shape.m_majorRadius);
+#else
+				// TheSuperHackers @bugfix Stubbjax 29/01/2026 Use precise circle fill to improve
+				// collision accuracy, most notably for objects with geometry radii >= 20 and < 40.
+				doCircleFillPrecise(
+					shapePos.x,
+					shapePos.y,
+					shape.m_majorRadius);
+#endif
+				break;
+			}
+
+			case GEOMETRY_BOX:
+			{
+				doRectFill(
+					shapePos.x,
+					shapePos.y,
+					shape.m_majorRadius,
+					shape.m_minorRadius,
+					angle);
+
+				break;
+			}
+			}
+		}
+	}
+	else if (isSmall)
 	{
 		Real halfCellSize = ThePartitionManager->getCellSize() * 0.5f;
 
@@ -2542,27 +2698,33 @@ void PartitionData::updateCellsTouched()
 	}
 	else
 	{
-		switch(geom)
+		switch (geom)
 		{
-			case GEOMETRY_SPHERE:
-			case GEOMETRY_CYLINDER:
-			{
+		case GEOMETRY_SPHERE:
+		case GEOMETRY_CYLINDER:
+		{
 #if RETAIL_COMPATIBLE_CRC || RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
-				doCircleFill(pos.x, pos.y, majorRadius);
+			doCircleFill(pos.x, pos.y, majorRadius);
 #else
-				// TheSuperHackers @bugfix Stubbjax 29/01/2026 Use precise circle fill to improve
-				// collision accuracy, most notably for objects with geometry radii >= 20 and < 40.
-				doCircleFillPrecise(pos.x, pos.y, majorRadius);
+			// TheSuperHackers @bugfix Stubbjax 29/01/2026 Use precise circle fill to improve
+			// collision accuracy, most notably for objects with geometry radii >= 20 and < 40.
+			doCircleFillPrecise(pos.x, pos.y, majorRadius);
 #endif
-				break;
-			}
+			break;
+		}
 
-			case GEOMETRY_BOX:
-			{
-				doRectFill(pos.x, pos.y, majorRadius, minorRadius, angle);
-				break;
-			}
-		};
+		case GEOMETRY_BOX:
+		{
+			doRectFill(
+				pos.x,
+				pos.y,
+				majorRadius,
+				minorRadius,
+				angle);
+
+			break;
+		}
+		}
 	}
 
 	Int currentCellIndexX, currentCellIndexY;
@@ -2666,20 +2828,65 @@ Int PartitionData::calcMaxCoiForShape(GeometryType geom, Real majorRadius, Real 
 	return result;
 }
 
+////-----------------------------------------------------------------------------
+//Int PartitionData::calcMaxCoiForObject()
+//{
+//	Object *obj = getObject();
+//	DEBUG_ASSERTCRASH(obj != nullptr, ("must be attached to an Object here 2"));
+//
+//	GeometryType geom = obj->getGeometryInfo().getGeomType();
+//	Real majorRadius = obj->getGeometryInfo().getMajorRadius();
+//	Real minorRadius = obj->getGeometryInfo().getMinorRadius();
+//	Bool isSmall = obj->getGeometryInfo().getIsSmall();
+//#if defined(RTS_DEBUG)
+//theObjName = obj->getTemplate()->getName();
+//#endif
+//	return calcMaxCoiForShape(geom, majorRadius, minorRadius, isSmall);
+//}
 //-----------------------------------------------------------------------------
 Int PartitionData::calcMaxCoiForObject()
 {
-	Object *obj = getObject();
+	Object* obj = getObject();
 	DEBUG_ASSERTCRASH(obj != nullptr, ("must be attached to an Object here 2"));
 
-	GeometryType geom = obj->getGeometryInfo().getGeomType();
-	Real majorRadius = obj->getGeometryInfo().getMajorRadius();
-	Real minorRadius = obj->getGeometryInfo().getMinorRadius();
-	Bool isSmall = obj->getGeometryInfo().getIsSmall();
+	const GeometryInfo& geometry = obj->getGeometryInfo();
+
 #if defined(RTS_DEBUG)
-theObjName = obj->getTemplate()->getName();
+	theObjName = obj->getTemplate()->getName();
 #endif
-	return calcMaxCoiForShape(geom, majorRadius, minorRadius, isSmall);
+
+	//
+	// Reborn: Composite geometry can touch partition cells belonging to
+	// any of its shapes. Allocate enough COIs for all shapes combined.
+	// Duplicate cells are harmless here because this is only an upper bound.
+	//
+	if (geometry.getShapeCount() > 1)
+	{
+		Int result = 0;
+
+		for (Int i = 0; i < geometry.getShapeCount(); ++i)
+		{
+			const GeometryInfo::Shape& shape =
+				geometry.getShape(i);
+
+			result += calcMaxCoiForShape(
+				shape.m_type,
+				shape.m_majorRadius,
+				shape.m_minorRadius,
+				geometry.getIsSmall());
+		}
+
+		if (result < 4)
+			result = 4;
+
+		return result;
+	}
+
+	return calcMaxCoiForShape(
+		geometry.getGeomType(),
+		geometry.getMajorRadius(),
+		geometry.getMinorRadius(),
+		geometry.getIsSmall());
 }
 
 //-----------------------------------------------------------------------------

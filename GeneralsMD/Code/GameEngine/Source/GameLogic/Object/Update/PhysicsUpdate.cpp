@@ -1570,7 +1570,6 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 				overlap = 5.0f;
 			factor = -overlap;
 		}
-
 		if (bothBoats &&
 			normal &&
 			(normal->x != 0.0f || normal->y != 0.0f))
