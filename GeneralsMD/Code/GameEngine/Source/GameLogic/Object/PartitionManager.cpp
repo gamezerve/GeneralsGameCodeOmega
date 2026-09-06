@@ -976,6 +976,122 @@ static CollideTestProc theCollideTestProcs[] =
 };
 
 //-----------------------------------------------------------------------------
+// Reborn: Accurate 2D collision test for oriented boxes used by composite
+// geometry. Unlike the retail rectangle test, this also detects edge-to-edge
+// intersections where no corner of either box lies inside the other box.
+static Bool collideCompositeBoxBoxSAT(
+	const CollideInfo* a,
+	const CollideInfo* b,
+	CollideLocAndNormal* cinfo,
+	Real* penetrationOut)
+{
+	const Real ca = (Real)Cos(a->angle);
+	const Real sa = (Real)Sin(a->angle);
+	const Real cb = (Real)Cos(b->angle);
+	const Real sb = (Real)Sin(b->angle);
+
+	Coord2D axes[4];
+
+	// A local X axis.
+	axes[0].x = ca;
+	axes[0].y = sa;
+
+	// A local Y axis.
+	axes[1].x = -sa;
+	axes[1].y = ca;
+
+	// B local X axis.
+	axes[2].x = cb;
+	axes[2].y = sb;
+
+	// B local Y axis.
+	axes[3].x = -sb;
+	axes[3].y = cb;
+
+	Real deltaX = b->position.x - a->position.x;
+	Real deltaY = b->position.y - a->position.y;
+
+	Real smallestOverlap = 1.0e30f;
+	Coord2D smallestAxis;
+	smallestAxis.x = 0.0f;
+	smallestAxis.y = 0.0f;
+
+	for (Int i = 0; i < 4; ++i)
+	{
+		const Real axisX = axes[i].x;
+		const Real axisY = axes[i].y;
+
+		const Real centerDistance =
+			(Real)fabs(
+				deltaX * axisX +
+				deltaY * axisY);
+
+		const Real aRadius =
+			a->geom.getMajorRadius() *
+			(Real)fabs(ca * axisX + sa * axisY) +
+			a->geom.getMinorRadius() *
+			(Real)fabs((-sa) * axisX + ca * axisY);
+
+		const Real bRadius =
+			b->geom.getMajorRadius() *
+			(Real)fabs(cb * axisX + sb * axisY) +
+			b->geom.getMinorRadius() *
+			(Real)fabs((-sb) * axisX + cb * axisY);
+
+		const Real overlap =
+			aRadius + bRadius - centerDistance;
+
+		//
+		// A separating axis means the boxes do not intersect.
+		//
+		if (overlap <= 0.0f)
+		{
+			return FALSE;
+		}
+
+		if (overlap < smallestOverlap)
+		{
+			smallestOverlap = overlap;
+			smallestAxis = axes[i];
+		}
+	}
+
+	//
+	// Ensure the collision normal points from A toward B, matching the
+	// direction expected by the existing collision system.
+	//
+	if (deltaX * smallestAxis.x +
+		deltaY * smallestAxis.y < 0.0f)
+	{
+		smallestAxis.x = -smallestAxis.x;
+		smallestAxis.y = -smallestAxis.y;
+	}
+
+	if (cinfo)
+	{
+		cinfo->normal.x = smallestAxis.x;
+		cinfo->normal.y = smallestAxis.y;
+		cinfo->normal.z = 0.0f;
+
+		cinfo->loc.x =
+			(a->position.x + b->position.x) * 0.5f;
+
+		cinfo->loc.y =
+			(a->position.y + b->position.y) * 0.5f;
+
+		cinfo->loc.z =
+			(a->position.z + b->position.z) * 0.5f;
+	}
+
+	if (penetrationOut)
+	{
+		*penetrationOut = smallestOverlap;
+	}
+
+	return TRUE;
+}
+
+//-----------------------------------------------------------------------------
 // Reborn: Test all individual geometry shape pairs while preserving the
 // existing retail collision routines for each geometry type combination.
 static Bool collideGeometryInfos(
@@ -999,6 +1115,28 @@ static Bool collideGeometryInfos(
 		CollideInfo thisInfo(pos1, geom1, angle1);
 		CollideInfo thatInfo(pos2, geom2, angle2);
 
+		Real thisTop =
+			thisInfo.position.z +
+			thisInfo.geom.getMaxHeightAbovePosition();
+
+		Real thisBottom =
+			thisInfo.position.z -
+			thisInfo.geom.getMaxHeightBelowPosition();
+
+		Real thatTop =
+			thatInfo.position.z +
+			thatInfo.geom.getMaxHeightAbovePosition();
+
+		Real thatBottom =
+			thatInfo.position.z -
+			thatInfo.geom.getMaxHeightBelowPosition();
+
+		if (thisTop < thatBottom ||
+			thisBottom > thatTop)
+		{
+			return FALSE;
+		}
+
 		GeometryType thisGeom = geom1.getGeomType();
 		GeometryType thatGeom = geom2.getGeomType();
 
@@ -1007,7 +1145,10 @@ static Bool collideGeometryInfos(
 				(thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES +
 					(thatGeom - GEOMETRY_FIRST)];
 
-		return (*collideProc)(&thisInfo, &thatInfo, cinfo);
+		return (*collideProc)(
+			&thisInfo,
+			&thatInfo,
+			cinfo);
 	}
 
 	const Real c1 = (Real)cos(angle1);
@@ -1016,14 +1157,23 @@ static Bool collideGeometryInfos(
 	const Real c2 = (Real)cos(angle2);
 	const Real s2 = (Real)sin(angle2);
 
-	for (Int shapeIndex1 = 0; shapeIndex1 < shapeCount1; ++shapeIndex1)
+	for (Int shapeIndex1 = 0;
+		shapeIndex1 < shapeCount1;
+		++shapeIndex1)
 	{
-		const GeometryInfo::Shape& shape1 = geom1.getShape(shapeIndex1);
+		const GeometryInfo::Shape& shape1 =
+			geom1.getShape(shapeIndex1);
 
 		Coord3D shapePos1 = *pos1;
 
-		shapePos1.x += shape1.m_offset.x * c1 - shape1.m_offset.y * s1;
-		shapePos1.y += shape1.m_offset.x * s1 + shape1.m_offset.y * c1;
+		shapePos1.x +=
+			shape1.m_offset.x * c1 -
+			shape1.m_offset.y * s1;
+
+		shapePos1.y +=
+			shape1.m_offset.x * s1 +
+			shape1.m_offset.y * c1;
+
 		shapePos1.z += shape1.m_offset.z;
 
 		GeometryInfo shapeGeom1(
@@ -1033,14 +1183,23 @@ static Bool collideGeometryInfos(
 			shape1.m_majorRadius,
 			shape1.m_minorRadius);
 
-		for (Int shapeIndex2 = 0; shapeIndex2 < shapeCount2; ++shapeIndex2)
+		for (Int shapeIndex2 = 0;
+			shapeIndex2 < shapeCount2;
+			++shapeIndex2)
 		{
-			const GeometryInfo::Shape& shape2 = geom2.getShape(shapeIndex2);
+			const GeometryInfo::Shape& shape2 =
+				geom2.getShape(shapeIndex2);
 
 			Coord3D shapePos2 = *pos2;
 
-			shapePos2.x += shape2.m_offset.x * c2 - shape2.m_offset.y * s2;
-			shapePos2.y += shape2.m_offset.x * s2 + shape2.m_offset.y * c2;
+			shapePos2.x +=
+				shape2.m_offset.x * c2 -
+				shape2.m_offset.y * s2;
+
+			shapePos2.y +=
+				shape2.m_offset.x * s2 +
+				shape2.m_offset.y * c2;
+
 			shapePos2.z += shape2.m_offset.z;
 
 			GeometryInfo shapeGeom2(
@@ -1050,8 +1209,41 @@ static Bool collideGeometryInfos(
 				shape2.m_majorRadius,
 				shape2.m_minorRadius);
 
-			CollideInfo thisInfo(&shapePos1, shapeGeom1, angle1);
-			CollideInfo thatInfo(&shapePos2, shapeGeom2, angle2);
+			//
+			// The retail non-sphere collision routines expect their caller
+			// to have already rejected pairs that do not overlap vertically.
+			//
+			Real shape1Top =
+				shapePos1.z +
+				shapeGeom1.getMaxHeightAbovePosition();
+
+			Real shape1Bottom =
+				shapePos1.z -
+				shapeGeom1.getMaxHeightBelowPosition();
+
+			Real shape2Top =
+				shapePos2.z +
+				shapeGeom2.getMaxHeightAbovePosition();
+
+			Real shape2Bottom =
+				shapePos2.z -
+				shapeGeom2.getMaxHeightBelowPosition();
+
+			if (shape1Top < shape2Bottom ||
+				shape1Bottom > shape2Top)
+			{
+				continue;
+			}
+
+			CollideInfo thisInfo(
+				&shapePos1,
+				shapeGeom1,
+				angle1);
+
+			CollideInfo thatInfo(
+				&shapePos2,
+				shapeGeom2,
+				angle2);
 
 			GeometryType thisGeom = shape1.m_type;
 			GeometryType thatGeom = shape2.m_type;
@@ -1061,8 +1253,60 @@ static Bool collideGeometryInfos(
 					(thisGeom - GEOMETRY_FIRST) * GEOMETRY_NUM_TYPES +
 						(thatGeom - GEOMETRY_FIRST)];
 
-			if ((*collideProc)(&thisInfo, &thatInfo, cinfo))
+			CollideLocAndNormal pairInfo;
+			pairInfo.loc.zero();
+			pairInfo.normal.zero();
+
+			Bool collided = FALSE;
+
+			if (thisGeom == GEOMETRY_BOX &&
+				thatGeom == GEOMETRY_BOX)
+			{
+				//
+				// Reborn: Composite boxes require a full oriented-box SAT test.
+				// The retail corner-in-rectangle test can miss edge-to-edge
+				// intersections between long shapes.
+				//
+				collided =
+					collideCompositeBoxBoxSAT(
+						&thisInfo,
+						&thatInfo,
+						&pairInfo,
+						nullptr);
+			}
+			else
+			{
+				collided =
+					(*collideProc)(
+						&thisInfo,
+						&thatInfo,
+						&pairInfo);
+			}
+
+			if (collided)
+			{
+				Real normalLengthSqr =
+					pairInfo.normal.x * pairInfo.normal.x +
+					pairInfo.normal.y * pairInfo.normal.y +
+					pairInfo.normal.z * pairInfo.normal.z;
+
+				if (normalLengthSqr < 0.000001f)
+				{
+					vecDiff_2D(
+						&thatInfo.position,
+						&thisInfo.position,
+						&pairInfo.normal);
+
+					pairInfo.normal.normalize();
+				}
+
+				if (cinfo)
+				{
+					*cinfo = pairInfo;
+				}
+
 				return TRUE;
+			}
 		}
 	}
 

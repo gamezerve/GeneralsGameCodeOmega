@@ -5414,16 +5414,44 @@ Bool Pathfinder::checkForMovement(const Object *obj, TCheckMovementInfo &info)
 
 			Bool check = false;
 			Object *unit = nullptr;
-			if (flags == PathfindCell::UNIT_PRESENT_MOVING || flags == PathfindCell::UNIT_GOAL_OTHER_MOVING) {
+
+			//if (flags == PathfindCell::UNIT_PRESENT_MOVING || flags == PathfindCell::UNIT_GOAL_OTHER_MOVING) {
+			//	unit = TheGameLogic->findObjectByID(posUnit);
+			//	// order matters: we want to know if I consider it to be an ally, not vice versa
+			//	if (unit && obj->getRelationship(unit) == ALLIES) {
+			//		info.allyMoving = true;
+			//	}
+			//	if (info.considerTransient) {
+			//		check = true;
+			//	}
+			//}
+			if (flags == PathfindCell::UNIT_PRESENT_MOVING ||
+				flags == PathfindCell::UNIT_GOAL_OTHER_MOVING)
+			{
 				unit = TheGameLogic->findObjectByID(posUnit);
+
 				// order matters: we want to know if I consider it to be an ally, not vice versa
-				if (unit && obj->getRelationship(unit) == ALLIES) {
+				if (unit && obj->getRelationship(unit) == ALLIES)
+				{
 					info.allyMoving = true;
 				}
-				if (info.considerTransient) {
+
+				//
+				// Reborn: Moving boats must remain pathfinding obstacles for other
+				// boats. Large naval units cannot safely pass through one another
+				// while waiting for transient-unit avoidance to resolve the contact.
+				//
+				Bool bothBoats =
+					unit &&
+					obj->isKindOf(KINDOF_BOAT) &&
+					unit->isKindOf(KINDOF_BOAT);
+
+				if (info.considerTransient || bothBoats)
+				{
 					check = true;
 				}
 			}
+
 			if (flags == PathfindCell::UNIT_PRESENT_FIXED) {
 				check = true;
 				unit = TheGameLogic->findObjectByID(posUnit);
@@ -10060,8 +10088,24 @@ void Pathfinder::getRadiusAndCenter(const Object* obj, Int& iRadius, Bool& cente
 		return;
 	}
 
-	Real diameter =
-		2 * obj->getGeometryInfo().getBoundingCircleRadius();
+	Real diameter;
+
+	if (obj->isKindOf(KINDOF_BOAT))
+	{
+		//
+		// Reborn: Long naval vessels should not use their full bounding
+		// circle for pathfinding clearance. Doing so treats a long ship
+		// as a huge circular unit, greatly increasing pathfinding cost
+		// and producing unnecessarily wide avoidance paths.
+		//
+		diameter =
+			2 * obj->getGeometryInfo().getMinorRadius();
+	}
+	else
+	{
+		diameter =
+			2 * obj->getGeometryInfo().getBoundingCircleRadius();
+	}
 
 	if (diameter > PATHFIND_CELL_SIZE_F &&
 		diameter < 2.0f * PATHFIND_CELL_SIZE_F)

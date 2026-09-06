@@ -1448,6 +1448,10 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 	if (dist < 1.0f)
 		dist = 1.0f;
 
+	Bool bothBoats =
+		obj->isKindOf(KINDOF_BOAT) &&
+		other->isKindOf(KINDOF_BOAT);
+
 	if (getAllowCollideForce())
 	{
 		Real factor;
@@ -1567,12 +1571,32 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 			factor = -overlap;
 		}
 
-		force.x = factor * delta.x / dist;
-		force.y = factor * delta.y / dist;
-		force.z = factor * delta.z / dist;	// will be zero for 2d case.
-		DEBUG_ASSERTCRASH(!(_isnan(force.x) || _isnan(force.y) || _isnan(force.z)), ("PhysicsBehavior::onCollide force NAN!"));
-		
-		applyForce( &force );
+		if (bothBoats &&
+			normal &&
+			(normal->x != 0.0f || normal->y != 0.0f))
+		{
+			//
+			// Reborn: Moving naval units normally filter out longitudinal
+			// external forces. Apply composite naval collision separation
+			// directly as acceleration so intersecting vessels can separate.
+			//
+			const Real BOAT_COLLISION_ACCEL_SCALE = 0.03f;
+
+			m_accel.x += factor * normal->x * BOAT_COLLISION_ACCEL_SCALE;
+			m_accel.y += factor * normal->y * BOAT_COLLISION_ACCEL_SCALE;
+		}
+		else
+		{
+			force.x = factor * delta.x / dist;
+			force.y = factor * delta.y / dist;
+			force.z = factor * delta.z / dist;	// will be zero for 2d case.
+
+			DEBUG_ASSERTCRASH(
+				!(_isnan(force.x) || _isnan(force.y) || _isnan(force.z)),
+				("PhysicsBehavior::onCollide force NAN!"));
+
+			applyForce(&force);
+		}
 	}
 }
 

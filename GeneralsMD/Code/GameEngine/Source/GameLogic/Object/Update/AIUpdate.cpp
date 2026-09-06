@@ -1620,90 +1620,79 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 		{
 			Bool blocked = blockedBy(other);
 
-//#if defined(RTS_DEBUG)
-//			DEBUG_LOG((
-//				"ROBoatCollision BLOCK_CHECK "
-//				"frame=%u self=%u other=%u "
-//				"selfMoving=%d otherMoving=%d "
-//				"blocked=%d blockedFrames=%d "
-//				"waitingForPath=%d stuck=%d "
-//				"boatRepathPending=%d "
-//				"pathTimestamp=%u queueForPathFrame=%u\n",
-//				TheGameLogic->getFrame(),
-//				getObject()->getID(),
-//				other->getID(),
-//				selfMoving,
-//				otherMoving,
-//				blocked,
-//				m_blockedFrames,
-//				m_waitingForPath,
-//				m_isBlockedAndStuck,
-//				m_rebornBoatRepathPending,
-//				m_pathTimestamp,
-//				m_queueForPathFrame
-//				));
-//#endif
-
 			if (blocked)
 			{
 				m_isBlocked = TRUE;
 
-				//
-				// Reborn: Give a boat a small physical push away from another
-				// boat when contact begins.
-				//
-				if (m_blockedFrames == 0)
-				{
-					Coord3D bounceForce;
-					bounceForce.x =
-						getObject()->getPosition()->x -
-						other->getPosition()->x;
-					bounceForce.y =
-						getObject()->getPosition()->y -
-						other->getPosition()->y;
-					bounceForce.z = 0.0f;
-
-					Real bounceLength =
-						sqrtf(
-							bounceForce.x * bounceForce.x +
-							bounceForce.y * bounceForce.y);
-
-					if (bounceLength > 0.001f)
-					{
-						bounceForce.x /= bounceLength;
-						bounceForce.y /= bounceLength;
-
-						const Real bounceStrength =
-							physics->getMass() * 0.10f;
-
-						bounceForce.x *= bounceStrength;
-						bounceForce.y *= bounceStrength;
-
-						physics->applyForce(&bounceForce);
-					}
-				}
-
 				if (m_blockedFrames == 0)
 					m_blockedFrames = 1;
 
-				if (!m_rebornBoatRepathPending &&
+				//
+				// Reborn: Apply normal blocked-speed handling to boats.
+				//
+				Real maxSpeed = calculateMaxBlockedSpeed(other);
+				if (maxSpeed < m_curMaxBlockedSpeed)
+				{
+					m_curMaxBlockedSpeed = maxSpeed;
+				}
+
+				//
+				// Reborn: Do not immediately repath both vessels when they
+				// touch. Wait briefly for the collision to resolve naturally,
+				// then only the lower-priority vessel yields.
+				//
+				const Int BOAT_REPATH_BLOCKED_FRAMES = 1;
+
+				Bool shouldYield =
+					getObject()->getID() > other->getID();
+
+				if (m_blockedFrames >= BOAT_REPATH_BLOCKED_FRAMES &&
+					shouldYield &&
 					!m_waitingForPath &&
 					TheGameLogic->getFrame() >= m_rebornBoatRepathCooldownUntil)
 				{
-					m_rebornBoatRepathPending = TRUE;
-					m_isBlockedAndStuck = TRUE;
+					Path* otherPath = aiOther->getPath();
 
-					Coord3D destination =
-						*getStateMachine()->getGoalPosition();
+					if (otherPath)
+					{
+						Path* moveAwayPath =
+							TheAI->pathfinder()->getMoveAwayFromPath(
+								getObject(),
+								other,
+								otherPath,
+								nullptr,
+								nullptr);
 
-					requestPath(&destination, TRUE);
+						if (moveAwayPath)
+						{
+							destroyPath();
+							m_path = moveAwayPath;
+
+							m_isBlockedAndStuck = FALSE;
+							m_blockedFrames = 0;
+							m_isBlocked = FALSE;
+
+							wakeUpNow();
+
+							m_stateMachine->setTemporaryState(
+								AI_MOVE_OUT_OF_THE_WAY,
+								10 * LOGICFRAMES_PER_SECOND);
+
+							//
+							// Reborn: Do not call moveAllies() here. Only the yielding vessel
+							// should move out of the way; the other vessel must keep its path.
+							//
+
+							m_rebornBoatRepathCooldownUntil =
+								TheGameLogic->getFrame() + 15;
+						}
+					}
 				}
 			}
 		}
 
 		//
-		// Reborn: Keep physical collision resolution enabled between
-		// boats while the AI computes a path around the obstruction.
+		// Reborn: Keep physical collision resolution enabled between boats.
 		//
 		return TRUE;
 	}
@@ -2086,21 +2075,6 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 		destroyPath();
 		m_path = theNewPath;
 
-		if (getObject()->isKindOf(KINDOF_BOAT) &&
-			m_rebornBoatRepathPending)
-		{
-			m_rebornBoatRepathPending = FALSE;
-
-			//
-			// Reborn: Give the boat time to begin following its newly
-			// patched path before allowing another collision repath.
-			//
-			m_rebornBoatRepathCooldownUntil =
-				TheGameLogic->getFrame() + 15;
-
-			setQueueForPathTime(0);
-		}
-
 		if (getCurLocomotor() && getCurLocomotor()->isUltraAccurate()) {
 			// Move exactly to the destination.  Normal ground pathfinding moves to a gridded location.
 			theNewPath->updateLastNode(&originalDestination);
@@ -2127,6 +2101,22 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 			m_isBlockedAndStuck = FALSE;
 		}
 	}
+
+	if (getObject()->isKindOf(KINDOF_BOAT) &&
+		m_rebornBoatRepathPending)
+	{
+		m_rebornBoatRepathPending = FALSE;
+
+		//
+		// Reborn: Avoid immediately requesting another boat collision path,
+		// regardless of whether this pathfinding attempt succeeded.
+		//
+		m_rebornBoatRepathCooldownUntil =
+			TheGameLogic->getFrame() + 15;
+
+		setQueueForPathTime(0);
+	}
+
 	// timestamp when the path was created
 	m_pathTimestamp = TheGameLogic->getFrame();
 
