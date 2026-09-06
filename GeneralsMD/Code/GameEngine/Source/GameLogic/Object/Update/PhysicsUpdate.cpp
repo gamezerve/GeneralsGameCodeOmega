@@ -1354,7 +1354,49 @@ void PhysicsBehavior::onCollide( Object *other, const Coord3D *loc, const Coord3
 			}
 #endif
 
-			Bool doForce = ai->processCollision(this, other);
+			Bool doForce = TRUE;
+
+			Bool bothBoats =
+				obj->isKindOf(KINDOF_BOAT) &&
+				other->isKindOf(KINDOF_BOAT);
+
+			Bool boatsAreSeparating = FALSE;
+
+			if (bothBoats &&
+				otherPhysics &&
+				normal &&
+				(normal->x != 0.0f || normal->y != 0.0f))
+			{
+				const Coord3D* ourVelocity =
+					getVelocity();
+
+				const Coord3D* otherVelocity =
+					otherPhysics->getVelocity();
+
+				Real relativeVelocityX =
+					otherVelocity->x - ourVelocity->x;
+
+				Real relativeVelocityY =
+					otherVelocity->y - ourVelocity->y;
+
+				Real relativeVelocityAlongNormal =
+					relativeVelocityX * normal->x +
+					relativeVelocityY * normal->y;
+
+				//
+				// Reborn: If two naval units are already separating along the
+				// actual collision normal, keep the physical collision response
+				// but do not trigger another blocked/yield maneuver.
+				//
+				boatsAreSeparating =
+					relativeVelocityAlongNormal > 0.0f;
+			}
+
+			if (!boatsAreSeparating)
+			{
+				doForce =
+					ai->processCollision(this, other);
+			}
 
 #if defined(RTS_DEBUG)
 			if (obj->isKindOf(KINDOF_BOAT) &&

@@ -1163,6 +1163,8 @@ static Bool collideGeometryInfos(
 	bestInfo.loc.zero();
 	bestInfo.normal.zero();
 	bestInfo.penetration = 0.0f;
+	bestInfo.shapeIndex1 = -1;
+	bestInfo.shapeIndex2 = -1;
 
 	Int bestShapeIndex1 = -1;
 	Int bestShapeIndex2 = -1;
@@ -1275,6 +1277,8 @@ static Bool collideGeometryInfos(
 			pairInfo.loc.zero();
 			pairInfo.normal.zero();
 			pairInfo.penetration = 0.0f;
+			pairInfo.shapeIndex1 = -1;
+			pairInfo.shapeIndex2 = -1;
 
 			Bool collided = FALSE;
 			Real pairPenetration = 1.0e30f;
@@ -1332,7 +1336,11 @@ static Bool collideGeometryInfos(
 			{
 				foundCollision = TRUE;
 				bestPenetration = pairPenetration;
+
 				bestInfo = pairInfo;
+				bestInfo.shapeIndex1 = shapeIndex1;
+				bestInfo.shapeIndex2 = shapeIndex2;
+
 				bestShapeIndex1 = shapeIndex1;
 				bestShapeIndex2 = shapeIndex2;
 			}

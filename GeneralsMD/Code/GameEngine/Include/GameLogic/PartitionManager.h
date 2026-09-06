@@ -163,6 +163,8 @@ struct CollideLocAndNormal
 	Coord3D loc;
 	Coord3D normal;
 	Real penetration;
+	Int shapeIndex1;
+	Int shapeIndex2;
 };
 
 //=====================================
