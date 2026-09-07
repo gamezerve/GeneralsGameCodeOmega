@@ -176,7 +176,13 @@ Bool CanSelectDrawable( const Drawable *draw, Bool dragSelecting )
 	// user interface ... including all those context sensitive commands that we
 	// can just assume are for a single building selected.
 	//
-	if( dragSelecting && draw->isKindOf( KINDOF_STRUCTURE ) )
+	//if( dragSelecting && draw->isKindOf( KINDOF_STRUCTURE ) )
+	//{
+	//	return FALSE;
+	//}
+	if (dragSelecting &&
+		draw->isKindOf(KINDOF_STRUCTURE) &&
+		!draw->isKindOf(KINDOF_MOBILE_STRUCTURE))
 	{
 		return FALSE;
 	}
@@ -1205,7 +1211,9 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 			ObjectID objToAppend = INVALID_ID;
 			if (si.selectMine && obj->isLocallyControlled())
 			{
-				if (!obj->isKindOf(KINDOF_STRUCTURE) || si.selectMineBuildings)
+				if (!obj->isKindOf(KINDOF_STRUCTURE) ||
+					obj->isKindOf(KINDOF_MOBILE_STRUCTURE) ||
+					si.selectMineBuildings)
 				{
 					drawToSelect = draw;
 					objToAppend = obj->getID();
@@ -1590,7 +1598,10 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 		{
 
 			Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
-			if( draw && draw->isKindOf( KINDOF_STRUCTURE ) )
+			//if( draw && draw->isKindOf( KINDOF_STRUCTURE ) )
+			if (draw &&
+				draw->isKindOf(KINDOF_STRUCTURE) &&
+				!draw->isKindOf(KINDOF_MOBILE_STRUCTURE))
 			{
 				//Kris: Jan 12, 2005
 				//Can't select other units if you have a structure selected. So deselect the structure to prevent
@@ -1610,7 +1621,10 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 					Int numObjs = objlist.size();
 
 					// TheSuperHackers @bugfix skyaero 22/07/2025 Can't select other units if you have a structure selected. So deselect the structure to prevent group force attack exploit.
-					if (numObjs > 0 && objlist[0]->getDrawable()->isKindOf(KINDOF_STRUCTURE))
+					//if (numObjs > 0 && objlist[0]->getDrawable()->isKindOf(KINDOF_STRUCTURE))
+					if (numObjs > 0 &&
+						objlist[0]->getDrawable()->isKindOf(KINDOF_STRUCTURE) &&
+						!objlist[0]->getDrawable()->isKindOf(KINDOF_MOBILE_STRUCTURE))
 					{
 						TheInGameUI->deselectAllDrawables();
 					}

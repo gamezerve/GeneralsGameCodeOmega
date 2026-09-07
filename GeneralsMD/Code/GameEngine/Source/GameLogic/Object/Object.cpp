@@ -3096,7 +3096,10 @@ Bool Object::isSelectable() const
 //-------------------------------------------------------------------------------------------------
 Bool Object::isMassSelectable() const
 {
-	return isSelectable() && !isKindOf(KINDOF_STRUCTURE);
+	//return isSelectable() && !isKindOf(KINDOF_STRUCTURE);
+	return isSelectable() &&
+		(!isKindOf(KINDOF_STRUCTURE) ||
+			isKindOf(KINDOF_MOBILE_STRUCTURE));
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -111,7 +111,9 @@ extern Bool contextCommandForNewSelection(const DrawableList *currentlySelectedD
 			++outSelectionInfo->currentCountMine;
 			if (obj->isKindOf(KINDOF_INFANTRY)) {
 				++outSelectionInfo->currentCountMineInfantry;
-			} else if (obj->isKindOf(KINDOF_STRUCTURE)) {
+			}
+			else if (obj->isKindOf(KINDOF_STRUCTURE) &&
+				!obj->isKindOf(KINDOF_MOBILE_STRUCTURE)) {
 				++outSelectionInfo->currentCountMineBuildings;
 			}
 		} else {
@@ -151,7 +153,8 @@ extern Bool contextCommandForNewSelection(const DrawableList *currentlySelectedD
 		if (obj->isLocallyControlled()) {
 			++outSelectionInfo->newCountMine;
 			newMine = *it;
-			if (obj->isKindOf(KINDOF_STRUCTURE)) {
+			if (obj->isKindOf(KINDOF_STRUCTURE) &&
+				!obj->isKindOf(KINDOF_MOBILE_STRUCTURE)) {
 				++outSelectionInfo->newCountMineBuildings;
 			}
 		} else {
